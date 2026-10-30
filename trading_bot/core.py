@@ -122,16 +122,22 @@ class Binance:
         return float(self.call("/api/v3/ticker/price", {"symbol": symbol})["price"])
 
 
-def signal(prices):
+def signal_details(prices):
     if len(prices) < 31:
-        return "HOLD"
+        return {"action": "HOLD", "count": len(prices)}
     old_fast, old_slow = sum(prices[-11:-1]) / 10, sum(prices[-31:-1]) / 30
     fast, slow = sum(prices[-10:]) / 10, sum(prices[-30:]) / 30
+    action = "HOLD"
     if old_fast <= old_slow and fast > slow:
-        return "BUY"
-    if old_fast >= old_slow and fast < slow:
-        return "SELL"
-    return "HOLD"
+        action = "BUY"
+    elif old_fast >= old_slow and fast < slow:
+        action = "SELL"
+    return {"action": action, "count": len(prices), "old_fast": old_fast,
+            "old_slow": old_slow, "fast": fast, "slow": slow}
+
+
+def signal(prices):
+    return signal_details(prices)["action"]
 
 
 def ai_allows(symbol, prices):
@@ -169,6 +175,7 @@ class Engine:
         self.store.set("symbol", symbol)
         self.store.set("candle", None)
         self.store.set("quote", None)
+        self.store.set("signal_snapshot", None)
 
     def trade(self, side, price, candle):
         position = self.store.get("position")
@@ -214,21 +221,71 @@ class Engine:
             self.store.db.execute("INSERT INTO notifications(text) VALUES (?)", (notice,))
 
     def tick(self):
+        try:
+            self._tick()
+        except Exception as exc:
+            snapshot = self.store.get("signal_snapshot") or self._snapshot("Проверка ещё не завершена")
+            snapshot["check_error"] = type(exc).__name__
+            snapshot["checked_at"] = time.time()
+            self.store.set("signal_snapshot", snapshot)
+            raise
+
+    def _snapshot(self, reason, **details):
+        snapshot = {"symbol": self.symbol, "source": "Binance Spot Testnet",
+                    "interval": "1m", "time": time.time(), "reason": reason, **details}
+        self.store.set("signal_snapshot", snapshot)
+        return snapshot
+
+    def _tick(self):
         if self.store.get("pending"):
+            self._snapshot("Незавершённый ордер блокирует торговлю; требуется сверка")
             raise RuntimeError("Незавершённый ордер: автоматическая торговля заблокирована до ручной сверки с биржей")
         price = self.exchange.price(self.symbol)
         self.store.set("quote", {"symbol": self.symbol, "price": price, "time": time.time()})
         position = self.store.get("position")
         if position and (price <= position["price"] * (1-self.cfg.stop/100) or price >= position["price"] * (1+self.cfg.take/100)):
+            reason = "Сработал стоп-лосс" if price <= position["price"] * (1-self.cfg.stop/100) else "Сработал тейк-профит"
+            self._snapshot(reason + "; отправка продажи", action="SELL")
             self.trade("SELL", price, self.store.get("candle"))
+            self._snapshot(reason + "; позиция закрыта", action="SELL")
             return
         candles = self.exchange.candles(self.symbol)
-        if not candles or candles[-1][0] == self.store.get("candle"):
+        if not candles:
+            self._snapshot("Нет закрытых свечей для расчёта", count=0)
+            return
+        if candles[-1][0] == self.store.get("candle"):
+            snapshot = self.store.get("signal_snapshot")
+            if snapshot:
+                snapshot.pop("check_error", None)
+                snapshot["checked_at"] = time.time()
+                self.store.set("signal_snapshot", snapshot)
+            else:
+                self._snapshot("Свеча уже обработана ранее; повторного входа нет",
+                               candle=candles[-1][0], **signal_details([p for _, p in candles]))
             return
         stamp, _ = candles[-1]
-        action = signal([p for _, p in candles])
+        details = signal_details([p for _, p in candles])
+        action = details["action"]
+        reason = "Нового пересечения SMA 10/30 нет"
+        if details["count"] < 31:
+            reason = "Недостаточно закрытых свечей: нужно не менее 31"
+        self._snapshot("Проверка условий сделки", candle=stamp, **details)
         if action == "SELL" and position:
             self.trade("SELL", price, stamp)
-        elif action == "BUY" and not self.store.get("paused", True) and ai_allows(self.symbol, [p for _, p in candles]):
-            self.trade("BUY", price, stamp)
+            reason = "Пересечение вниз; позиция закрыта"
+        elif action == "SELL":
+            reason = "Пересечение вниз, но позиции нет; шорт на споте не открывается"
+        elif action == "BUY":
+            if position:
+                reason = "Пересечение вверх, но позиция уже открыта"
+            elif self.store.get("paused", True):
+                reason = "Пересечение вверх пропущено: включена пауза"
+            elif self.store.loss() >= self.cfg.daily_loss:
+                reason = "Пересечение вверх пропущено: достигнут дневной лимит убытка"
+            elif not ai_allows(self.symbol, [p for _, p in candles]):
+                reason = "Пересечение вверх пропущено: ИИ-фильтр отклонил вход или недоступен"
+            else:
+                self.trade("BUY", price, stamp)
+                reason = "Пересечение вверх; позиция открыта"
+        self._snapshot(reason, candle=stamp, **details)
         self.store.set("candle", stamp)

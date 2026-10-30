@@ -39,7 +39,32 @@ class Telegram:
         cmd = parts[0].split("@")[0] if parts else ""
         store = self.engine.store
         if cmd in {"/start", "/help"}:
-            return "/status — состояние и котировка\n/history — последние 10 сделок\n/resume — разрешить входы\n/pause — запретить входы\n/stop — запретить входы, продолжить защиту позиции\n/close — закрыть позицию\n/pair BTCUSDT — выбрать пару\n/mode — вид торговли"
+            return "/status — состояние и котировка\n/signal — средние и причина решения\n/history — последние 10 сделок\n/resume — разрешить входы\n/pause — запретить входы\n/stop — запретить входы, продолжить защиту позиции\n/close — закрыть позицию\n/pair BTCUSDT — выбрать пару\n/mode — вид торговли"
+        if cmd == "/signal":
+            snapshot = store.get("signal_snapshot")
+            if not snapshot or snapshot["symbol"] != self.engine.symbol:
+                return "Диагностика ещё не получена. Дождитесь следующей проверки стратегии."
+            age = max(0, int(time.time() - snapshot["time"]))
+            lines = [f"Источник: {snapshot['source']} (testnet.binance.vision)",
+                     f"Пара: {snapshot['symbol']} | Таймфрейм: {snapshot['interval']}",
+                     f"Решение: {local_time(snapshot['time'])}, {age} сек. назад",
+                     f"Пауза сейчас: {store.get('paused', True)}"]
+            if "candle" in snapshot:
+                opened = snapshot["candle"] / 1000
+                lines += [f"Закрытая свеча: {local_time(opened)} — {local_time(opened + 60)}",
+                          f"Закрытых свечей в расчёте: {snapshot.get('count', 0)}"]
+            if "fast" in snapshot:
+                lines += [f"Предыдущая: SMA 10 = {snapshot['old_fast']:.8f}, SMA 30 = {snapshot['old_slow']:.8f}",
+                          f"Последняя: SMA 10 = {snapshot['fast']:.8f}, SMA 30 = {snapshot['slow']:.8f}"]
+            else:
+                lines.append("Средние для этого решения не рассчитаны.")
+            lines += [f"Сигнал: {snapshot.get('action', 'нет')}", f"Причина: {snapshot['reason']}"]
+            if snapshot.get("check_error"):
+                lines.append(f"Последняя проверка завершилась ошибкой: {snapshot['check_error']}. См. /status.")
+            if age > max(120, 2 * max(5, int(os.getenv("POLL_SECONDS", "60")))):
+                lines.append("Решение устарело. Проверьте /status и работу программы.")
+            lines.append("Это сохранённое решение; /signal не запускает сделку. Основной Binance может иметь другие свечи.")
+            return "\n".join(lines)
         if cmd == "/status":
             quote = store.get("quote")
             quote_text = "Котировка: ещё не получена"

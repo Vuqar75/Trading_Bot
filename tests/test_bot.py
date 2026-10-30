@@ -183,6 +183,89 @@ class BotTests(unittest.TestCase):
                 telegram.flush_notifications()
         self.assertEqual(self.store.db.execute("SELECT COUNT(*) FROM notifications").fetchone()[0], 1)
 
+    def test_signal_explains_paused_cross_and_does_not_enter_on_resume(self):
+        self.engine.tick()
+        snapshot = self.store.get("signal_snapshot")
+        self.assertEqual(snapshot["action"], "BUY")
+        self.assertEqual(snapshot["old_fast"], 100)
+        self.assertEqual(snapshot["old_slow"], 100)
+        self.assertEqual(snapshot["fast"], 101)
+        self.assertAlmostEqual(snapshot["slow"], 100 + 10/30)
+        self.assertIn("пауза", snapshot["reason"])
+        self.store.set("paused", False)
+        self.engine.tick()
+        self.assertEqual(self.store.get("signal_snapshot")["reason"], snapshot["reason"])
+        self.assertIsNone(self.store.get("position"))
+
+    def test_signal_command_is_read_only_and_includes_source_and_times(self):
+        telegram = Telegram(self.engine)
+        self.assertIn("ещё не получена", telegram.command("/signal"))
+        self.engine.tick()
+        snapshot = self.store.get("signal_snapshot")
+        with patch.object(self.engine.exchange, "candles", side_effect=AssertionError):
+            reply = telegram.command("/signal")
+        for fragment in ("Binance Spot Testnet", "testnet.binance.vision", "SMA 10", "SMA 30", "Баку", "1m", "BUY"):
+            self.assertIn(fragment, reply)
+        self.assertEqual(snapshot, self.store.get("signal_snapshot"))
+        self.assertEqual(self.store.history(), [])
+
+    def test_signal_reports_risk_and_ai_blocks(self):
+        self.store.set("paused", False)
+        with patch.object(self.store, "loss", return_value=10):
+            self.engine.tick()
+        self.assertIn("лимит", self.store.get("signal_snapshot")["reason"])
+        self.store.set("candle", None)
+        with patch("trading_bot.core.ai_allows", return_value=False):
+            self.engine.tick()
+        self.assertIn("ИИ-фильтр", self.store.get("signal_snapshot")["reason"])
+        self.assertEqual(self.store.history(), [])
+
+    def test_signal_reports_entry_and_existing_position(self):
+        self.store.set("paused", False)
+        self.engine.tick()
+        self.assertIn("позиция открыта", self.store.get("signal_snapshot")["reason"])
+        self.store.set("candle", None)
+        self.engine.tick()
+        self.assertIn("уже открыта", self.store.get("signal_snapshot")["reason"])
+        self.assertEqual(len(self.store.history()), 1)
+
+    def test_signal_reports_sell_without_short(self):
+        with patch.object(self.engine.exchange, "candles", return_value=list(enumerate([100.] * 30 + [90.]))):
+            self.engine.tick()
+        snapshot = self.store.get("signal_snapshot")
+        self.assertEqual(snapshot["action"], "SELL")
+        self.assertIn("позиции нет", snapshot["reason"])
+        self.assertEqual(self.store.history(), [])
+
+    def test_signal_reports_hold_and_insufficient_data(self):
+        with patch.object(self.engine.exchange, "candles", return_value=list(enumerate([100.] * 31))):
+            self.engine.tick()
+        self.assertIn("пересечения", self.store.get("signal_snapshot")["reason"])
+        self.store.set("candle", None)
+        with patch.object(self.engine.exchange, "candles", return_value=[(1, 100)]):
+            self.engine.tick()
+        self.assertIn("Недостаточно", self.store.get("signal_snapshot")["reason"])
+        self.assertNotIn("fast", self.store.get("signal_snapshot"))
+
+    def test_signal_errors_are_redacted_and_pair_change_resets_snapshot(self):
+        self.engine.tick()
+        with patch.object(self.engine.exchange, "price", side_effect=RuntimeError("secret URL")):
+            with self.assertRaises(RuntimeError):
+                self.engine.tick()
+        reply = Telegram(self.engine).command("/signal")
+        self.assertIn("ошибкой", reply)
+        self.assertNotIn("secret", reply)
+        self.engine.change_symbol("BTCUSDT")
+        self.assertIsNone(self.store.get("signal_snapshot"))
+
+    def test_signal_distinguishes_protective_exit(self):
+        self.engine.trade("BUY", 110, 1)
+        self.engine.tick()
+        snapshot = self.store.get("signal_snapshot")
+        self.assertIn("стоп-лосс", snapshot["reason"])
+        self.assertNotIn("fast", snapshot)
+        self.assertEqual(snapshot["action"], "SELL")
+
 
 if __name__ == "__main__":
     unittest.main()
