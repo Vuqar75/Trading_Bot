@@ -85,17 +85,20 @@ class Telegram:
             if self.engine.market == "futures":
                 position = store.get("position")
                 balance = store.get("futures_balance", 1000.0)
+                costs = self.engine.cfg.paper_costs()
                 market_text = (f"Симуляция фьючерсов, isolated, {self.engine.leverage}×\n"
                                f"Маржа на вход: {self.engine.cfg.amount:.2f} USDT\n"
                                f"Номинал на вход: {self.engine.cfg.amount * self.engine.leverage:.2f} USDT\n"
                                f"Стоп: {self.engine.cfg.stop:g}% цены, тейк: {self.engine.cfg.take:g}% цены\n"
-                               f"Оценка риска на стопе с комиссиями: ≈ {min(self.engine.cfg.amount, self.engine.cfg.amount * self.engine.leverage * (self.engine.cfg.stop/100 + 0.002)):.4f} USDT\n"
+                               f"Комиссии вход/выход: {costs.entry_fee_bps:g}/{costs.exit_fee_bps:g} bps; проскальзывание на сторону: {costs.slippage_bps:g} bps\n"
+                               f"Оценка риска на стопе с издержками: ≈ {min(self.engine.cfg.amount, self.engine.cfg.amount * self.engine.leverage * (self.engine.cfg.stop/100 + (costs.entry_fee_bps+costs.exit_fee_bps+2*costs.slippage_bps)/10000)):.4f} USDT\n"
                                f"Свободный виртуальный баланс: {balance:.4f} USDT\n"
                                "Источник: спотовые цены Binance Testnet")
                 if position and quote:
                     sign = 1 if position["direction"] == "LONG" else -1
-                    gross = sign * (quote["price"] - position["price"]) * position["quantity"]
-                    estimated = max(-position["margin"], gross-position["entry_fee"]-position["quantity"]*quote["price"]*0.001)
+                    fill = costs.fill(quote["price"], position["direction"], opening=False)
+                    gross = sign * (fill - position["price"]) * position["quantity"]
+                    estimated = max(-position["margin"], gross-position["entry_fee"]-position["quantity"]*fill*costs.exit_fee_bps/10000)
                     market_text += f"\nРасчётный PnL при закрытии: {estimated:+.4f} USDT"
             return (f"Режим: {self.engine.cfg.mode}, {market_text}\nПара: {self.engine.symbol}\n"
                     f"Пауза: {store.get('paused', True)}\nПозиция: {store.get('position')}\n"
