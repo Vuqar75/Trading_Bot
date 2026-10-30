@@ -1,11 +1,15 @@
 import logging
 import os
 import time
-from urllib.error import HTTPError
+from datetime import datetime, timedelta, timezone
 
 from .core import Binance, Config, Engine, Store, request
 
 log = logging.getLogger("bot")
+
+
+def local_time(stamp):
+    return datetime.fromtimestamp(stamp, timezone(timedelta(hours=4))).strftime("%d.%m %H:%M:%S") + " (Баку)"
 
 
 class Telegram:
@@ -16,17 +20,55 @@ class Telegram:
         self.offset = engine.store.get("telegram_offset", 0)
 
     def send(self, text):
-        request(f"https://api.telegram.org/bot{self.token}/sendMessage",
+        result = request(f"https://api.telegram.org/bot{self.token}/sendMessage",
                 {"chat_id": self.owner, "text": text})
+        if not result.get("ok"):
+            raise RuntimeError("Telegram не подтвердил доставку")
+
+    def flush_notifications(self):
+        if not self.token or not self.owner:
+            return
+        for identifier, text in self.engine.store.db.execute(
+                "SELECT id,text FROM notifications ORDER BY id LIMIT 5").fetchall():
+            self.send(text)
+            with self.engine.store.db:
+                self.engine.store.db.execute("DELETE FROM notifications WHERE id=?", (identifier,))
 
     def command(self, text):
         parts = text.split()
         cmd = parts[0].split("@")[0] if parts else ""
         store = self.engine.store
         if cmd in {"/start", "/help"}:
-            return "/status — состояние\n/resume — разрешить входы\n/pause — запретить входы\n/stop — запретить входы, продолжить защиту позиции\n/close — закрыть позицию\n/pair BTCUSDT — выбрать пару\n/mode — вид торговли"
+            return "/status — состояние и котировка\n/history — последние 10 сделок\n/resume — разрешить входы\n/pause — запретить входы\n/stop — запретить входы, продолжить защиту позиции\n/close — закрыть позицию\n/pair BTCUSDT — выбрать пару\n/mode — вид торговли"
         if cmd == "/status":
-            return f"Режим: {self.engine.cfg.mode}, Spot\nПара: {self.engine.symbol}\nПауза: {store.get('paused', True)}\nПозиция: {store.get('position')}\nНезавершённый ордер: {bool(store.get('pending'))}\nУбыток за UTC-день: {store.loss():.4f} USDT"
+            quote = store.get("quote")
+            quote_text = "Котировка: ещё не получена"
+            if quote and quote["symbol"] == self.engine.symbol:
+                age = max(0, int(time.time() - quote["time"]))
+                stale = age > max(120, 2 * max(5, int(os.getenv("POLL_SECONDS", "60"))))
+                quote_text = (f"Котировка: {quote['price']:.8f} USDT\n"
+                              f"Получена: {local_time(quote['time'])}, {age} сек. назад"
+                              + (" — УСТАРЕЛА" if stale else ""))
+            error = store.get("last_error")
+            error_text = "Последняя ошибка: нет"
+            if error:
+                error_text = f"Последняя ошибка: {error['stage']}, {error['reason']}, {local_time(error['time'])}"
+            return (f"Режим: {self.engine.cfg.mode}, Spot\nПара: {self.engine.symbol}\n"
+                    f"Пауза: {store.get('paused', True)}\nПозиция: {store.get('position')}\n"
+                    f"Незавершённый ордер: {bool(store.get('pending'))}\n"
+                    f"Убыток за UTC-день: {store.loss():.4f} USDT\n{quote_text}\n{error_text}")
+        if cmd == "/history":
+            rows = store.history()
+            if not rows:
+                return "История сделок пуста. Бот ожидает сигнал стратегии."
+            lines = ["Последние 10 сделок (время Баку):"]
+            for stamp, symbol, side, quantity, price, pnl, mode in rows:
+                action = "Покупка" if side == "BUY" else "Продажа"
+                line = f"{local_time(stamp)} | {mode} | {action} {symbol}\n{quantity:.8f} × {price:.8f} USDT"
+                if side == "SELL":
+                    line += f" | Результат ≈ {pnl:+.4f} USDT"
+                lines.append(line)
+            return "\n\n".join(lines)
         if cmd in {"/pause", "/stop", "/resume"}:
             if cmd == "/resume" and store.get("pending"):
                 return "Сначала требуется сверка незавершённого ордера"
@@ -61,6 +103,8 @@ class Telegram:
                 try:
                     reply = self.command(msg.get("text", ""))
                 except Exception as exc:
+                    store = self.engine.store
+                    store.report_error("команда", exc)
                     reply = "Команда не выполнена: " + type(exc).__name__ + ". Проверьте состояние /status."
                 self.send(reply)
             self.offset = update["update_id"] + 1
@@ -89,14 +133,20 @@ def main():
             telegram.poll()
         except Exception as exc:
             log.error("Telegram: %s", type(exc).__name__)
+            store.report_error("Telegram", exc)
         if time.monotonic() - last_tick >= interval:
             try:
                 engine.tick()
             except Exception as exc:
                 # Never log request URLs or exception bodies: they may contain secrets.
                 store.set("paused", True)
+                store.report_error("торговля", exc)
                 log.error("Торговля приостановлена: %s", type(exc).__name__)
             last_tick = time.monotonic()
+        try:
+            telegram.flush_notifications()
+        except Exception as exc:
+            log.error("Доставка уведомлений: %s", type(exc).__name__)
         time.sleep(2)
 
 

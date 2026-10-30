@@ -104,6 +104,85 @@ class BotTests(unittest.TestCase):
             send.assert_not_called()
         self.assertTrue(self.store.get("paused", True))
 
+    def test_trade_and_notification_commit_together(self):
+        self.engine.trade("BUY", 100, 1)
+        self.engine.trade("SELL", 110, 2)
+        rows = self.store.db.execute("SELECT text FROM notifications ORDER BY id").fetchall()
+        self.assertEqual(len(rows), 2)
+        self.assertIn("Виртуальная сделка: Покупка BTCUSDT", rows[0][0])
+        self.assertIn("Продажа BTCUSDT", rows[1][0])
+        self.assertIn("+0.9790", rows[1][0])
+        self.assertEqual(self.store.history()[0][2], "SELL")
+
+    def test_failed_delivery_survives_reopen(self):
+        self.engine.trade("BUY", 100, 1)
+        telegram = Telegram(self.engine)
+        telegram.token, telegram.owner = "test", "123"
+        with patch.object(telegram, "send", side_effect=TimeoutError):
+            with self.assertRaises(TimeoutError):
+                telegram.flush_notifications()
+        reopened = Store(str(Path(self.tmp.name) / "bot.db"))
+        try:
+            self.assertEqual(reopened.db.execute("SELECT COUNT(*) FROM notifications").fetchone()[0], 1)
+        finally:
+            reopened.db.close()
+        with patch.object(telegram, "send") as send:
+            telegram.flush_notifications()
+            telegram.flush_notifications()
+            self.assertEqual(send.call_count, 1)
+        self.assertEqual(self.store.db.execute("SELECT COUNT(*) FROM trades").fetchone()[0], 1)
+
+    def test_error_notices_deduplicated_and_redacted(self):
+        with patch("trading_bot.core.time.time", return_value=1000):
+            self.store.report_error("торговля", RuntimeError("secret token URL"))
+            self.store.report_error("торговля", RuntimeError("secret token URL"))
+        rows = self.store.db.execute("SELECT text FROM notifications").fetchall()
+        self.assertEqual(len(rows), 1)
+        self.assertNotIn("secret", rows[0][0])
+        self.assertNotIn("secret", str(self.store.get("last_error")))
+        with patch("trading_bot.core.time.time", return_value=1901):
+            self.store.report_error("торговля", RuntimeError("secret"))
+        self.assertEqual(self.store.db.execute("SELECT COUNT(*) FROM notifications").fetchone()[0], 2)
+
+    def test_status_quote_and_staleness(self):
+        telegram = Telegram(self.engine)
+        self.assertIn("ещё не получена", telegram.command("/status"))
+        with patch("trading_bot.core.time.time", return_value=1000):
+            self.engine.tick()
+        with patch("trading_bot.__main__.time.time", return_value=1001):
+            status = telegram.command("/status")
+            self.assertIn("100.00000000 USDT", status)
+            self.assertIn("Баку", status)
+            self.assertNotIn("УСТАРЕЛА", status)
+        with patch("trading_bot.__main__.time.time", return_value=1200):
+            self.assertIn("УСТАРЕЛА", telegram.command("/status"))
+
+    def test_empty_and_populated_history(self):
+        telegram = Telegram(self.engine)
+        self.assertIn("пуста", telegram.command("/history"))
+        self.engine.trade("BUY", 100, 1)
+        self.engine.trade("SELL", 110, 2)
+        history = telegram.command("/history")
+        self.assertLess(history.index("Продажа"), history.index("Покупка"))
+        self.assertIn("+0.9790", history)
+
+    def test_history_bounded_and_pair_clears_quote(self):
+        for n in range(12):
+            self.engine.trade("BUY" if n % 2 == 0 else "SELL", 100, n)
+        self.assertEqual(len(self.store.history()), 10)
+        self.store.set("quote", {"symbol": "BTCUSDT", "price": 100, "time": 1})
+        self.engine.change_symbol("BTCUSDT")
+        self.assertIsNone(self.store.get("quote"))
+
+    def test_api_rejected_notification_is_kept(self):
+        self.engine.trade("BUY", 100, 1)
+        telegram = Telegram(self.engine)
+        telegram.token, telegram.owner = "test", "123"
+        with patch("trading_bot.__main__.request", return_value={"ok": False}):
+            with self.assertRaises(RuntimeError):
+                telegram.flush_notifications()
+        self.assertEqual(self.store.db.execute("SELECT COUNT(*) FROM notifications").fetchone()[0], 1)
+
 
 if __name__ == "__main__":
     unittest.main()

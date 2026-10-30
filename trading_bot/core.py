@@ -47,6 +47,7 @@ class Store:
         self.db = sqlite3.connect(path)
         self.db.execute("CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         self.db.execute("CREATE TABLE IF NOT EXISTS trades (ts REAL, symbol TEXT, side TEXT, quantity REAL, price REAL, pnl REAL, mode TEXT)")
+        self.db.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY, text TEXT NOT NULL)")
         self.db.commit()
 
     def get(self, key, default=None):
@@ -60,6 +61,30 @@ class Store:
     def loss(self):
         start = int(time.time() // 86400) * 86400
         return -self.db.execute("SELECT COALESCE(SUM(pnl),0) FROM trades WHERE ts>=?", (start,)).fetchone()[0]
+
+    def history(self, limit=10):
+        return self.db.execute(
+            "SELECT ts,symbol,side,quantity,price,pnl,mode FROM trades ORDER BY rowid DESC LIMIT ?",
+            (limit,)).fetchall()
+
+    def report_error(self, stage, exc):
+        # Do not persist exception bodies or URLs: they can contain API tokens.
+        code = getattr(exc, "code", None)
+        reason = type(exc).__name__ + (f" HTTP {code}" if isinstance(code, int) else "")
+        now = time.time()
+        key = "error_notice_" + stage
+        previous = self.get(key, {})
+        message = f"Ошибка ({stage}): {reason}. Проверьте /status."
+        if stage == "торговля":
+            message += " Новые входы приостановлены; контроль позиции будет повторяться."
+        with self.db:
+            self.db.execute("INSERT OR REPLACE INTO state VALUES (?,?)",
+                            ("last_error", json.dumps({"time": now, "stage": stage, "reason": reason})))
+            # Repeated failures do not create a message every polling cycle.
+            if previous.get("reason") != reason or now - previous.get("time", 0) >= 900:
+                self.db.execute("INSERT INTO notifications(text) VALUES (?)", (message,))
+                self.db.execute("INSERT OR REPLACE INTO state VALUES (?,?)",
+                                (key, json.dumps({"time": now, "reason": reason})))
 
 
 class Binance:
@@ -143,6 +168,7 @@ class Engine:
         self.symbol = symbol
         self.store.set("symbol", symbol)
         self.store.set("candle", None)
+        self.store.set("quote", None)
 
     def trade(self, side, price, candle):
         position = self.store.get("position")
@@ -180,11 +206,18 @@ class Engine:
             self.store.db.execute("INSERT INTO trades VALUES (?,?,?,?,?,?,?)", (time.time(), self.symbol, side, quantity, fill, pnl, self.cfg.mode))
             for key, value in (("position", new_position), ("pending", None), ("candle", candle)):
                 self.store.db.execute("INSERT OR REPLACE INTO state VALUES (?,?)", (key, json.dumps(value)))
+            label = "Виртуальная сделка" if self.cfg.mode == "paper" else "Сделка Testnet"
+            action = "Покупка" if side == "BUY" else "Продажа"
+            notice = f"{label}: {action} {self.symbol}\nКоличество: {quantity:.8f}\nЦена: {fill:.8f} USDT"
+            if side == "SELL":
+                notice += f"\nРасчётный результат с комиссией: {pnl:+.4f} USDT"
+            self.store.db.execute("INSERT INTO notifications(text) VALUES (?)", (notice,))
 
     def tick(self):
         if self.store.get("pending"):
             raise RuntimeError("Незавершённый ордер: автоматическая торговля заблокирована до ручной сверки с биржей")
         price = self.exchange.price(self.symbol)
+        self.store.set("quote", {"symbol": self.symbol, "price": price, "time": time.time()})
         position = self.store.get("position")
         if position and (price <= position["price"] * (1-self.cfg.stop/100) or price >= position["price"] * (1+self.cfg.take/100)):
             self.trade("SELL", price, self.store.get("candle"))
