@@ -118,3 +118,19 @@ This dataset starts on October 7, not the requested September 30: missing initia
 coverage is not filled in. It contains extreme Testnet price moves. The sample
 supports implementation verification and a limited period comparison, not a claim
 of a profitable, robust strategy or validation for real futures deployment.
+
+## Frozen input for another checkout
+
+The public Testnet snapshot is committed in `research/fixtures/` so a reset of
+Testnet does not prevent reproducing stage 1. No private bot database is included.
+Restore it from the project root, then use the replay/validation commands above:
+
+```bash
+python3 -c "import gzip,pathlib; p=pathlib.Path('research_data'); p.mkdir(exist_ok=True); (p/'btc-testnet-1m.csv').write_bytes(gzip.decompress(pathlib.Path('research/fixtures/btc-testnet-1m.csv.gz').read_bytes()))"
+sha256sum research_data/btc-testnet-1m.csv
+```
+
+Expected SHA-256: `47d3be14ecdbf872f1b95121c61ca514d799283797d9b1493d14098c3a2cbb00`.
+Stage 1 metrics/provenance/legacy validation are committed under `research/`.
+Read `HANDOFF.md` before continuing; update it and push an isolated branch after
+each completed stage. Deployment to the running bot always needs a separate request.

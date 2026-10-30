@@ -1,0 +1,16 @@
+{
+  "source": "Binance Spot Testnet",
+  "endpoint": "https://testnet.binance.vision/api/v3/klines",
+  "symbol": "BTCUSDT",
+  "interval": "1m",
+  "requested_start_ms": 1790726400000,
+  "requested_end_exclusive_ms": 1793318400000,
+  "fetched_at_utc": "2026-10-30T18:53:49.199496+00:00",
+  "rows": 32488,
+  "requests": 33,
+  "expected_rows": 43200,
+  "first_ms": 1791369120000,
+  "last_ms": 1793318340000,
+  "gaps": 0,
+  "sha256": "47d3be14ecdbf872f1b95121c61ca514d799283797d9b1493d14098c3a2cbb00"
+}
