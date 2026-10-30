@@ -39,7 +39,7 @@ class Telegram:
         cmd = parts[0].split("@")[0] if parts else ""
         store = self.engine.store
         if cmd in {"/start", "/help"}:
-            return "/status — состояние и котировка\n/signal — средние и причина решения\n/history — последние 10 сделок\n/resume — разрешить входы\n/pause — запретить входы\n/stop — запретить входы, продолжить защиту позиции\n/close — закрыть позицию\n/pair BTCUSDT — выбрать пару\n/mode — вид торговли"
+            return "/status — состояние и котировка\n/signal — средние и причина решения\n/history — последние 10 сделок\n/resume — разрешить входы\n/pause — запретить входы\n/stop — запретить входы, продолжить защиту позиции\n/close — закрыть позицию\n/pair BTCUSDT — выбрать пару\n/mode spot или /mode futures — рынок\n/leverage 1..10 — плечо симуляции"
         if cmd == "/signal":
             snapshot = store.get("signal_snapshot")
             if not snapshot or snapshot["symbol"] != self.engine.symbol:
@@ -47,6 +47,7 @@ class Telegram:
             age = max(0, int(time.time() - snapshot["time"]))
             lines = [f"Источник: {snapshot['source']} (testnet.binance.vision)",
                      f"Пара: {snapshot['symbol']} | Таймфрейм: {snapshot['interval']}",
+                     f"Рынок: {snapshot.get('market', 'spot')}",
                      f"Решение: {local_time(snapshot['time'])}, {age} сек. назад",
                      f"Пауза сейчас: {store.get('paused', True)}"]
             if "candle" in snapshot:
@@ -64,6 +65,8 @@ class Telegram:
             if age > max(120, 2 * max(5, int(os.getenv("POLL_SECONDS", "60")))):
                 lines.append("Решение устарело. Проверьте /status и работу программы.")
             lines.append("Это сохранённое решение; /signal не запускает сделку. Основной Binance может иметь другие свечи.")
+            if self.engine.market == "futures":
+                lines.append("Симуляция фьючерсов на спотовых ценах Testnet, не данные фьючерсной биржи.")
             return "\n".join(lines)
         if cmd == "/status":
             quote = store.get("quote")
@@ -78,7 +81,23 @@ class Telegram:
             error_text = "Последняя ошибка: нет"
             if error:
                 error_text = f"Последняя ошибка: {error['stage']}, {error['reason']}, {local_time(error['time'])}"
-            return (f"Режим: {self.engine.cfg.mode}, Spot\nПара: {self.engine.symbol}\n"
+            market_text = "Spot"
+            if self.engine.market == "futures":
+                position = store.get("position")
+                balance = store.get("futures_balance", 1000.0)
+                market_text = (f"Симуляция фьючерсов, isolated, {self.engine.leverage}×\n"
+                               f"Маржа на вход: {self.engine.cfg.amount:.2f} USDT\n"
+                               f"Номинал на вход: {self.engine.cfg.amount * self.engine.leverage:.2f} USDT\n"
+                               f"Стоп: {self.engine.cfg.stop:g}% цены, тейк: {self.engine.cfg.take:g}% цены\n"
+                               f"Оценка риска на стопе с комиссиями: ≈ {min(self.engine.cfg.amount, self.engine.cfg.amount * self.engine.leverage * (self.engine.cfg.stop/100 + 0.002)):.4f} USDT\n"
+                               f"Свободный виртуальный баланс: {balance:.4f} USDT\n"
+                               "Источник: спотовые цены Binance Testnet")
+                if position and quote:
+                    sign = 1 if position["direction"] == "LONG" else -1
+                    gross = sign * (quote["price"] - position["price"]) * position["quantity"]
+                    estimated = max(-position["margin"], gross-position["entry_fee"]-position["quantity"]*quote["price"]*0.001)
+                    market_text += f"\nРасчётный PnL при закрытии: {estimated:+.4f} USDT"
+            return (f"Режим: {self.engine.cfg.mode}, {market_text}\nПара: {self.engine.symbol}\n"
                     f"Пауза: {store.get('paused', True)}\nПозиция: {store.get('position')}\n"
                     f"Незавершённый ордер: {bool(store.get('pending'))}\n"
                     f"Убыток за UTC-день: {store.loss():.4f} USDT\n{quote_text}\n{error_text}")
@@ -88,9 +107,9 @@ class Telegram:
                 return "История сделок пуста. Бот ожидает сигнал стратегии."
             lines = ["Последние 10 сделок (время Баку):"]
             for stamp, symbol, side, quantity, price, pnl, mode in rows:
-                action = "Покупка" if side == "BUY" else "Продажа"
+                action = "Покупка" if side == "BUY" else "Продажа" if side == "SELL" else side
                 line = f"{local_time(stamp)} | {mode} | {action} {symbol}\n{quantity:.8f} × {price:.8f} USDT"
-                if side == "SELL":
+                if side == "SELL" or side.startswith("CLOSE"):
                     line += f" | Результат ≈ {pnl:+.4f} USDT"
                 lines.append(line)
             return "\n\n".join(lines)
@@ -103,14 +122,33 @@ class Telegram:
             self.engine.change_symbol(parts[1].upper())
             return "Пара выбрана: " + self.engine.symbol
         if cmd == "/mode":
-            return "Доступен Spot. Фьючерсы и маржинальная торговля ещё не реализованы. Режим paper/testnet задаётся при запуске."
+            if len(parts) == 1:
+                return f"Рынок: {self.engine.market}. Выбор: /mode spot или /mode futures (только симуляция)."
+            if len(parts) != 2:
+                return "Используйте /mode spot или /mode futures"
+            try:
+                self.engine.change_market(parts[1].lower())
+            except ValueError as exc:
+                return str(exc)
+            return (f"Выбран {self.engine.market}. Новые входы на паузе; /resume для включения."
+                    + (" Фьючерсы моделируются на спотовых ценах Testnet; /leverage 1..10." if self.engine.market == "futures" else ""))
+        if cmd == "/leverage":
+            if len(parts) == 1:
+                return f"Плечо симуляции фьючерсов: {self.engine.leverage}×. Выбор: /leverage 1..10. На споте плеча нет."
+            if len(parts) != 2 or parts[1] not in {str(n) for n in range(1, 11)}:
+                return "Используйте целое плечо: /leverage 1 .. /leverage 10"
+            try:
+                self.engine.change_leverage(int(parts[1]))
+            except ValueError as exc:
+                return str(exc)
+            return f"Плечо {self.engine.leverage}×. Новые входы на паузе. Проверьте /status, затем /resume."
         if cmd == "/close":
             store.set("paused", True)
             if store.get("pending"):
                 return "Закрытие заблокировано: требуется сверка ордера"
             if not store.get("position"):
                 return "Открытой позиции нет"
-            self.engine.trade("SELL", self.engine.exchange.price(self.engine.symbol), store.get("candle"))
+            self.engine.close_position(self.engine.exchange.price(self.engine.symbol), store.get("candle"))
             return "Позиция закрыта, новые входы запрещены"
         return "Неизвестная команда. /help"
 
@@ -151,7 +189,7 @@ def main():
         exchange.call("/api/v3/account", signed=True)
     telegram = Telegram(engine)
     interval = max(5, int(os.getenv("POLL_SECONDS", "60")))
-    log.info("Запуск: %s Spot %s. Пауза: %s", cfg.mode, engine.symbol, store.get("paused", True))
+    log.info("Запуск: %s %s %s. Пауза: %s", cfg.mode, engine.market, engine.symbol, store.get("paused", True))
     last_tick = 0
     while True:
         try:

@@ -2,6 +2,7 @@ import hashlib
 import hmac
 import json
 import os
+import math
 import sqlite3
 import time
 from dataclasses import dataclass
@@ -36,7 +37,7 @@ class Config:
                   os.getenv("DB_PATH", "data/bot.db"))
         if cfg.mode not in {"paper", "testnet"}:
             raise ValueError("Поддерживаются только paper и testnet; реальная торговля отключена")
-        if cfg.amount <= 0 or cfg.daily_loss <= 0 or not 0 < cfg.stop < 100 or cfg.take <= 0:
+        if not all(math.isfinite(v) for v in (cfg.amount, cfg.daily_loss, cfg.stop, cfg.take)) or cfg.amount <= 0 or cfg.daily_loss <= 0 or not 0 < cfg.stop < 100 or cfg.take <= 0:
             raise ValueError("Некорректные лимиты риска")
         return cfg
 
@@ -48,6 +49,7 @@ class Store:
         self.db.execute("CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         self.db.execute("CREATE TABLE IF NOT EXISTS trades (ts REAL, symbol TEXT, side TEXT, quantity REAL, price REAL, pnl REAL, mode TEXT)")
         self.db.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY, text TEXT NOT NULL)")
+        self.db.execute("CREATE TABLE IF NOT EXISTS futures_trades (ts REAL, symbol TEXT, direction TEXT, event TEXT, quantity REAL, price REAL, pnl REAL, leverage INTEGER, margin REAL, reason TEXT)")
         self.db.commit()
 
     def get(self, key, default=None):
@@ -60,11 +62,16 @@ class Store:
 
     def loss(self):
         start = int(time.time() // 86400) * 86400
-        return -self.db.execute("SELECT COALESCE(SUM(pnl),0) FROM trades WHERE ts>=?", (start,)).fetchone()[0]
+        spot = self.db.execute("SELECT COALESCE(SUM(pnl),0) FROM trades WHERE ts>=?", (start,)).fetchone()[0]
+        futures = self.db.execute("SELECT COALESCE(SUM(pnl),0) FROM futures_trades WHERE ts>=?", (start,)).fetchone()[0]
+        return -(spot + futures)
 
     def history(self, limit=10):
         return self.db.execute(
-            "SELECT ts,symbol,side,quantity,price,pnl,mode FROM trades ORDER BY rowid DESC LIMIT ?",
+            "SELECT ts,symbol,side,quantity,price,pnl,mode FROM ("
+            "SELECT ts,symbol,side,quantity,price,pnl,mode FROM trades UNION ALL "
+            "SELECT ts,symbol,event || ' ' || direction,quantity,price,pnl,"
+            "'paper futures ' || leverage || 'x' FROM futures_trades) ORDER BY ts DESC LIMIT ?",
             (limit,)).fetchall()
 
     def report_error(self, stage, exc):
@@ -140,7 +147,7 @@ def signal(prices):
     return signal_details(prices)["action"]
 
 
-def ai_allows(symbol, prices):
+def ai_allows(symbol, prices, direction="BUY", market="spot"):
     if os.getenv("AI_ENABLED", "false").lower() != "true":
         return True
     key, model = os.getenv("GEMINI_API_KEY"), os.getenv("GEMINI_MODEL")
@@ -148,7 +155,7 @@ def ai_allows(symbol, prices):
         return False
     try:
         result = request("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent",
-                         {"contents": [{"parts": [{"text": "Evaluate this experimental spot BUY. Return JSON {\"allow\":true|false}. Symbol: " + symbol + "; closed minute prices: " + json.dumps(prices)}]}],
+                         {"contents": [{"parts": [{"text": f"Evaluate this experimental {market} {direction}. Return JSON {{\"allow\":true|false}}. Symbol: " + symbol + "; closed minute prices: " + json.dumps(prices)}]}],
                           "generationConfig": {"responseMimeType": "application/json", "temperature": 0}},
                          {"x-goog-api-key": key})
         decision = json.loads(result["candidates"][0]["content"]["parts"][0]["text"])
@@ -166,6 +173,89 @@ class Engine:
             raise ValueError("Для другого режима/размера сделки используйте отдельную базу DB_PATH")
         store.set("identity", identity)
         self.symbol = store.get("symbol", cfg.symbol)
+        self.market = store.get("market", "spot")
+        self.leverage = store.get("leverage", 1)
+        if self.market not in {"spot", "futures"} or type(self.leverage) is not int or not 1 <= self.leverage <= 10:
+            raise ValueError("Некорректные настройки рынка или плеча")
+        if self.market == "futures" and cfg.mode != "paper":
+            raise ValueError("Фьючерсы доступны только в симуляции paper")
+
+    def require_flat(self):
+        if self.store.get("position") or self.store.get("pending"):
+            raise ValueError("Сначала закройте позицию и разрешите незавершённый ордер")
+
+    def change_market(self, market):
+        self.require_flat()
+        if market not in {"spot", "futures"}:
+            raise ValueError("Используйте /mode spot или /mode futures")
+        if market == "futures" and self.cfg.mode != "paper":
+            raise ValueError("Фьючерсы доступны только в симуляции paper")
+        self.store.set("market", market)
+        self.market = market
+        self.store.set("paused", True)
+        self.store.set("candle", None)
+        self.store.set("signal_snapshot", None)
+
+    def change_leverage(self, leverage):
+        self.require_flat()
+        if self.market != "futures" or self.cfg.mode != "paper":
+            raise ValueError("Плечо доступно только в симуляции фьючерсов")
+        if type(leverage) is not int or not 1 <= leverage <= 10:
+            raise ValueError("Плечо должно быть целым числом от 1 до 10")
+        self.leverage = leverage
+        self.store.set("leverage", leverage)
+        self.store.set("paused", True)
+
+    def close_position(self, price, candle=None, reason="Ручное закрытие"):
+        if self.store.get("pending"):
+            raise ValueError("Требуется сверка незавершённого ордера")
+        if self.market == "futures":
+            return self.futures_trade("CLOSE", price, candle, reason)
+        return self.trade("SELL", price, candle)
+
+    def futures_trade(self, action, price, candle, reason="Сигнал стратегии"):
+        if self.cfg.mode != "paper" or self.market != "futures":
+            raise ValueError("Доступна только симуляция фьючерсов")
+        if self.store.get("pending"):
+            raise ValueError("Требуется сверка ордера")
+        if action not in {"LONG", "SHORT", "CLOSE"} or not math.isfinite(price) or price <= 0:
+            raise ValueError("Некорректное действие или цена")
+        position = self.store.get("position")
+        balance = self.store.get("futures_balance", 1000.0)
+        if action != "CLOSE":
+            if position or self.store.get("paused", True) or self.store.loss() >= self.cfg.daily_loss:
+                return False
+            margin = self.cfg.amount
+            if balance < margin:
+                return False
+            quantity = margin * self.leverage / price
+            position = {"market": "futures", "direction": action, "price": price,
+                        "quantity": quantity, "cost": margin * self.leverage,
+                        "margin": margin, "leverage": self.leverage, "entry_fee": margin * self.leverage * 0.001}
+            balance -= margin
+            pnl, event, new_position = 0, "OPEN", position
+        else:
+            if not position:
+                return False
+            quantity, margin = position["quantity"], position["margin"]
+            sign = 1 if position["direction"] == "LONG" else -1
+            gross = sign * (price - position["price"]) * quantity
+            returned = max(0, margin + gross - position["entry_fee"] - quantity * price * 0.001)
+            pnl = returned - margin
+            balance += returned
+            event, new_position = "CLOSE", None
+        notice = (f"Симуляция фьючерсов: {event} {position['direction']} {self.symbol}\n"
+                  f"Изолированная маржа: {margin:.2f} USDT | {position['leverage']}×\n"
+                  f"Количество: {quantity:.8f} | Цена: {price:.8f} USDT\n{reason}")
+        if event == "CLOSE":
+            notice += f"\nРезультат с модельной комиссией: {pnl:+.4f} USDT"
+        with self.store.db:
+            self.store.db.execute("INSERT INTO futures_trades VALUES (?,?,?,?,?,?,?,?,?,?)",
+                                  (time.time(), self.symbol, position["direction"], event, quantity, price, pnl, position["leverage"], margin, reason))
+            for key, value in (("position", new_position), ("futures_balance", balance), ("candle", candle)):
+                self.store.db.execute("INSERT OR REPLACE INTO state VALUES (?,?)", (key, json.dumps(value)))
+            self.store.db.execute("INSERT INTO notifications(text) VALUES (?)", (notice,))
+        return True
 
     def change_symbol(self, symbol):
         if self.store.get("position") or self.store.get("pending"):
@@ -178,6 +268,8 @@ class Engine:
         self.store.set("signal_snapshot", None)
 
     def trade(self, side, price, candle):
+        if self.market != "spot":
+            raise ValueError("Для фьючерсов используется отдельный симулятор")
         position = self.store.get("position")
         if side == "BUY" and (position or self.store.loss() >= self.cfg.daily_loss):
             return
@@ -232,7 +324,7 @@ class Engine:
 
     def _snapshot(self, reason, **details):
         snapshot = {"symbol": self.symbol, "source": "Binance Spot Testnet",
-                    "interval": "1m", "time": time.time(), "reason": reason, **details}
+                    "market": self.market, "interval": "1m", "time": time.time(), "reason": reason, **details}
         self.store.set("signal_snapshot", snapshot)
         return snapshot
 
@@ -241,9 +333,23 @@ class Engine:
             self._snapshot("Незавершённый ордер блокирует торговлю; требуется сверка")
             raise RuntimeError("Незавершённый ордер: автоматическая торговля заблокирована до ручной сверки с биржей")
         price = self.exchange.price(self.symbol)
+        if not math.isfinite(price) or price <= 0:
+            raise ValueError("Некорректная котировка")
         self.store.set("quote", {"symbol": self.symbol, "price": price, "time": time.time()})
         position = self.store.get("position")
-        if position and (price <= position["price"] * (1-self.cfg.stop/100) or price >= position["price"] * (1+self.cfg.take/100)):
+        if self.market == "futures" and position:
+            sign = 1 if position["direction"] == "LONG" else -1
+            movement = sign * (price / position["price"] - 1) * 100
+            equity = position["margin"] - position["entry_fee"] + sign * (price-position["price"]) * position["quantity"]
+            maintenance = position["quantity"] * price * 0.006  # 0.5% maintenance + 0.1% exit fee, simplified.
+            reason = ("Модельная ликвидация" if equity <= maintenance else
+                      "Сработал стоп-лосс" if movement <= -self.cfg.stop else
+                      "Сработал тейк-профит" if movement >= self.cfg.take else None)
+            if reason:
+                self.futures_trade("CLOSE", price, self.store.get("candle"), reason)
+                self._snapshot(reason + "; позиция закрыта", action="CLOSE")
+                return
+        if self.market == "spot" and position and (price <= position["price"] * (1-self.cfg.stop/100) or price >= position["price"] * (1+self.cfg.take/100)):
             reason = "Сработал стоп-лосс" if price <= position["price"] * (1-self.cfg.stop/100) else "Сработал тейк-профит"
             self._snapshot(reason + "; отправка продажи", action="SELL")
             self.trade("SELL", price, self.store.get("candle"))
@@ -270,7 +376,9 @@ class Engine:
         if details["count"] < 31:
             reason = "Недостаточно закрытых свечей: нужно не менее 31"
         self._snapshot("Проверка условий сделки", candle=stamp, **details)
-        if action == "SELL" and position:
+        if self.market == "futures":
+            reason = self.futures_signal(action, price, stamp, position, [p for _, p in candles]) if action != "HOLD" else reason
+        elif action == "SELL" and position:
             self.trade("SELL", price, stamp)
             reason = "Пересечение вниз; позиция закрыта"
         elif action == "SELL":
@@ -289,3 +397,21 @@ class Engine:
                 reason = "Пересечение вверх; позиция открыта"
         self._snapshot(reason, candle=stamp, **details)
         self.store.set("candle", stamp)
+
+    def futures_signal(self, action, price, stamp, position, prices):
+        direction = "LONG" if action == "BUY" else "SHORT"
+        if position:
+            if position["direction"] == direction:
+                return f"Позиция {direction} уже открыта"
+            self.futures_trade("CLOSE", price, stamp, "Обратное пересечение")
+            return "Обратное пересечение; позиция закрыта. Новый вход — по следующему пересечению"
+        if self.store.get("paused", True):
+            return f"Вход {direction} пропущен: включена пауза"
+        if self.store.loss() >= self.cfg.daily_loss:
+            return f"Вход {direction} пропущен: достигнут дневной лимит убытка"
+        if self.store.get("futures_balance", 1000.0) < self.cfg.amount:
+            return "Недостаточно виртуального баланса для маржи"
+        if not ai_allows(self.symbol, prices, direction=direction, market="futures simulation on spot prices"):
+            return "ИИ-фильтр отклонил вход или недоступен"
+        self.futures_trade(direction, price, stamp)
+        return f"Открыта виртуальная позиция {direction}, плечо {self.leverage}×"
