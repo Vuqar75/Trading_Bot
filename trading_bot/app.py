@@ -80,10 +80,23 @@ class TelegramTransport:
     def flush(self, store):
         for row in store.db.execute('SELECT id,message FROM runtime_outbox ORDER BY id LIMIT 5').fetchall():
             label = getattr(store, 'delivery_label', '')
-            text = (label + '\n' if label else '') + row['message']
-            self.call('sendMessage', {'chat_id': self.owner, 'text': text[:4000]})
+            body = row['message']
+            cut = len(body)
+            if cut > 3500:
+                cut = body.rfind('\n', 0, 3500)
+                if cut < 100:
+                    cut = 3500
+            remaining = body[cut:].lstrip('\n')
+            text = (label + '\n' if label else '') + body[:cut]
+            if remaining:
+                text += '\n(Продолжение в следующем сообщении.)'
+            self.call('sendMessage', {'chat_id': self.owner, 'text': text})
             with store.transaction():
-                store.db.execute('DELETE FROM runtime_outbox WHERE id=?', (row['id'],))
+                if remaining:
+                    store.db.execute('UPDATE runtime_outbox SET message=? WHERE id=?', (remaining, row['id']))
+                else:
+                    store.db.execute('DELETE FROM runtime_outbox WHERE id=?', (row['id'],))
+
 
 
 class Application:

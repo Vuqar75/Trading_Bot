@@ -1126,3 +1126,42 @@ No real Telegram send or Cloud Shell restart occurred here. No strategy, timefra
 margin/leverage or funding accounting settings changed. Local agent should deploy
 both code checkouts with consistent backups, preserve prior pause/positions and
 restore paper entries only if previously enabled and healthy, per task above.
+
+## Readable user output batch — 2026-11-01
+
+User requested fixing all remaining unclear output and updating the running bot.
+Branch research/readable-user-output based on 1cad298d3067b05ef8cbdd8d3887a35488ac234e;
+includes trade receipts/relay from parent, not a competing partial branch.
+
+Spot history now groups per exit order with Baku time, executed qty, actual exit
+average, persisted entry/cost where known, fees, net and translated reason. Old
+missing entry prices remain explicitly unknown. /report: current calendar Baku day
+realized net and counts (partials labelled), separate cumulative result. /help
+explains commands. Error/block dictionaries/codes become safe Russian messages,
+unknown diagnostics are not dumped to user. Futures status/signal/history use
+Russian explanations, bounded quantities, translated reasons and stale warnings.
+Technical logs/health JSON stay machine-readable for diagnosis, not removed.
+
+Telegram delivery splits long responses into durable chunks rather than silently
+truncating at 4000. After acknowledged chunk only the remainder stays in outbox;
+unknown delivery can repeat a chunk, not a trading action.
+
+Spot monitor keeps cumulative compatibility JSON, adds daily_baku with true local
+day realized net and in-day sampled quality/DD. Daily fees/gross explicitly null:
+legacy fill schema lacks exact execution times; never substitute cumulative fees
+as daily or fabricate zero. Human daily-report.txt and report-DATE.txt separate
+Baku-day and cumulative sections. Closed-position legacy count is labelled as
+close records (may be partial). Monitor SQLite handles now close correctly and a
+successful cycle clears its stale error file. Existing sampling limitations remain.
+
+Linux suite 247/247 passed: 240 inherited +7 covering history, error privacy,
+Baku/UTC boundary vs cumulative PnL, unknown daily fees, text output, long delivery,
+futures reports, help. No financial/strategy settings, trade schema or positions
+changed. No real Telegram sends, Cloud Shell access or process restart here.
+
+gcloud executable/authenticated Cloud Shell SSH are absent in this executor.
+Running bot NOT updated here; user authorization is recorded but does not create
+connectivity. Updated authorized deployment task NOTIFICATION_DEPLOYMENT_TASK.md
+now targets this whole branch, both workers and monitor restart with same DBs.
+Local Codex should execute it, preserve pause states/positions, validate sends and
+write actual deployment evidence. Do not claim deployment until independently done.

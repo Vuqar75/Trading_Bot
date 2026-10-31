@@ -171,7 +171,7 @@ class IsolatedTests(unittest.TestCase):
         self.s.command(3,True,'/status')
         self.s.command(4,True,'/history')
         text='\n'.join(r[0] for r in self.s.db.execute('SELECT message FROM runtime_outbox'))
-        for word in ['Isolated','LONG','funding','Баку','Net']:
+        for word in ['Isolated','LONG','funding','Баку','Чистый результат']:
             self.assertIn(word,text)
 
     def test_wallet_operations_atomic_on_crash(self):

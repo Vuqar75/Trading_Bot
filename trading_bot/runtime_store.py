@@ -272,8 +272,11 @@ class RuntimeStore:
                 elif command == 'STALE_COMMAND':
                     message = 'Команда устарела. Проверьте /status и отправьте новую команду.'
                 elif command == '/history':
-                    rows = self.db.execute('SELECT ts,pnl,known FROM runtime_closes ORDER BY rowid DESC LIMIT 10').fetchall()
-                    message = '\n'.join(f"PnL {r['pnl']} USDT" + ('' if r['known'] else ' + неоценённая комиссия') for r in rows) or 'История закрытий пуста.'
+                    from .telegram_reports import history
+                    message = history(self)
+                elif command == '/report':
+                    from .telegram_reports import daily_report
+                    message = daily_report(self)
                 elif command == '/status':
                     from .telegram_reports import status
                     message = status(self)
@@ -297,6 +300,7 @@ class RuntimeStore:
                         self.set('signal', None)
                         message = 'Таймфрейм: ' + parts[1] + '. Входы остаются на паузе. Смена параметров — новый участок наблюдения; прежние результаты не сравнивайте как один фиксированный тест.'
                 else:
-                    message = '/status /signal /history /pause /resume /close /stop /timeframe. BTCUSDT Spot; плеча нет.'
+                    from .user_text import SPOT_HELP
+                    message = SPOT_HELP
                 self.notify(message)
             self.set('offset', update_id + 1)

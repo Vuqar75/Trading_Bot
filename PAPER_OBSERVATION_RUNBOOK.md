@@ -48,3 +48,22 @@ persists after restart; entries stay paused. It resets the cached signal, not
 trade history. Do not change the current 15m parameters during the fixed observation
 just to improve its results: record a new experiment segment if changing them.
 The report/timeframe update was deployed in Cloud Shell on 2026-11-01; see DEPLOYMENT_2026_11_01.md for the technical interruption and tests. No code hot-reload is assumed.
+
+
+## Читаемые отчёты (обновление research/readable-user-output)
+
+Telegram /report показывает реализованный результат за текущую календарную дату
+Баку, число ордеров с выходами (включая частичные) и накопленный результат.
+/history показывает время, фактические цены/комиссии, результат и причину выхода.
+Для старых записей без цены входа цена не выдумывается. /help объясняет команды.
+
+После перезапуска наблюдателя с сохранением observation.db появляются
+monitor/daily-report.txt и monitor/report-YYYY-MM-DD.txt. В них раздельные секции
+за день Баку и за всё время. JSON сохраняется как машинный формат. Суточные
+комиссии/gross не подтверждены старым журналом (у fills нет точного времени):
+показываются неизвестными; накопительные суммы остаются в накопительной секции.
+Количество закрытий в старом JSON поле closed_positions фактически считает записи
+закрытий, включая частичные; в человеческом отчёте это названо явно.
+Ошибка/код остаются в диагностике, в Telegram — русское объяснение без сырого словаря.
+Длинные сообщения доставляются частями; неопределённая доставка может повторить
+часть. Команды этого Telegram относятся к Spot, futures relay передаёт уведомления.

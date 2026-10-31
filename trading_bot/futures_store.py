@@ -199,7 +199,7 @@ class FuturesStore:
 
     def status_text(self):
         pos, quote = self.get('position'), self.get('quote')
-        lines = ['Виртуальные USD-M futures | BTCUSDT | Isolated',
+        lines = ['Виртуальные фьючерсы USD-M | BTCUSDT | Изолированная маржа (Isolated)',
                  f"Таймфрейм: {self.get('interval')} | Плечо: {self.get('leverage')}×",
                  f'Маржа на вход: {self.margin} USDT',
                  'Входы: '+('на паузе' if self.get('paused') else 'разрешены'),
@@ -207,19 +207,20 @@ class FuturesStore:
                  f"Реализованный PnL: {Decimal(self.get('pnl')):+.4f} USDT",
                  f"Макс. выборочная просадка: {Decimal(self.get('max_drawdown', '0')):.4f} USDT"]
         if pos:
-            lines += [f"Позиция: {pos['direction']}, {pos['quantity']} BTC, вход {Decimal(pos['entry']):.2f}",
-                      f"Funding позиции: {Decimal(pos['funding']):+.4f} USDT"]
+            lines += [f"Позиция: {pos['direction']}, {Decimal(pos['quantity']):.8f} BTC, вход {Decimal(pos['entry']):.2f}",
+                      f"Funding (начислено + / списано −): {Decimal(pos['funding']):+.4f} USDT"]
         else:
             lines.append('Позиция: нет')
         if quote:
             age = max(0, int(time.time()-quote['time']))
-            lines.append(f"Mark price: {Decimal(quote['price']):.2f}, {when(quote['time'])}, {age} сек. назад"+(' — УСТАРЕЛА' if age > 120 else ''))
+            lines.append(f"Расчётная цена фьючерса (mark): {Decimal(quote['price']):.2f}, {when(quote['time'])}, {age} сек. назад"+(' — УСТАРЕЛА' if age > 120 else ''))
             value = self.valuation(Decimal(quote['price']))
-            lines.append(f"Расчётная equity после модельного закрытия: {value['equity']:.4f} USDT")
+            lines.append(f"Средства с учётом модельного закрытия: {value['equity']:.4f} USDT")
             if pos:
-                lines.append(f"Открытый gross PnL по mark: {value['gross']:+.4f} USDT")
+                lines.append(f"Результат движения цены без комиссий: {value['gross']:+.4f} USDT")
+        from .user_text import error_text
         lines += ['Источник: публичный Binance USD-M, не спотовый Testnet',
-                  'Ошибка: '+str(self.get('error') or 'нет'), 'Сделки моделируются, на биржу не отправляются.']
+                  'Ошибка: '+error_text(self.get('error')), 'Сделки моделируются, на биржу не отправляются.']
         return '\n'.join(lines)
 
     def command(self, update_id, authorized, command, target=None):
@@ -254,9 +255,9 @@ class FuturesStore:
                     key = 'leverage' if cmd == '/leverage' else 'interval'
                     allowed = {str(i) for i in range(1, 11)} if key == 'leverage' else set(INTERVALS)
                     if len(parts) == 1:
-                        text = f"{cmd}: {self.get(key)}. Выбор: "+', '.join(sorted(allowed))
+                        text = f"{cmd}: {self.get(key)}. Выбор: "+', '.join(sorted(allowed, key=int) if key == 'leverage' else sorted(allowed))
                     elif len(parts) != 2 or parts[1] not in allowed:
-                        text = 'Некорректное значение: '+', '.join(sorted(allowed))
+                        text = 'Некорректное значение: '+', '.join(sorted(allowed, key=int) if key == 'leverage' else sorted(allowed))
                     elif not self.get('paused') or self.get('position') or self.get('close_request') or self.get('blocked'):
                         text = 'Сначала пауза и закрытие позиции; блокировок быть не должно.'
                     else:
@@ -271,15 +272,21 @@ class FuturesStore:
                     if not snap:
                         text = 'Проверка стратегии ещё не выполнена.'
                     else:
-                        text = f"SMA 10/30 | Futures BTCUSDT | {self.get('interval')}\nПроверка: {when(snap['time'])}\nСигнал: {snap['action']}\n{snap['reason']}"
+                        action = {'BUY': 'пересечение вверх — LONG', 'SELL': 'пересечение вниз — SHORT', 'HOLD': 'нового пересечения нет'}.get(snap['action'], 'не определён')
+                        age = max(0, int(time.time()-snap['time']))
+                        text = f"SMA 10/30 | Futures BTCUSDT | {self.get('interval')}\nПроверка: {when(snap['time'])}, {age} сек. назад\nСигнал: {action}\n{snap['reason']}"
+                        if age > 120:
+                            text += '\nДанные устарели.'
                         if 'fast' in snap:
                             text += f"\nSMA 10: {snap['old_fast']:.2f} → {snap['fast']:.2f}\nSMA 30: {snap['old_slow']:.2f} → {snap['slow']:.2f}"
                 elif cmd == '/history':
                     rows = self.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE' ORDER BY id DESC LIMIT 10").fetchall()
-                    text = '\n\n'.join(f"{when(r['ts'])} | {p['direction']} {p['leverage']}×\nNet {Decimal(p['net']):+.4f}, комиссии {Decimal(p['fees']):.4f}, funding {Decimal(p['funding']):+.4f} USDT | {p['reason']}" for r in rows for p in [json.loads(r['payload'])]) or 'История пуста.'
+                    from .trade_notifications import REASONS
+                    text = '\n\n'.join(f"{when(r['ts'])} | {p['direction']} {p['leverage']}×\nЧистый результат {Decimal(p['net']):+.4f}, комиссии {Decimal(p['fees']):.4f}, funding {Decimal(p['funding']):+.4f} USDT | {REASONS.get(p['reason'], 'Не указана')}" for r in rows for p in [json.loads(r['payload'])]) or 'История пуста.'
                 elif cmd == 'STALE_COMMAND':
                     text = 'Команда устарела, отправьте новую.'
                 else:
-                    text = '/status /signal /history /pause /stop /resume /close /leverage 1..10 /timeframe 1m|5m|15m|1h. Только futures paper isolated.'
+                    from .user_text import FUTURES_HELP
+                    text = FUTURES_HELP
                 self.notify(text)
             self.set('offset', update_id+1)

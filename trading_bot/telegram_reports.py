@@ -2,6 +2,7 @@
 import time
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
+from .user_text import block_text, error_text
 
 
 def when(stamp):
@@ -30,9 +31,11 @@ def status(store):
     lines += [f"Накопленный реализованный PnL: {Decimal(store.get('pnl')):+.4f} USDT",
               'Комиссии: учтены' if pos['fees_known'] else 'Есть неоценённые комиссии; PnL предварительный',
               f'Незавершённых ордеров: {len(store.pending())}',
-              'Блокировка: ' + (str(store.get('blocked')) if store.get('blocked') else 'нет')]
+              'Блокировка: ' + block_text(store.get('blocked'))]
     error = store.get('error')
-    lines.append('Последняя ошибка: ' + ((error.get('reason') or error.get('type', 'неизвестна')) if error else 'нет'))
+    lines.append('Последняя ошибка: ' + error_text(error))
+    if store.get('telegram_error'):
+        lines.append('Доставка Telegram: были ошибки; очередь сообщений сохранена.')
     return '\n'.join(lines)
 
 
@@ -66,3 +69,46 @@ def signal_report(store):
     lines += ['Новые входы сейчас: ' + ('на паузе' if store.get('paused') else 'разрешены'),
               'Это сигнал свечи, не подтверждение сделки. Исполнение смотрите в /status и /history.']
     return '\n'.join(lines)
+
+
+def history(store):
+    import json
+    from .trade_notifications import REASONS, fees_text
+    rows = store.db.execute("SELECT o.*,MAX(c.ts) AS closed_at,MIN(c.known) AS known FROM runtime_orders o JOIN runtime_closes c ON o.client_id=c.client_id GROUP BY o.client_id ORDER BY closed_at DESC LIMIT 10").fetchall()
+    if not rows:
+        return 'История выходов из позиции пуста.'
+    entries = ['Последние выходы LONG • BTCUSDT Spot (включая частичные):']
+    for row in rows:
+        fills = [json.loads(r[0]) for r in store.db.execute('SELECT payload FROM runtime_fills WHERE client_id=?', (row['client_id'],))]
+        qty = sum((Decimal(f['qty']) for f in fills), Decimal(0))
+        quote = sum((Decimal(f['quoteQty']) for f in fills), Decimal(0))
+        net = sum((Decimal(r[0]) for r in store.db.execute('SELECT pnl FROM runtime_closes WHERE client_id=?', (row['client_id'],))), Decimal(0))
+        fees = {}
+        for f in fills:
+            asset = f['commissionAsset']
+            fees[asset] = fees.get(asset, Decimal(0))+Decimal(f['commission'])
+        part = [when(row['closed_at']), f'Продано: {qty:.8f} BTC']
+        entry = store.get('entry_snapshot:'+row['client_id'])
+        if entry:
+            part.append(('Вход (себестоимость): ' if entry['is_cost'] else 'Цена входа: ')+f"{Decimal(entry['price']):.2f} USDT")
+        else:
+            part.append('Цена входа: в старой записи отдельно не сохранена')
+        if qty:
+            part.append(f'Средняя цена выхода: {quote/qty:.2f} USDT')
+        part += ['Комиссии продажи: '+fees_text(fees), f"Результат с учтёнными комиссиями: {net:+.4f} USDT"+(' (предварительный)' if not row['known'] else ''), 'Причина: '+REASONS.get(row['reason'], 'Не указана')]
+        entries.append('\n'.join(part))
+    return '\n\n'.join(entries)
+
+
+def daily_report(store, now=None):
+    now = time.time() if now is None else now
+    local = datetime.fromtimestamp(now, timezone(timedelta(hours=4)))
+    start = local.replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
+    rows = store.db.execute('SELECT client_id,pnl,known FROM runtime_closes WHERE ts>=? AND ts<=?', (start, now)).fetchall()
+    known = all(r['known'] for r in rows)
+    net = sum((Decimal(r['pnl']) for r in rows), Decimal(0))
+    return '\n'.join(['Spot • BTCUSDT • отчёт за '+local.strftime('%d.%m.%Y')+' (Баку)',
+        'Обновлён: '+when(now), f'Ордеров с выходами сегодня: {len({r["client_id"] for r in rows})} (возможны частичные)',
+        f'Реализованный результат сегодня: {net:+.4f} USDT'+(' (предварительный: не все комиссии оценены)' if not known else ''),
+        f"Результат за всё время: {Decimal(store.get('pnl')):+.4f} USDT",
+        'Суточные комиссии и просадка: см. отчёт наблюдателя; отсутствие данных не означает ноль.'])
