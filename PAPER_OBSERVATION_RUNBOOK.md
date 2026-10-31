@@ -39,7 +39,7 @@ tmux new-session -d -s trading-bot-paper-monitor 'exec python3 -B -m trading_bot
 
 Tmux переживает закрытие SSH, но не остановку/перезапуск самой Cloud Shell. В этом случае оба процесса и наблюдение останавливаются. Нужны ручная проверка, перезапуск на паузе и отдельное разрешение входов. Это не 24/7 сервер и не подтверждение прибыльности. Spot Testnet ключи и реальные средства не используются; будущий Testnet-прогон требует отдельной проверки и отдельных тестовых ключей.
 
-## Telegram update (requires deploying the reports/timeframe branch)
+## Telegram update (deployed 2026-11-01)
 
 /status and /signal become human-readable Russian reports. /timeframe shows the
 current period; /timeframe 1m, /timeframe 5m, /timeframe 15m or /timeframe 1h selects
@@ -47,4 +47,4 @@ it only on pause, flat and with no unresolved orders/gate/close request. Selecti
 persists after restart; entries stay paused. It resets the cached signal, not
 trade history. Do not change the current 15m parameters during the fixed observation
 just to improve its results: record a new experiment segment if changing them.
-No code hot-reload: the running Cloud Shell instance has not received this update.
+The report/timeframe update was deployed in Cloud Shell on 2026-11-01; see DEPLOYMENT_2026_11_01.md for the technical interruption and tests. No code hot-reload is assumed.

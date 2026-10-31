@@ -1082,3 +1082,9 @@ starting a separate paper instance. Separate Telegram bot needed for concurrent
 polling; otherwise headless with explicit paper signal. Deployment commands and
 limitations are in FUTURES_PAPER.md. Original goal remains multi-market; next
 stages Futures Testnet then cross/margin are not implemented by this delivery.
+
+## Cloud Shell separate paper deployment — 2026-11-01
+
+User authorized updating the running Spot and starting separate isolated Futures paper, not real/testnet orders or paid resources. Operational record and commands: [DEPLOYMENT_2026_11_01.md](DEPLOYMENT_2026_11_01.md). Code deployed from `6026e45de9cfa712e79e48d7db18e99df5bc8428`. Spot had no position, pending=0, not paused, 15m; paused at 00:46:00 Baku, stopped, separate SQLite backup integrity OK, updated and restarted with same database. Three readable /status, /signal and /timeframe reports generated using the new code on an isolated snapshot were acknowledged by the real Telegram send API; this does not test incoming commands. Healthy gates checked and prior enabled paper state restored at 00:50:22 Baku; observed paused=false. Monitor and backup verified; history remained 0 orders and 0 fills. Technical interruption lasted about 4 minutes 22 seconds.
+
+Futures demo and real public-data --once succeeded in Cloud Shell. Separate process started and activated 00:47:46 Baku with BTCUSDT, isolated paper, 1x, 10 virtual USDT margin, 15m, fee 5bps/side, slippage 2bps/side, maintenance 50bps. No separate futures Telegram credentials found in process environment, so no futures Telegram and no second Spot token poller. Separate DB and hourly backup session created, backup integrity OK. Both sessions verified after an SSH disconnect; Cloud Shell can still stop. Full suite 233/233 in both Cloud Shell and WSL. No paid resources, actual funds or network orders used. Funding and modelling limitations in FUTURES_PAPER.md remain.
