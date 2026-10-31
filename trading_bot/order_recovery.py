@@ -109,6 +109,8 @@ def recover(journal, exchange, fault=no_fault):
             if ((status=='NEW' and counts[intent.client_order_id]) or
                 (status in ('PARTIALLY_FILLED','FILLED') and not counts[intent.client_order_id])):
                 _mark(journal,'CONTRADICTION'); return 'contradiction'
+            if status == 'PARTIALLY_FILLED' and intent.request.quantity is not None and sum((amount(f.quantity) for f in fills if f.client_order_id == intent.client_order_id), Fraction(0)) >= amount(intent.request.quantity):
+                _mark(journal,'CONTRADICTION'); return 'contradiction'
             if status == 'FILLED' and intent.request.quantity is None:
                 return 'incomplete'  # Quote-budget fills require authoritative cumulative totals.
             if status == 'FILLED' and intent.request.quantity is not None:

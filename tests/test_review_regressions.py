@@ -1,5 +1,6 @@
 import unittest
-from test_offline_integration import IntegrationTests, GuardedSubmit
+import test_offline_integration as fixtures
+GuardedSubmit=fixtures.GuardedSubmit
 from trading_bot.offline_integration import OfflineIntegration
 from trading_bot.order_reconciliation import reconcile
 from trading_bot.order_journal import OrderJournal, DispatchBlocked
@@ -47,7 +48,9 @@ def underfill(t):
   result=a.recover(ex)
   return {'result':result,'requested_quantity':i.request.quantity,'executed_quantity':'0.0004','stored_status':a.journal.get(i.intent_id).exchange_status,'gate':tuple(a.journal.db.execute('SELECT blocked,reason FROM ledger_control').fetchone())}
 
-class ReviewRegressionTests(IntegrationTests):
+class ReviewRegressionTests(unittest.TestCase):
+ setUp=fixtures.IntegrationTests.setUp
+ exchange=fixtures.IntegrationTests.exchange
  def test_stale_close_is_not_sent(self):
   with self.assertRaises(DispatchBlocked): stale(self)
  def test_queue_does_not_stall_on_pause(self):
@@ -120,7 +123,7 @@ class ReviewRegressionTests(IntegrationTests):
  def test_claim_real_crash_before_and_after_commit(self):
   import os, subprocess, sys
   for point in ('claim_before_commit','claim_committed'):
-   fixture=IntegrationTests();fixture.setUp()
+   fixture=fixtures.IntegrationTests();fixture.setUp()
    try:
     with OfflineIntegration(fixture.idb,fixture.odb,owner='owner-fixture') as a:
      a.inbox.set_simulated_position('p',1);a.receive(1,'owner-fixture','CLOSE','p',1);a.process_close();i=a.close_intent('p',1)

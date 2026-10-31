@@ -62,7 +62,12 @@ class OfflineIntegration:
                 result='STALE_POSITION'
             else:
                 exists=db.execute('SELECT update_id FROM closing_intents WHERE target=? AND version=?',(row['target'],row['version'])).fetchone()
+                key='close-'+row['target']+'-'+str(row['version'])
                 if exists:
+                    prior=db.execute("SELECT state FROM orders.order_intents WHERE namespace='synthetic-close' AND business_key IN (?,?) ORDER BY CASE WHEN business_key=? THEN 0 ELSE 1 END LIMIT 1",(key,key+'-r'+str(exists['update_id']),key+'-r'+str(exists['update_id']))).fetchone()
+                    retry = prior is not None and prior['state']=='REJECTED'
+                else: retry=False
+                if exists and not retry:
                     result='CLOSE_ALREADY_PENDING'
                 else:
                     acct=db.execute('SELECT base_balance FROM orders.ledger_account WHERE singleton=1').fetchone()
@@ -77,14 +82,14 @@ class OfflineIntegration:
                         if not q or Fraction(q)!=quantity: raise ValueError('Position cannot be represented exactly')
                         from .order_journal import Request
                         request=Request('SELL',quantity=q)
-                        key='close-'+row['target']+'-'+str(row['version'])
+                        if retry: key += '-r'+str(row['update_id'])
                         if len(key)>100:raise ValueError('Fixture key too long')
                         intent_id=uuid.uuid4().hex; client_id='tb'+uuid.uuid4().hex
                         now=self.journal.clock_ms()
                         db.execute("INSERT INTO orders.order_intents(intent_id,namespace,business_key,client_order_id,symbol,side,quantity,quote_quantity,state,revision,created_ms,updated_ms) VALUES(?,?,?,?,?,?,?,?, 'PREPARED',0,?,?)",(intent_id,'synthetic-close',key,client_id,request.symbol,request.side,request.quantity,request.quote_quantity,now,now))
                         self.fault('intent_written')
                         db.execute("INSERT INTO orders.order_events(intent_id,revision,from_state,to_state,reason,ts_ms) VALUES (?,0,NULL,'PREPARED','INTENT_PREPARED',?)",(intent_id,now))
-                        db.execute('INSERT INTO closing_intents VALUES(?,?,?)',(row['target'],row['version'],row['update_id']))
+                        db.execute('INSERT INTO closing_intents VALUES(?,?,?) ON CONFLICT(target,version) DO UPDATE SET update_id=excluded.update_id',(row['target'],row['version'],row['update_id']))
                         result='CLOSE_INTENT_CREATED'
             db.execute("UPDATE updates SET status='DONE',result=? WHERE update_id=?",(result,row['update_id']))
             db.execute("INSERT INTO outbox VALUES(?,?,'PENDING')",(row['update_id'],result))
@@ -94,6 +99,10 @@ class OfflineIntegration:
 
     def close_intent(self,target,version):
         key='close-'+target+'-'+str(version)
+        update=self.inbox.db.execute('SELECT update_id FROM closing_intents WHERE target=? AND version=?',(target,version)).fetchone()
+        if update is not None:
+            retry=self.journal.db.execute("SELECT intent_id FROM order_intents WHERE namespace='synthetic-close' AND business_key=?",(key+'-r'+str(update[0]),)).fetchone()
+            if retry: return self.journal.get(retry[0])
         row=self.journal.db.execute("SELECT intent_id FROM order_intents WHERE namespace='synthetic-close' AND business_key=?",(key,)).fetchone()
         return self.journal.get(row[0]) if row else None
 
@@ -107,10 +116,15 @@ class OfflineIntegration:
                 if db.execute('SELECT paused FROM inbox_state').fetchone()[0]: raise DispatchBlocked('Entries paused')
                 if db.execute('SELECT 1 FROM orders.close_reservations WHERE active=1').fetchone(): raise DispatchBlocked('Exit unresolved')
                 if db.execute("SELECT 1 FROM orders.order_intents WHERE state IN ('SUBMITTING','UNKNOWN')").fetchone(): raise DispatchBlocked('Order unresolved')
+                import json
+                for buy in db.execute("SELECT intent_id,quantity,exchange_status FROM orders.order_intents WHERE side='BUY' AND state='ACKNOWLEDGED'"):
+                    if buy['exchange_status']!='FILLED' or buy['quantity'] is None: raise DispatchBlocked('Previous entry unresolved')
+                    total=sum((Fraction(json.loads(f[0])['quantity']) for f in db.execute('SELECT payload FROM orders.ledger_fills WHERE intent_id=?',(buy['intent_id'],))),Fraction(0))
+                    if total != Fraction(buy['quantity']): raise DispatchBlocked('Previous entry not accounted')
             else:
                 if row['namespace'] != 'synthetic-close': raise DispatchBlocked('Exit lacks position binding')
                 if db.execute("SELECT 1 FROM orders.order_intents WHERE side='BUY' AND (state IN ('SUBMITTING','UNKNOWN') OR (state='ACKNOWLEDGED' AND exchange_status != 'FILLED'))").fetchone(): raise DispatchBlocked('Entry can still change position')
-                binding=db.execute("SELECT c.target,c.version FROM closing_intents c WHERE ? = 'close-' || c.target || '-' || c.version",(row['business_key'],)).fetchone()
+                binding=db.execute("SELECT c.target,c.version FROM closing_intents c WHERE ? = 'close-' || c.target || '-' || c.version OR ? = 'close-' || c.target || '-' || c.version || '-r' || c.update_id",(row['business_key'],row['business_key'])).fetchone()
                 state=db.execute('SELECT position,position_version FROM inbox_state').fetchone()
                 if binding is None or tuple(binding)!=tuple(state): raise DispatchBlocked('Position changed or unknown')
                 balance=Fraction(db.execute('SELECT base_balance FROM orders.ledger_account').fetchone()[0])
