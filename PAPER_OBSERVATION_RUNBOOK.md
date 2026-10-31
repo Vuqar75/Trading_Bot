@@ -23,7 +23,7 @@ kill -INT "$(tmux list-panes -t =trading-bot-paper-observation -F '#{pane_pid}')
 
 ```bash
 cd ~/Trading_Bot_paper_observation
-tmux new-session -d -s trading-bot-paper-observation 'exec python3 -B deploy/cloud_paper_launch.py >> ~/Trading_Bot_paper_state/runtime.log 2>&1'
+tmux new-session -d -s trading-bot-paper-observation 'exec env FUTURES_OUTBOX_DB="$HOME/Trading_Bot_futures_state/futures-paper.db" python3 -B deploy/cloud_paper_launch.py >> "$HOME/Trading_Bot_paper_state/runtime.log" 2>&1'
 ```
 
 После проверки здоровья и сверки отдельная новая команда владельца `/resume` или, только для paper и после проверки `blocked`/pending, `kill -USR1 "$(tmux list-panes -t =trading-bot-paper-observation -F '#{pane_pid}')"` разрешает входы. После сбоя или перезапуска входы не возобновляются автоматически. `/pause` запрещает новые входы, не закрывая позицию. Риск-контроль существующей позиции продолжается.
