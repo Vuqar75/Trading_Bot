@@ -161,9 +161,11 @@ class OrderJournal:
     def _initialize(self):
         with self._transaction():
             tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
+            tables.discard("close_reservations")
             if tables:
                 if tables not in ({"order_schema", "order_intents", "order_events"},
-                                  {"order_schema", "order_intents", "order_events", "ledger_control", "ledger_fills", "ledger_account"}):
+                                  {"order_schema", "order_intents", "order_events", "ledger_control", "ledger_fills", "ledger_account"},
+                                  {"order_schema", "order_intents", "order_events", "ledger_control", "ledger_fills", "ledger_account", "recovery_generation"}):
                     raise JournalError("Refusing a foreign database; use a dedicated test journal")
                 rows = self.db.execute("SELECT version FROM order_schema WHERE singleton=1").fetchall()
                 if len(rows) != 1 or rows[0][0] != self.VERSION:
@@ -245,7 +247,7 @@ class OrderJournal:
         self.fault(FaultPoint.INTENT_COMMITTED)
         return self.get(intent_id)
 
-    def _transition(self, intent_id, expected, target, reason, *, receipt=None, claim=False):
+    def _transition(self, intent_id, expected, target, reason, *, receipt=None, claim=False, expected_revision=None):
         written = FaultPoint.CLAIM_WRITTEN if claim else FaultPoint.RESULT_WRITTEN
         before_commit = FaultPoint.CLAIM_BEFORE_COMMIT if claim else FaultPoint.RESULT_BEFORE_COMMIT
         after_commit = FaultPoint.CLAIM_COMMITTED if claim else FaultPoint.RESULT_COMMITTED
@@ -255,6 +257,12 @@ class OrderJournal:
                 has_ledger = self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ledger_control'").fetchone()
                 if has_ledger and self.db.execute("SELECT blocked FROM ledger_control WHERE singleton=1").fetchone()[0]:
                     raise DispatchBlocked("Accounting requires review")
+            if expected_revision is not None and intent.revision != expected_revision:
+                raise DispatchBlocked("Intent changed during reconciliation")
+            if receipt and intent.state == State.ACKNOWLEDGED and target == State.ACKNOWLEDGED:
+                ranks = {'NEW': 0, 'PARTIALLY_FILLED': 1, 'FILLED': 2}
+                if intent.exchange_order_id != receipt.exchange_order_id or intent.exchange_status not in ranks or receipt.status not in ranks or ranks[receipt.status] <= ranks[intent.exchange_status]:
+                    raise DispatchBlocked("Invalid or stale exchange status")
             if intent.state != expected:
                 raise DispatchBlocked("Intent state does not permit this transition")
             now = self.clock_ms()
@@ -262,6 +270,8 @@ class OrderJournal:
                 exchange_order_id=?,exchange_status=? WHERE intent_id=? AND revision=?""",
                 (target.value,now,receipt.exchange_order_id if receipt else None,
                  receipt.status if receipt else None,intent_id,intent.revision))
+            if target == State.REJECTED and self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='close_reservations'").fetchone():
+                self.db.execute('UPDATE close_reservations SET active=0 WHERE intent_id=?',(intent_id,))
             self.fault(written)
             self.db.execute("""INSERT INTO order_events
                 (intent_id,revision,from_state,to_state,reason,ts_ms) VALUES (?,?,?,?,?,?)""",
@@ -294,8 +304,8 @@ class OfflineOrderCoordinator:
             raise ValueError("This block only accepts an explicit simulator")
         self.journal, self.simulator, self.fault = journal, simulator, fault
 
-    def dispatch(self, intent_id):
-        intent = self.journal.claim(intent_id)  # Commit completes BEFORE submit.
+    def dispatch(self, intent_id, claim=None):
+        intent = (claim or self.journal.claim)(intent_id)  # Commit completes BEFORE submit.
         try:
             receipt = self.simulator.submit(intent)
         except Exception:

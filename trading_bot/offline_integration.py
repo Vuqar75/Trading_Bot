@@ -28,6 +28,7 @@ class OfflineIntegration:
                 if self.journal.db.execute('PRAGMA journal_mode').fetchone()[0].lower() != 'delete': raise ValueError('Rollback journal required')
                 self.inbox.db.execute('ATTACH DATABASE ? AS orders',(str(order_path),))
                 self.inbox.db.execute('PRAGMA orders.synchronous=FULL')
+                self.inbox.db.execute("CREATE TABLE IF NOT EXISTS orders.close_reservations(intent_id TEXT PRIMARY KEY, target TEXT NOT NULL, version INTEGER NOT NULL, quantity TEXT NOT NULL, active INTEGER NOT NULL CHECK(active IN (0,1)))")
             except BaseException:
                 self.inbox.close(); raise
         except BaseException:
@@ -49,7 +50,13 @@ class OfflineIntegration:
         with self.inbox.transaction():
             row=db.execute("SELECT * FROM updates WHERE status='PENDING' ORDER BY update_id LIMIT 1").fetchone()
             if row is None:return None
-            if row['command'] != 'CLOSE': raise ValueError('Only CLOSE is integrated in this fixture')
+            if row['command'] != 'CLOSE':
+                cmd=row['command']
+                result='ENTRIES_ALLOWED' if cmd == 'RESUME' else 'ENTRIES_PAUSED'
+                db.execute('UPDATE inbox_state SET paused=? WHERE singleton=1',(int(cmd != 'RESUME'),))
+                db.execute("UPDATE updates SET status='DONE',result=? WHERE update_id=?",(result,row['update_id']))
+                db.execute("INSERT INTO outbox VALUES(?,?,'PENDING')",(row['update_id'],result))
+                return row['update_id']
             state=db.execute('SELECT position,position_version FROM inbox_state').fetchone()
             if (row['target'],row['version']) != tuple(state):
                 result='STALE_POSITION'
@@ -90,8 +97,46 @@ class OfflineIntegration:
         row=self.journal.db.execute("SELECT intent_id FROM order_intents WHERE namespace='synthetic-close' AND business_key=?",(key,)).fetchone()
         return self.journal.get(row[0]) if row else None
 
+    def _claim(self,intent_id):
+        db=self.inbox.db
+        with self.inbox.transaction():
+            row=db.execute('SELECT * FROM orders.order_intents WHERE intent_id=?',(intent_id,)).fetchone()
+            if row is None or row['state'] != 'PREPARED': raise DispatchBlocked('Intent not prepared')
+            if db.execute('SELECT blocked FROM orders.ledger_control').fetchone()[0]: raise DispatchBlocked('Recovery required')
+            if row['side']=='BUY':
+                if db.execute('SELECT paused FROM inbox_state').fetchone()[0]: raise DispatchBlocked('Entries paused')
+                if db.execute('SELECT 1 FROM orders.close_reservations WHERE active=1').fetchone(): raise DispatchBlocked('Exit unresolved')
+                if db.execute("SELECT 1 FROM orders.order_intents WHERE state IN ('SUBMITTING','UNKNOWN')").fetchone(): raise DispatchBlocked('Order unresolved')
+            else:
+                if row['namespace'] != 'synthetic-close': raise DispatchBlocked('Exit lacks position binding')
+                if db.execute("SELECT 1 FROM orders.order_intents WHERE side='BUY' AND (state IN ('SUBMITTING','UNKNOWN') OR (state='ACKNOWLEDGED' AND exchange_status != 'FILLED'))").fetchone(): raise DispatchBlocked('Entry can still change position')
+                binding=db.execute("SELECT c.target,c.version FROM closing_intents c WHERE ? = 'close-' || c.target || '-' || c.version",(row['business_key'],)).fetchone()
+                state=db.execute('SELECT position,position_version FROM inbox_state').fetchone()
+                if binding is None or tuple(binding)!=tuple(state): raise DispatchBlocked('Position changed or unknown')
+                balance=Fraction(db.execute('SELECT base_balance FROM orders.ledger_account').fetchone()[0])
+                if Fraction(row['quantity']) != balance or balance<=0: raise DispatchBlocked('Position quantity changed or unknown')
+                if db.execute('SELECT 1 FROM orders.close_reservations WHERE active=1').fetchone(): raise DispatchBlocked('Existing exit reserved')
+                if db.execute("SELECT 1 FROM orders.order_intents WHERE side='SELL' AND intent_id != ? AND (state IN ('SUBMITTING','UNKNOWN') OR (state='ACKNOWLEDGED' AND exchange_status != 'FILLED'))",(intent_id,)).fetchone(): raise DispatchBlocked('Previous exit unresolved')
+                # A terminal-looking status alone does not establish settled fills.
+                import json
+                for buy in db.execute("SELECT intent_id,quantity FROM orders.order_intents WHERE side='BUY' AND state='ACKNOWLEDGED' AND exchange_status='FILLED'"):
+                    if buy['quantity'] is None: raise DispatchBlocked('Entry totals not proven')
+                    accounted=sum((Fraction(json.loads(f[0])['quantity']) for f in db.execute('SELECT payload FROM orders.ledger_fills WHERE intent_id=?',(buy['intent_id'],))), Fraction(0))
+                    if accounted != Fraction(buy['quantity']): raise DispatchBlocked('Entry not settled')
+                for previous in db.execute("SELECT intent_id,quantity FROM orders.order_intents WHERE side='SELL' AND intent_id != ? AND state='ACKNOWLEDGED' AND exchange_status='FILLED'",(intent_id,)):
+                    accounted=sum((Fraction(json.loads(f[0])['quantity']) for f in db.execute('SELECT payload FROM orders.ledger_fills WHERE intent_id=?',(previous['intent_id'],))), Fraction(0))
+                    if accounted != Fraction(previous['quantity']): raise DispatchBlocked('Previous exit not settled')
+                db.execute('INSERT INTO orders.close_reservations VALUES(?,?,?,?,1)',(intent_id,binding['target'],binding['version'],row['quantity']))
+                self.fault('reservation_written')
+            now=self.journal.clock_ms()
+            db.execute("UPDATE orders.order_intents SET state='SUBMITTING',revision=revision+1,updated_ms=? WHERE intent_id=? AND revision=?",(now,intent_id,row['revision']))
+            db.execute("INSERT INTO orders.order_events(intent_id,revision,from_state,to_state,reason,ts_ms) VALUES(?,?,'PREPARED','SUBMITTING','SUBMIT_STARTED',?)",(intent_id,row['revision']+1,now))
+            self.fault('claim_before_commit')
+        self.fault('claim_committed')
+        return self.journal.get(intent_id)
+
     def dispatch(self,intent_id,exchange):
-        return OfflineOrderCoordinator(self.journal,exchange).dispatch(intent_id)
+        return OfflineOrderCoordinator(self.journal,exchange).dispatch(intent_id,claim=self._claim)
 
     def recover(self,exchange):
         return recover(self.journal,exchange)

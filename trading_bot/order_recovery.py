@@ -37,8 +37,9 @@ def _rows(db, table, order):
 
 
 def _fingerprint(db):
+    extra = (('close_reservations','intent_id'),) if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='close_reservations'").fetchone() else ()
     return tuple(_rows(db,t,k) for t,k in [('order_intents','intent_id'),('order_events','event_id'),
-                 ('ledger_fills','trade_id'),('ledger_account','singleton'),('ledger_control','singleton')])
+                 ('ledger_fills','trade_id'),('ledger_account','singleton'),('ledger_control','singleton'),('recovery_generation','singleton')] + list(extra))
 
 
 def _mark(journal, reason):
@@ -47,8 +48,11 @@ def _mark(journal, reason):
         if row is None: raise ValueError('Ledger not initialized')
         if row['reason'] not in ('', 'RECOVERY_INCOMPLETE') or (row['blocked'] and not row['reason']):
             return False
+        journal.db.execute('CREATE TABLE IF NOT EXISTS recovery_generation(singleton INTEGER PRIMARY KEY CHECK(singleton=1), generation INTEGER NOT NULL)')
+        journal.db.execute('INSERT OR IGNORE INTO recovery_generation VALUES(1,0)')
+        journal.db.execute('UPDATE recovery_generation SET generation=generation+1 WHERE singleton=1')
         journal.db.execute('UPDATE ledger_control SET blocked=1,reason=? WHERE singleton=1',(reason,))
-        return True
+        return journal.db.execute('SELECT generation FROM recovery_generation').fetchone()[0]
 
 
 def recover(journal, exchange, fault=no_fault):
@@ -58,7 +62,8 @@ def recover(journal, exchange, fault=no_fault):
     and periodically; no background thread or live trading integration is started.
     """
     if not isinstance(exchange, RecoveryExchange): raise ValueError('Simulation only')
-    if not _mark(journal,'RECOVERY_INCOMPLETE'): return 'contradiction'
+    generation = _mark(journal,'RECOVERY_INCOMPLETE')
+    if not generation: return 'contradiction'
     fault('gate_committed')
     baseline=_fingerprint(journal.db)
     proof=_exchange_proof(exchange)
@@ -104,6 +109,12 @@ def recover(journal, exchange, fault=no_fault):
             if ((status=='NEW' and counts[intent.client_order_id]) or
                 (status in ('PARTIALLY_FILLED','FILLED') and not counts[intent.client_order_id])):
                 _mark(journal,'CONTRADICTION'); return 'contradiction'
+            if status == 'FILLED' and intent.request.quantity is None:
+                return 'incomplete'  # Quote-budget fills require authoritative cumulative totals.
+            if status == 'FILLED' and intent.request.quantity is not None:
+                executed = sum((amount(f.quantity) for f in fills if f.client_order_id == intent.client_order_id), Fraction(0))
+                if executed != amount(intent.request.quantity):
+                    _mark(journal,'CONTRADICTION'); return 'contradiction'
             _,result=reconcile(shadow,exchange,intent.intent_id)
             if result not in ('recorded','already_recorded'): return 'incomplete'
         source={f.trade_id:json.dumps(asdict(f),sort_keys=True,separators=(',',':')) for f in fills}
@@ -146,7 +157,7 @@ def recover(journal, exchange, fault=no_fault):
         # snapshot is immutable; a real adapter needs an equivalent contract.
         if _exchange_proof(exchange)!=proof: return 'incomplete'
         with journal._transaction():
-            if _fingerprint(journal.db)!=baseline: return 'incomplete'
+            if journal.db.execute('SELECT generation FROM recovery_generation').fetchone()[0] != generation or _fingerprint(journal.db)!=baseline: return 'incomplete'
             for row in memory.execute('SELECT * FROM order_intents'):
                 journal.db.execute('UPDATE order_intents SET state=?,revision=?,updated_ms=?,exchange_order_id=?,exchange_status=? WHERE intent_id=?',
                                    (row['state'],row['revision'],row['updated_ms'],row['exchange_order_id'],row['exchange_status'],row['intent_id']))
@@ -160,6 +171,8 @@ def recover(journal, exchange, fault=no_fault):
                     journal.db.execute('INSERT INTO ledger_fills VALUES(?,?,?,?)',tuple(row))
             row=memory.execute('SELECT * FROM ledger_account WHERE singleton=1').fetchone()
             journal.db.execute('UPDATE ledger_account SET quote_balance=?,base_balance=?,cost=?,pnl=?,pending_fees=?,last_sequence=? WHERE singleton=1',tuple(row)[1:])
+            if journal.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='close_reservations'").fetchone():
+                journal.db.execute("UPDATE close_reservations SET active=0 WHERE intent_id IN (SELECT intent_id FROM order_intents WHERE state='ACKNOWLEDGED' AND exchange_status='FILLED')")
             journal.db.execute("UPDATE ledger_control SET blocked=0,reason='' WHERE singleton=1")
             fault('inside_final_commit')
         fault('after_final_commit')

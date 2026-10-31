@@ -35,11 +35,11 @@ class IntegrationTests(unittest.TestCase):
   self.idb=self.root/'inbox.db';self.odb=self.root/'orders.db';self.edb=self.root/'exchange.db';self.rdb=self.root/'responses.db'
   self.sim=SimulatedExchange(self.edb)
   with OrderJournal(self.odb) as j:
-   initialize(j,'1000');i=j.prepare('fixture','entry',Request('BUY',quote_quantity='100')); self.entry=OfflineOrderCoordinator(j,self.sim).dispatch(i.intent_id)
+   initialize(j,'1000');i=j.prepare('fixture','entry',Request('BUY',quantity='0.001')); self.entry=OfflineOrderCoordinator(j,self.sim).dispatch(i.intent_id)
    self.entry_fill=Fill('entry-fill',self.entry.exchange_order_id,self.entry.client_order_id,1,'BUY','0.001','50','USDT','0')
    self.assertEqual(reconcile_fills(j,SimulatedFills([self.entry_fill]),self.entry.intent_id),'recorded')
  def exchange(self,engine,close=None):
-  first=self.sim.query(self.entry.client_order_id);first['status']='PARTIALLY_FILLED';orders={self.entry.client_order_id:first};fills=[self.entry_fill]
+  first=self.sim.query(self.entry.client_order_id);first['status']='FILLED';orders={self.entry.client_order_id:first};fills=[self.entry_fill]
   quote,base='950','0.001'
   if close:
    obs=self.sim.query(close.client_order_id);obs['status']='PARTIALLY_FILLED';orders[close.client_order_id]=obs
@@ -86,7 +86,7 @@ class IntegrationTests(unittest.TestCase):
  def test_hard_crash_after_exchange_acceptance(self):
   with OfflineIntegration(self.idb,self.odb,owner='owner-fixture') as app:
    app.inbox.set_simulated_position('p',1);app.receive(1,'owner-fixture','CLOSE','p',1);app.process_close();order=app.close_intent('p',1)
-  script='''import os,sys\nfrom trading_bot.offline_integration import OfflineIntegration\nfrom trading_bot.order_simulator import SimulatedExchange\nfrom trading_bot.order_recovery import RecoveryExchange\nfrom trading_bot.fill_ledger import Fill\ni,o,e,ec,eo,close=sys.argv[1:]\na=Fill("entry-fill",eo,ec,1,"BUY","0.001","50","USDT","0")\nsim=SimulatedExchange(e)\nobs=sim.query(ec);obs["status"]="PARTIALLY_FILLED"\nwith OfflineIntegration(i,o,owner="owner-fixture") as app:\n assert app.recover(RecoveryExchange("pre",[a],{ec:obs},"950","0.001"))=="complete"\n def die(p):\n  if p=="simulator_after_submit":os._exit(88)\n app.dispatch(close,SimulatedExchange(e,fault=die))\n'''
+  script='''import os,sys\nfrom trading_bot.offline_integration import OfflineIntegration\nfrom trading_bot.order_simulator import SimulatedExchange\nfrom trading_bot.order_recovery import RecoveryExchange\nfrom trading_bot.fill_ledger import Fill\ni,o,e,ec,eo,close=sys.argv[1:]\na=Fill("entry-fill",eo,ec,1,"BUY","0.001","50","USDT","0")\nsim=SimulatedExchange(e)\nobs=sim.query(ec);obs["status"]="FILLED"\nwith OfflineIntegration(i,o,owner="owner-fixture") as app:\n assert app.recover(RecoveryExchange("pre",[a],{ec:obs},"950","0.001"))=="complete"\n def die(p):\n  if p=="simulator_after_submit":os._exit(88)\n app.dispatch(close,SimulatedExchange(e,fault=die))\n'''
   p=subprocess.run([sys.executable,'-B','-c',script,str(self.idb),str(self.odb),str(self.edb),self.entry.client_order_id,self.entry.exchange_order_id,order.intent_id])
   self.assertEqual(p.returncode,88)
   with OfflineIntegration(self.idb,self.odb,owner='owner-fixture') as app:

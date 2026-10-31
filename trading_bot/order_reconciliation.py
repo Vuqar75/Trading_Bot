@@ -43,13 +43,13 @@ def reconcile(journal, simulator, intent_id):
             return journal.get(intent_id), 'unresolved'
         try:
             saved = journal._transition(intent_id, State.ACKNOWLEDGED, State.ACKNOWLEDGED,
-                                        'RESPONSE_RECORDED', receipt=receipt)
+                                        'RESPONSE_RECORDED', receipt=receipt, expected_revision=intent.revision)
         except DispatchBlocked:
             return journal.get(intent_id), 'unresolved'
         return saved, 'recorded'
     try:
         saved = journal._transition(intent_id, intent.state, State.ACKNOWLEDGED,
-                                    'RESPONSE_RECORDED', receipt=receipt)
+                                    'RESPONSE_RECORDED', receipt=receipt, expected_revision=intent.revision)
     except DispatchBlocked:
         return journal.get(intent_id), 'unresolved'
     return saved, 'recorded'
