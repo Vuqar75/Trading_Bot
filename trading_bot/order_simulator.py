@@ -46,3 +46,14 @@ class SimulatedExchange:
         with self._connect() as db:
             total,accepted = db.execute("SELECT COUNT(*),COALESCE(SUM(accepted),0) FROM simulator_calls").fetchone()
             return {"submissions":total,"accepted":accepted}
+
+    def query(self, client_order_id):
+        """Read-only simulated lookup; absence is not evidence of non-submission."""
+        with self._connect() as db:
+            rows = db.execute("SELECT id,client_order_id,side,quantity,quote_quantity FROM simulator_calls WHERE client_order_id=? AND accepted=1", (client_order_id,)).fetchall()
+        if len(rows) != 1:
+            return None
+        ident, client, side, quantity, quote = rows[0]
+        return {"client_order_id": client, "exchange_order_id": "sim-" + str(ident),
+                "symbol": "BTCUSDT", "side": side, "quantity": quantity,
+                "quote_quantity": quote, "status": "NEW"}
