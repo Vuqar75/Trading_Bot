@@ -67,6 +67,22 @@ class Inbox:
     def __enter__(self): return self
     def __exit__(self,*args): self.close()
 
+    def receive_rejected(self, update_id, fingerprint):
+        if type(update_id) is not int or not 0 <= update_id < 9223372036854775807:
+            raise ValueError('Invalid synthetic update')
+        with self.transaction():
+            offset=self.db.execute('SELECT next_offset FROM inbox_state').fetchone()[0]
+            row=self.db.execute('SELECT authorized,command,target,version,status FROM updates WHERE update_id=?',(update_id,)).fetchone()
+            if row:
+                if tuple(row)!=(1,'REJECTED',fingerprint,0,'REJECTED'): raise Conflict('Update payload conflict')
+            else:
+                if update_id < offset: raise Conflict('Unknown old update; manual review required')
+                self.db.execute("INSERT INTO updates VALUES(?,1,'REJECTED',?,0,'REJECTED','INVALID_INPUT')",(update_id,fingerprint))
+            self.fault('receive_written')
+            self.db.execute('UPDATE inbox_state SET next_offset=? WHERE singleton=1',(max(offset,update_id+1),))
+            self.fault('receive_before_commit')
+        self.fault('receive_committed')
+
     def receive_batch(self,updates, on_new=None, on_duplicate=None):
         """Commit complete, already-authenticated fixture batch before advancing offset.
 

@@ -6,7 +6,7 @@ import os
 import uuid
 from decimal import Decimal, localcontext
 from fractions import Fraction
-from .telegram_inbox import Inbox, Update, Conflict
+from .telegram_inbox import Inbox, Update, Conflict, _validate
 from .order_journal import OrderJournal, OfflineOrderCoordinator, DispatchBlocked
 from .order_recovery import _mark, recover
 
@@ -56,9 +56,19 @@ class OfflineIntegration:
         if not isinstance(sender,str): raise ValueError('Invalid synthetic sender')
         allowed=hmac.compare_digest(sender,self.owner)
         update=Update(update_id,True,command,target,version) if allowed else Update(update_id,False)
-        if allowed and command == 'RETRY_CLOSE':
-            if not isinstance(rejected_intent,str) or not rejected_intent or len(rejected_intent)>100: raise ValueError('Retry requires rejected intent')
-        elif rejected_intent: raise ValueError('Unexpected rejection reference')
+        if not allowed:
+            self.inbox.receive_batch([update]); return
+        if type(update_id) is not int or not 0 <= update_id < 9223372036854775807:
+            raise ValueError('Invalid synthetic update')
+        try:
+            _validate(update)
+            if command == 'RETRY_CLOSE':
+                if not isinstance(rejected_intent,str) or not rejected_intent or len(rejected_intent)>100: raise ValueError('Retry requires rejected intent')
+            elif rejected_intent: raise ValueError('Unexpected rejection reference')
+        except (ValueError, TypeError):
+            payload=json.dumps([command,target,version,rejected_intent],ensure_ascii=True,separators=(',',':'))
+            self.inbox.receive_rejected(update_id,hashlib.sha256(payload.encode('ascii')).hexdigest())
+            return
         def duplicate(u):
             if u.authorized and u.command == 'RETRY_CLOSE':
                 saved=self.inbox.db.execute('SELECT rejected_intent FROM orders.retry_confirmations WHERE update_id=?',(u.update_id,)).fetchone()
