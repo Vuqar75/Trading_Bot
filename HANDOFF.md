@@ -1001,3 +1001,31 @@ At inspection no matching Python process or Python running in the old checkout w
 User authorized automatic paper BTCUSDT 15m entries up to 10 virtual USDT and use of protected existing Telegram configuration. Started the separate app in Cloud Shell tmux `trading-bot-paper-observation`, activated at **2026-10-31 15:54:31 Asia/Baku**. DB `~/Trading_Bot_paper_state/runtime-paper.db`, checkout `~/Trading_Bot_paper_observation`. Prior old checkout version and consistent backup above; old bot was not running and position was null. New launcher holds the legacy DB flock to inhibit restart of that launcher. Old configuration values are not printed or committed. Testnet public endpoints reachable; no real orders, Testnet credentials, futures, margin or paid VM used.
 
 Second SSH confirmed paper session and separate `trading-bot-paper-monitor` session remain alive; one bot process detected, health paper, unpaused, pending 0, no reported trading/Telegram error. Telegram webhook was absent. Actual inbox fingerprints showed /status, /pause and /resume processed, outbox empty after acknowledged sends; user-facing receipt is subject to user confirmation. Monitor creates minute samples, cumulative daily reports (Baku date), hourly consistent SQLite backup. First backup passed integrity_check. Runbook, commands and material sampling/availability limits: [PAPER_OBSERVATION_RUNBOOK.md](PAPER_OBSERVATION_RUNBOOK.md). No parameter changes during 14-day observation; first check after 24 hours. Sampled drawdown is not an exact continuous maximum; monitor began after strategy activation, so first minutes are not covered. Cloud Shell itself can stop despite tmux, and restarted paper app always starts paused.
+
+## Human-readable Telegram reports and timeframe selection — 2026-11-01
+
+User reported regression: /status and /signal were raw JSON; requested timeframe
+choice and asked when futures return. Implemented in branch
+research/telegram-reports-timeframe from e277d7baddf264b470c4e063beee414336c46921.
+
+Reports now use Russian prose, Baku timestamps, quote age/staleness, Spot/paper
+labels, position/cost, preliminary close PnL, actual pending/gates/errors. /signal
+shows source, timeframe, candle, old/current means, crossover and present constraints;
+it does not claim that a signal equals an executed order.
+
+/timeframe shows current interval; /timeframe 1m|5m|15m|1h changes only while paused,
+flat, no pending orders, gate or outstanding close. The override is separate from
+CLI database identity, survives restart, and is read on tick. Clears signal/candle
+cache, leaves pause on, records changed intervals in interval_changes. Telegram
+parser supports this argument and applies destructive-command freshness rules.
+No futures/short/leverage support added in this patch.
+
+Linux suite passed 210/210 (204 inherited + 6 new): text reports, timestamp/source,
+invalid/duplicate choices, pause/position/pending gates, persistence and engine
+interval update. Working Cloud Shell bot, protected login, DB and observation
+parameters NOT modified. The new code is published but NOT deployed. Current 15m
+observation remains fixed; changing timeframe starts a different experiment segment.
+
+Next functional extension proposed: isolated futures paper LONG/SHORT 1–10x in
+separate DB/run using futures market data, then Futures Testnet. Do not mix that
+with current Spot observation or claim an implementation/date not delivered.

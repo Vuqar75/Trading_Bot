@@ -38,3 +38,13 @@ tmux new-session -d -s trading-bot-paper-monitor 'exec python3 -B -m trading_bot
 Он сохраняет снимки примерно раз в минуту и создаёт проверенный SQLite backup `monitor/backup-latest.db` при старте и далее примерно ежечасно. Одной копии на том же диске недостаточно для аварийного восстановления. Проверяйте возраст отчёта и backup, а также `monitor/monitor-error.json` при его наличии. Результат drawdown основан на свежих выборочных котировках и может пропустить экстремумы; данные до запуска монитора и во время его остановки не восстановлены. `estimated_observed_seconds` — оценка по выборкам, не точный uptime; ошибки считаются выборками, а не уникальными инцидентами. Закрытия и gross PnL рассчитаны для текущей paper-модели комиссий USDT; прочие активы блокируют отчёт. Неизвестное не считается нулём.
 
 Tmux переживает закрытие SSH, но не остановку/перезапуск самой Cloud Shell. В этом случае оба процесса и наблюдение останавливаются. Нужны ручная проверка, перезапуск на паузе и отдельное разрешение входов. Это не 24/7 сервер и не подтверждение прибыльности. Spot Testnet ключи и реальные средства не используются; будущий Testnet-прогон требует отдельной проверки и отдельных тестовых ключей.
+
+## Telegram update (requires deploying the reports/timeframe branch)
+
+/status and /signal become human-readable Russian reports. /timeframe shows the
+current period; /timeframe 1m, /timeframe 5m, /timeframe 15m or /timeframe 1h selects
+it only on pause, flat and with no unresolved orders/gate/close request. Selection
+persists after restart; entries stay paused. It resets the cached signal, not
+trade history. Do not change the current 15m parameters during the fixed observation
+just to improve its results: record a new experiment segment if changing them.
+No code hot-reload: the running Cloud Shell instance has not received this update.

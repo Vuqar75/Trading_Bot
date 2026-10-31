@@ -63,9 +63,11 @@ class TelegramTransport:
                 and msg.get('chat', {}).get('type') == 'private')
             text = msg.get('text', '') if authorized else ''
             command = text.split()[0].split('@')[0] if isinstance(text, str) and text.split() else ''
-            if authorized and (len(text.split()) != 1 or 'edit_date' in msg):
+            if authorized and command == '/timeframe' and isinstance(text, str):
+                command = ' '.join([command] + text.split()[1:])
+            if authorized and ((len(text.split()) != 1 and not command.startswith('/timeframe ')) or 'edit_date' in msg):
                 command = ''
-            if command in {'/resume', '/close'}:
+            if command in {'/resume', '/close'} or command.startswith('/timeframe '):
                 stamp = msg.get('date', 0)
                 if type(stamp) is not int or stamp < int(self.started) or not 0 <= time.time() - stamp <= 120:
                     command = 'STALE_COMMAND'
@@ -175,6 +177,7 @@ class Application:
         return True
 
     def tick(self):
+        self.interval = self.store.get('selected_interval', self.interval)
         self.recover()
         if self.protective_close():
             return

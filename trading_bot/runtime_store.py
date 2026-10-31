@@ -255,12 +255,28 @@ class RuntimeStore:
                     rows = self.db.execute('SELECT ts,pnl,known FROM runtime_closes ORDER BY rowid DESC LIMIT 10').fetchall()
                     message = '\n'.join(f"PnL {r['pnl']} USDT" + ('' if r['known'] else ' + неоценённая комиссия') for r in rows) or 'История закрытий пуста.'
                 elif command == '/status':
-                    message = json.dumps({'mode': self.get('identity')['mode'], 'paused': self.get('paused'),
-                        'position': self.get('position'), 'pending_orders': len(self.pending()), 'blocked': self.get('blocked'),
-                        'last_error': self.get('error'), 'quote': self.get('quote'), 'pnl': self.get('pnl')}, ensure_ascii=False)
+                    from .telegram_reports import status
+                    message = status(self)
                 elif command == '/signal':
-                    message = json.dumps(self.get('signal', {'reason': 'Ещё нет данных'}), ensure_ascii=False)
+                    from .telegram_reports import signal_report
+                    message = signal_report(self)
+                elif command.startswith('/timeframe'):
+                    parts = command.split()
+                    current = self.get('selected_interval', self.get('identity').get('interval', '15m'))
+                    if len(parts) == 1:
+                        message = 'Таймфрейм: ' + current + '. Выбор: /timeframe 1m, 5m, 15m или 1h. Сначала /pause и закрытие позиции.'
+                    elif len(parts) != 2 or parts[1] not in {'1m', '5m', '15m', '1h'}:
+                        message = 'Используйте /timeframe 1m, /timeframe 5m, /timeframe 15m или /timeframe 1h.'
+                    elif not self.get('paused') or self.pending() or self.get('blocked') or number(self.get('position')['quantity']) or self.get('close_request'):
+                        message = 'Смена запрещена: нужны пауза, отсутствие позиции, незавершённых ордеров и блокировок.'
+                    else:
+                        if parts[1] != current:
+                            self.set('interval_changes', self.get('interval_changes', []) + [{'from': current, 'to': parts[1], 'time': time.time()}])
+                        self.set('selected_interval', parts[1])
+                        self.set('last_candle', None)
+                        self.set('signal', None)
+                        message = 'Таймфрейм: ' + parts[1] + '. Входы остаются на паузе. Смена параметров — новый участок наблюдения; прежние результаты не сравнивайте как один фиксированный тест.'
                 else:
-                    message = '/status /signal /history /pause /resume /close /stop. BTCUSDT Spot; плеча нет.'
+                    message = '/status /signal /history /pause /resume /close /stop /timeframe. BTCUSDT Spot; плеча нет.'
                 self.notify(message)
             self.set('offset', update_id + 1)
