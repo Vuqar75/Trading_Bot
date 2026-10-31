@@ -162,7 +162,8 @@ class OrderJournal:
         with self._transaction():
             tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
             if tables:
-                if tables != {"order_schema", "order_intents", "order_events"}:
+                if tables not in ({"order_schema", "order_intents", "order_events"},
+                                  {"order_schema", "order_intents", "order_events", "ledger_control", "ledger_fills", "ledger_account"}):
                     raise JournalError("Refusing a foreign database; use a dedicated test journal")
                 rows = self.db.execute("SELECT version FROM order_schema WHERE singleton=1").fetchall()
                 if len(rows) != 1 or rows[0][0] != self.VERSION:
@@ -250,6 +251,10 @@ class OrderJournal:
         after_commit = FaultPoint.CLAIM_COMMITTED if claim else FaultPoint.RESULT_COMMITTED
         with self._transaction():
             intent = self.get(intent_id)
+            if claim:
+                has_ledger = self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ledger_control'").fetchone()
+                if has_ledger and self.db.execute("SELECT blocked FROM ledger_control WHERE singleton=1").fetchone()[0]:
+                    raise DispatchBlocked("Accounting requires review")
             if intent.state != expected:
                 raise DispatchBlocked("Intent state does not permit this transition")
             now = self.clock_ms()
