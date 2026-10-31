@@ -34,8 +34,19 @@ def reconcile(journal, simulator, intent_id):
     except (TypeError, ValueError):
         return journal.get(intent_id), 'unresolved'
     if intent.state == State.ACKNOWLEDGED:
-        same = (intent.exchange_order_id, intent.exchange_status) == (receipt.exchange_order_id, receipt.status)
-        return journal.get(intent_id), 'already_recorded' if same else 'unresolved'
+        if intent.exchange_order_id != receipt.exchange_order_id:
+            return journal.get(intent_id), 'unresolved'
+        if intent.exchange_status == receipt.status:
+            return journal.get(intent_id), 'already_recorded'
+        ranks = {'NEW': 0, 'PARTIALLY_FILLED': 1, 'FILLED': 2}
+        if intent.exchange_status not in ranks or ranks[receipt.status] <= ranks[intent.exchange_status]:
+            return journal.get(intent_id), 'unresolved'
+        try:
+            saved = journal._transition(intent_id, State.ACKNOWLEDGED, State.ACKNOWLEDGED,
+                                        'RESPONSE_RECORDED', receipt=receipt)
+        except DispatchBlocked:
+            return journal.get(intent_id), 'unresolved'
+        return saved, 'recorded'
     try:
         saved = journal._transition(intent_id, intent.state, State.ACKNOWLEDGED,
                                     'RESPONSE_RECORDED', receipt=receipt)
