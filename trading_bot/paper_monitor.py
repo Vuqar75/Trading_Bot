@@ -10,6 +10,7 @@ import time
 from datetime import datetime, timezone
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from .runtime_backup import backup
 from .testnet_observer import write_report
 
@@ -35,8 +36,9 @@ def snapshot(source, monitor, now=None):
         equity = None
         if quote_ts is not None and 0 <= now-quote_ts <= 120:
             equity = str(Decimal(meta['cash']) + Decimal(meta['position']['quantity'])*Decimal(quote['price']))
+        errors = {'trading':meta.get('error'),'telegram':meta.get('telegram_error')}
         obs.execute('INSERT OR REPLACE INTO samples VALUES(?,?,?,?,?)',
-                    (now,quote_ts,equity,json.dumps(meta.get('error')) if meta.get('error') else None,pending))
+                    (now,quote_ts,equity,json.dumps(errors) if any(errors.values()) else None,pending))
         rows = obs.execute('SELECT ts,quote_ts,equity,error,pending FROM samples ORDER BY ts').fetchall()
     # Paper fills charge USDT. Gross = net plus allocated entry/exit fees;
     # unclosed entry fees remain attached to the position.
@@ -60,7 +62,8 @@ def snapshot(source, monitor, now=None):
     gaps=sum(1 for a,b in zip(rows,rows[1:]) if b[0]-a[0]>120)
     return {'as_of_utc':datetime.fromtimestamp(now,timezone.utc).isoformat(),
             'first_sample_utc':datetime.fromtimestamp(rows[0][0],timezone.utc).isoformat(),
-            'observed_span_seconds':now-rows[0][0], 'samples':len(rows), 'sample_gaps_over_120s':gaps,
+            'observed_span_seconds':now-rows[0][0], 'estimated_observed_seconds':sum(min(60,b[0]-a[0]) for a,b in zip(rows,rows[1:])),
+            'samples':len(rows), 'sample_gaps_over_120s':gaps,
             'stale_or_missing_quotes':sum(r[2] is None for r in rows), 'error_samples':sum(bool(r[3]) for r in rows),
             'pending_orders':pending,'closed_positions':sum(1 for r in closes),
             'net_realized_pnl_usdt':str(net) if known else None,'gross_realized_pnl_usdt':str(net+allocated) if known else None,
@@ -77,7 +80,7 @@ def main():
         try:
             report=snapshot(args.db,folder/'observation.db')
             write_report(folder/'daily-report.json',report)
-            day=datetime.now(timezone.utc).strftime('%Y-%m-%d')
+            day=datetime.now(ZoneInfo('Asia/Baku')).strftime('%Y-%m-%d')
             write_report(folder/('report-'+day+'.json'),report)
             if time.time()-last_backup>=3600:
                 backup(args.db,folder/'backup-latest.db');last_backup=time.time()

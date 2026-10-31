@@ -26,3 +26,5 @@ class PaperMonitorTests(unittest.TestCase):
    p=Path(d)/'runtime.db';o=Path(d)/'obs.db';s=RuntimeStore(p,{'mode':'paper'})
    snapshot(p,o,1000);report=snapshot(p,o,1200)
    self.assertEqual(report['sample_gaps_over_120s'],1);self.assertEqual(report['stale_or_missing_quotes'],2);s.close()
+   q=Path(d)/'testnet.db';t=RuntimeStore(q,{'mode':'testnet'});t.close()
+   with self.assertRaises(ValueError):snapshot(q,o,1300)
