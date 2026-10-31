@@ -112,6 +112,15 @@ class Application:
             with self.store.transaction():
                 self.store.set('blocked', 'ORDER_PENDING' if self.store.pending() else None)
 
+    def enable_paper_entries(self):
+        """Explicit local operator action; startup and restarts remain paused."""
+        if self.exchange.mode != 'paper':
+            raise ObservationError('Local entry activation is paper only')
+        with self.store.transaction():
+            if self.store.pending() or self.store.get('blocked') or not self.store.get('position')['fees_known']:
+                raise ObservationError('Recovery or fee review required')
+            self.store.set('paused', False)
+
     def execute(self, side, quantity, price, key, reason, target=None):
         if side == 'BUY' and number(quantity) * price > self.amount:
             raise ObservationError('Entry exceeds configured order budget')
@@ -246,12 +255,15 @@ def main():
     parser.add_argument('--enable-testnet-orders', action='store_true')
     parser.add_argument('--telegram', action='store_true')
     parser.add_argument('--once', action='store_true')
+    parser.add_argument('--allow-paper-signal', action='store_true', help='Allow explicit SIGUSR1 activation of paper entries')
     args = parser.parse_args()
     if args.demo:
         demo()
         return
     if args.poll_seconds < 5:
         parser.error('poll-seconds must be at least 5')
+    if args.allow_paper_signal and (args.mode != 'paper' or args.enable_testnet_orders or args.once):
+        parser.error('paper signal activation requires continuous paper mode without Testnet orders')
     if args.mode == 'testnet' and not args.enable_testnet_orders:
         parser.error('Testnet mode requires --enable-testnet-orders; still starts paused')
     os.umask(0o077)
@@ -265,16 +277,28 @@ def main():
     telegram = TelegramTransport(os.getenv('RUNTIME_TELEGRAM_BOT_TOKEN'), os.getenv('RUNTIME_TELEGRAM_OWNER_ID')) if args.telegram else None
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     running = True
+    activate = False
     def stop(*_):
         nonlocal running
         running = False
     signal.signal(signal.SIGTERM, stop)
     signal.signal(signal.SIGINT, stop)
+    def activate_paper(*_):
+        nonlocal activate
+        activate = True
+    if args.allow_paper_signal:
+        signal.signal(signal.SIGUSR1, activate_paper)
     with process_lock(args.db + '.lock'):
         store = RuntimeStore(args.db, identity)
         try:
             app = Application(store, exchange, reader, interval=args.interval, amount=args.amount)
             while running:
+                if activate:
+                    activate = False
+                    try:
+                        app.enable_paper_entries()
+                    except ObservationError:
+                        log.warning('Paper activation blocked by recovery or fee review')
                 # Trading/risk loop runs before Telegram to avoid a failed poll
                 # indefinitely delaying position checks.
                 try:
