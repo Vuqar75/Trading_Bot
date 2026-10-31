@@ -29,8 +29,8 @@ def _validate(u):
     if not u.authorized:
         if u.command or u.target or u.version: raise ValueError('Unauthorized updates must be stripped')
         return
-    if u.command not in ('PAUSE','STOP','RESUME','CLOSE'): raise ValueError('Unsupported simulated command')
-    if u.command == 'CLOSE':
+    if u.command not in ('PAUSE','STOP','RESUME','CLOSE','RETRY_CLOSE'): raise ValueError('Unsupported simulated command')
+    if u.command in ('CLOSE','RETRY_CLOSE'):
         if not re.fullmatch(r'[A-Za-z0-9_.:-]{1,64}',u.target) or type(u.version) is not int or u.version < 1:
             raise ValueError('CLOSE requires an internal position and version')
     elif u.target or u.version: raise ValueError('Unexpected command parameters')
@@ -67,7 +67,7 @@ class Inbox:
     def __enter__(self): return self
     def __exit__(self,*args): self.close()
 
-    def receive_batch(self,updates, on_new=None):
+    def receive_batch(self,updates, on_new=None, on_duplicate=None):
         """Commit complete, already-authenticated fixture batch before advancing offset.
 
         Transport must prove batches are complete and ordered; this offline prototype
@@ -83,6 +83,7 @@ class Inbox:
                 record=(int(u.authorized),u.command,u.target,u.version)
                 if row:
                     if tuple(row[k] for k in ('authorized','command','target','version')) != record: raise Conflict('Update payload conflict')
+                    if on_duplicate is not None: on_duplicate(u)
                     continue
                 if u.update_id < offset: raise Conflict('Unknown old update; manual review required')
                 self.db.execute("INSERT INTO updates VALUES(?,?,?,?,?,?,?)",(u.update_id,*record,'PENDING' if u.authorized else 'IGNORED',''))

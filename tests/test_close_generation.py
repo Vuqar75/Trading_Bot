@@ -25,7 +25,7 @@ def long_retry(t):
   a.recover(t.exchange(a));target='p'*64;version=9223372036854775807
   a.inbox.set_simulated_position(target,version);a.receive(1,'owner-fixture','CLOSE',target,version);a.process_close();i=a.close_intent(target,version)
   a.dispatch(i.intent_id,Reject());uid=9223372036854775806
-  a.receive(uid,'owner-fixture','CLOSE',target,version)
+  a.receive(uid,'owner-fixture','RETRY_CLOSE',target,version,i.intent_id)
   errors=[]
   for _ in range(2):
    try:a.process_close()
@@ -47,7 +47,7 @@ class CloseGenerationTests(unittest.TestCase):
    for n in (2,3,4):a.receive(n,'owner-fixture','CLOSE','p',1)
    a.dispatch(i.intent_id,Reject())
   with OfflineIntegration(f.idb,f.odb,owner='owner-fixture') as a:
-   a.receive(5,'owner-fixture','CLOSE','p',1)
+   a.receive(5,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id)
    for _ in range(4):a.process_close()
    self.assertEqual([r[0] for r in a.inbox.db.execute('SELECT result FROM outbox WHERE update_id>1 ORDER BY update_id')],['CLOSE_ALREADY_PENDING']*3+['CLOSE_INTENT_CREATED'])
    self.assertNotEqual(a.close_intent('p',1).intent_id,i.intent_id)
@@ -56,7 +56,7 @@ class CloseGenerationTests(unittest.TestCase):
   with OfflineIntegration(f.idb,f.odb,owner='owner-fixture') as a:
    a.recover(f.exchange(a));target='x'*64;version=9223372036854775807
    a.inbox.set_simulated_position(target,version);a.receive(1,'owner-fixture','CLOSE',target,version);a.process_close();i=a.close_intent(target,version)
-   a.dispatch(i.intent_id,Reject());a.receive(10000000000,'owner-fixture','CLOSE',target,version);a.receive(10000000001,'owner-fixture','PAUSE')
+   a.dispatch(i.intent_id,Reject());a.receive(10000000000,'owner-fixture','RETRY_CLOSE',target,version,i.intent_id);a.receive(10000000001,'owner-fixture','PAUSE')
    a.process_close();a.process_close()
    self.assertEqual(a.inbox.db.execute('SELECT status FROM updates WHERE update_id=10000000001').fetchone()[0],'DONE')
  def test_concurrent_receive_and_rejection_linearize(self):
@@ -83,7 +83,7 @@ class CloseGenerationTests(unittest.TestCase):
    captured=main.journal.db.execute('SELECT observed_state FROM close_command_generation WHERE update_id=2').fetchone()[0]
    main.process_close()
    result=main.inbox.db.execute('SELECT result FROM outbox WHERE update_id=2').fetchone()[0]
-   self.assertEqual(result,'CLOSE_INTENT_CREATED' if captured=='REJECTED' else 'CLOSE_ALREADY_PENDING')
+   self.assertEqual(result,'CLOSE_ALREADY_PENDING')
 
  def test_receive_rollback_preserves_generation_and_offset(self):
   f=self.f
@@ -92,16 +92,16 @@ class CloseGenerationTests(unittest.TestCase):
    def fault(point):
     if point=='receive_before_commit':raise RuntimeError('crash')
    a.inbox.fault=fault
-   with self.assertRaises(RuntimeError):a.receive(2,'owner-fixture','CLOSE','p',1)
+   with self.assertRaises(RuntimeError):a.receive(2,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id)
   with OfflineIntegration(f.idb,f.odb,owner='owner-fixture') as a:
    self.assertIsNone(a.inbox.db.execute('SELECT 1 FROM updates WHERE update_id=2').fetchone())
    self.assertIsNone(a.journal.db.execute('SELECT 1 FROM close_command_generation WHERE update_id=2').fetchone())
-   a.receive(2,'owner-fixture','CLOSE','p',1);a.process_close()
+   a.receive(2,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id);a.process_close()
    self.assertEqual(a.inbox.db.execute('SELECT result FROM outbox WHERE update_id=2').fetchone()[0],'CLOSE_INTENT_CREATED')
  def test_legacy_retry_remains_current_and_blocks_duplicate(self):
   f=self.f
   with OfflineIntegration(f.idb,f.odb,owner='owner-fixture') as a:
-   i=setup(f,a);a.dispatch(i.intent_id,Reject());a.receive(2,'owner-fixture','CLOSE','p',1);a.process_close();retry=a.close_intent('p',1)
+   i=setup(f,a);a.dispatch(i.intent_id,Reject());a.receive(2,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id);a.process_close();retry=a.close_intent('p',1)
    a.journal.db.execute('UPDATE order_intents SET business_key=? WHERE intent_id=?',('close-p-1-r2',retry.intent_id))
    self.assertEqual(a.close_intent('p',1).intent_id,retry.intent_id)
    a.receive(3,'owner-fixture','CLOSE','p',1);a.process_close()

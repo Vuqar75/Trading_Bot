@@ -19,7 +19,7 @@ def rejected_retry(t):
    is_simulator=True
    def submit(self,i):return Receipt(None,'REJECTED')
   a.dispatch(i.intent_id,Reject())
-  a.receive(2,'owner-fixture','CLOSE','p',1);a.process_close()
+  a.receive(2,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id);a.process_close()
   return {'reservation':tuple(a.journal.db.execute('SELECT active FROM close_reservations').fetchone()),'reply':a.inbox.db.execute('SELECT result FROM outbox WHERE update_id=2').fetchone()[0],'intent_state':a.close_intent('p',1).state.value}
 
 def overlapping_buys(t):
@@ -72,7 +72,7 @@ class ThreeFindings(unittest.TestCase):
    class Reject:
     is_simulator=True
     def submit(self,i):return Receipt(None,'REJECTED')
-   a.dispatch(i.intent_id,Reject());a.receive(2,'owner-fixture','CLOSE','p',1)
+   a.dispatch(i.intent_id,Reject());a.receive(2,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id)
    def fault(p):
     if p=='command_before_commit':raise RuntimeError('simulated crash')
    a.fault=fault
@@ -83,7 +83,7 @@ class ThreeFindings(unittest.TestCase):
    a.process_close();new=a.close_intent('p',1)
    self.assertNotEqual(new.intent_id,i.intent_id)
    self.assertEqual(a.journal.get(i.intent_id).state.value,'REJECTED')
-   a.receive(2,'owner-fixture','CLOSE','p',1);self.assertIsNone(a.process_close())
+   a.receive(2,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id);self.assertIsNone(a.process_close())
  def test_competing_new_entries_claim_only_one(self):
   import threading
   from trading_bot.order_journal import DispatchBlocked
@@ -112,7 +112,7 @@ class ThreeFindings(unittest.TestCase):
      class Reject:
       is_simulator=True
       def submit(self,i):return Receipt(None,'REJECTED')
-     a.dispatch(i.intent_id,Reject());a.receive(2,'owner-fixture','CLOSE','p',1)
+     a.dispatch(i.intent_id,Reject());a.receive(2,'owner-fixture','RETRY_CLOSE','p',1,i.intent_id)
     script="""import os,sys
 from trading_bot.offline_integration import OfflineIntegration
 def fault(p):

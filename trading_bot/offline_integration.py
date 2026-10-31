@@ -6,7 +6,7 @@ import os
 import uuid
 from decimal import Decimal, localcontext
 from fractions import Fraction
-from .telegram_inbox import Inbox, Update
+from .telegram_inbox import Inbox, Update, Conflict
 from .order_journal import OrderJournal, OfflineOrderCoordinator, DispatchBlocked
 from .order_recovery import _mark, recover
 
@@ -37,21 +37,35 @@ class OfflineIntegration:
                 self.inbox.db.execute('PRAGMA orders.synchronous=FULL')
                 self.inbox.db.execute("CREATE TABLE IF NOT EXISTS orders.close_reservations(intent_id TEXT PRIMARY KEY, target TEXT NOT NULL, version INTEGER NOT NULL, quantity TEXT NOT NULL, active INTEGER NOT NULL CHECK(active IN (0,1)))")
                 self.inbox.db.execute("CREATE TABLE IF NOT EXISTS orders.close_command_generation(update_id INTEGER PRIMARY KEY, target TEXT NOT NULL, version INTEGER NOT NULL, observed_intent TEXT, observed_state TEXT)")
+                self.inbox.db.execute("CREATE TABLE IF NOT EXISTS orders.retry_confirmations(update_id INTEGER PRIMARY KEY, rejected_intent TEXT NOT NULL)")
+                from .sequential_inbox import SequentialReceiver
+                self.receiver=SequentialReceiver(self)
             except BaseException:
                 self.inbox.close(); raise
         except BaseException:
             self.journal.close(); raise
-    def close(self): self.inbox.close(); self.journal.close()
+    def close(self): self.receiver.close(); self.inbox.close(); self.journal.close()
     def __enter__(self):return self
     def __exit__(self,*args):self.close()
 
-    def receive(self, update_id, sender, command='',target='',version=0):
+    def receive(self, update_id, sender, command='',target='',version=0,rejected_intent=''):
+        return self.receiver.receive_batch([(update_id,sender,command,target,version,rejected_intent)])
+
+    def _receive_one(self, update_id, sender, command='',target='',version=0,rejected_intent=''):
         """Synthetic owner check: sender identity is never persisted or logged."""
         if not isinstance(sender,str): raise ValueError('Invalid synthetic sender')
         allowed=hmac.compare_digest(sender,self.owner)
         update=Update(update_id,True,command,target,version) if allowed else Update(update_id,False)
+        if allowed and command == 'RETRY_CLOSE':
+            if not isinstance(rejected_intent,str) or not rejected_intent or len(rejected_intent)>100: raise ValueError('Retry requires rejected intent')
+        elif rejected_intent: raise ValueError('Unexpected rejection reference')
+        def duplicate(u):
+            if u.authorized and u.command == 'RETRY_CLOSE':
+                saved=self.inbox.db.execute('SELECT rejected_intent FROM orders.retry_confirmations WHERE update_id=?',(u.update_id,)).fetchone()
+                if saved is None or saved[0] != rejected_intent: raise Conflict('Retry reference conflict')
         def snapshot(u):
-            if not u.authorized or u.command != 'CLOSE': return
+            if not u.authorized or u.command not in ('CLOSE','RETRY_CLOSE'): return
+            if u.command == 'RETRY_CLOSE': self.inbox.db.execute('INSERT INTO orders.retry_confirmations VALUES(?,?)',(u.update_id,rejected_intent))
             previous=self.inbox.db.execute('SELECT update_id FROM closing_intents WHERE target=? AND version=?',(u.target,u.version)).fetchone()
             prior=None
             if previous:
@@ -59,7 +73,7 @@ class OfflineIntegration:
                 hashed=retry_key(u.target,u.version,previous[0])
                 prior=self.inbox.db.execute("SELECT intent_id,state FROM orders.order_intents WHERE namespace='synthetic-close' AND business_key IN (?,?,?) ORDER BY CASE WHEN business_key=? THEN 0 WHEN business_key=? THEN 1 ELSE 2 END LIMIT 1",(base,hashed,base+'-r'+str(previous[0]),hashed,base+'-r'+str(previous[0]))).fetchone()
             self.inbox.db.execute('INSERT INTO orders.close_command_generation VALUES(?,?,?,?,?)',(u.update_id,u.target,u.version,prior['intent_id'] if prior else None,prior['state'] if prior else None))
-        self.inbox.receive_batch([update],on_new=snapshot)
+        self.inbox.receive_batch([update],on_new=snapshot,on_duplicate=duplicate)
 
     def process_close(self):
         """Atomically link inbox update, close dedup, order intent and outbox."""
@@ -67,7 +81,7 @@ class OfflineIntegration:
         with self.inbox.transaction():
             row=db.execute("SELECT * FROM updates WHERE status='PENDING' ORDER BY update_id LIMIT 1").fetchone()
             if row is None:return None
-            if row['command'] != 'CLOSE':
+            if row['command'] not in ('CLOSE','RETRY_CLOSE'):
                 cmd=row['command']
                 result='ENTRIES_ALLOWED' if cmd == 'RESUME' else 'ENTRIES_PAUSED'
                 db.execute('UPDATE inbox_state SET paused=? WHERE singleton=1',(int(cmd != 'RESUME'),))
@@ -83,9 +97,12 @@ class OfflineIntegration:
                 if exists:
                     prior=db.execute("SELECT intent_id,state FROM orders.order_intents WHERE namespace='synthetic-close' AND business_key IN (?,?,?) ORDER BY CASE WHEN business_key=? THEN 0 WHEN business_key=? THEN 1 ELSE 2 END LIMIT 1",(key,retry_key(row['target'],row['version'],exists['update_id']),key+'-r'+str(exists['update_id']),retry_key(row['target'],row['version'],exists['update_id']),key+'-r'+str(exists['update_id']))).fetchone()
                     captured=db.execute('SELECT observed_intent,observed_state FROM orders.close_command_generation WHERE update_id=?',(row['update_id'],)).fetchone()
-                    retry = prior is not None and prior['state']=='REJECTED' and captured is not None and captured['observed_state']=='REJECTED' and captured['observed_intent']==prior['intent_id']
+                    confirmation=db.execute('SELECT rejected_intent FROM orders.retry_confirmations WHERE update_id=?',(row['update_id'],)).fetchone()
+                    retry = row['command']=='RETRY_CLOSE' and confirmation is not None and prior is not None and prior['state']=='REJECTED' and captured is not None and captured['observed_state']=='REJECTED' and captured['observed_intent']==prior['intent_id'] and confirmation[0]==prior['intent_id']
                 else: retry=False
-                if exists and not retry:
+                if not exists and row['command']=='RETRY_CLOSE':
+                    result='RETRY_NOT_CONFIRMED'
+                elif exists and not retry:
                     result='CLOSE_ALREADY_PENDING'
                 else:
                     acct=db.execute('SELECT base_balance FROM orders.ledger_account WHERE singleton=1').fetchone()
