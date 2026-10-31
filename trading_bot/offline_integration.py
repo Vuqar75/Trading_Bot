@@ -1,5 +1,7 @@
 """Offline integration fixture. Never wire this module to real exchange or Telegram."""
 import hmac
+import hashlib
+import json
 import os
 import uuid
 from decimal import Decimal, localcontext
@@ -7,6 +9,11 @@ from fractions import Fraction
 from .telegram_inbox import Inbox, Update
 from .order_journal import OrderJournal, OfflineOrderCoordinator, DispatchBlocked
 from .order_recovery import _mark, recover
+
+
+def retry_key(target,version,update_id):
+    identity=json.dumps([target,version,update_id],separators=(',',':'),ensure_ascii=True)
+    return 'close-r-'+hashlib.sha256(identity.encode('ascii')).hexdigest()
 
 
 class OfflineIntegration:
@@ -29,6 +36,7 @@ class OfflineIntegration:
                 self.inbox.db.execute('ATTACH DATABASE ? AS orders',(str(order_path),))
                 self.inbox.db.execute('PRAGMA orders.synchronous=FULL')
                 self.inbox.db.execute("CREATE TABLE IF NOT EXISTS orders.close_reservations(intent_id TEXT PRIMARY KEY, target TEXT NOT NULL, version INTEGER NOT NULL, quantity TEXT NOT NULL, active INTEGER NOT NULL CHECK(active IN (0,1)))")
+                self.inbox.db.execute("CREATE TABLE IF NOT EXISTS orders.close_command_generation(update_id INTEGER PRIMARY KEY, target TEXT NOT NULL, version INTEGER NOT NULL, observed_intent TEXT, observed_state TEXT)")
             except BaseException:
                 self.inbox.close(); raise
         except BaseException:
@@ -42,7 +50,16 @@ class OfflineIntegration:
         if not isinstance(sender,str): raise ValueError('Invalid synthetic sender')
         allowed=hmac.compare_digest(sender,self.owner)
         update=Update(update_id,True,command,target,version) if allowed else Update(update_id,False)
-        self.inbox.receive_batch([update])
+        def snapshot(u):
+            if not u.authorized or u.command != 'CLOSE': return
+            previous=self.inbox.db.execute('SELECT update_id FROM closing_intents WHERE target=? AND version=?',(u.target,u.version)).fetchone()
+            prior=None
+            if previous:
+                base='close-'+u.target+'-'+str(u.version)
+                hashed=retry_key(u.target,u.version,previous[0])
+                prior=self.inbox.db.execute("SELECT intent_id,state FROM orders.order_intents WHERE namespace='synthetic-close' AND business_key IN (?,?,?) ORDER BY CASE WHEN business_key=? THEN 0 WHEN business_key=? THEN 1 ELSE 2 END LIMIT 1",(base,hashed,base+'-r'+str(previous[0]),hashed,base+'-r'+str(previous[0]))).fetchone()
+            self.inbox.db.execute('INSERT INTO orders.close_command_generation VALUES(?,?,?,?,?)',(u.update_id,u.target,u.version,prior['intent_id'] if prior else None,prior['state'] if prior else None))
+        self.inbox.receive_batch([update],on_new=snapshot)
 
     def process_close(self):
         """Atomically link inbox update, close dedup, order intent and outbox."""
@@ -64,8 +81,9 @@ class OfflineIntegration:
                 exists=db.execute('SELECT update_id FROM closing_intents WHERE target=? AND version=?',(row['target'],row['version'])).fetchone()
                 key='close-'+row['target']+'-'+str(row['version'])
                 if exists:
-                    prior=db.execute("SELECT state FROM orders.order_intents WHERE namespace='synthetic-close' AND business_key IN (?,?) ORDER BY CASE WHEN business_key=? THEN 0 ELSE 1 END LIMIT 1",(key,key+'-r'+str(exists['update_id']),key+'-r'+str(exists['update_id']))).fetchone()
-                    retry = prior is not None and prior['state']=='REJECTED'
+                    prior=db.execute("SELECT intent_id,state FROM orders.order_intents WHERE namespace='synthetic-close' AND business_key IN (?,?,?) ORDER BY CASE WHEN business_key=? THEN 0 WHEN business_key=? THEN 1 ELSE 2 END LIMIT 1",(key,retry_key(row['target'],row['version'],exists['update_id']),key+'-r'+str(exists['update_id']),retry_key(row['target'],row['version'],exists['update_id']),key+'-r'+str(exists['update_id']))).fetchone()
+                    captured=db.execute('SELECT observed_intent,observed_state FROM orders.close_command_generation WHERE update_id=?',(row['update_id'],)).fetchone()
+                    retry = prior is not None and prior['state']=='REJECTED' and captured is not None and captured['observed_state']=='REJECTED' and captured['observed_intent']==prior['intent_id']
                 else: retry=False
                 if exists and not retry:
                     result='CLOSE_ALREADY_PENDING'
@@ -82,7 +100,7 @@ class OfflineIntegration:
                         if not q or Fraction(q)!=quantity: raise ValueError('Position cannot be represented exactly')
                         from .order_journal import Request
                         request=Request('SELL',quantity=q)
-                        if retry: key += '-r'+str(row['update_id'])
+                        if retry: key = retry_key(row['target'],row['version'],row['update_id'])
                         if len(key)>100:raise ValueError('Fixture key too long')
                         intent_id=uuid.uuid4().hex; client_id='tb'+uuid.uuid4().hex
                         now=self.journal.clock_ms()
@@ -101,8 +119,10 @@ class OfflineIntegration:
         key='close-'+target+'-'+str(version)
         update=self.inbox.db.execute('SELECT update_id FROM closing_intents WHERE target=? AND version=?',(target,version)).fetchone()
         if update is not None:
-            retry=self.journal.db.execute("SELECT intent_id FROM order_intents WHERE namespace='synthetic-close' AND business_key=?",(key+'-r'+str(update[0]),)).fetchone()
+            retry=self.journal.db.execute("SELECT intent_id FROM order_intents WHERE namespace='synthetic-close' AND business_key=?",(retry_key(target,version,update[0]),)).fetchone()
             if retry: return self.journal.get(retry[0])
+            legacy=self.journal.db.execute("SELECT intent_id FROM order_intents WHERE namespace='synthetic-close' AND business_key=?",(key+'-r'+str(update[0]),)).fetchone()
+            if legacy: return self.journal.get(legacy[0])
         row=self.journal.db.execute("SELECT intent_id FROM order_intents WHERE namespace='synthetic-close' AND business_key=?",(key,)).fetchone()
         return self.journal.get(row[0]) if row else None
 
@@ -124,9 +144,9 @@ class OfflineIntegration:
             else:
                 if row['namespace'] != 'synthetic-close': raise DispatchBlocked('Exit lacks position binding')
                 if db.execute("SELECT 1 FROM orders.order_intents WHERE side='BUY' AND (state IN ('SUBMITTING','UNKNOWN') OR (state='ACKNOWLEDGED' AND exchange_status != 'FILLED'))").fetchone(): raise DispatchBlocked('Entry can still change position')
-                binding=db.execute("SELECT c.target,c.version FROM closing_intents c WHERE ? = 'close-' || c.target || '-' || c.version OR ? = 'close-' || c.target || '-' || c.version || '-r' || c.update_id",(row['business_key'],row['business_key'])).fetchone()
+                binding=next((c for c in db.execute('SELECT target,version,update_id FROM closing_intents') if row['business_key'] in ('close-'+c['target']+'-'+str(c['version']),retry_key(c['target'],c['version'],c['update_id']),'close-'+c['target']+'-'+str(c['version'])+'-r'+str(c['update_id']))),None)
                 state=db.execute('SELECT position,position_version FROM inbox_state').fetchone()
-                if binding is None or tuple(binding)!=tuple(state): raise DispatchBlocked('Position changed or unknown')
+                if binding is None or (binding['target'],binding['version'])!=tuple(state): raise DispatchBlocked('Position changed or unknown')
                 balance=Fraction(db.execute('SELECT base_balance FROM orders.ledger_account').fetchone()[0])
                 if Fraction(row['quantity']) != balance or balance<=0: raise DispatchBlocked('Position quantity changed or unknown')
                 if db.execute('SELECT 1 FROM orders.close_reservations WHERE active=1').fetchone(): raise DispatchBlocked('Existing exit reserved')

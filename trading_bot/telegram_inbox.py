@@ -67,7 +67,7 @@ class Inbox:
     def __enter__(self): return self
     def __exit__(self,*args): self.close()
 
-    def receive_batch(self,updates):
+    def receive_batch(self,updates, on_new=None):
         """Commit complete, already-authenticated fixture batch before advancing offset.
 
         Transport must prove batches are complete and ordered; this offline prototype
@@ -86,6 +86,7 @@ class Inbox:
                     continue
                 if u.update_id < offset: raise Conflict('Unknown old update; manual review required')
                 self.db.execute("INSERT INTO updates VALUES(?,?,?,?,?,?,?)",(u.update_id,*record,'PENDING' if u.authorized else 'IGNORED',''))
+                if on_new is not None: on_new(u)
             self.fault('receive_written')
             if updates: self.db.execute('UPDATE inbox_state SET next_offset=? WHERE singleton=1',(max(offset,updates[-1].update_id+1),))
             self.fault('receive_before_commit')

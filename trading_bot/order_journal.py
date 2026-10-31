@@ -162,6 +162,7 @@ class OrderJournal:
         with self._transaction():
             tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
             tables.discard("close_reservations")
+            tables.discard("close_command_generation")
             if tables:
                 if tables not in ({"order_schema", "order_intents", "order_events"},
                                   {"order_schema", "order_intents", "order_events", "ledger_control", "ledger_fills", "ledger_account"},
