@@ -106,7 +106,8 @@ class FuturesStore:
             self.set('cash', str(cash-self.margin))
             self.set('position', pos)
             self.event(key, 'OPEN', pos)
-            self.notify(f"Futures PAPER isolated: OPEN {direction} BTCUSDT, {leverage}×\nМаржа {self.margin} USDT, цена {fill:.2f}. Виртуальная сделка.")
+            from .trade_notifications import futures_receipt
+            self.notify(futures_receipt('OPEN', pos, interval=self.get('interval')))
             return True
 
     def apply_funding(self, target, events, end):
@@ -181,7 +182,8 @@ class FuturesStore:
             if candle is not None:
                 self.set('last_candle', candle)
             self.event(key, 'CLOSE', payload)
-            self.notify(f"Futures PAPER: CLOSE {pos['direction']} BTCUSDT\n{reason}\nPnL с комиссиями и funding: {net:+.4f} USDT")
+            from .trade_notifications import futures_receipt
+            self.notify(futures_receipt('CLOSE', pos, interval=self.get('interval'), payload=payload))
             return True
 
     def record_equity(self, mark, server):

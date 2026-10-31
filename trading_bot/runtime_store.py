@@ -169,6 +169,8 @@ class RuntimeStore:
                 raise ObservationError('Previously recorded fill missing or changed')
             pos = self.get('position')
             base, cost = number(pos['quantity']), number(pos['cost'])
+            if saved['side'] == 'SELL' and self.get('entry_snapshot:' + client) is None:
+                self.set('entry_snapshot:' + client, {'price': pos.get('entry_price', str(cost/base) if base else '0'), 'is_cost': 'entry_price' not in pos, 'fees': pos.get('entry_fees')})
             cash = Decimal(self.get('cash'))
             pnl = Decimal(0)
             known = pos['fees_known']
@@ -210,6 +212,14 @@ class RuntimeStore:
             if saved['side'] == 'SELL' and (pnl or len(fills) > len(existing)):
                 self.db.execute('INSERT INTO runtime_closes VALUES(?,?,?,?)', (client, time.time(), str(pnl), int(known)))
                 self.set('pnl', str(Decimal(self.get('pnl')) + pnl))
+            if saved['side'] == 'BUY' and qty and len(fills) > len(existing):
+                entry_fees = {}
+                for f in fills:
+                    asset = f['commissionAsset']
+                    entry_fees[asset] = str(Decimal(entry_fees.get(asset, '0')) + number(f['commission']))
+                pos = {**pos, 'entry_price': str(quote/qty), 'entry_fees': entry_fees}
+            if saved['side'] == 'SELL':
+                self.set('order_net:' + client, str(sum((Decimal(r[0]) for r in self.db.execute('SELECT pnl FROM runtime_closes WHERE client_id=?', (client,))), Decimal(0))))
             self.set('cash', str(cash))
             self.set('position', {**pos, 'quantity': str(base), 'cost': str(cost), 'fees_known': known})
             phase = 'SETTLED' if status in TERMINAL else 'ACK'
@@ -217,8 +227,18 @@ class RuntimeStore:
             if status == 'REJECTED':
                 self.set('blocked', 'ORDER_REJECTED_REVIEW')
                 self.set('paused', True)
-            if phase == 'SETTLED' and saved['phase'] != 'SETTLED':
-                self.notify(f"{saved['side']} {status}, BTCUSDT: {qty} BTC; причина: {saved['reason']}")
+            if len(fills) > len(existing) or (phase == 'SETTLED' and saved['phase'] != 'SETTLED'):
+                from .trade_notifications import spot_receipt
+                fees = {}
+                for f in fills:
+                    asset = f['commissionAsset']
+                    fees[asset] = fees.get(asset, Decimal(0)) + number(f['commission'])
+                entry = self.get('entry_snapshot:' + client, {})
+                self.notify(spot_receipt(mode=self.get('identity')['mode'], side=saved['side'], status=status,
+                    quantity=qty, average=quote/qty if qty else 0, fees=fees, remaining=base,
+                    reason=saved['reason'], interval=self.get('selected_interval', self.get('identity').get('interval', '15m')),
+                    client=client, entry=entry.get('price'), entry_is_cost=entry.get('is_cost', False), entry_fees=entry.get('fees'),
+                    net=self.get('order_net:' + client, '0'), known=known))
 
     def command(self, update_id, authorized, command, target=None):
         fingerprint = hashlib.sha256(json.dumps([authorized, command, target]).encode()).hexdigest()

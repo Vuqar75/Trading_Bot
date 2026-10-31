@@ -1,5 +1,6 @@
 """Isolated BTCUSDT perpetual paper runtime. Public market data, virtual wallet."""
 import argparse
+from contextlib import ExitStack
 import json
 import logging
 import os
@@ -129,7 +130,10 @@ def main():
     if args.allow_paper_signal:
         signal.signal(signal.SIGUSR1, request_activate)
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
-    with process_lock(db+'.lock'):
+    with ExitStack() as locks:
+        locks.enter_context(process_lock(db+'.lock'))
+        if telegram:
+            locks.enter_context(process_lock(db+'.delivery.lock'))
         store = FuturesStore(db, margin=args.margin, fee_bps=args.fee_bps,
                              slippage_bps=args.slippage_bps, maintenance_bps=args.maintenance_bps)
         try:

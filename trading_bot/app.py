@@ -79,7 +79,9 @@ class TelegramTransport:
 
     def flush(self, store):
         for row in store.db.execute('SELECT id,message FROM runtime_outbox ORDER BY id LIMIT 5').fetchall():
-            self.call('sendMessage', {'chat_id': self.owner, 'text': row['message'][:4000]})
+            label = getattr(store, 'delivery_label', '')
+            text = (label + '\n' if label else '') + row['message']
+            self.call('sendMessage', {'chat_id': self.owner, 'text': text[:4000]})
             with store.transaction():
                 store.db.execute('DELETE FROM runtime_outbox WHERE id=?', (row['id'],))
 
@@ -257,12 +259,15 @@ def main():
     parser.add_argument('--amount', default='10')
     parser.add_argument('--enable-testnet-orders', action='store_true')
     parser.add_argument('--telegram', action='store_true')
+    parser.add_argument('--futures-outbox-db', help='Deliver the separate futures paper outbox through this Telegram bot')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--allow-paper-signal', action='store_true', help='Allow explicit SIGUSR1 activation of paper entries')
     args = parser.parse_args()
     if args.demo:
         demo()
         return
+    if args.futures_outbox_db and not args.telegram:
+        parser.error('futures-outbox-db requires --telegram')
     if args.poll_seconds < 5:
         parser.error('poll-seconds must be at least 5')
     if args.allow_paper_signal and (args.mode != 'paper' or args.enable_testnet_orders or args.once):
@@ -293,7 +298,11 @@ def main():
         signal.signal(signal.SIGUSR1, activate_paper)
     with process_lock(args.db + '.lock'):
         store = RuntimeStore(args.db, identity)
+        relay = None
         try:
+            if args.futures_outbox_db:
+                from .outbox_relay import FuturesOutboxRelay
+                relay = FuturesOutboxRelay(args.futures_outbox_db)
             app = Application(store, exchange, reader, interval=args.interval, amount=args.amount)
             while running:
                 if activate:
@@ -315,6 +324,8 @@ def main():
                     try:
                         telegram.poll(store)
                         telegram.flush(store)
+                        if relay:
+                            telegram.flush(relay)
                         with store.transaction():
                             store.set('telegram_error', None)
                     except Exception as exc:
@@ -333,6 +344,8 @@ def main():
                         break
                     time.sleep(1)
         finally:
+            if relay:
+                relay.close()
             store.close()
 
 

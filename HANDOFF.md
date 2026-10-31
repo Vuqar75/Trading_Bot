@@ -1088,3 +1088,41 @@ stages Futures Testnet then cross/margin are not implemented by this delivery.
 User authorized updating the running Spot and starting separate isolated Futures paper, not real/testnet orders or paid resources. Operational record and commands: [DEPLOYMENT_2026_11_01.md](DEPLOYMENT_2026_11_01.md). Code deployed from `6026e45de9cfa712e79e48d7db18e99df5bc8428`. Spot had no position, pending=0, not paused, 15m; paused at 00:46:00 Baku, stopped, separate SQLite backup integrity OK, updated and restarted with same database. Three readable /status, /signal and /timeframe reports generated using the new code on an isolated snapshot were acknowledged by the real Telegram send API; this does not test incoming commands. Healthy gates checked and prior enabled paper state restored at 00:50:22 Baku; observed paused=false. Monitor and backup verified; history remained 0 orders and 0 fills. Technical interruption lasted about 4 minutes 22 seconds.
 
 Futures demo and real public-data --once succeeded in Cloud Shell. Separate process started and activated 00:47:46 Baku with BTCUSDT, isolated paper, 1x, 10 virtual USDT margin, 15m, fee 5bps/side, slippage 2bps/side, maintenance 50bps. No separate futures Telegram credentials found in process environment, so no futures Telegram and no second Spot token poller. Separate DB and hourly backup session created, backup integrity OK. Both sessions verified after an SSH disconnect; Cloud Shell can still stop. Full suite 233/233 in both Cloud Shell and WSL. No paid resources, actual funds or network orders used. Funding and modelling limitations in FUTURES_PAPER.md remain.
+
+## Readable trade notifications + shared sender — 2026-11-01
+
+User explicitly authorized fixing trade notifications and updating the running bot.
+Branch research/trade-notifications based on deployment-doc commit
+5a62e41abb7f5085c69a63ceb7cf998871cf53ee. This environment has no gcloud/authenticated
+Cloud Shell SSH, so running processes were NOT updated here. Concrete authorized
+local deployment task: NOTIFICATION_DEPLOYMENT_TASK.md.
+
+Spot receipts now show virtual/Testnet label, market/direction/interval, Baku time,
+actual cumulative fill quantity/average, original entry price (cost explicitly
+labelled for legacy positions lacking raw price), commissions by actual asset,
+cumulative order net, unknown-fee qualifier, residual and translated reason/status.
+Partial updates are labelled and notified on new fills, not only terminal status.
+Net is summed from persisted per-order closes, including fills before this update;
+repeat snapshots do not duplicate notices. Wallet/PnL calculation unchanged.
+New raw entry price/fee metadata only supplements existing positions going forward.
+
+Futures receipts show direction/leverage/margin/notional/entry, exit/gross/fees/
+funding/net, reason and cap qualifier. Paper simulation explicitly labelled.
+
+Spot --futures-outbox-db can deliver the separate futures outbox through its one
+Telegram sender. Protected Cloud Shell launcher accepts path-only env var
+FUTURES_OUTBOX_DB. No second getUpdates process/token required. Relay validates
+futures schema/identity, locks a delivery file, sends outside transaction and
+removes only acknowledged outbox rows. Futures --telegram takes the same sender
+lock to exclude relay competition. Delivery may duplicate after response loss;
+no trading actions, offsets or wallet mutations by relay. Futures messages carry
+[Futures paper] label. Commands in this shared Telegram still target SPOT only.
+No command router to futures was added. Backlog retains its original text.
+
+Full Linux suite: 240/240 (233 inherited +7 new), testing Spot full/partial
+cumulative receipts, legacy cost, unknown fees, futures receipt relay and exact
+queue acknowledgements, failed delivery retention and sender lock/foreign DB.
+No real Telegram send or Cloud Shell restart occurred here. No strategy, timeframe,
+margin/leverage or funding accounting settings changed. Local agent should deploy
+both code checkouts with consistent backups, preserve prior pause/positions and
+restore paper entries only if previously enabled and healthy, per task above.
