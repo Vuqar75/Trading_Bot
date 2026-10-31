@@ -1,0 +1,202 @@
+{
+  "schema_version": 1,
+  "network": "blocked",
+  "database_scope": "temporary simulator-only databases",
+  "scenarios": 19,
+  "passed": 19,
+  "cases": [
+    {
+      "case": "schema_before_commit",
+      "state_after_failure": null,
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": true,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "before_prepare",
+      "state_after_failure": null,
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": true,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "intent_written",
+      "state_after_failure": null,
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": true,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "intent_before_commit",
+      "state_after_failure": null,
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": true,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "intent_committed",
+      "state_after_failure": "PREPARED",
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": true,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "claim_written",
+      "state_after_failure": "PREPARED",
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": true,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "claim_before_commit",
+      "state_after_failure": "PREPARED",
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": true,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "claim_committed",
+      "state_after_failure": "SUBMITTING",
+      "submissions_before_reopen": 0,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": false,
+      "submissions_final": 0,
+      "accepted_final": 0,
+      "status": "passed"
+    },
+    {
+      "case": "simulator_after_submit",
+      "state_after_failure": "SUBMITTING",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "response_received",
+      "state_after_failure": "SUBMITTING",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "result_written",
+      "state_after_failure": "SUBMITTING",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "result_before_commit",
+      "state_after_failure": "SUBMITTING",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "result_committed",
+      "state_after_failure": "ACKNOWLEDGED",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "clean",
+      "state_after_failure": "ACKNOWLEDGED",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "timeout_before_accept",
+      "state_after_failure": "UNKNOWN",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 0,
+      "status": "passed"
+    },
+    {
+      "case": "timeout_after_accept",
+      "state_after_failure": "UNKNOWN",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "invalid_response",
+      "state_after_failure": "UNKNOWN",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 1,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    },
+    {
+      "case": "reject",
+      "state_after_failure": "REJECTED",
+      "submissions_before_reopen": 1,
+      "accepted_before_reopen": 0,
+      "safe_first_attempt": false,
+      "submissions_final": 1,
+      "accepted_final": 0,
+      "status": "passed"
+    },
+    {
+      "case": "two_process_claim_race",
+      "submissions_final": 1,
+      "accepted_final": 1,
+      "status": "passed"
+    }
+  ],
+  "validation": {
+    "base_commit": "e8eb235f27233513835334c4754876a1a995c666",
+    "windows_new_tests": 17,
+    "linux_full_suite": 81,
+    "linux_full_suite_passed": 81,
+    "scope": "isolated clone, synthetic temporary databases; no live bot access"
+  }
+}
