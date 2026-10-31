@@ -1127,6 +1127,12 @@ margin/leverage or funding accounting settings changed. Local agent should deplo
 both code checkouts with consistent backups, preserve prior pause/positions and
 restore paper entries only if previously enabled and healthy, per task above.
 
+## Notification deployment completed — 2026-11-01
+
+User authorized installation of `1cad298d3067b05ef8cbdd8d3887a35488ac234e`; both Cloud Shell checkouts updated to this exact runtime commit. Before change both entries enabled, Spot no position/pending, futures no position, 15m and futures 1x; both healthy. Entries paused 01:05:39 Baku; both processes shut down without closing a position. Consistent backups `~/Trading_Bot_paper_state/spot-before-notifications-1cad.db` and `~/Trading_Bot_futures_state/futures-before-notifications-1cad.db` passed integrity_check. Both restarted paused with original DBs; identities, positions, intervals and leverage matched snapshots. Exactly one Spot poller and one futures worker; Spot launcher uses FUTURES_OUTBOX_DB and relay's delivery lock blocked a second sender. No second Telegram poller. All four marked examples (Spot and futures open/close) were generated on separate temporary DBs, delivered through send API and acknowledged; receipt by user not independently confirmed. Temporary examples never touched working trade events or positions. After healthy gates both previously enabled paper entry states restored at 01:07:23 Baku; downtime approximately 1m44s.
+
+WSL full Linux suite 240/240 passed. Subsequent SSH confirmed both sessions plus spot monitor/futures backup loop alive, fresh health with no error, zero pending Spot orders, backups integrity OK, paper entries enabled. Futures commands via shared Telegram still affect Spot only; relay delivers futures messages but does not poll. On restart use the updated `PAPER_OBSERVATION_RUNBOOK.md` command with FUTURES_OUTBOX_DB, otherwise relay is absent. A sent message can duplicate on ambiguous API response; existing outbox backlog retains old formatting. Cloud Shell/tmux is not continuous hosting, same-disk backups are not disaster recovery. No real/Testnet orders, paid resources, secrets in Git or strategy parameter changes.
+
 ## Readable user output batch — 2026-11-01
 
 User requested fixing all remaining unclear output and updating the running bot.
@@ -1165,3 +1171,6 @@ connectivity. Updated authorized deployment task NOTIFICATION_DEPLOYMENT_TASK.md
 now targets this whole branch, both workers and monitor restart with same DBs.
 Local Codex should execute it, preserve pause states/positions, validate sends and
 write actual deployment evidence. Do not claim deployment until independently done.
+
+
+Deployment evidence from 5b7f76edf102f7f1367b8a8e50e4ba8e7a81975e is merged into this branch. Notification delivery is already installed; this readable-output batch is NOT yet installed. Preserve those operational changes and the relay launch environment during the next update.
