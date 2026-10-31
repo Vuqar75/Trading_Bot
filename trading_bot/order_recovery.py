@@ -142,8 +142,11 @@ def recover(journal, exchange, fault=no_fault):
             Fraction(report['base_balance']) != exchange.base_balance):
             _mark(journal,'CONTRADICTION'); return 'contradiction'
         fault('before_final_commit')
+        # The adapter call is outside the SQLite transaction. The simulated
+        # snapshot is immutable; a real adapter needs an equivalent contract.
+        if _exchange_proof(exchange)!=proof: return 'incomplete'
         with journal._transaction():
-            if _fingerprint(journal.db)!=baseline or _exchange_proof(exchange)!=proof: return 'incomplete'
+            if _fingerprint(journal.db)!=baseline: return 'incomplete'
             for row in memory.execute('SELECT * FROM order_intents'):
                 journal.db.execute('UPDATE order_intents SET state=?,revision=?,updated_ms=?,exchange_order_id=?,exchange_status=? WHERE intent_id=?',
                                    (row['state'],row['revision'],row['updated_ms'],row['exchange_order_id'],row['exchange_status'],row['intent_id']))
