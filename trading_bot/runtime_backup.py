@@ -7,7 +7,9 @@ import tempfile
 from pathlib import Path
 
 
-def backup(source, destination):
+def backup(source, destination, schema='runtime'):
+    if schema not in {'runtime', 'futures'}:
+        raise ValueError('Unsupported backup schema')
     source, destination = Path(source).resolve(), Path(destination).resolve()
     if source == destination or not source.is_file():
         raise ValueError('Existing source and distinct destination required')
@@ -16,7 +18,7 @@ def backup(source, destination):
     os.close(fd)
     try:
         with closing(sqlite3.connect(source.as_uri() + '?mode=ro', uri=True)) as reader:
-            if not reader.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='runtime_meta'").fetchone():
+            if not reader.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", ('futures_meta' if schema == 'futures' else 'runtime_meta',)).fetchone():
                 raise ValueError('Not a runtime database')
             writer = sqlite3.connect(temporary)
             try:
@@ -37,8 +39,9 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('source')
     parser.add_argument('destination')
+    parser.add_argument('--schema', choices=['runtime', 'futures'], default='runtime')
     args = parser.parse_args()
-    backup(args.source, args.destination)
+    backup(args.source, args.destination, args.schema)
 
 
 if __name__ == '__main__':

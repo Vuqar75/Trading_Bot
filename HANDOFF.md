@@ -1029,3 +1029,56 @@ observation remains fixed; changing timeframe starts a different experiment segm
 Next functional extension proposed: isolated futures paper LONG/SHORT 1–10x in
 separate DB/run using futures market data, then Futures Testnet. Do not mix that
 with current Spot observation or claim an implementation/date not delivered.
+
+## Isolated Futures paper runtime — 2026-11-01
+
+User said “начинай” to implement the next isolated futures paper stage, after
+readable reports/timeframe choice. Branch research/isolated-futures-paper based on
+8afa8815822a3379b13f899ed337ee77ba5aa4b5 (includes the undeployed Telegram report fix).
+
+New executable: `python3 -B -m trading_bot.futures_app`. New modules futures_data,
+futures_store, futures_app; guide FUTURES_PAPER.md, uninstalled systemd unit.
+Separate schema/wallet/DB, no Spot migration, LONG/SHORT, isolated margin <=10 USDT,
+1–10x, selectable timeframe via /timeframe, /leverage, human status/signal/history.
+Public USD-M mark/candles/funding ONLY, fixed fapi.binance.com GET allowlist; no
+signing, API-key reading, order endpoint, Testnet execution, real money, cross or
+margin lending. Not the legacy simulator on Spot prices.
+
+Defaults: 1000 virtual USDT wallet, margin10, leverage1, 15m, fees5bps/side,
+adverse slippage2bps/side, simplified maintenance50bps. All assumptions documented.
+Reserve isolated margin; atomic entry/exit/wallet/event/outbox; cap modeled loss at
+reserved margin. Funding at published event mark/rate: LONG pays positive rate,
+SHORT receives. Full open-position history reread for delayed publications;
+dedup and conflicting-event detection. Funding published after close is NOT
+retroactively applied: paper accuracy limitation, not exchange accounting proof.
+
+Stop2%/take4% directed price movement; modeled liquidation precedes normal close,
+risk evaluated before candle loading. Funding/mark fetch failure can delay any
+close; no exchange protective order. Daily realized net loss gate5 USDT UTC; not
+an open-risk cap. Reverse closes now, considers opposite entry next CLOSED candle
+if trend persists; not a profitability claim or an alteration to Spot experiment.
+
+Startup always pauses but retains position/leverage/timeframe. Separate Telegram
+FUTURES_* env names (must not share polling token with Spot); shared transport
+now supports leverage arguments and flat futures positions safely. Optional manual
+SIGUSR1 paper activation after a successful cycle, never auto-resume on restart.
+Single-process flock, sampled equity/DD, minute equity records, health JSON,
+SQLite backup tool --schema futures. Existing runtime backup default unchanged.
+
+Validation: 233/233 unique Linux tests passed (210 inherited, 23 new), including
+math, all leverages, funding signs/replay/late events/conflicts, margin cap,
+idempotency, identity/schema gates, restart, real process crashes before/after
+entry commit, paused risk without candles, next-candle reversal, Telegram parsing,
+equity and backup/restore. Demo SHORT2x returns net0.4002, wallet1000.4002, flat.
+Systemd unit verify and diff whitespace check passed. No independent review yet.
+
+Public futures time GET returned HTTP451 here. Paused --once failed safely and
+wrote futures-health.json. Real futures quotes/candles/funding not validated here.
+Do not bypass restrictions or claim exchange certification. Cloud Shell Spot bot,
+its process/DB/settings/protected token/14-day observation were NOT touched.
+Futures process in Cloud Shell NOT launched; no VM created. Local Codex can fetch
+this branch into another checkout and test --once against public API there before
+starting a separate paper instance. Separate Telegram bot needed for concurrent
+polling; otherwise headless with explicit paper signal. Deployment commands and
+limitations are in FUTURES_PAPER.md. Original goal remains multi-market; next
+stages Futures Testnet then cross/margin are not implemented by this delivery.

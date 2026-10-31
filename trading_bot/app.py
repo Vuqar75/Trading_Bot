@@ -63,19 +63,19 @@ class TelegramTransport:
                 and msg.get('chat', {}).get('type') == 'private')
             text = msg.get('text', '') if authorized else ''
             command = text.split()[0].split('@')[0] if isinstance(text, str) and text.split() else ''
-            if authorized and command == '/timeframe' and isinstance(text, str):
+            if authorized and command in {'/timeframe', '/leverage'} and isinstance(text, str):
                 command = ' '.join([command] + text.split()[1:])
-            if authorized and ((len(text.split()) != 1 and not command.startswith('/timeframe ')) or 'edit_date' in msg):
+            if authorized and ((len(text.split()) != 1 and not command.startswith(('/timeframe ', '/leverage '))) or 'edit_date' in msg):
                 command = ''
-            if command in {'/resume', '/close'} or command.startswith('/timeframe '):
+            if command in {'/resume', '/close'} or command.startswith(('/timeframe ', '/leverage ')):
                 stamp = msg.get('date', 0)
                 if type(stamp) is not int or stamp < int(self.started) or not 0 <= time.time() - stamp <= 120:
                     command = 'STALE_COMMAND'
-                elif command == '/close' and stamp < int(store.get('position').get('opened_at', 0)):
+                elif command == '/close' and stamp < int((store.get('position') or {}).get('opened_at', 0)):
                     command = 'STALE_COMMAND'
             # Command, intent request, response and offset share one durable commit.
             # On DB error stop here: never poll with a higher offset.
-            store.command(ident, authorized, command, store.get('position')['id'] if command == '/close' else None)
+            store.command(ident, authorized, command, (store.get('position') or {}).get('id') if command == '/close' else None)
 
     def flush(self, store):
         for row in store.db.execute('SELECT id,message FROM runtime_outbox ORDER BY id LIMIT 5').fetchall():

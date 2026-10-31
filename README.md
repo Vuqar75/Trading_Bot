@@ -1,3 +1,5 @@
+> **Новое Futures paper isolated:** [FUTURES_PAPER.md](FUTURES_PAPER.md). LONG/SHORT, 1–10×, отдельный виртуальный счёт. Демо: `python3 -B -m trading_bot.futures_app --demo`.
+
 > **Новое приложение Spot:** [RUNNING_SPOT_APP.md](RUNNING_SPOT_APP.md).
 > Запуск без сети: `python3 -B -m trading_bot.app --demo`.
 > Это отдельный runtime, не обновление работающего legacy-бота. Testnet API в
