@@ -16,10 +16,10 @@ cat ~/Trading_Bot_paper_state/monitor/daily-report.json
 Остановка нового приложения (не старого):
 
 ```bash
-tmux send-keys -t =trading-bot-paper-observation C-c
+kill -INT "$(tmux list-panes -t =trading-bot-paper-observation -F '#{pane_pid}')"
 ```
 
-Проверить исчезновение сессии и ожидать завершения: `tmux has-session -t =trading-bot-paper-observation`. Отдельный монитор можно остановить `tmux send-keys -t =trading-bot-paper-monitor C-c`. Повторный запуск приложения из отдельного checkout всегда на паузе:
+Проверить исчезновение сессии и ожидать завершения: `tmux has-session -t =trading-bot-paper-observation`. Отдельный монитор можно остановить `tmux kill-session -t =trading-bot-paper-monitor`. Повторный запуск приложения из отдельного checkout всегда на паузе:
 
 ```bash
 cd ~/Trading_Bot_paper_observation
