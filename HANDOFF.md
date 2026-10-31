@@ -884,3 +884,29 @@ WSL Ubuntu: `python3 -B -m unittest discover -s tests -v` — **158/158**. Но�
 От `246610fed57febd969c1d0f9f3a1dbf1a1511e10`: ревью и результаты в [INVALID_INGRESS_REVIEW.md](INVALID_INGRESS_REVIEW.md). Чужой RETRY_CLOSE со ссылкой ранее блокировал spool; некорректный RETRY_CLOSE владельца имел тот же эффект. Теперь чужой update фиксируется IGNORED, ошибки параметров владельца — REJECTED атомарно с offset; spool очищается после commit. Временные и внутренние ошибки не считаются отказом. Повтор отказа проверяется по отпечатку; торговое действие отсутствует. Некорректный update ID остаётся ошибкой приёма, поскольку его нельзя безопасно идентифицировать.
 
 Полный Linux-набор **162/162**, включая четыре новые проверки, реальные аварии процесса до и после commit, replay и последующую PAUSE. Ограничения единственного владельца, полного упорядоченного источника и offline-стенда сохраняются. Рабочий бот, личная конфигурация и реальные API не затрагивались; возобновление бота не разрешено.
+
+## Read-only Spot Testnet adapter and service preparation
+
+User requested larger implementation batches, avoiding repeated narrow handoffs.
+Branch `research/spot-testnet-readiness`, based on published
+`f7ca7d0aee56f8966fc31314400efbc6a57e8174` (use this hash, not the different
+local hash reported by the previous author).
+
+Added `trading_bot/testnet_observer.py`: fixed-host GET-only reader, signed
+per-order query, bounded trade pagination, order-before/after and cumulative
+quantity/quote/side/status checks, original-asset fees, atomic redacted status
+reports, once/continuous CLI. No gate clearing, trade submission or ledger writes.
+Added eight adapter tests and an uninstalled systemd observer unit. Instructions,
+limits and remaining runtime work: TESTNET_READINESS.md.
+
+Full Linux tests: 170/170 pass. Public quote-only network smoke failed safely;
+actual connectivity/payload validation is not established. No signed real calls,
+Telegram use, order submission, working DB/config access, VM creation or deployment.
+
+This closes no real-exchange completeness guarantee: synthetic recovery cannot be
+connected by setting is_simulator on a live adapter. Next implementation needs a
+real persistence/recovery contract, supported order/filter/cancel semantics and
+full runtime integration. The new observer is an executable read-only component,
+NOT a complete trading application. Working bot stays paused. Do not deploy or
+resume without explicit authorization. No independent external review was run
+in this delivery; inherited fixes were exercised by the complete test suite.
