@@ -975,3 +975,9 @@ with dedicated test credentials and separate Telegram bot, first --once paused,
 then bounded Spot Testnet validation. VM configuration is prepared but actual
 provisioning requires available GCP identity/project/billing context. Do not waste
 another cycle reimplementing the already shipped offline fixture.
+
+## Spot test deployment attempt — 2026-10-31
+
+Branch `research/spot-test-deployment`, base `aa2ec88e1b9e1d6e06012c3ab9950b5c99bc0134`. Full results and proposed VM: [SPOT_DEPLOYMENT_CHECK.md](SPOT_DEPLOYMENT_CHECK.md). WSL Linux tests 199/199; offline demo passed. Public Spot Testnet APIs returned valid data in WSL; paused paper --once succeeded using a separate temporary DB, no orders. Verified 39 closed candles, current exchange filters and 0.1% paper fee calculation. This differs from prior HTTP 451 in another execution environment. No authenticated Testnet or real Telegram checks: separately confirmed test credentials are not in this process environment. Testnet order pass not attempted.
+
+Cloud Shell starts but SSH did not connect: Windows plink did not have a verified host key. Separate Cloud Shell checkout and in-cloud checks remain outstanding. Need user to verify/accept its Cloud Shell host key through the normal trusted process. Billing enabled in candidate project `gen-lang-client-0854183882`; Compute Engine API absent from enabled API list; IAM/quotas need verification. VM candidate and approximate cost documented; not created and requires separate paid-resource approval. Added paper systemd unit without Telegram, syntax verified, not installed. Existing paper bot and its config/database remain untouched. No Testnet/live deployment, no production money, no VM, no real API orders, no automatic strategy enabled.
