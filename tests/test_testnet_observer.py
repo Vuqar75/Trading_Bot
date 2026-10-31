@@ -72,7 +72,7 @@ class ObserverTests(unittest.TestCase):
 
     def test_no_credentials_and_no_mutating_endpoint(self):
         with self.assertRaises(ObservationError): SpotTestnetReader().get('/api/v3/account', signed=True)
-        with self.assertRaises(ObservationError): self.reader.get('/api/v3/openOrders')
+        with self.assertRaises(ObservationError): self.reader.get('/api/v3/order/test')
         with self.assertRaises(ObservationError): self.reader.audit_order('BTCUSDT?x=1', 'tb1')
 
     def test_report_replacement_and_transport_redaction(self):

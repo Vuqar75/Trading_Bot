@@ -910,3 +910,68 @@ full runtime integration. The new observer is an executable read-only component,
 NOT a complete trading application. Working bot stays paused. Do not deploy or
 resume without explicit authorization. No independent external review was run
 in this delivery; inherited fixes were exercised by the complete test suite.
+
+## Current runnable Spot application — 2026-10-31
+
+User explicitly requested continuing autonomously to a working variant rather
+than further small planning/review handoffs, and stated full access. This
+supersedes the earlier requirement to ask before each implementation block; it
+is not evidence that cloud credentials or Testnet connectivity exist here.
+Working legacy bot, its DB and personal Telegram configuration remain untouched.
+
+Branch `research/spot-runtime` based on `b299ea54af7e3ccd1edb7e3e45e65111470ee668`.
+New executable: `python3 -B -m trading_bot.app`; full instructions and boundaries:
+[RUNNING_SPOT_APP.md](RUNNING_SPOT_APP.md). Demo: append `--demo` (no network/env).
+
+Delivered as one batch:
+- Runnable single-process, single-SQLite BTCUSDT Spot app, distinct schema and
+  entrypoint; no synthetic is_simulator override or fake snapshot passed to a
+  real exchange. Legacy launcher and running instance were not modified.
+- Paper executor and fixed-host Spot Testnet MARKET base-quantity adapter; durable
+  intent/client ID before sole POST, ambiguous response queried by ID after
+  restart, cumulative fills audited with order-before/after and bounded pagination.
+- Atomic per-fill accounting, cash/cost/PnL and outbox, idempotent fills, partial
+  settlement, original fee assets, unknown fee gates, residual/dust retained.
+- One unresolved order, position binding rechecked at claim, separate manual pause,
+  stale prepared orders expire at startup. Unknown/not-found never auto resends.
+  Confirmed REJECTED requires review, not automatic retry; contradictions persist.
+- Real Telegram polling/authentication path with dedicated RUNTIME_* env names,
+  persisted command/action request/offset/outbox transaction. Owner IDs/tokens not
+  stored. New bot token required if another poller is running; old token not used.
+- SMA 10/30 on selectable 1m/5m/15m/1h, default 15m only as hypothesis. Starts paused.
+  Max configured entry 10 USDT, daily realized limit 5 UTC. Software stop/take
+  based on cost 2%/4%, ticker checked before candle loading; not exchange protection.
+- flock process exclusion, redacted health report/error handling, SIGTERM shutdown,
+  checked systemd paper service, consistent SQLite backup tool and hourly timer.
+
+Validation: full Linux suite passed 199/199 unique test methods; tests added for runtime, real-process crashes around commands and
+fill commits, second writer/process, partial and duplicate fills, stale closes,
+unknown commissions, actual Telegram auth fields, stale commands, reply failures,
+backup/restore, candle checks, filters and signed HTTP adapter with fake transport.
+End-to-end fake Testnet accepts BUY but loses response, runtime restarts, reconciles
+once and closes via signed adapter; no real network orders. Demo completed two
+orders, flat position, net PnL 0.0859000, pending 0. systemd-analyze verify passed.
+
+External blockers observed, not hypothetical: public Testnet time endpoint returns
+HTTP 451 from this executor. Live paper --once fails safely, retains pause and
+writes error health. No Testnet keys are configured in the managed environment;
+no gcloud executable/outbound GCP identity exists. Thus no signed live Testnet
+validation, VM creation, deployment or working-bot resume was performed. Do not
+claim those are done or replace Testnet with production to bypass the error.
+
+Limits: this is an executable narrow Spot app, NOT the complete multi-market
+product and NOT independently reviewed new code. Futures isolated/cross, margin,
+exchange protective orders, cancel API, user streams, full account-wide history,
+valuation of third-asset fees, Testnet-reset recovery, distributed fencing and
+power-loss verification remain. Dedicated testnet account / no external trading
+is a contract; owned-order audit is not proof of whole-account completeness.
+Periodic backups here retain one snapshot on the same host, not disaster recovery.
+Never restore an old trading DB then resume without recovering newer exchange
+history/client IDs. Existing offline-research tests are retained, not represented
+as coverage of all new runtime guarantees.
+
+Next practical action: use this pinned checkout in a Testnet-supported environment
+with dedicated test credentials and separate Telegram bot, first --once paused,
+then bounded Spot Testnet validation. VM configuration is prepared but actual
+provisioning requires available GCP identity/project/billing context. Do not waste
+another cycle reimplementing the already shipped offline fixture.

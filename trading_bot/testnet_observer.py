@@ -33,7 +33,7 @@ def number(value):
 class SpotTestnetReader:
     HOST = 'https://testnet.binance.vision'
     PATHS = {'/api/v3/time', '/api/v3/exchangeInfo', '/api/v3/ticker/price',
-             '/api/v3/account', '/api/v3/order', '/api/v3/myTrades'}
+             '/api/v3/account', '/api/v3/order', '/api/v3/myTrades', '/api/v3/klines', '/api/v3/openOrders'}
 
     def __init__(self, key=None, secret=None, transport=None, clock=time.time):
         self.key, self.secret = key, secret
@@ -103,7 +103,7 @@ class SpotTestnetReader:
             cursor = max(ids) + 1
         raise ObservationError('Trade page limit reached')
 
-    def audit_order(self, symbol, client_id):
+    def audit_order(self, symbol, client_id, *, details=False):
         self.validate_symbol(symbol)
         if not isinstance(client_id, str) or not re.fullmatch(r'[A-Za-z0-9._:/-]{1,36}', client_id):
             raise ObservationError('Invalid client order ID')
@@ -135,10 +135,13 @@ class SpotTestnetReader:
                 raise ObservationError('Trade side mismatch')
             asset = trade['commissionAsset']
             fees[asset] = fees.get(asset, Decimal(0)) + number(trade['commission'])
-        return {'order_id': str(first['orderId']), 'status': status,
+        result = {'order_id': str(first['orderId']), 'status': status,
                 'executed_quantity': str(quantity), 'executed_quote': str(quote),
                 'fees': {k: str(v) for k, v in fees.items()}, 'fill_count': len(fills),
                 'gate_clear_authorized': False}
+        if details:
+            result.update(order=first, fills=fills)
+        return result
 
     def observe(self, symbol, client_ids=()):
         self.validate_symbol(symbol)

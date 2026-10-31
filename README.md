@@ -1,3 +1,8 @@
+> **Новое приложение Spot:** [RUNNING_SPOT_APP.md](RUNNING_SPOT_APP.md).
+> Запуск без сети: `python3 -B -m trading_bot.app --demo`.
+> Это отдельный runtime, не обновление работающего legacy-бота. Testnet API в
+> текущем окружении возвращает HTTP 451; реальный ордерный прогон не выполнен.
+
 # Торговый бот: экспериментальная первая версия
 
 Изолированное исследование paper futures: см. [RESEARCH.md](RESEARCH.md).

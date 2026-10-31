@@ -1,0 +1,14 @@
+[Unit]
+Description=Consistent backup of Trading Bot paper runtime
+
+[Service]
+Type=oneshot
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot
+ExecStart=/usr/bin/python3 -B -m trading_bot.runtime_backup /var/lib/trading-bot-runtime/runtime-paper.db /var/lib/trading-bot-backups/latest.db
+StateDirectory=trading-bot-backups
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
