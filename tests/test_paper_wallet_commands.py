@@ -3,13 +3,14 @@ import sqlite3
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 from decimal import Decimal,localcontext
 from pathlib import Path
 from trading_bot.app import Application,TelegramTransport
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_shared_store import SharedPaperStore
-from trading_bot.paper_wallet_live_report import live_report,render_live_report
+from trading_bot.paper_wallet_live_report import live_report,render_live_report,_fmt
 from trading_bot.paper_wallet_worker import process_wallet
 from trading_bot.runtime_exchange import PaperExchange
 from trading_bot.runtime_store import RuntimeStore
@@ -39,6 +40,42 @@ class WalletCommandTests(unittest.TestCase):
             self.shared._set('futures','quote',{'price':'100','time':now})
 
     def _process(self,**kwargs):process_wallet(self.q,self.shared,**kwargs)
+
+    def test_amount_display_preserves_sign_and_precision_only_for_rendering(self):
+        cases={'0':'0','-0':'0','1.23456':'1.2346','-1.23456':'-1.2346',
+               '0.0001':'0.0001','0.00009999999999999999999999999999999999':'меньше 0.0001',
+               '-0.00000000001':'-меньше 0.0001','0.00000000001':'меньше 0.0001',
+               '99999999999999999999.999999':'100000000000000000000'}
+        for source,expected in cases.items():
+            with self.subTest(source=source):self.assertEqual(_fmt(Decimal(source)),expected)
+        self.assertEqual(_fmt(None),'неизвестно')
+        with self.assertRaises(TypeError):_fmt(0.5)
+
+    def test_all_wallet_report_commands_format_without_mutating_values(self):
+        data=live_report(self.shared,now=time.time())
+        data['wallets']['spot']['free']=Decimal('1.23456789')
+        data['wallets']['spot']['reserved']=Decimal('0.00000001')
+        data['btc']=Decimal('0.00000001');data['total']=Decimal('-0.00000001')
+        data['cross']={'equity':Decimal('1.234567'),'margin':Decimal('0.00000001'),
+                       'liability':Decimal('-0.00000001'),'buffer':Decimal('1.234567'),
+                       'available':Decimal('1.234567'),'gross':Decimal('-0.00000001'),
+                       'realized':Decimal(0),'fees':Decimal('0.00000001'),
+                       'funding_total':Decimal('-0.00000001'),'adjustment':Decimal(0),
+                       'positions':[{'symbol':'BTCUSDT','direction':'LONG','quantity':'0.00000001',
+                                     'entry':'100.123456','margin':'4.123456'}]}
+        data['wallets']['futures_cross']={'free':Decimal('1.23456789'),'reserved':Decimal('0.00000001')}
+        self.q.receive(1,True,'/wallet spot');self.q.receive(2,True,'/wallet futures_cross')
+        self.q.receive(3,True,'/wallets');self.q.receive(4,True,'/balance_report')
+        self.q.receive(5,True,'/balance_report today');self.q.receive(6,True,'/balance_report all')
+        with patch('trading_bot.paper_wallet_worker.live_report',return_value=data):self._process()
+        messages=[r[0] for r in self.q.db.execute('select message from unified_outbox')]
+        self.assertEqual(len(messages),6)
+        for text in messages:
+            self.assertNotIn('1.234567',text);self.assertNotIn('0.00000001',text)
+            self.assertIn('меньше 0.0001',text)
+        self.assertIn('-меньше 0.0001',messages[2])
+        self.assertEqual(data['wallets']['spot']['free'],Decimal('1.23456789'))
+        self.assertEqual(data['cross']['positions'][0]['quantity'],'0.00000001')
 
     def test_mode_independent_transfer_and_retry_after_destination_commit(self):
         before=live_report(self.shared,now=time.time());future_pos=self.shared.snapshot('futures')['position']

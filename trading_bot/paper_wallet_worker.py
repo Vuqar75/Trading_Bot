@@ -3,7 +3,7 @@ import json
 import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from .paper_wallet_live_report import live_report,render_live_report
+from .paper_wallet_live_report import live_report,render_live_report,_fmt
 
 
 def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
@@ -37,12 +37,12 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                     w=parts[1]
                     if w not in data['wallets']:raise ValueError('Кошелёк пока недоступен. Доступны reserve, spot и futures_isolated.')
                     v=data['wallets'][w]
-                    result=f"{w}: свободно {v['free']} USDT; резерв {v['reserved']} USDT. Сверка пройдена."
-                    if w=='spot':result+=f" Spot актив: {data['btc']} BTC."
-                    if w=='futures_isolated':result+=f" Маржа {data['margin']} USDT; funding {data['funding_open']} USDT."
+                    result=f"{w}: свободно {_fmt(v['free'])} USDT; резерв {_fmt(v['reserved'])} USDT. Сверка пройдена."
+                    if w=='spot':result+=f" Spot актив: {_fmt(data['btc'])} BTC."
+                    if w=='futures_isolated':result+=f" Маржа {_fmt(data['margin'])} USDT; funding {_fmt(data['funding_open'])} USDT."
                     if w=='futures_cross':
-                        cross=data['cross'];available=cross['available'] if cross['available'] is not None else 'неизвестно'
-                        result+=f" Общая маржа {cross['margin']} USDT; доступно для перевода {available}; позиций {len(cross['positions'])}."
+                        cross=data['cross'];available=_fmt(cross['available'])
+                        result+=f" Общая маржа {_fmt(cross['margin'])} USDT; доступно для перевода {available}; позиций {len(cross['positions'])}."
                 else:result=render_live_report(data)
             elif cmd=='/transfers':
                 with shared.transaction():

@@ -2,14 +2,24 @@
 import json
 import time
 from datetime import datetime
-from decimal import Decimal, localcontext
+from decimal import Decimal, localcontext, ROUND_HALF_UP
 from zoneinfo import ZoneInfo
-from .paper_wallet_ledger import amount, encode
+from .paper_wallet_ledger import amount
 from .telegram_reports import when
 
 
 def _fmt(value):
-    return 'неизвестно' if value is None else encode(value)
+    if value is None:return 'неизвестно'
+    if isinstance(value,float):raise TypeError('Amounts must not use float')
+    value=Decimal(value)
+    if not value.is_finite():raise ValueError('Non-finite amount')
+    if not value:return '0'
+    if value.copy_abs()<Decimal('0.0001'):
+        return ('-' if value.is_signed() else '')+'меньше 0.0001'
+    with localcontext() as ctx:
+        ctx.prec=max(28,len(value.as_tuple().digits)+max(0,value.adjusted())+5)
+        rounded=value.quantize(Decimal('0.0001'),rounding=ROUND_HALF_UP)
+    return format(rounded,'f').rstrip('0').rstrip('.')
 
 
 def live_report(shared, *, now=None, period='all', max_age=120):
@@ -160,7 +170,7 @@ def render_live_report(data):
         lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+'; обязательства '+_fmt(-cross['liability'])+'; запас риска '+_fmt(cross['buffer'])+'; доступно для перевода '+_fmt(cross['available'])+'.')
         lines.append('Cross результат открытых позиций: '+_fmt(cross['gross'])+'; реализованный до комиссий: '+_fmt(cross['realized'])+'; комиссии: '+_fmt(cross['fees'])+'; funding: '+_fmt(cross['funding_total'])+'; модельная корректировка: '+_fmt(cross['adjustment'])+' USDT.')
         for pos in cross['positions']:
-            lines.append(pos['symbol']+' '+pos['direction']+' — '+pos['quantity']+'; вход '+pos['entry']+'; маржа '+pos['margin']+' USDT.')
+            lines.append(pos['symbol']+' '+pos['direction']+' — '+_fmt(pos['quantity'])+'; вход '+_fmt(pos['entry'])+'; маржа '+_fmt(pos['margin'])+' USDT.')
         lines.append('margin_cross: недоступен.')
     if data['incomplete']:lines.append('Неполные данные: '+ '; '.join(data['incomplete']))
     if data['period']=='today':lines.append('Суточные Spot-комиссии не подтверждены временными метками старой истории.')
