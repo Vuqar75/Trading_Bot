@@ -145,6 +145,8 @@ class Application:
         if self.exchange.mode != 'paper':
             raise ObservationError('Local entry activation is paper only')
         with self.store.transaction():
+            if self.store.shared and self.store.shared.deployment_hold():
+                raise ObservationError('Paper deployment hold active')
             if self.store.pending() or self.store.get('blocked') or not self.store.get('position')['fees_known']:
                 raise ObservationError('Recovery or fee review required')
             self.store.set('paused', False)

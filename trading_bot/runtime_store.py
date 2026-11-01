@@ -124,6 +124,7 @@ class RuntimeStore:
             if not qty:
                 raise ObservationError('Zero quantity')
             if side == 'BUY':
+                if self.shared and self.shared.deployment_hold():raise ObservationError('Paper deployment hold active')
                 if self.get('paused') or number(pos['quantity']) or not pos['fees_known'] or self.loss() >= daily_limit:
                     raise ObservationError('Entry not allowed')
                 if qty * price * Decimal('1.002') > number(self.get('cash')):
@@ -155,6 +156,8 @@ class RuntimeStore:
                 raise ObservationError('Another order is unresolved')
             if order['side'] == 'BUY' and (self.get('paused') or number(pos['quantity'])):
                 raise ObservationError('Entry no longer allowed')
+            if order['side'] == 'BUY' and self.shared and self.shared.deployment_hold():
+                raise ObservationError('Paper deployment hold active')
             if order['side'] == 'SELL' and number(order['quantity']) > number(pos['quantity']):
                 raise ObservationError('Close quantity changed')
             if order['reason'] == 'MANUAL':
@@ -290,7 +293,7 @@ class RuntimeStore:
             if authorized:
                 if command in {'/pause', '/stop', '/resume'}:
                     allowed = command == '/resume'
-                    if allowed and (self.pending() or self.get('blocked') or not self.get('position')['fees_known']):
+                    if allowed and (self.pending() or self.get('blocked') or not self.get('position')['fees_known'] or (self.shared and self.shared.deployment_hold())):
                         message = 'Входы заблокированы: требуется сверка или оценка комиссий.'
                     else:
                         self.set('paused', not allowed)

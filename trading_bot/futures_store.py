@@ -102,6 +102,8 @@ class FuturesStore:
         with self.transaction():
             if self.db.execute('SELECT 1 FROM futures_events WHERE business_key=?', (key,)).fetchone():
                 return False
+            if self.shared and self.shared.deployment_hold():
+                return False
             if self.get('position') or self.get('paused') or self.get('blocked') or self.loss() >= 5:
                 return False
             cash = number(self.get('cash'))
@@ -264,7 +266,7 @@ class FuturesStore:
                 parts = command.split()
                 cmd = parts[0] if parts else ''
                 if cmd in {'/pause', '/stop', '/resume'}:
-                    if cmd == '/resume' and (self.get('blocked') or self.get('error')):
+                    if cmd == '/resume' and (self.get('blocked') or self.get('error') or (self.shared and self.shared.deployment_hold())):
                         text = 'Входы заблокированы до успешной проверки данных.'
                     else:
                         self.set('paused', cmd != '/resume')

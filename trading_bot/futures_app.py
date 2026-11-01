@@ -180,7 +180,7 @@ def main():
                         logging.error('Futures command queue failed: %s', type(exc).__name__)
                 if activate:
                     activate = False
-                    if not store.get('error') and not store.get('blocked'):
+                    if not store.get('error') and not store.get('blocked') and not (store.shared and store.shared.deployment_hold()):
                         with store.transaction():
                             store.set('paused', False)
                 if telegram:

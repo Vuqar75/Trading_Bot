@@ -9,6 +9,7 @@ import hashlib
 import json
 import sqlite3
 import uuid
+import time
 from decimal import Decimal, localcontext
 from pathlib import Path
 from .paper_wallet_ledger import PaperWalletLedger, amount, encode
@@ -53,6 +54,26 @@ class SharedPaperStore:
     def _set(self,market,key,value):
         table='runtime_meta' if market=='spot' else 'futures_meta'
         self.db.execute('INSERT OR REPLACE INTO '+table+' VALUES(?,?)',(key,json.dumps(value,sort_keys=True)))
+
+    def deployment_hold(self):
+        row=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()
+        return bool(row and row[0]=='true')
+
+    def set_deployment_hold(self,enabled):
+        if type(enabled) is not bool:raise ValueError('Invalid hold state')
+        with self.transaction():
+            if not self.ledger.reconcile()['balanced']:raise ValueError('Journal integrity mismatch')
+            self._assert_consistent('spot');self._assert_consistent('futures')
+            if not enabled and (self._get('spot','paused') is not True or self._get('futures','paused') is not True):
+                raise ValueError('Both markets must be paused before release')
+            if not enabled:
+                for market in ('spot','futures'):
+                    quote=self._get(market,'quote') or {}
+                    if self._get(market,'error') or self._get(market,'blocked') or not quote.get('time') or not 0<=time.time()-quote['time']<=120:
+                        raise ValueError('Market health must be checked before release')
+                if not self._get('spot','position')['fees_known'] or self.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone():
+                    raise ValueError('Spot requires recovery or fee review')
+            self.db.execute("INSERT OR REPLACE INTO ledger_meta VALUES('deployment_hold',?)",('true' if enabled else 'false',))
 
     def snapshot(self,market):
         if market not in ('spot','futures'):raise ValueError('Unknown market')
@@ -157,6 +178,7 @@ class SharedPaperStore:
         return snapshot
 
     def _sync_pause_and_validate(self,source,destination):
+        if self.deployment_hold():raise ValueError('Deployment hold is active')
         if source not in ('reserve','spot','futures_isolated') or destination not in ('reserve','spot','futures_isolated') or source==destination:
             raise ValueError('Unsupported transfer')
         for wallet,market in (('spot','spot'),('futures_isolated','futures')):

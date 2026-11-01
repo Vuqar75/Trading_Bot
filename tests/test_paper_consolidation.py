@@ -6,6 +6,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from decimal import Decimal
 from pathlib import Path
@@ -125,6 +126,27 @@ class PaperConsolidationTests(unittest.TestCase):
         r=MarketReceiver(self.target,'spot');self.addCleanup(r.close)
         with self.assertRaisesRegex(ValueError,'mismatch'):r.apply(99,'/resume')
         self.assertIn('паузе',r.apply(100,'/pause'))
+
+    def test_deployment_hold_blocks_entries_transfers_and_manual_close_not_protection(self):
+        consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
+        spot=RuntimeStore(self.target,{'mode':'paper','interval':'15m'},shared=True);future=FuturesStore(self.target,shared=True)
+        self.addCleanup(spot.close);self.addCleanup(future.close)
+        spot.shared.set_deployment_hold(True)
+        receiver=MarketReceiver(self.target,'spot');self.addCleanup(receiver.close)
+        self.assertIn('заблокированы',receiver.apply(100,'/resume'))
+        self.assertTrue(spot.get('paused'))
+        with self.assertRaises(ValueError):spot.shared.propose_transfer('held','spot','reserve','1')
+        with self.assertRaises(Exception):Application(spot,PaperExchange(),None).enable_paper_entries()
+        p=future.get('position')
+        self.assertTrue(future.close_position(Decimal(100),2000,'hold-protection','STOP',p['id']))
+        future.command(101,True,'/resume',routed=True)
+        self.assertTrue(future.get('paused'))
+        now=time.time()
+        with spot.shared.transaction():
+            spot.shared._set('spot','quote',{'price':'100','time':now})
+            spot.shared._set('futures','quote',{'price':'100','time':now})
+        spot.shared.set_deployment_hold(False)
+        self.assertFalse(spot.shared.deployment_hold())
 
     def test_shared_concurrent_debits_serialize_and_reject_negative_cash(self):
         consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)

@@ -50,6 +50,11 @@ class MarketReceiver:
         if not s.ledger.reconcile()['balanced']:raise ValueError('Journal integrity mismatch')
         s._assert_consistent('spot');s._assert_consistent('futures')
 
+    def _deployment_hold(self):
+        if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ledger_meta'").fetchone():return False
+        row=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()
+        return bool(row and row[0]=='true')
+
     def apply(self, ident, command, payload=None, *, now=None):
         if type(ident) is not int or ident < 0:
             raise ValueError('Invalid command identity')
@@ -73,7 +78,7 @@ class MarketReceiver:
                 self._check_shared_finances()
                 pos = self._get('position')
                 unresolved = self.market == 'spot' and self.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone()
-                if self._get('blocked') or self._get('error') or unresolved or (payload.get('expires') is not None and now >= payload['expires']) or (self.market == 'spot' and (not isinstance(pos, dict) or not pos.get('fees_known'))):
+                if self._deployment_hold() or self._get('blocked') or self._get('error') or unresolved or (payload.get('expires') is not None and now >= payload['expires']) or (self.market == 'spot' and (not isinstance(pos, dict) or not pos.get('fees_known'))):
                     result = 'Входы заблокированы до успешной проверки.'
                 else:
                     self._set('paused', False)
@@ -88,7 +93,7 @@ class MarketReceiver:
                 except (KeyError, TypeError, InvalidOperation):
                     valid = False
                 unresolved = self.market == 'spot' and self.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone()
-                if not valid or self._get('blocked') or self._get('error') or self._get('close_request') or unresolved:
+                if not valid or self._deployment_hold() or self._get('blocked') or self._get('error') or self._get('close_request') or unresolved:
                     result = 'Закрытие отклонено: позиция изменилась или требуется проверка.'
                 else:
                     self._set('paused', True)
