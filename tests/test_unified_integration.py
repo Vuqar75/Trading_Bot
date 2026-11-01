@@ -114,6 +114,16 @@ class UnifiedIntegrationTests(unittest.TestCase):
             self.assertFalse(self.future.close_position(Decimal(100),2000,'manual','MANUAL',pos['id']))
             self.assertTrue(self.future.close_position(Decimal(100),2000,'protection','STOP',pos['id']))
 
+    def test_futures_manual_close_rejects_changed_volume_without_trade(self):
+        self.future.command(1,True,'/resume')
+        self.future.open_position('SHORT',Decimal(100),1000,'entry')
+        pos=self.future.get('position');self.future.apply_funding(pos['id'],[],2000)
+        with self.future.transaction():
+            self.future.set('close_request',{'target':pos['id'],'quantity':str(Decimal(pos['quantity'])/2),'expires':time.time()+120,'update_id':5})
+        self.assertFalse(self.future.close_position(Decimal(100),2000,'manual','MANUAL',pos['id']))
+        self.assertEqual(self.future.get('position')['id'],pos['id'])
+        self.assertEqual(self.future.db.execute("select count(*) from futures_events where event='CLOSE'").fetchone()[0],0)
+
     def test_two_receivers_apply_same_update_once(self):
         barrier=threading.Barrier(2); results=[]; errors=[]
         def run():
