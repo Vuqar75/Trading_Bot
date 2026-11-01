@@ -175,6 +175,50 @@ class CutoverRehearsalTests(unittest.TestCase):
         self.assertTrue(self.target.exists())
         self.assertTrue((self.units/'tradingbot-spot.service').read_text().startswith('[Unit]'))
 
+    def test_process_death_at_each_persisted_cutover_stage_preserves_copies(self):
+        stages={'preflight':'preflight','spot_pause_committed':'preflight',
+                'spot_paused':'spot_paused','futures_pause_committed':'spot_paused',
+                'futures_paused':'futures_paused','entries_paused':'entries_paused',
+                'source_backups_complete':'source_backups_complete',
+                'consolidated_verified':'consolidated_verified',
+                'source_archived:runtime-paper.db':'consolidated_verified',
+                'unit_replaced:tradingbot-spot.service':'consolidated_verified',
+                'old_writers_archived_and_units_installed':'old_writers_archived_and_units_installed',
+                'new_workers_started_on_hold':'new_workers_started_on_hold',
+                'healthy_on_hold_and_backup_complete':'healthy_on_hold_and_backup_complete',
+                'release_entries_committed':'healthy_on_hold_and_backup_complete','complete':'complete'}
+        code=("import os,sys; sys.path.insert(0,'tests'); "
+              "from test_vm_shared_cutover import CutoverRehearsalTests; "
+              "from tools import vm_install_shared_paper as c; "
+              "case=CutoverRehearsalTests(); case.setUp(); print('ROOT',case.root,flush=True); "
+              "target=sys.argv[1]; c.STAGE_HOOK=lambda stage: os._exit(77) if stage==target else None; "
+              "case._run()")
+        for stage,manifest_stage in stages.items():
+            with self.subTest(stage=stage):
+                proc=subprocess.run([sys.executable,'-c',code,stage],capture_output=True,text=True,timeout=30)
+                self.assertEqual(proc.returncode,77,proc.stderr)
+                root=Path(next(x[5:] for x in proc.stdout.splitlines() if x.startswith('ROOT ')))
+                try:
+                    archive=next((root/'home').glob('before-wallet-*'))
+                    self.assertEqual(json.loads((archive/'manifest.json').read_text())['stage'],manifest_stage)
+                    if stage not in ('complete',):
+                        with self.assertRaises(RuntimeError):cutover.require_no_interrupted_cutover(root/'home')
+                    for name in ('Trading_Bot_paper_state/runtime-paper.db','Trading_Bot_futures_state/futures-paper.db'):
+                        with sqlite3.connect(root/'home'/name) as db:
+                            self.assertEqual(db.execute('PRAGMA integrity_check').fetchone()[0],'ok')
+                    shared=root/'home/paper-financial/shared-paper.db'
+                    if shared.exists():
+                        from trading_bot.paper_shared_store import SharedPaperStore
+                        store=SharedPaperStore(shared)
+                        try:
+                            self.assertTrue(store.ledger.reconcile()['balanced'])
+                            self.assertEqual(store.snapshot('futures')['position']['direction'],'SHORT')
+                            self.assertEqual(store.deployment_hold(),stage not in ('release_entries_committed','complete'))
+                        finally:store.close()
+                        self.assertTrue((archive/'spot.db').exists())
+                        self.assertTrue((archive/'futures.db').exists())
+                finally:shutil.rmtree(root)
+
     def test_interrupted_or_missing_manifest_blocks_reexecution(self):
         archive=self.home/'before-wallet-interrupted';archive.mkdir()
         for payload in (None, {'stage':'consolidated_verified'}, {'stage':'manual_reconciliation_required'}):

@@ -33,6 +33,7 @@ TARGET=HOME/'paper-financial/shared-paper.db';CODE=Path('/opt/trading-bot-wallet
 UNIT_DIR=Path('/etc/systemd/system')
 UNITS=('tradingbot-spot.service','tradingbot-futures.service','tradingbot-monitor.service','tradingbot-paper-backup.timer')
 UNIT_FILES=('tradingbot-spot.service','tradingbot-futures.service','tradingbot-monitor.service','tradingbot-paper-backup.service','tradingbot-paper-backup.timer')
+STAGE_HOOK=lambda stage:None
 MAP={'tradingbot-spot.service':'vm-shared-spot-paper.service','tradingbot-futures.service':'vm-shared-futures-paper.service',
      'tradingbot-monitor.service':'vm-shared-paper-monitor.service','tradingbot-paper-backup.service':'vm-shared-paper-backup.service',
      'tradingbot-paper-backup.timer':'vm-shared-paper-backup.timer'}
@@ -162,6 +163,7 @@ def main():
         try:os.fsync(fd)
         finally:os.close(fd)
         print('CUTOVER_STAGE',stage,flush=True)
+        STAGE_HOOK(stage)
     for unit in UNIT_FILES:shutil.copy2(UNIT_DIR/unit,archive/unit)
     for label,p in [('spot',SPOT),('futures',FUTURE)]:
         st=p.stat();manifest['files'][label]={'uid':st.st_uid,'gid':st.st_gid,'mode':stat.S_IMODE(st.st_mode)}
@@ -175,6 +177,7 @@ def main():
                 if meta.get('paused')!=manifest['previous_paused'][label] or position_financial(meta.get('position'))!=position_financial(old[label].get('position')):
                     raise RuntimeError(label+' pause or position changed during preflight')
                 db.execute('UPDATE '+table+" SET value='true' WHERE key='paused'");db.commit()
+            STAGE_HOOK(label+'_pause_committed')
             mark(label+'_paused')
         mark('entries_paused')
         stopped=True
@@ -207,8 +210,10 @@ def main():
         user=subprocess.check_output(['id','-u','tradingbot'],text=True).strip();group=subprocess.check_output(['id','-g','tradingbot'],text=True).strip()
         os.chown(TARGET.parent,int(user),int(group));os.chmod(TARGET.parent,0o700);os.chown(TARGET,int(user),int(group));os.chmod(TARGET,0o600)
         mark('consolidated_verified')
-        for p in (SPOT,FUTURE):os.chown(p,0,0);os.chmod(p,0o400)
-        for target,source in MAP.items():shutil.copy2(CODE/'deploy'/source,UNIT_DIR/target)
+        for p in (SPOT,FUTURE):
+            os.chown(p,0,0);os.chmod(p,0o400);STAGE_HOOK('source_archived:'+p.name)
+        for target,source in MAP.items():
+            shutil.copy2(CODE/'deploy'/source,UNIT_DIR/target);STAGE_HOOK('unit_replaced:'+target)
         call('systemctl','daemon-reload')
         for name in UNIT_FILES:call('systemd-analyze','verify',str(UNIT_DIR/name))
         mark('old_writers_archived_and_units_installed')
@@ -243,6 +248,7 @@ def main():
         shared=SharedPaperStore(TARGET)
         try:manual=release_entries(shared,QUEUE,offset,manifest['previous_paused'])
         finally:shared.close()
+        STAGE_HOOK('release_entries_committed')
         time.sleep(18)
         final={}
         for label,mode,file in [('spot','paper','runtime-health.json'),('futures','futures-paper','futures-health.json')]:
