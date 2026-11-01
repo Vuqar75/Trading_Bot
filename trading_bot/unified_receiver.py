@@ -19,6 +19,7 @@ class MarketReceiver:
         self.market = market
         self.table = 'runtime_meta' if market == 'spot' else 'futures_meta'
         self.db = sqlite3.connect(Path(path).resolve().as_uri()+'?mode=rw', uri=True, isolation_level=None, timeout=5)
+        self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA synchronous=FULL')
         self.fault = fault
         if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?", (self.table,)).fetchone():
@@ -38,6 +39,16 @@ class MarketReceiver:
 
     def _set(self, key, value):
         self.db.execute('INSERT OR REPLACE INTO '+self.table+' VALUES(?,?)', (key, json.dumps(value, sort_keys=True)))
+
+    def _check_shared_finances(self):
+        if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='shared_market_anchor'").fetchone():
+            return
+        from .paper_shared_store import SharedPaperStore
+        from .paper_wallet_ledger import PaperWalletLedger
+        s=object.__new__(SharedPaperStore);s.db=self.db
+        s.ledger=object.__new__(PaperWalletLedger);s.ledger.db=self.db
+        if not s.ledger.reconcile()['balanced']:raise ValueError('Journal integrity mismatch')
+        s._assert_consistent('spot');s._assert_consistent('futures')
 
     def apply(self, ident, command, payload=None, *, now=None):
         if type(ident) is not int or ident < 0:
@@ -59,6 +70,7 @@ class MarketReceiver:
                 self._set('paused', True)
                 result = 'Входы на паузе; контроль позиции продолжается.'
             elif command == '/resume':
+                self._check_shared_finances()
                 pos = self._get('position')
                 unresolved = self.market == 'spot' and self.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone()
                 if self._get('blocked') or self._get('error') or unresolved or (payload.get('expires') is not None and now >= payload['expires']) or (self.market == 'spot' and (not isinstance(pos, dict) or not pos.get('fees_known'))):
@@ -67,6 +79,7 @@ class MarketReceiver:
                     self._set('paused', False)
                     result = 'Paper-входы разрешены.'
             elif command == '/confirmed_close':
+                self._check_shared_finances()
                 pos = self._get('position')
                 try:
                     quantity = Decimal(str(payload['quantity']))

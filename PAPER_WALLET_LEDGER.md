@@ -1,6 +1,12 @@
-# Paper wallets: offline checkpoint, not deployable
+# Paper wallets: offline checkpoints, not yet deployable
 
-This is an unfinished implementation. The existing Spot and futures processes still write separate `runtime_meta` and `futures_meta` balances and positions. `paper_wallet_ledger.py`, `paper_wallet_import.py` and `paper_wallet_report.py` are **offline prototypes only**, never connected to Telegram, runtime writers or a VM. Do not configure them as a live financial authority or make transfers against a running bot.
+This is unfinished and not installed. The current VM still uses separate Spot and futures databases. The continuation adds an experimental consolidated SQLite path, runtime adapters, wallet command routing and coordinated backup, but these have only been tested offline. Do not deploy until the remaining gates in HANDOFF.md have passed.
+
+## Continuation checkpoint
+
+`paper_consolidation.py` creates one file from two coordinated paused snapshots and keeps separate outboxes; `paper_shared_store.py` journals projections and anchors current Spot/futures financial state to immutable events. Experimental `RuntimeStore(...,shared=True)`, `FuturesStore(...,shared=True)` and `--shared-paper` use this path; old separate mode is still available for compatibility and must be retired/archived during any actual cutover. Tests exercise real runtime methods and a fake Telegram transport; they do not involve the VM or live APIs. `paper_wallet_worker.py` handles wallet commands and `paper_wallet_live_report.py` renders a current shared-store report. `paper_coordinated_backup.py` creates a cross-file backup with finance-before-queue locking; uninstalled systemd templates live in `deploy/vm-shared-*`. The Spot monitor excludes internal transfer flows from sampled equity. Full WSL Linux suite: **326/326**.
+
+Remaining gates: independently audit monetary/fee/funding reporting, reserve and order recovery accounting; exercise restarts, crash recovery and contention under actual VM resource limits; prepare and rehearse migration plus a rollback that cannot resurrect a position or erase actions; preserve current q and observer history; block old independent writers. Snapshot tests so far are synthetic. Do not interpret the prototypes or suite as confirmation of real VM migration, reconciled capital or production readiness. When the user requests continuation, first read the latest HANDOFF, inspect actual state read-only, rehearse only on coordinated copies and proceed to the already-authorized installation only when all safety checks succeed.
 
 ## Implemented and tested on temporary databases
 

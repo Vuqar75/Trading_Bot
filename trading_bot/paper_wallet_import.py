@@ -6,6 +6,7 @@ This module does not stop processes, update old stores, or activate the ledger.
 import hashlib
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 from decimal import Decimal
 from .paper_wallet_ledger import amount
@@ -16,7 +17,7 @@ def read_snapshot(path, table, expected_mode):
     if not path.is_file() or any(Path(str(path)+suffix).exists() for suffix in ('-wal','-journal')):
         raise ValueError('Use a standalone, consistent SQLite backup')
     before = hashlib.sha256(path.read_bytes()).hexdigest()
-    with sqlite3.connect(path.as_uri()+'?mode=ro',uri=True) as db:
+    with closing(sqlite3.connect(path.as_uri()+'?mode=ro',uri=True)) as db:
         if db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
             raise ValueError('Invalid source snapshot')
         if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone():

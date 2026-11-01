@@ -25,7 +25,9 @@ class FuturesOutboxRelay:
                 row = self.db.execute("SELECT value FROM futures_meta WHERE key='identity'").fetchone()
                 if row is None or json.loads(row[0]).get('mode') != 'futures-paper':
                     raise ObservationError('Relay requires the futures paper database')
-                self.db.execute('SELECT id,message FROM runtime_outbox LIMIT 1')
+                shared=self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='futures_outbox'").fetchone()
+                self.outbox_table='futures_outbox' if shared else 'runtime_outbox'
+                self.db.execute('SELECT id,message FROM '+self.outbox_table+' LIMIT 1')
             except BaseException:
                 self.db.close()
                 raise

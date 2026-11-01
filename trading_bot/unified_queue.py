@@ -103,6 +103,18 @@ class UnifiedQueue:
                         if command in ('/resume', '/timeframe', '/leverage'):
                             payload = {'received_at': now, 'expires': now + 120}
                         jobs = [(market, ' '.join([command] + parts[1:]))]
+                elif command in ('/wallets','/wallet','/transfer','/transfers','/balance_report'):
+                    lengths={'/wallets':(1,),'/wallet':(2,),'/transfer':(4,),'/transfers':(1,),'/balance_report':(1,2)}
+                    if len(parts) not in lengths[command]:
+                        self._notify('[Кошельки] Некорректные параметры команды.')
+                    elif command=='/transfer' and not fresh:
+                        self._notify('[Кошельки] Команда устарела; отправьте заново.')
+                    else:
+                        market='wallet';payload={'received_at':now,'expires':now+120} if command=='/transfer' else {}
+                        jobs=[('wallet',' '.join([command]+parts[1:]))]
+                elif command in ('/confirm','/cancel') and len(parts)==2 and parts[1].startswith('T-') and fresh:
+                    market='wallet';payload={'received_at':now,'token':parts[1]}
+                    jobs=[('wallet','/confirm_transfer' if command=='/confirm' else '/cancel_transfer')]
                 elif command in ('/confirm', '/cancel') and len(parts) == 2 and fresh:
                     proposal = self.db.execute('SELECT * FROM unified_proposals WHERE id=?', (parts[1],)).fetchone()
                     if proposal is None or proposal['status'] != 'OPEN' or proposal['expires'] <= now:
@@ -116,7 +128,7 @@ class UnifiedQueue:
                         self.db.execute("UPDATE unified_proposals SET status='CONFIRMED' WHERE id=?", (parts[1],))
                         jobs = [(market, '/confirmed_close')]
                 else:
-                    self._notify('Рынок: '+mode.upper()+'. Команды: /mode, /status, /signal, /history, /pause, /resume, /timeframe, /leverage (futures), /close, /confirm ID, /cancel ID, /pause_all.')
+                    self._notify('Рынок: '+mode.upper()+'. Команды: /mode, /status, /signal, /history, /pause, /resume, /timeframe, /leverage (futures), /close, /confirm ID, /cancel ID, /pause_all. Кошельки: /wallets, /wallet, /transfer, /transfers, /balance_report.')
             self.db.execute('INSERT INTO unified_updates VALUES(?,?,?,?)', (ident, fingerprint, command, market))
             for destination, action in jobs:
                 self.db.execute('INSERT INTO unified_jobs(update_id,market,command,payload) VALUES(?,?,?,?)', (ident, destination, action, json.dumps(payload, sort_keys=True)))
@@ -149,7 +161,8 @@ class UnifiedQueue:
             if row['status'] == 'DONE':
                 return
             self.db.execute("UPDATE unified_jobs SET status=?,result=? WHERE id=?", ('DONE' if applied else 'FAILED', result, job_id))
-            self._notify('['+row['market'].upper()+'] '+result)
+            label='Кошельки' if row['market']=='wallet' else row['market'].upper()
+            self._notify('['+label+'] '+result)
             update = self.db.execute('SELECT command FROM unified_updates WHERE id=?', (row['update_id'],)).fetchone()
             if update['command'] == '/pause_all':
                 waiting = [r[0] for r in self.db.execute("SELECT market FROM unified_jobs WHERE update_id=? AND status!='DONE'", (row['update_id'],))]

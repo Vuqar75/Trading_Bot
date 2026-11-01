@@ -87,7 +87,7 @@ class TelegramTransport:
 
     def flush(self, store):
         table = getattr(store, 'outbox_table', 'runtime_outbox')
-        if table not in ('runtime_outbox', 'unified_outbox'):
+        if table not in ('runtime_outbox', 'unified_outbox', 'futures_outbox'):
             raise ValueError('Unknown outbox')
         for row in store.db.execute('SELECT id,message FROM '+table+' ORDER BY id LIMIT 5').fetchall():
             label = getattr(store, 'delivery_label', '')
@@ -297,6 +297,7 @@ def main():
     parser.add_argument('--enable-testnet-orders', action='store_true')
     parser.add_argument('--telegram', action='store_true')
     parser.add_argument('--futures-outbox-db', help='Deliver the separate futures paper outbox through this Telegram bot')
+    parser.add_argument('--shared-paper', action='store_true', help='Use an offline consolidated paper database (experimental)')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--allow-paper-signal', action='store_true', help='Allow explicit SIGUSR1 activation of paper entries')
     args = parser.parse_args()
@@ -311,6 +312,10 @@ def main():
         parser.error('paper signal activation requires continuous paper mode without Testnet orders')
     if args.mode == 'testnet' and not args.enable_testnet_orders:
         parser.error('Testnet mode requires --enable-testnet-orders; still starts paused')
+    if args.shared_paper and (args.mode != 'paper' or args.enable_testnet_orders):
+        parser.error('Shared paper storage cannot use Testnet orders')
+    if args.shared_paper and args.futures_outbox_db and Path(args.futures_outbox_db).resolve() != Path(args.db).resolve():
+        parser.error('Shared paper relay must use the shared database')
     os.umask(0o077)
     args.db = str(Path(args.db).resolve())
     key = os.getenv('BINANCE_TESTNET_API_KEY') if args.mode == 'testnet' else None
@@ -333,8 +338,8 @@ def main():
         activate = True
     if args.allow_paper_signal:
         signal.signal(signal.SIGUSR1, activate_paper)
-    with process_lock(args.db + '.lock'):
-        store = RuntimeStore(args.db, identity)
+    with process_lock(args.db + ('.spot.lock' if args.shared_paper else '.lock')):
+        store = RuntimeStore(args.db, identity, shared=args.shared_paper)
         relay = None
         unified = None
         receiver = None
@@ -379,6 +384,9 @@ def main():
                     try:
                         from .unified_worker import process_market
                         process_market(unified, receiver, store, 'spot', started=worker_started)
+                        if store.shared:
+                            from .paper_wallet_worker import process_wallet
+                            process_wallet(unified, store.shared, started=worker_started)
                     except Exception as exc:
                         log.error('Spot command queue failed: %s', type(exc).__name__)
                 if telegram:

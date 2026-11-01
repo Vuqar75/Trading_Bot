@@ -1,0 +1,11 @@
+[Unit]
+Description=Hourly coordinated shared paper backup
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1h
+Unit=tradingbot-paper-backup.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -16,10 +16,15 @@ TERMINAL = {'FILLED', 'CANCELED', 'REJECTED', 'EXPIRED', 'EXPIRED_IN_MATCH'}
 
 
 class RuntimeStore:
-    def __init__(self, path, identity, fault=lambda point: None):
+    def __init__(self, path, identity, fault=lambda point: None, *, shared=False):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.fault = fault
-        self.db = sqlite3.connect(path, isolation_level=None)
+        self.shared = None
+        if shared:
+            if identity.get('mode') != 'paper':raise ObservationError('Shared storage requires paper mode')
+            from .paper_shared_store import SharedPaperStore
+            self.shared = SharedPaperStore(path, fault=fault)
+        self.db = self.shared.db if self.shared else sqlite3.connect(path, isolation_level=None)
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA synchronous=FULL')
         self.db.execute('PRAGMA foreign_keys=ON')
@@ -27,7 +32,7 @@ class RuntimeStore:
             with self.transaction():
                 tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
                 expected_tables = {'runtime_meta', 'runtime_orders', 'runtime_fills', 'runtime_commands', 'runtime_outbox', 'runtime_closes'}
-                if tables and tables != expected_tables:
+                if tables and (not expected_tables.issubset(tables) if self.shared else tables != expected_tables):
                     raise ObservationError('Use a new dedicated runtime database')
                 for sql in (
                     'CREATE TABLE IF NOT EXISTS runtime_meta(key TEXT PRIMARY KEY,value TEXT NOT NULL)',
@@ -51,14 +56,20 @@ class RuntimeStore:
                     if self.get(key) is None:
                         self.set(key, value)
         except BaseException:
-            self.db.close()
+            self.close()
             raise
 
     def close(self):
-        self.db.close()
+        if self.shared:self.shared.close()
+        else:self.db.close()
 
     @contextmanager
     def transaction(self):
+        if self.shared:
+            self.shared.fault=self.fault
+            with self.shared.market_transaction('spot'):
+                yield
+            return
         self.db.execute('BEGIN IMMEDIATE')
         try:
             yield
@@ -74,6 +85,8 @@ class RuntimeStore:
         return json.loads(row[0]) if row else default
 
     def set(self, key, value):
+        if self.shared and not self.db.in_transaction:
+            raise ObservationError('Shared state writes require a transaction')
         self.db.execute('INSERT OR REPLACE INTO runtime_meta VALUES(?,?)', (key, json.dumps(value, sort_keys=True)))
 
     def notify(self, message):

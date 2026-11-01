@@ -31,13 +31,17 @@ def snapshot(source, monitor, now=None):
         pending = db.execute("SELECT COUNT(*) FROM runtime_orders WHERE phase!='SETTLED'").fetchone()[0]
         fills = [json.loads(r[0]) for r in db.execute('SELECT payload FROM runtime_fills ORDER BY rowid')]
         closes = [dict(r) for r in db.execute('SELECT ts,pnl,known FROM runtime_closes ORDER BY rowid')]
+        transfers = []
+        if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='ledger_events'").fetchone():
+            transfers = [json.loads(r[0]) for r in db.execute("SELECT details FROM ledger_events WHERE kind='TRANSFER' AND created<=? ORDER BY rowid",(now,))]
     with closing(sqlite3.connect(monitor)) as obs, obs:
         obs.execute('CREATE TABLE IF NOT EXISTS samples(ts REAL PRIMARY KEY, quote_ts REAL, equity TEXT, error TEXT, pending INTEGER NOT NULL)')
         quote = meta.get('quote') or {}
         quote_ts = quote.get('time')
         equity = None
+        net_transfers = sum((Decimal(t['quantity'])*(1 if t['destination']=='spot' else -1 if t['source']=='spot' else 0) for t in transfers),Decimal(0))
         if quote_ts is not None and 0 <= now-quote_ts <= 120:
-            equity = str(Decimal(meta['cash']) + Decimal(meta['position']['quantity'])*Decimal(quote['price']))
+            equity = str(Decimal(meta['cash']) + Decimal(meta['position']['quantity'])*Decimal(quote['price']) - net_transfers)
         errors = {'trading':meta.get('error'),'telegram':meta.get('telegram_error')}
         obs.execute('INSERT OR REPLACE INTO samples VALUES(?,?,?,?,?)',
                     (now,quote_ts,equity,json.dumps(errors) if any(errors.values()) else None,pending))
@@ -85,7 +89,7 @@ def snapshot(source, monitor, now=None):
             'pending_orders':pending,'closed_positions':sum(1 for r in closes),
             'net_realized_pnl_usdt':str(net) if known else None,'gross_realized_pnl_usdt':str(net+allocated) if known else None,
             'total_fees_usdt':str(fees),'max_sampled_drawdown_usdt':str(drawdown) if peak is not None else None,
-            'drawdown_limitations':'Sampled equity; missing/stale quotes and time between samples are not observed.',
+            'drawdown_limitations':'Sampled equity adjusted for internal transfers; missing/stale quotes and time between samples are not observed.',
             'orders_and_fills_journal':str(source),'position':meta['position'],'paused':meta['paused']}
 
 

@@ -13,27 +13,32 @@ from .telegram_reports import when
 
 
 class FuturesStore:
-    def __init__(self, path, *, margin='10', fee_bps='5', slippage_bps='2', maintenance_bps='50', fault=lambda p: None):
+    def __init__(self, path, *, margin='10', fee_bps='5', slippage_bps='2', maintenance_bps='50', fault=lambda p: None, shared=False):
         self.margin, self.fee, self.slip, self.maintenance = map(number, (margin, fee_bps, slippage_bps, maintenance_bps))
         if not 0 < self.margin <= 10 or self.fee >= 100 or self.slip >= 100 or not 0 < self.maintenance < 1000:
             raise ObservationError('Invalid futures paper costs/risk')
         self.fault = fault
         Path(path).parent.mkdir(parents=True, exist_ok=True)
-        self.db = sqlite3.connect(path, isolation_level=None)
+        self.shared = None
+        if shared:
+            from .paper_shared_store import SharedPaperStore
+            self.shared = SharedPaperStore(path, fault=fault)
+        self.db = self.shared.db if self.shared else sqlite3.connect(path, isolation_level=None)
+        self.outbox_table = 'futures_outbox' if shared else 'runtime_outbox'
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA synchronous=FULL')
         self.db.execute('PRAGMA foreign_keys=ON')
         try:
             with self.transaction():
                 tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
-                expected = {'futures_meta', 'futures_events', 'futures_funding', 'futures_commands', 'runtime_outbox'}
-                if tables and tables != expected:
+                expected = {'futures_meta', 'futures_events', 'futures_funding', 'futures_commands', self.outbox_table}
+                if tables and (not expected.issubset(tables) if self.shared else tables != expected):
                     raise ObservationError('Futures paper requires a separate database')
                 self.db.execute('CREATE TABLE IF NOT EXISTS futures_meta(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
                 self.db.execute('CREATE TABLE IF NOT EXISTS futures_events(id INTEGER PRIMARY KEY,business_key TEXT UNIQUE NOT NULL,ts REAL NOT NULL,event TEXT NOT NULL,payload TEXT NOT NULL)')
                 self.db.execute('CREATE TABLE IF NOT EXISTS futures_funding(position_id TEXT NOT NULL,ts INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(position_id,ts))')
                 self.db.execute('CREATE TABLE IF NOT EXISTS futures_commands(update_id INTEGER PRIMARY KEY,fingerprint TEXT NOT NULL)')
-                self.db.execute('CREATE TABLE IF NOT EXISTS runtime_outbox(id INTEGER PRIMARY KEY,message TEXT NOT NULL)')
+                self.db.execute('CREATE TABLE IF NOT EXISTS '+self.outbox_table+'(id INTEGER PRIMARY KEY,message TEXT NOT NULL)')
                 identity = {'schema': 1, 'mode': 'futures-paper', 'symbol': 'BTCUSDT', 'margin': str(self.margin),
                             'fee_bps': str(self.fee), 'slippage_bps': str(self.slip), 'maintenance_bps': str(self.maintenance)}
                 if tables and self.get('identity') != identity:
@@ -43,14 +48,20 @@ class FuturesStore:
                     if self.get(key) is None:
                         self.set(key, default)
         except BaseException:
-            self.db.close()
+            self.close()
             raise
 
     def close(self):
-        self.db.close()
+        if self.shared:self.shared.close()
+        else:self.db.close()
 
     @contextmanager
     def transaction(self):
+        if self.shared:
+            self.shared.fault=self.fault
+            with self.shared.market_transaction('futures'):
+                yield
+            return
         self.db.execute('BEGIN IMMEDIATE')
         try:
             yield
@@ -66,10 +77,12 @@ class FuturesStore:
         return json.loads(row[0]) if row else default
 
     def set(self, key, value):
+        if self.shared and not self.db.in_transaction:
+            raise ObservationError('Shared state writes require a transaction')
         self.db.execute('INSERT OR REPLACE INTO futures_meta VALUES(?,?)', (key, json.dumps(value, sort_keys=True)))
 
     def notify(self, text):
-        self.db.execute('INSERT INTO runtime_outbox(message) VALUES(?)', (text,))
+        self.db.execute('INSERT INTO '+self.outbox_table+'(message) VALUES(?)', (text,))
 
     def pending(self):
         return []  # Paper fills are atomic; no network orders/partial fills.

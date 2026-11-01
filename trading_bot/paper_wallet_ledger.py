@@ -4,6 +4,7 @@ This is intentionally not wired to trading, Telegram, or the running VM.
 """
 import hashlib
 import json
+import re
 import secrets
 import sqlite3
 import time
@@ -13,6 +14,10 @@ from decimal import Decimal, InvalidOperation, localcontext
 WALLETS = ('reserve', 'spot', 'futures_isolated')
 TRADING = ('spot', 'futures_isolated')
 ASSETS = ('USDT', 'BTC')
+
+
+def valid_asset(asset):
+    return isinstance(asset,str) and re.fullmatch(r'[A-Z0-9]{2,12}',asset) is not None
 
 
 def amount(value, *, positive=False):
@@ -31,7 +36,7 @@ def encode(n):
 
 class PaperWalletLedger:
     def __init__(self, path, *, fault=lambda point: None, timeout=5):
-        self.db = sqlite3.connect(path, isolation_level=None, timeout=timeout)
+        self.db = sqlite3.connect(path, isolation_level=None, timeout=timeout, uri=True)
         self.db.row_factory = sqlite3.Row
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.execute('PRAGMA synchronous=FULL')
@@ -43,7 +48,7 @@ class PaperWalletLedger:
                 raise ValueError('Use a dedicated paper ledger database')
             self.db.execute('CREATE TABLE IF NOT EXISTS ledger_meta(key TEXT PRIMARY KEY, value TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS wallet_state(wallet TEXT PRIMARY KEY, paused INTEGER NOT NULL CHECK(paused IN (0,1)))')
-            self.db.execute('CREATE TABLE IF NOT EXISTS ledger_events(id TEXT PRIMARY KEY, kind TEXT NOT NULL, created REAL NOT NULL, fingerprint TEXT NOT NULL, details TEXT NOT NULL, posting_count INTEGER NOT NULL CHECK(posting_count>0))')
+            self.db.execute('CREATE TABLE IF NOT EXISTS ledger_events(id TEXT PRIMARY KEY, kind TEXT NOT NULL, created REAL NOT NULL, fingerprint TEXT NOT NULL, details TEXT NOT NULL, posting_count INTEGER NOT NULL CHECK(posting_count>=0))')
             self.db.execute('CREATE TABLE IF NOT EXISTS ledger_postings(event_id TEXT NOT NULL REFERENCES ledger_events(id), ordinal INTEGER NOT NULL, account TEXT NOT NULL, asset TEXT NOT NULL, amount TEXT NOT NULL, PRIMARY KEY(event_id,ordinal))')
             self.db.execute("CREATE TABLE IF NOT EXISTS transfer_proposals(id TEXT PRIMARY KEY, request_id TEXT NOT NULL UNIQUE, fingerprint TEXT NOT NULL, source TEXT NOT NULL, destination TEXT NOT NULL, quantity TEXT NOT NULL, expires REAL NOT NULL, status TEXT NOT NULL CHECK(status IN ('OPEN','DONE','CANCELED')), event_id TEXT, source_after TEXT NOT NULL, destination_after TEXT NOT NULL)")
             for wallet in WALLETS:
@@ -55,6 +60,18 @@ class PaperWalletLedger:
 
     @contextmanager
     def transaction(self):
+        if self.db.in_transaction:
+            self.db.execute('SAVEPOINT paper_ledger_nested')
+            try:
+                with localcontext() as context:
+                    context.prec = 120
+                    yield
+                self.db.execute('RELEASE SAVEPOINT paper_ledger_nested')
+            except BaseException:
+                self.db.execute('ROLLBACK TO SAVEPOINT paper_ledger_nested')
+                self.db.execute('RELEASE SAVEPOINT paper_ledger_nested')
+                raise
+            return
         self.db.execute('BEGIN IMMEDIATE')
         try:
             with localcontext() as context:
@@ -71,19 +88,19 @@ class PaperWalletLedger:
         self.db.close()
 
     def balance(self, account, asset='USDT'):
-        if asset not in ASSETS:
+        if not valid_asset(asset):
             raise ValueError('Unsupported asset')
         with localcontext() as context:
             context.prec = 120
             return sum((amount(r[0]) for r in self.db.execute('SELECT amount FROM ledger_postings WHERE account=? AND asset=?', (account, asset))), Decimal(0))
 
     def _post(self, event_id, kind, details, postings, *, created=None):
-        if not event_id or not postings:
+        if not event_id or (not postings and kind != 'FINANCIAL_METADATA'):
             raise ValueError('Missing event or postings')
         normalized = [(a, asset, encode(amount(value))) for a, asset, value in postings]
-        if any(not a or asset not in ASSETS or amount(value) == 0 for a, asset, value in normalized):
+        if any(not a or not valid_asset(asset) or amount(value) == 0 for a, asset, value in normalized):
             raise ValueError('Invalid posting')
-        for asset in ASSETS:
+        for asset in {item[1] for item in normalized}:
             if sum((amount(v) for _, a, v in normalized if a == asset), Decimal(0)) != 0:
                 raise ValueError('Unbalanced event')
         payload = json.dumps([kind, details, normalized], sort_keys=True, separators=(',', ':'), ensure_ascii=False)
@@ -203,6 +220,8 @@ class PaperWalletLedger:
         now = time.time() if now is None else now
         with self.transaction():
             row = self.db.execute('SELECT status,expires FROM transfer_proposals WHERE id=?', (token,)).fetchone()
+            if row and row['status']=='CANCELED':
+                return
             if not row or row['status'] != 'OPEN' or now >= row['expires']:
                 raise ValueError('Transfer proposal not open')
             self.db.execute("UPDATE transfer_proposals SET status='CANCELED' WHERE id=?", (token,))
@@ -213,14 +232,14 @@ class PaperWalletLedger:
             totals = {asset:Decimal(0) for asset in ASSETS}
             bad = []
             for event in self.db.execute('SELECT id,kind,details,fingerprint,posting_count FROM ledger_events'):
-                sums = {asset:Decimal(0) for asset in ASSETS}
+                sums = {}
                 rows = self.db.execute('SELECT account,asset,amount FROM ledger_postings WHERE event_id=? ORDER BY ordinal', (event[0],)).fetchall()
                 for row in rows:
-                    sums[row['asset']] += amount(row['amount'])
+                    sums[row['asset']] = sums.get(row['asset'],Decimal(0)) + amount(row['amount'])
                 payload = json.dumps([event['kind'],json.loads(event['details']),[tuple(r) for r in rows]],sort_keys=True,separators=(',', ':'),ensure_ascii=False)
                 if len(rows) != event['posting_count'] or any(sums.values()) or hashlib.sha256(payload.encode()).hexdigest()!=event['fingerprint']:
                     bad.append(event[0])
-                for asset in ASSETS:totals[asset] += sums[asset]
+                for asset,value in sums.items():totals[asset] = totals.get(asset,Decimal(0))+value
             negatives = [wallet+':'+bucket for wallet in WALLETS for bucket in ('free','reserved') if self.balance(wallet+':'+bucket) < 0]
             broken_fk = bool(self.db.execute('PRAGMA foreign_key_check').fetchone())
             return {'balanced':not bad and not any(totals.values()) and not negatives and not broken_fk,

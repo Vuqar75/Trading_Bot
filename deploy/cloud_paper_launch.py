@@ -27,9 +27,12 @@ except BlockingIOError:
 os.set_inheritable(legacy_lock.fileno(), True)
 os.environ['RUNTIME_TELEGRAM_BOT_TOKEN'] = token
 os.environ['RUNTIME_TELEGRAM_OWNER_ID'] = owner
+shared_db = os.getenv('SHARED_PAPER_DB')
 arguments = [sys.executable, '-B', '-m', 'trading_bot.app',
     '--mode', 'paper', '--interval', '15m', '--amount', '10', '--telegram',
-    '--allow-paper-signal', '--db', str(home / 'Trading_Bot_paper_state/runtime-paper.db')]
+    '--allow-paper-signal', '--db', shared_db or str(home / 'Trading_Bot_paper_state/runtime-paper.db')]
+if shared_db:
+    arguments += ['--shared-paper']
 if os.getenv('FUTURES_OUTBOX_DB'):
     arguments += ['--futures-outbox-db', os.environ['FUTURES_OUTBOX_DB']]
 os.execv(sys.executable, arguments)

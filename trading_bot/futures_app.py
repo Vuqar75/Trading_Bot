@@ -123,6 +123,7 @@ def main():
     parser.add_argument('--slippage-bps', default='2')
     parser.add_argument('--maintenance-bps', default='50')
     parser.add_argument('--allow-paper-signal', action='store_true')
+    parser.add_argument('--shared-paper', action='store_true', help='Use an offline consolidated paper database (experimental)')
     args = parser.parse_args()
     if args.demo:
         demo()
@@ -145,11 +146,11 @@ def main():
         signal.signal(signal.SIGUSR1, request_activate)
     logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
     with ExitStack() as locks:
-        locks.enter_context(process_lock(db+'.lock'))
+        locks.enter_context(process_lock(db+('.futures.lock' if args.shared_paper else '.lock')))
         if telegram:
             locks.enter_context(process_lock(db+'.delivery.lock'))
         store = FuturesStore(db, margin=args.margin, fee_bps=args.fee_bps,
-                             slippage_bps=args.slippage_bps, maintenance_bps=args.maintenance_bps)
+                             slippage_bps=args.slippage_bps, maintenance_bps=args.maintenance_bps, shared=args.shared_paper)
         unified = None
         receiver = None
         worker_started = time.time()
