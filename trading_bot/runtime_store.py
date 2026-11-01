@@ -329,6 +329,8 @@ class RuntimeStore:
                         message = 'Таймфрейм: ' + current + '. Выбор: /timeframe 1m, 5m, 15m или 1h. Сначала /pause и закрытие позиции.'
                     elif len(parts) != 2 or parts[1] not in {'1m', '5m', '15m', '1h'}:
                         message = 'Используйте /timeframe 1m, /timeframe 5m, /timeframe 15m или /timeframe 1h.'
+                    elif self.shared and self.shared.deployment_hold():
+                        message = 'Изменение настроек недоступно до завершения проверки переноса.'
                     elif not self.get('paused') or self.pending() or self.get('blocked') or number(self.get('position')['quantity']) or self.get('close_request'):
                         message = 'Смена запрещена: нужны пауза, отсутствие позиции, незавершённых ордеров и блокировок.'
                     else:

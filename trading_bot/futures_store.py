@@ -286,6 +286,8 @@ class FuturesStore:
                         text = f"{cmd}: {self.get(key)}. Выбор: "+', '.join(sorted(allowed, key=int) if key == 'leverage' else sorted(allowed))
                     elif len(parts) != 2 or parts[1] not in allowed:
                         text = 'Некорректное значение: '+', '.join(sorted(allowed, key=int) if key == 'leverage' else sorted(allowed))
+                    elif self.shared and self.shared.deployment_hold():
+                        text = 'Изменение настроек недоступно до завершения проверки переноса.'
                     elif not self.get('paused') or self.get('position') or self.get('close_request') or self.get('blocked'):
                         text = 'Сначала пауза и закрытие позиции; блокировок быть не должно.'
                     else:

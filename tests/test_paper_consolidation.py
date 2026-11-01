@@ -161,6 +161,13 @@ class PaperConsolidationTests(unittest.TestCase):
         self.assertTrue(future.close_position(Decimal(100),2000,'hold-protection','STOP',p['id']))
         future.command(101,True,'/resume',routed=True)
         self.assertTrue(future.get('paused'))
+        future.command(102,True,'/timeframe 5m',routed=True)
+        future.command(103,True,'/leverage 2',routed=True)
+        self.assertEqual(future.get('interval'),'15m');self.assertEqual(future.get('leverage'),1)
+        sp=spot.get('position');cid=spot.prepare('SELL','.1',Decimal(100),'hold-spot-protection','STOP',target=sp['id']);spot.claim(cid)
+        spot.apply(cid,PaperExchange.inspect_saved(spot.db.execute('select * from runtime_orders where client_id=?',(cid,)).fetchone()))
+        spot.command(104,True,'/timeframe 5m',routed=True)
+        self.assertEqual(spot.get('selected_interval',spot.get('identity')['interval']),'15m')
         now=time.time()
         with spot.shared.transaction():
             spot.shared._set('spot','quote',{'price':'100','time':now})
