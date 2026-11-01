@@ -77,7 +77,10 @@ class TelegramTransport:
                         spot = store.get('position')
                         row = store.db.execute("SELECT value FROM futures_meta WHERE key='position'").fetchone()
                         futures = json.loads(row[0]) if row else None
-                        unified.receive(ident, authorized, text, fresh=fresh, positions={'spot':spot, 'futures':futures})
+                        cross={}
+                        if store.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_positions'").fetchone():
+                            cross={r['symbol']:{'id':r['id'],'quantity':r['quantity']} for r in store.db.execute('SELECT symbol,id,quantity FROM cross_positions')}
+                        unified.receive(ident, authorized, text, fresh=fresh, positions={'spot':spot, 'futures':futures, 'futures_cross':cross})
                     finally:
                         store.db.rollback()
                 else:
@@ -105,6 +108,8 @@ class TelegramTransport:
         for row in store.db.execute('SELECT id,message FROM '+table+' ORDER BY id LIMIT 5').fetchall():
             label = getattr(store, 'delivery_label', '')
             body = row['message']
+            if body.startswith('[Futures cross • PAPER]'):
+                label = ''
             cut = len(body)
             if cut > 3500:
                 cut = body.rfind('\n', 0, 3500)

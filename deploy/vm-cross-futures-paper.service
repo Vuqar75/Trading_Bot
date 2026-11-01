@@ -1,0 +1,24 @@
+[Unit]
+Description=USD-M cross futures paper experiment
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot-cross
+Environment=HOME=/var/lib/tradingbot
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tradingbot
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=90
+ExecStart=/usr/bin/python3 -B -m trading_bot.cross_app --db /var/lib/tradingbot/paper-financial/shared-paper.db --queue /var/lib/tradingbot/Trading_Bot_paper_state/unified-commands.db
+
+[Install]
+WantedBy=multi-user.target

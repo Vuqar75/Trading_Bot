@@ -6,12 +6,17 @@ import sys
 import tempfile
 import threading
 import unittest
+from contextlib import closing
 from decimal import Decimal, localcontext
 from pathlib import Path
 
 from trading_bot.cross_paper_book import CrossPaperBook
 from trading_bot.cross_paper_strategy import CrossPaperStrategy
 from trading_bot.cross_funding_tracker import CrossFundingTracker
+from trading_bot.cross_data_sync import CrossDataSync
+from trading_bot.cross_command_receiver import CrossCommandReceiver
+from trading_bot.cross_worker import process_cross
+from trading_bot.cross_app import cycle
 from trading_bot.cross_trade_report import cross_trade_report
 from trading_bot.cross_report_worker import process_cross_reports
 from trading_bot.paper_wallet_live_report import live_report, render_live_report
@@ -20,6 +25,7 @@ from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.runtime_store import RuntimeStore
+from trading_bot.app import TelegramTransport
 
 
 class CrossPaperBookTests(unittest.TestCase):
@@ -99,6 +105,62 @@ class CrossPaperBookTests(unittest.TestCase):
         process_cross_reports(q,self.shared,now=100)
         self.assertEqual([j['command'] for j in q.pending('futures_cross')],['/pause','/report'])
 
+    def test_cross_close_choice_confirm_and_crash_do_not_close_twice(self):
+        btc,eth=self.positions();q=UnifiedQueue(Path(self.tmp.name)/'cross-commands.db');self.addCleanup(q.close)
+        receiver=CrossCommandReceiver(self.book)
+        snapshots={'futures_cross':{'BTCUSDT':btc,'ETHUSDT':eth}}
+        q.receive(1,True,'/mode futures_cross',now=100)
+        q.receive(2,True,'/close',positions=snapshots,now=100)
+        self.assertFalse(q.pending('futures_cross'))
+        q.receive(3,True,'/close BTCUSDT',positions=snapshots,now=100)
+        process_cross(q,receiver,self.book,now=100,clock=lambda:100)
+        token=q.db.execute("SELECT id FROM unified_proposals WHERE market='futures_cross'").fetchone()[0]
+        self.assertTrue(token.startswith('BTCUSDT-'))
+        q.receive(4,True,'/mode spot',now=100);q.receive(5,True,'/confirm '+token,now=101)
+        def crash(point):
+            if point=='after_destination_commit':raise RuntimeError('injected crash')
+        with self.assertRaises(RuntimeError):process_cross(q,receiver,self.book,now=101,clock=lambda:101,fault=crash)
+        self.assertEqual(len(q.pending('futures_cross')),1)
+        process_cross(q,receiver,self.book,started=102,now=102,clock=lambda:102)
+        self.assertFalse(q.pending('futures_cross'))
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_CLOSE'").fetchone()[0],1)
+        messages=[r[0] for r in self.shared.db.execute("SELECT message FROM futures_outbox WHERE message LIKE '[Futures cross%'")]
+        self.assertEqual(sum('Закрыта BTCUSDT' in x for x in messages),1)
+        self.assertEqual([p['symbol'] for p in self.book.risk(self.quotes,now=101)['positions']],['ETHUSDT'])
+
+    def test_real_poller_freezes_cross_position_and_symbol_at_receipt(self):
+        btc,_=self.positions();q=UnifiedQueue(Path(self.tmp.name)/'cross-poller.db');self.addCleanup(q.close)
+        store=RuntimeStore(self.path,{'mode':'paper','interval':'15m'},shared=True);self.addCleanup(store.close)
+        now=int(__import__('time').time());q.receive(1,True,'/mode futures_cross')
+        update={'update_id':2,'message':{'from':{'id':1},'chat':{'id':1,'type':'private'},'date':now,'text':'/close BTCUSDT'}}
+        TelegramTransport('FAKE','1',lambda req:{'ok':True,'result':[update]},started=now-1).poll(store,q)
+        payload=json.loads(q.pending('futures_cross')[0]['payload'])
+        self.assertEqual((payload['symbol'],payload['position'],payload['quantity']),('BTCUSDT',btc['id'],btc['quantity']))
+        q.receive(3,True,'/mode spot')
+        self.assertEqual(q.pending('futures_cross')[0]['command'],'/close')
+
+    def test_cross_close_expires_inside_transaction_without_trade(self):
+        btc,_=self.positions();q=UnifiedQueue(Path(self.tmp.name)/'expiring-cross.db');self.addCleanup(q.close)
+        receiver=CrossCommandReceiver(self.book);snap={'futures_cross':{'BTCUSDT':btc}}
+        q.receive(1,True,'/mode futures_cross',now=100);q.receive(2,True,'/close',positions=snap,now=100)
+        process_cross(q,receiver,self.book,now=100,clock=lambda:100)
+        token=q.db.execute('SELECT id FROM unified_proposals').fetchone()[0]
+        q.receive(3,True,'/confirm '+token,now=101)
+        process_cross(q,receiver,self.book,now=101,clock=lambda:221)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_CLOSE'").fetchone()[0],0)
+
+    def test_pause_all_waits_for_cross_and_replays_after_crash(self):
+        q=UnifiedQueue(Path(self.tmp.name)/'pause-all-cross.db');self.addCleanup(q.close)
+        receiver=CrossCommandReceiver(self.book);q.receive(1,True,'/pause_all',now=100)
+        for market in ('spot','futures'):q.acknowledge(q.pending(market)[0]['id'],'на паузе')
+        def crash(point):
+            if point=='after_destination_commit':raise RuntimeError('crash')
+        with self.assertRaises(RuntimeError):process_cross(q,receiver,self.book,now=100,clock=lambda:100,fault=crash)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        process_cross(q,receiver,self.book,now=100,clock=lambda:100)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_commands').fetchone()[0],1)
+        self.assertTrue(any('применены ко всем трём' in r[0] for r in q.db.execute('SELECT message FROM unified_outbox')))
+
     def test_stale_or_incomplete_pair_and_pause_block_entry(self):
         self.book.set_paused(True)
         with self.assertRaisesRegex(ValueError,'paused'):self.book.open('a','BTCUSDT','LONG','5',1,self.quotes,now=100)
@@ -107,6 +169,11 @@ class CrossPaperBookTests(unittest.TestCase):
         bad={**self.quotes,'ETHUSDT':self.quote('200',100,False)}
         with self.assertRaisesRegex(ValueError,'Incomplete'):self.book.open('a','BTCUSDT','LONG','5',1,bad,now=100)
         self.assertEqual(self.shared.ledger.balance('futures_cross:free'),Decimal('50'))
+
+    def test_deployment_hold_blocks_cross_entries_even_if_previously_unpaused(self):
+        self.shared.set_deployment_hold(True)
+        with self.assertRaisesRegex(ValueError,'hold'):self.book.open('held','BTCUSDT','LONG','5',1,self.quotes,now=100)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],0)
 
     def test_funding_deduplication_and_explicit_revision(self):
         btc,eth=self.positions()
@@ -146,7 +213,7 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(tracker.confirm(btc['id'],**args)['next_due'],56800000)
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_coverage_receipts').fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
-        with sqlite3.connect(self.path) as db:db.execute('UPDATE cross_funding_cursor SET next_due=999999 WHERE position_id=?',(btc['id'],))
+        with closing(sqlite3.connect(self.path)) as db,db:db.execute('UPDATE cross_funding_cursor SET next_due=999999 WHERE position_id=?',(btc['id'],))
         with self.assertRaisesRegex(ValueError,'cursor journal mismatch'):tracker.confirm(btc['id'],**args)
 
     def test_funding_deadline_blocks_fresh_quotes_entries_and_withdrawal(self):
@@ -183,7 +250,124 @@ class CrossPaperBookTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'correction requires'):self.book.record_quotes(refreshed,now=28002)
         tracker.confirm_correction(btc['id'],corrected);tracker.confirm_correction(btc['id'],corrected)
         self.book.record_quotes(refreshed,now=28002)
-        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_correction_receipts').fetchone()[0],1)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_correction_receipts').fetchone()[0],3)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_data_sync_recovers_after_one_pair_missing_without_double_funding(self):
+        self.positions()
+        class Reader:
+            missing=True
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,
+                        'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                if self.missing and symbol=='ETHUSDT':return []
+                return [{'symbol':symbol,'time':28000000,'rate_type':'Regular','rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'}]
+        reader=Reader();sync=CrossDataSync(self.book,reader)
+        with self.assertRaisesRegex(ValueError,'not published'):sync.refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],1)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_quotes WHERE funding_complete!=0').fetchone()[0],0)
+        reader.missing=False;quotes=sync.refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],2)
+        self.assertEqual(len(self.book.risk(quotes,now=28001)['positions']),2)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_cross_cycle_fake_market_opens_both_and_pauses_on_data_failure(self):
+        period=900000;server=31*period+1000;now=server/1000
+        q=UnifiedQueue(Path(self.tmp.name)/'cycle-queue.db');self.addCleanup(q.close)
+        receiver=CrossCommandReceiver(self.book);strategy=CrossPaperStrategy(self.book)
+        class Reader:
+            broken=False
+            def schedule(self,symbol):
+                if self.broken:raise RuntimeError('data unavailable')
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':server,
+                        'next_due_ms':28000000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return []
+            def candles(self,symbol,interval,server):
+                last='101' if symbol=='BTCUSDT' else '99'
+                return [(i*period,'100') for i in range(30)]+[(30*period,last)]
+        reader=Reader();sync=CrossDataSync(self.book,reader)
+        actions=cycle(self.book,q,receiver,strategy,sync,reader,started=0,now=now)
+        self.assertEqual([a['action'] for a in actions],['OPEN','OPEN'])
+        self.assertEqual(cycle(self.book,q,receiver,strategy,sync,reader,started=0,now=now),[])
+        reader.broken=True
+        with self.assertRaises(RuntimeError):cycle(self.book,q,receiver,strategy,sync,reader,started=0,now=now)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_quotes WHERE funding_complete!=0').fetchone()[0],0)
+
+    def test_cross_process_once_starts_paused_with_network_blocked(self):
+        queue=Path(self.tmp.name)/'process-queue.db';q=UnifiedQueue(queue);q.close()
+        code='''import json,socket,sys,time
+from unittest.mock import patch
+import trading_bot.cross_app as app
+class Fake:
+ def schedule(self,symbol):
+  now=int(time.time()*1000);return {'symbol':symbol,'mark':'100','server_ms':now,'next_due_ms':now+3600000,'interval_ms':28800000}
+ def funding(self,*args):return []
+ def candles(self,symbol,interval,server):
+  period=900000;last=(server//period-1)*period
+  return [(last-(39-i)*period,'100') for i in range(40)]
+def deny(*args,**kwargs):raise AssertionError('network prohibited')
+with patch.object(socket,'socket',deny),patch.object(app,'CrossPublicData',Fake):
+ sys.argv=['cross-app','--db',sys.argv[1],'--queue',sys.argv[2],'--once'];app.main()
+'''
+        child=subprocess.run([sys.executable,'-c',code,str(self.path),str(queue)],capture_output=True,text=True,timeout=30)
+        self.assertEqual(child.returncode,0,child.stderr)
+        health=json.loads((self.path.parent/'cross-health.json').read_text())
+        self.assertTrue(health['paused']);self.assertTrue(health['data_complete']);self.assertIsNone(health['error'])
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],0)
+
+    def test_late_funding_debt_is_explicit_and_only_cross_cash_settles_it(self):
+        btc,eth=self.positions();tracker=CrossFundingTracker(self.book);self.book.invalidate_all()
+        for pos,symbol,mark in [(btc,'BTCUSDT','100'),(eth,'ETHUSDT','200')]:
+            event={'symbol':symbol,'time':28000000,'rate_type':'Regular','rate':'.001','mark':mark}
+            self.book.funding('settle:'+symbol,symbol,pos['id'],28000000,0,'.001',mark,'fixture',now=28001)
+            tracker.confirm(pos['id'],expected_due=28000000,server_ms=28001000,observed_due=56800000,
+                            observed_interval=28800000,events=[event])
+        quotes={s:{**q,'time':28001,'server_ms':28001000,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        self.book.record_quotes(quotes,now=28001)
+        self.book.close('close-before-correction','BTCUSDT',btc['id'],btc['quantity'],quotes,now=28001)
+        before_isolated=self.shared.ledger.balance('futures_isolated:free')
+        result=self.book.late_funding('late','BTCUSDT',btc['id'],28000000,1,'.9','10000','fixture',now=28002)
+        self.assertLess(Decimal(result['liability']),0)
+        self.assertEqual(self.book.late_funding('late','BTCUSDT',btc['id'],28000000,1,'.9','10000','fixture',now=28003),result)
+        self.assertEqual(self.shared.ledger.balance('spot:free'),Decimal('1000'))
+        self.assertEqual(self.shared.ledger.balance('futures_isolated:free'),before_isolated)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        before_debt=self.shared.ledger.balance('futures_cross:liability')
+        proposal=self.shared.propose_transfer('cover-debt','futures_isolated','futures_cross','1',now=28002)
+        self.assertEqual(Decimal(proposal['destination_after']),0)
+        self.shared.confirm_transfer(proposal['id'],now=28002)
+        with localcontext() as ctx:
+            ctx.prec=120
+            self.assertEqual(self.shared.ledger.balance('futures_cross:liability'),before_debt+1)
+        self.assertEqual(self.shared.ledger.balance('futures_isolated:free'),before_isolated-1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_data_sync_detects_correction_after_position_closed(self):
+        btc,eth=self.positions();tracker=CrossFundingTracker(self.book);self.book.invalidate_all()
+        for pos,symbol,mark in [(btc,'BTCUSDT','100'),(eth,'ETHUSDT','200')]:
+            event={'symbol':symbol,'time':28000000,'rate_type':'Regular','rate':'.001','mark':mark}
+            self.book.funding('initial:'+symbol,symbol,pos['id'],28000000,0,'.001',mark,'fixture',now=28001)
+            tracker.confirm(pos['id'],expected_due=28000000,server_ms=28001000,observed_due=56800000,
+                            observed_interval=28800000,events=[event])
+        quotes={s:{**q,'time':28001,'server_ms':28001000,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        self.book.record_quotes(quotes,now=28001)
+        self.book.close('closed-before-revision','BTCUSDT',btc['id'],btc['quantity'],quotes,now=28001)
+        class Reader:
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28002000,
+                        'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':28000000,'rate_type':'Regular','rate':'.002' if symbol=='BTCUSDT' else '.001',
+                         'mark':'100' if symbol=='BTCUSDT' else '200'}]
+        fresh=CrossDataSync(self.book,Reader()).refresh(now=28002)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_LATE_FUNDING'").fetchone()[0],1)
+        self.assertEqual(len(self.book.risk(fresh,now=28002)['positions']),1)
+        CrossDataSync(self.book,Reader()).refresh(now=28002)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_LATE_FUNDING'").fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
     def test_shared_liquidation_records_deficit_and_preserves_other_wallets(self):
@@ -247,7 +431,7 @@ class CrossPaperBookTests(unittest.TestCase):
 
     def test_position_tampering_is_detected(self):
         self.positions()
-        with sqlite3.connect(self.path) as db:db.execute("UPDATE cross_positions SET entry='999' WHERE symbol='BTCUSDT'")
+        with closing(sqlite3.connect(self.path)) as db,db:db.execute("UPDATE cross_positions SET entry='999' WHERE symbol='BTCUSDT'")
         with self.assertRaisesRegex(ValueError,'journal mismatch'):self.book.risk(self.quotes,now=100)
 
     def test_open_and_withdraw_cannot_both_spend_same_collateral(self):

@@ -1,11 +1,14 @@
 import tempfile
+import json
+import time
 import unittest
 from pathlib import Path
 from decimal import Decimal
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.app import Application, TelegramTransport
 from trading_bot.runtime_exchange import PaperExchange
-from trading_bot.telegram_reports import status, signal_report
+from trading_bot.telegram_reports import status, signal_report, daily_report, futures_daily_report
+from trading_bot.futures_store import FuturesStore
 
 
 class ReportTests(unittest.TestCase):
@@ -67,3 +70,16 @@ class ReportTests(unittest.TestCase):
         self.reply(2,'/timeframe 1h')
         self.assertEqual(self.store.get('selected_interval'),'1h')
         self.assertIn('1h',self.reply(3,'/timeframe'))
+
+    def test_unknown_spot_fee_is_not_reported_as_zero(self):
+        self.store.db.execute('INSERT INTO runtime_closes VALUES(?,?,?,?)',('unknown',time.time(),'0',0))
+        text=daily_report(self.store)
+        self.assertIn('результат сегодня: неизвестен',text)
+        self.assertIn('Результат за всё время: неизвестен',text)
+
+    def test_isolated_report_marks_incomplete_trade_unknown(self):
+        store=FuturesStore(Path(self.tmp.name)/'future.db');self.addCleanup(store.close)
+        store.db.execute('INSERT INTO futures_events(business_key,ts,event,payload) VALUES(?,?,?,?)',('unknown',time.time(),'CLOSE',json.dumps({'net':'1'})))
+        text=futures_daily_report(store)
+        self.assertIn('Сегодня по Баку',text);self.assertIn('За всё время',text)
+        self.assertEqual(text.count('неизвестны'),2)

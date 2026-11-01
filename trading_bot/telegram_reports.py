@@ -107,10 +107,11 @@ def daily_report(store, now=None):
     rows = store.db.execute('SELECT client_id,pnl,known FROM runtime_closes WHERE ts>=? AND ts<=?', (start, now)).fetchall()
     known = all(r['known'] for r in rows)
     net = sum((Decimal(r['pnl']) for r in rows), Decimal(0))
+    all_known=not store.db.execute('SELECT 1 FROM runtime_closes WHERE known=0 LIMIT 1').fetchone()
     return '\n'.join(['Spot • BTCUSDT • отчёт за '+local.strftime('%d.%m.%Y')+' (Баку)',
         'Обновлён: '+when(now), f'Ордеров с выходами сегодня: {len({r["client_id"] for r in rows})} (возможны частичные)',
-        f'Реализованный результат сегодня: {net:+.4f} USDT'+(' (предварительный: не все комиссии оценены)' if not known else ''),
-        f"Результат за всё время: {Decimal(store.get('pnl')):+.4f} USDT",
+        f'Реализованный результат сегодня: {net:+.4f} USDT' if known else 'Реализованный результат сегодня: неизвестен — не все комиссии оценены.',
+        f"Результат за всё время: {Decimal(store.get('pnl')):+.4f} USDT" if all_known else 'Результат за всё время: неизвестен — не все комиссии оценены.',
         'Суточные комиссии и просадка: см. отчёт наблюдателя; отсутствие данных не означает ноль.'])
 
 
@@ -123,11 +124,16 @@ def futures_daily_report(store, now=None):
     today=[p for ts,p in closed if start<=ts<=now]
     total=[p for ts,p in closed if ts<=now]
     def totals(rows):
-        return (sum((Decimal(p['net']) for p in rows),Decimal(0)),
-                sum((Decimal(p['fees']) for p in rows),Decimal(0)),
-                sum((Decimal(p['funding']) for p in rows),Decimal(0)))
+        try:
+            values=[tuple(Decimal(p[k]) for k in ('net','fees','funding')) for p in rows]
+            if any(not value.is_finite() for row in values for value in row):raise ValueError()
+            return tuple(sum((row[i] for row in values),Decimal(0)) for i in range(3))
+        except (KeyError,ValueError,TypeError,ArithmeticError):return None
     d=totals(today);a=totals(total)
+    def line(label,rows,values):
+        if values is None:return label+': закрыто '+str(len(rows))+'; результат, комиссии или funding неизвестны.'
+        return label+': закрыто '+str(len(rows))+f', net {values[0]:+.4f}, комиссии {values[1]:.4f}, funding {values[2]:+.4f} USDT.'
     return '\n'.join(['Futures isolated • PAPER • торговый отчёт',
-        'Сегодня по Баку ('+local.strftime('%d.%m.%Y')+'): закрыто '+str(len(today))+f', net {d[0]:+.4f}, комиссии {d[1]:.4f}, funding {d[2]:+.4f} USDT.',
-        'За всё время: закрыто '+str(len(total))+f', net {a[0]:+.4f}, комиссии {a[1]:.4f}, funding {a[2]:+.4f} USDT.',
+        line('Сегодня по Баку ('+local.strftime('%d.%m.%Y')+')',today,d),
+        line('За всё время',total,a),
         'Показаны закрытые позиции; комиссии и funding открытой позиции здесь не суммируются.'])

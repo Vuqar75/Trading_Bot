@@ -35,7 +35,7 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                 data=live_report(shared,period=period)
                 if cmd=='/wallet':
                     w=parts[1]
-                    if w not in data['wallets']:raise ValueError('Кошелёк пока недоступен')
+                    if w not in data['wallets']:raise ValueError('Кошелёк пока недоступен. Доступны reserve, spot и futures_isolated.')
                     v=data['wallets'][w]
                     result=f"{w}: свободно {v['free']} USDT; резерв {v['reserved']} USDT. Сверка пройдена."
                     if w=='spot':result+=f" Spot актив: {data['btc']} BTC."

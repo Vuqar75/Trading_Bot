@@ -107,7 +107,7 @@ class CrossFundingTracker:
                 self.db.execute('UPDATE cross_funding_cursor SET next_due=? WHERE position_id=?',(result['next_due'],position_id))
                 self._anchor_cursor(position_id,'cross:coverage:'+position_id+':'+str(previous))
                 self.db.execute('INSERT INTO cross_coverage_receipts VALUES(?,?,?,?)',(position_id,previous,result['next_due'],fingerprint))
-                for item in self.db.execute('SELECT symbol,funding_time,rate_type,revision,rate,mark FROM cross_funding WHERE position_id=? AND funding_time=? AND revision>0',(position_id,previous)).fetchall():
+                for item in self.db.execute('SELECT symbol,funding_time,rate_type,revision,rate,mark FROM cross_funding WHERE position_id=? AND funding_time=?',(position_id,previous)).fetchall():
                     event={'symbol':item['symbol'],'time':item['funding_time'],'rate_type':item['rate_type'],'revision':item['revision'],'rate':item['rate'],'mark':item['mark']}
                     self._save_correction(position_id,previous,item['rate_type'],item['revision'],event)
             return result
@@ -123,7 +123,7 @@ class CrossFundingTracker:
         with self.shared.transaction():
             self.book._check();cursor=self._check_cursor(position_id)
             due=event.get('time');kind=event.get('rate_type','Regular');revision=event.get('revision')
-            if type(due) is not int or kind not in ('Regular','Special') or type(revision) is not int or revision<=0:
+            if type(due) is not int or kind not in ('Regular','Special') or type(revision) is not int or revision<0:
                 raise ValueError('Invalid funding correction identity')
             fingerprint=self._correction_fingerprint(event)
             old=self.db.execute('SELECT fingerprint FROM cross_correction_receipts WHERE position_id=? AND due=? AND rate_type=? AND revision=?',(position_id,due,kind,revision)).fetchone()

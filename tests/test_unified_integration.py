@@ -84,7 +84,9 @@ class UnifiedIntegrationTests(unittest.TestCase):
         self.assertFalse(self.queue.pending('spot'))
         self.assertTrue(any('ожидается futures' in r[0] for r in self.queue.db.execute('select message from unified_outbox')))
         self.process('futures')
-        self.assertTrue(any('применены к обоим' in r[0] for r in self.queue.db.execute('select message from unified_outbox')))
+        self.assertFalse(any('применены ко всем трём' in r[0] for r in self.queue.db.execute('select message from unified_outbox')))
+        cross=self.queue.pending('futures_cross')[0];self.queue.acknowledge(cross['id'],'На паузе')
+        self.assertTrue(any('применены ко всем трём' in r[0] for r in self.queue.db.execute('select message from unified_outbox')))
 
     def test_restarted_worker_rejects_queued_resume(self):
         self.queue.receive(1,True,'/resume',now=10)

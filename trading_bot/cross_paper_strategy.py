@@ -54,7 +54,7 @@ class CrossPaperStrategy:
             movement=(mark/amount(p['entry'],positive=True)-1)*(1 if p['direction']=='LONG' else -1)
             reason='STOP' if movement<=Decimal('-.02') else 'TAKE' if movement>=Decimal('.04') else None
             if reason:
-                result=self.book.close('protect:'+p['id']+':'+reason,p['symbol'],p['id'],p['quantity'],quotes,now=now)
+                result=self.book.close('protect:'+p['id']+':'+reason,p['symbol'],p['id'],p['quantity'],quotes,now=now,reason=reason)
                 actions.append({'action':reason,'symbol':p['symbol'],'result':result})
         settings=self.db.execute('SELECT leverage,interval FROM cross_settings WHERE id=1').fetchone()
         if not settings:raise ValueError('Missing cross settings')

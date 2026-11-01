@@ -7,6 +7,10 @@ import time
 from contextlib import contextmanager
 
 
+def market_label(market):
+    return 'Futures cross • PAPER' if market=='futures_cross' else market.upper()
+
+
 class UnifiedQueue:
     outbox_table = 'unified_outbox'
     def __init__(self, path, fault=lambda point: None):
@@ -84,23 +88,36 @@ class UnifiedQueue:
                         self.db.execute("UPDATE unified_state SET value=? WHERE key='mode'", (mode,))
                     elif len(parts) == 2:
                         self._notify('Режим: используйте /mode spot, /mode futures или /mode futures_cross.')
-                    self._notify('Выбранный рынок: ' + mode.upper())
+                    self._notify('Выбранный рынок: ' + market_label(mode))
                 elif command == '/pause_all' and len(parts) == 1:
-                    jobs = [('spot', '/pause'), ('futures', '/pause')]
-                    self._notify('Пауза обоих рынков запрошена; ожидаются подтверждения.')
+                    jobs = [('spot', '/pause'), ('futures', '/pause'), ('futures_cross','/pause')]
+                    self._notify('Пауза всех трёх рынков запрошена; ожидаются подтверждения.')
                 elif command == '/status' and len(parts) == 1:
-                    jobs = [('spot', '/brief_status'), ('futures', '/brief_status')]
-                elif command == '/status' and len(parts) == 2 and parts[1] in ('spot', 'futures'):
+                    jobs = [('spot', '/brief_status'), ('futures', '/brief_status'), ('futures_cross','/brief_status')]
+                elif command == '/status' and len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross'):
                     market = parts[1]; jobs = [(market, '/status')]
                 elif command in ('/signal', '/history', '/report', '/pause', '/resume', '/timeframe', '/leverage', '/close'):
                     if not fresh and command in ('/resume', '/close', '/timeframe', '/leverage'):
-                        self._notify('['+market.upper()+'] Команда устарела.')
+                        self._notify('['+market_label(market)+'] Команда устарела.')
                     elif command == '/leverage' and market not in ('futures','futures_cross'):
                         self._notify('[SPOT] Плечо доступно только в futures paper.')
+                    elif command == '/close' and market == 'futures_cross':
+                        snapshots=(positions or {}).get('futures_cross') or {}
+                        if not isinstance(snapshots,dict):snapshots={}
+                        symbol=parts[1] if len(parts)==2 else (next(iter(snapshots)) if len(parts)==1 and len(snapshots)==1 else None)
+                        if symbol not in ('BTCUSDT','ETHUSDT') or symbol not in snapshots:
+                            self._notify('[Futures cross • PAPER] Выберите позицию: /close BTCUSDT или /close ETHUSDT.')
+                        else:
+                            pos=snapshots[symbol]
+                            if not isinstance(pos,dict) or not pos.get('id') or not pos.get('quantity'):
+                                self._notify('[Futures cross • PAPER] Снимок позиции неизвестен.')
+                            else:
+                                payload={'symbol':symbol,'position':pos['id'],'quantity':str(pos['quantity']),'received_at':now,'expires':now+120}
+                                jobs=[(market,'/close')]
                     elif len(parts) > (2 if command in ('/timeframe', '/leverage') else 1):
-                        self._notify('['+market.upper()+'] Некорректные параметры.')
+                        self._notify('['+market_label(market)+'] Некорректные параметры.')
                     elif command == '/close' and (not positions or not isinstance(positions.get(market), dict) or not positions[market].get('id') or not positions[market].get('quantity')):
-                        self._notify('['+market.upper()+'] Закрытие недоступно: снимок позиции не подтверждён.')
+                        self._notify('['+market_label(market)+'] Закрытие недоступно: снимок позиции не подтверждён.')
                     else:
                         if command == '/close':
                             pos = positions[market]
@@ -126,14 +143,18 @@ class UnifiedQueue:
                         self._notify('Подтверждение не найдено или устарело.')
                     elif command == '/cancel':
                         self.db.execute("UPDATE unified_proposals SET status='CANCELED' WHERE id=?", (parts[1],))
-                        self._notify('['+proposal['market'].upper()+'] Предложение отменено.')
+                        self._notify('['+market_label(proposal['market'])+'] Предложение отменено.')
                     else:
                         market = proposal['market']
                         payload = {'proposal': proposal['id'], 'position': proposal['position'], 'quantity': proposal['quantity'], 'expires': proposal['expires'], 'received_at': now}
+                        if market=='futures_cross':
+                            symbol=proposal['id'].split('-',1)[0]
+                            if symbol not in ('BTCUSDT','ETHUSDT'):raise ValueError('Invalid cross proposal identity')
+                            payload['symbol']=symbol
                         self.db.execute("UPDATE unified_proposals SET status='CONFIRMED' WHERE id=?", (parts[1],))
                         jobs = [(market, '/confirmed_close')]
                 else:
-                    self._notify('Рынок: '+mode.upper()+'. Команды выбранного рынка: /signal, /history, /report (сегодня по Баку и за всё время), /pause, /resume, /timeframe, /leverage (futures), /close. /mode выбирает рынок; /status — состояние; /confirm ID, /cancel ID, /pause_all. /wallets, /wallet, /transfer, /transfers и /balance_report — общие кошельки и средства всех рынков.')
+                    self._notify('Рынок: '+market_label(mode)+'. Выбор: /mode spot, /mode futures (isolated), /mode futures_cross (paper). Команды выбранного рынка: /signal, /history, /report (сегодня по Баку и за всё время), /pause, /resume, /timeframe, /leverage (futures), /close. /status — состояние; /confirm ID, /cancel ID, /pause_all. /wallets, /wallet, /transfer, /transfers и /balance_report — общие кошельки и средства всех рынков.')
             self.db.execute('INSERT INTO unified_updates VALUES(?,?,?,?)', (ident, fingerprint, command, market))
             for destination, action in jobs:
                 self.db.execute('INSERT INTO unified_jobs(update_id,market,command,payload) VALUES(?,?,?,?)', (ident, destination, action, json.dumps(payload, sort_keys=True)))
@@ -141,7 +162,7 @@ class UnifiedQueue:
 
     def add_proposal(self, update_id, market, position, quantity, *, now=None, ttl=120):
         now = time.time() if now is None else now
-        if market not in ('spot', 'futures') or not position or not quantity or ttl <= 0:
+        if market not in ('spot', 'futures','futures_cross') or not position or not quantity or ttl <= 0:
             raise ValueError('Invalid close proposal')
         with self.transaction():
             job = self.db.execute("SELECT * FROM unified_jobs WHERE update_id=? AND market=? AND command='/close'", (update_id, market)).fetchone()
@@ -149,10 +170,17 @@ class UnifiedQueue:
                 raise ValueError('Missing close request')
             if job['status'] == 'DONE':
                 return job['result']
-            ident = secrets.token_hex(6)
+            payload=json.loads(job['payload'])
+            if payload.get('position')!=position or payload.get('quantity')!=quantity:
+                raise ValueError('Close proposal does not match accepted position')
+            ttl=min(ttl,payload.get('expires',0)-now)
+            if ttl<=0:raise ValueError('Close request expired')
+            symbol=payload.get('symbol') if market=='futures_cross' else None
+            if market=='futures_cross' and symbol not in ('BTCUSDT','ETHUSDT'):raise ValueError('Invalid cross symbol')
+            ident = (symbol+'-' if symbol else '')+secrets.token_hex(6)
             self.db.execute('INSERT INTO unified_proposals VALUES(?,?,?,?,?,?)', (ident, market, position, quantity, now+ttl, 'OPEN'))
             self.db.execute("UPDATE unified_jobs SET status='DONE',result=? WHERE id=?", (ident, job['id']))
-            self._notify('['+market.upper()+'] Закрыть позицию '+position+', объём '+quantity+'? /confirm '+ident+' или /cancel '+ident+'.')
+            self._notify('['+market_label(market)+'] Закрыть '+(symbol+' ' if symbol else '')+'позицию '+position+', объём '+quantity+'? /confirm '+ident+' или /cancel '+ident+'.')
             return ident
 
     def pending(self, market):
@@ -166,9 +194,9 @@ class UnifiedQueue:
             if row['status'] == 'DONE':
                 return
             self.db.execute("UPDATE unified_jobs SET status=?,result=? WHERE id=?", ('DONE' if applied else 'FAILED', result, job_id))
-            label='Кошельки' if row['market']=='wallet' else row['market'].upper()
+            label='Кошельки' if row['market']=='wallet' else market_label(row['market'])
             self._notify('['+label+'] '+result)
             update = self.db.execute('SELECT command FROM unified_updates WHERE id=?', (row['update_id'],)).fetchone()
             if update['command'] == '/pause_all':
                 waiting = [r[0] for r in self.db.execute("SELECT market FROM unified_jobs WHERE update_id=? AND status!='DONE'", (row['update_id'],))]
-                self._notify('Пауза обоих рынков: ожидается '+', '.join(waiting) if waiting else 'Команды паузы применены к обоим рынкам; текущее состояние: /status.')
+                self._notify('Пауза рынков: ожидается '+', '.join(waiting) if waiting else 'Команды паузы применены ко всем трём рынкам; текущее состояние: /status.')

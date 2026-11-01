@@ -21,6 +21,10 @@ def cross_trade_report(shared, *, now=None):
             opening[ident]=amount(row['amount'])
         periods={'today':{'count':0,'net':Decimal(0),'fees':Decimal(0),'funding':Decimal(0),'known':True,'adjustment':Decimal(0)},
                  'all':{'count':0,'net':Decimal(0),'fees':Decimal(0),'funding':Decimal(0),'known':True,'adjustment':Decimal(0)}}
+        late={}
+        for row in shared.db.execute("SELECT details FROM ledger_events WHERE kind='CROSS_LATE_FUNDING' AND created<=?",(now,)):
+            details=json.loads(row['details']);ident=details['position_id']
+            late[ident]=late.get(ident,Decimal(0))+amount(details['delta'])
         for row in shared.db.execute("SELECT kind,created,details FROM ledger_events WHERE kind IN ('CROSS_CLOSE','CROSS_LIQUIDATION_ADJUSTMENT') AND created<=?",(now,)):
             details=json.loads(row['details'])
             for name,out in periods.items():
@@ -31,7 +35,7 @@ def cross_trade_report(shared, *, now=None):
                 fee=opening.get(details['position_id'])
                 if fee is None:
                     out['known']=False;continue
-                fees=fee+amount(details['exit_fee']);funding=amount(details['funding']);gross=amount(details['gross'])
+                fees=fee+amount(details['exit_fee']);funding=amount(details['funding'])+late.get(details['position_id'],Decimal(0));gross=amount(details['gross'])
                 out['fees']+=fees;out['funding']+=funding;out['net']+=gross+funding-fees
         lines=['Futures cross • PAPER • торговый отчёт']
         for name,label in [('today','Сегодня по Баку ('+local.strftime('%d.%m.%Y')+')'),('all','За всё время')]:

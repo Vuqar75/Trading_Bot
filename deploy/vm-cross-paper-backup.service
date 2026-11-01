@@ -1,0 +1,14 @@
+[Unit]
+Description=Coordinated shared paper financial, queue and observer backup
+
+[Service]
+Type=oneshot
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot-cross
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tradingbot
+ExecStart=/usr/bin/python3 -B deploy/shared_paper_backup.py

@@ -183,6 +183,7 @@ class PaperWalletLedger:
             from .cross_paper_book import CrossPaperBook
             book=object.__new__(CrossPaperBook);book.db=self.db;book.ledger=self
             book._check()
+            if book.runtime_error():raise ValueError('Cross requires recovery')
             if source=='futures_cross':
                 current=time.time() if now is None else now
                 book._require_coverage(current)
@@ -208,7 +209,10 @@ class PaperWalletLedger:
             self._transfer_allowed(source, destination, quantity, now=now)
             token = 'T-'+secrets.token_hex(8)
             source_after = encode(self.balance(source+':free')-quantity)
-            destination_after = encode(self.balance(destination+':free')+quantity)
+            destination_free=self.balance(destination+':free')+quantity
+            if destination=='futures_cross':
+                destination_free-=min(destination_free,-self.balance('futures_cross:liability'))
+            destination_after = encode(destination_free)
             self.db.execute('INSERT INTO transfer_proposals VALUES(?,?,?,?,?,?,?,?,?,?,?)', (token,request_id,fingerprint,source,destination,encode(quantity),now+ttl,'OPEN',None,source_after,destination_after))
             return {'id':token,'source':source,'destination':destination,'quantity':encode(quantity),'expires':now+ttl,'status':'OPEN',
                     'source_after':source_after,'destination_after':destination_after}
@@ -228,6 +232,10 @@ class PaperWalletLedger:
             event = 'transfer:'+token
             self._post(event,'TRANSFER',{'source':row['source'],'destination':row['destination'],'quantity':row['quantity']},
                        [(row['source']+':free','USDT',-quantity),(row['destination']+':free','USDT',quantity)],created=now)
+            if row['destination']=='futures_cross':
+                from .cross_paper_book import CrossPaperBook
+                book=object.__new__(CrossPaperBook);book.db=self.db;book.ledger=self
+                book._settle_liability('transfer:'+token)
             self.db.execute("UPDATE transfer_proposals SET status='DONE',event_id=? WHERE id=?", (event,token))
             return event
 

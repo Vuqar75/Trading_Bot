@@ -63,22 +63,24 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                     book._require_coverage(now)
                     marks=book._marks(book.stored_quotes(),now)
                     cross=book._risk(marks)
-                    cross_value=cross['margin']+cross['funding']+cross['gross']-cross['exit_cost']
+                    cross_value=cross['margin']+cross['funding']+cross['gross']+cross['liability']-cross['exit_cost']
                 except ValueError:
                     incomplete.append('Futures cross: оценка или funding неполны')
                     cross={'positions':positions_cross,'free':balances['futures_cross']['free'],
                            'reserved':balances['futures_cross']['reserved'],
                            'margin':shared.ledger.balance('futures_cross:margin'),
                            'funding':shared.ledger.balance('futures_cross:funding'),
+                           'liability':shared.ledger.balance('futures_cross:liability'),
                            'gross':None,'equity':None,'maintenance':None,'exit_cost':None,'buffer':None,'available':None}
             else:
-                free=balances['futures_cross']['free'];reserved=balances['futures_cross']['reserved']
+                free=balances['futures_cross']['free'];reserved=balances['futures_cross']['reserved'];liability=shared.ledger.balance('futures_cross:liability')
+                cross_value=liability
                 cross={'positions':[],'free':free,'reserved':reserved,'margin':Decimal(0),'funding':Decimal(0),
-                       'gross':Decimal(0),'equity':free+reserved,'maintenance':Decimal(0),'exit_cost':Decimal(0),'buffer':free+reserved,'available':free}
+                       'liability':liability,'gross':Decimal(0),'equity':free+reserved+liability,'maintenance':Decimal(0),'exit_cost':Decimal(0),'buffer':free+reserved+liability,'available':free if liability==0 else Decimal(0)}
             cross.update(realized=Decimal(0),fees=Decimal(0),funding_total=Decimal(0),adjustment=Decimal(0))
             for row in shared.db.execute("SELECT e.kind,e.created,e.details,p.account,p.amount FROM ledger_events e JOIN ledger_postings p ON p.event_id=e.id WHERE p.account IN ('external:cross_pnl','external:cross_fees','external:cross_funding','external:cross_liquidation_adjustment')"):
                 timestamp=row['created']
-                if row['kind']=='CROSS_FUNDING':
+                if row['kind'] in ('CROSS_FUNDING','CROSS_LATE_FUNDING'):
                     details=json.loads(row['details']);timestamp=details['time']/1000
                 if period=='today' and not start<=timestamp<=now:continue
                 value=amount(row['amount'])
@@ -155,7 +157,7 @@ def render_live_report(data):
     cross=data.get('cross')
     if cross is None:lines.append('futures_cross и margin_cross: недоступны.')
     else:
-        lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+'; запас риска '+_fmt(cross['buffer'])+'; доступно для перевода '+_fmt(cross['available'])+'.')
+        lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+'; обязательства '+_fmt(-cross['liability'])+'; запас риска '+_fmt(cross['buffer'])+'; доступно для перевода '+_fmt(cross['available'])+'.')
         lines.append('Cross результат открытых позиций: '+_fmt(cross['gross'])+'; реализованный до комиссий: '+_fmt(cross['realized'])+'; комиссии: '+_fmt(cross['fees'])+'; funding: '+_fmt(cross['funding_total'])+'; модельная корректировка: '+_fmt(cross['adjustment'])+' USDT.')
         for pos in cross['positions']:
             lines.append(pos['symbol']+' '+pos['direction']+' — '+pos['quantity']+'; вход '+pos['entry']+'; маржа '+pos['margin']+' USDT.')
