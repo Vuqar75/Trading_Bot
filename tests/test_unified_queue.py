@@ -47,7 +47,7 @@ class UnifiedQueueTests(unittest.TestCase):
 
     def test_close_confirmation_uses_proposal_market_and_identity(self):
         self.q.receive(1, True, '/mode futures')
-        self.q.receive(2, True, '/close')
+        self.q.receive(2, True, '/close', positions={'futures':{'id':'position-a','quantity':'0.123'}})
         token = self.q.add_proposal(2, 'futures', 'position-a', '0.123', now=10)
         self.q.receive(3, True, '/mode spot')
         self.q.receive(4, True, '/confirm '+token, now=11)
@@ -59,11 +59,11 @@ class UnifiedQueueTests(unittest.TestCase):
         self.assertEqual(len(self.q.pending('futures')), 1)
 
     def test_expired_and_canceled_confirmation_are_rejected(self):
-        self.q.receive(1, True, '/close')
+        self.q.receive(1, True, '/close', positions={'spot':{'id':'p','quantity':'1'}})
         token = self.q.add_proposal(1, 'spot', 'p', '1', now=10, ttl=5)
         self.q.receive(2, True, '/confirm '+token, now=15)
         self.assertFalse(self.q.pending('spot'))
-        self.q.receive(3, True, '/close')
+        self.q.receive(3, True, '/close', positions={'spot':{'id':'p','quantity':'1'}})
         token = self.q.add_proposal(3, 'spot', 'p', '1', now=20)
         self.q.receive(4, True, '/cancel '+token, now=21)
         self.q.receive(5, True, '/confirm '+token, now=22)

@@ -19,10 +19,10 @@ def process_market(queue, receiver, store, market, *, started=0, fault=lambda po
                 qty = Decimal(str(pos['quantity'])) if isinstance(pos, dict) else Decimal(0)
             except (ValueError, ArithmeticError, KeyError):
                 qty = Decimal(0)
-            if qty <= 0 or not pos.get('id') or store.get('blocked') or store.get('error') or store.get('close_request') or (market == 'spot' and store.pending()):
+            if (qty <= 0 or not pos.get('id') or pos.get('id') != payload.get('position') or str(qty) != payload.get('quantity') or time.time() >= payload.get('expires', 0) or store.get('blocked') or store.get('error') or store.get('close_request') or (market == 'spot' and store.pending())):
                 queue.acknowledge(job['id'], 'Закрытие недоступно: нет подтверждённой позиции или требуется проверка.', applied=False)
             else:
-                queue.add_proposal(job['update_id'], market, pos['id'], str(qty))
+                queue.add_proposal(job['update_id'], market, pos['id'], str(qty), ttl=payload['expires']-time.time())
             continue
         if action == '/brief_status':
             quote = store.get('quote') or {}

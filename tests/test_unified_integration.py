@@ -86,7 +86,7 @@ class UnifiedIntegrationTests(unittest.TestCase):
         self.spot.command(1,True,'/resume')
         self.app.execute('BUY','.1',Decimal(100),'entry','SIGNAL')
         pos=self.spot.get('position')
-        self.queue.receive(10,True,'/close')
+        self.queue.receive(10,True,'/close',positions={'spot':pos})
         self.process('spot')
         token=self.queue.db.execute('select id from unified_proposals').fetchone()[0]
         self.queue.receive(11,True,'/confirm '+token)
@@ -103,6 +103,15 @@ class UnifiedIntegrationTests(unittest.TestCase):
         self.assertEqual(tuple(row),('SETTLED','EXPIRED'))
         auto=self.spot.prepare('SELL','.1',Decimal(100),'protective','STOP',target=pos['id'])
         self.assertIsNotNone(self.spot.claim(auto))
+
+    def test_close_queued_before_position_change_does_not_target_new_position(self):
+        self.spot.command(1,True,'/resume')
+        self.app.execute('BUY','.1',Decimal(100),'entry','SIGNAL')
+        old=self.spot.get('position')
+        self.queue.receive(10,True,'/close',positions={'spot':old})
+        with self.spot.transaction(): self.spot.set('position',{**old,'id':'replacement'})
+        self.process('spot')
+        self.assertEqual(self.queue.db.execute('select count(*) from unified_proposals').fetchone()[0],0)
 
     def test_futures_manual_close_expiry_preserves_protective_exit(self):
         self.future.command(1,True,'/resume')

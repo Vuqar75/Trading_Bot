@@ -3,6 +3,7 @@ import os
 import shutil
 import sqlite3
 import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -40,7 +41,7 @@ class CutoverRehearsalTests(unittest.TestCase):
         repo=Path(__file__).resolve().parents[1]
         for target,source in cutover.MAP.items():shutil.copy2(repo/'deploy'/source,self.code/'deploy'/source)
         for unit in cutover.UNIT_FILES:(self.units/unit).write_text('old unit '+unit)
-        self.states={u:True for u in cutover.UNITS};self.new=False;self.fail_new=False;self.advance=False;self.held=None
+        self.states={u:True for u in cutover.UNITS};self.new=False;self.fail_new=False;self.advance=False;self.held=None;self.inject=None
 
     def tearDown(self):
         if self.held:self.held.close()
@@ -101,7 +102,7 @@ class CutoverRehearsalTests(unittest.TestCase):
                  patch.object(cutover,'QUEUE',self.queue),patch.object(cutover,'OBSERVER',self.observer),patch.object(cutover,'TARGET',self.target),
                  patch.object(cutover,'CODE',self.code),patch.object(cutover,'UNIT_DIR',self.units),patch.object(cutover,'active',lambda u:self.states[u]),
                  patch.object(cutover,'process_counts',self._counts),patch.object(cutover,'health',self._health),patch.object(cutover,'call',self._call),
-                 patch.object(cutover,'test_notification',lambda _:None),patch.object(cutover.os,'geteuid',lambda:0),patch.object(cutover.os,'chown',lambda *a:None),
+                 patch.object(cutover,'test_notification',lambda _:self.inject() if self.inject else None),patch.object(cutover.os,'geteuid',lambda:0),patch.object(cutover.os,'chown',lambda *a:None),
                  patch.object(cutover.time,'sleep',lambda _:None),patch.object(cutover.subprocess,'check_output',self._fake_output),patch.object(cutover.subprocess,'run',fake_run),
                  patch.object(cutover.sys,'argv',['cutover','--expected-commit','candidate-sha','--execute'])]
         from contextlib import ExitStack
@@ -121,6 +122,44 @@ class CutoverRehearsalTests(unittest.TestCase):
         archives=list(self.home.glob('before-wallet-*'));self.assertEqual(len(archives),1)
         self.assertEqual(json.loads((archives[0]/'manifest.json').read_text())['stage'],'complete')
 
+    def test_manual_pause_received_during_cutover_is_preserved(self):
+        def inject():
+            q=UnifiedQueue(self.queue)
+            try:
+                q.receive(10,True,'/pause')
+                q.acknowledge(q.pending('spot')[0]['id'],'paused')
+            finally:q.close()
+        self.inject=inject;self._run()
+        from trading_bot.paper_shared_store import SharedPaperStore
+        s=SharedPaperStore(self.target)
+        try:
+            self.assertTrue(s.snapshot('spot')['paused'])
+            self.assertFalse(s.snapshot('futures')['paused'])
+        finally:s.close()
+
+    def test_release_process_death_before_and_after_commit(self):
+        from trading_bot.paper_consolidation import consolidate_snapshots
+        from trading_bot.paper_shared_store import SharedPaperStore
+        for path,table in ((self.spot,'runtime_meta'),(self.future,'futures_meta')):
+            with sqlite3.connect(path) as db:db.execute('update '+table+" set value='true' where key='paused'")
+        self.target.parent.mkdir()
+        consolidate_snapshots(self.spot,self.future,self.target,captured_at=time.time())
+        s=SharedPaperStore(self.target);s.set_deployment_hold(True);s.close()
+        code=("import os,sys; from trading_bot.paper_shared_store import SharedPaperStore; "
+              "from tools.vm_install_shared_paper import release_entries; "
+              "s=SharedPaperStore(sys.argv[1]); s.fault=lambda p: os._exit(71) if p==sys.argv[3] else None; "
+              "release_entries(s,sys.argv[2],0,{'spot':False,'futures':False})")
+        for point in ('before_commit','after_commit'):
+            proc=subprocess.run([sys.executable,'-c',code,str(self.target),str(self.queue),point])
+            self.assertEqual(proc.returncode,71)
+            s=SharedPaperStore(self.target)
+            try:
+                self.assertEqual(s.deployment_hold(),point=='before_commit')
+                self.assertEqual(s.snapshot('spot')['paused'],point=='before_commit')
+                self.assertEqual(s.snapshot('futures')['paused'],point=='before_commit')
+                self.assertTrue(s.ledger.reconcile()['balanced'])
+            finally:s.close()
+
     def test_failed_start_rolls_back_old_services_paused_when_safe(self):
         with self.assertRaises(RuntimeError):self._run(fail_new=True)
         archive=next(self.home.glob('before-wallet-*'))
@@ -135,6 +174,14 @@ class CutoverRehearsalTests(unittest.TestCase):
         self.assertEqual(json.loads((archive/'manifest.json').read_text())['stage'],'manual_reconciliation_required')
         self.assertTrue(self.target.exists())
         self.assertTrue((self.units/'tradingbot-spot.service').read_text().startswith('[Unit]'))
+
+    def test_interrupted_or_missing_manifest_blocks_reexecution(self):
+        archive=self.home/'before-wallet-interrupted';archive.mkdir()
+        for payload in (None, {'stage':'consolidated_verified'}, {'stage':'manual_reconciliation_required'}):
+            if payload is not None:(archive/'manifest.json').write_text(json.dumps(payload))
+            with self.assertRaisesRegex(RuntimeError,'cutover|archive'):self._run()
+            self.assertFalse(self.target.exists())
+            self.assertTrue(all(self.states.values()))
 
     def test_concurrent_manual_pause_aborts_and_leaves_both_markets_paused(self):
         original=cutover.read_meta

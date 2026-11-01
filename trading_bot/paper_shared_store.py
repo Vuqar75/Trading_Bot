@@ -59,20 +59,23 @@ class SharedPaperStore:
         row=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()
         return bool(row and row[0]=='true')
 
+    def _validate_hold_change(self, enabled):
+        if not self.ledger.reconcile()['balanced']:raise ValueError('Journal integrity mismatch')
+        self._assert_consistent('spot');self._assert_consistent('futures')
+        if not enabled and (self._get('spot','paused') is not True or self._get('futures','paused') is not True):
+            raise ValueError('Both markets must be paused before release')
+        if not enabled:
+            for market in ('spot','futures'):
+                quote=self._get(market,'quote') or {}
+                if self._get(market,'error') or self._get(market,'blocked') or not quote.get('time') or not 0<=time.time()-quote['time']<=120:
+                    raise ValueError('Market health must be checked before release')
+            if not self._get('spot','position')['fees_known'] or self.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone():
+                raise ValueError('Spot requires recovery or fee review')
+
     def set_deployment_hold(self,enabled):
         if type(enabled) is not bool:raise ValueError('Invalid hold state')
         with self.transaction():
-            if not self.ledger.reconcile()['balanced']:raise ValueError('Journal integrity mismatch')
-            self._assert_consistent('spot');self._assert_consistent('futures')
-            if not enabled and (self._get('spot','paused') is not True or self._get('futures','paused') is not True):
-                raise ValueError('Both markets must be paused before release')
-            if not enabled:
-                for market in ('spot','futures'):
-                    quote=self._get(market,'quote') or {}
-                    if self._get(market,'error') or self._get(market,'blocked') or not quote.get('time') or not 0<=time.time()-quote['time']<=120:
-                        raise ValueError('Market health must be checked before release')
-                if not self._get('spot','position')['fees_known'] or self.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone():
-                    raise ValueError('Spot requires recovery or fee review')
+            self._validate_hold_change(enabled)
             self.db.execute("INSERT OR REPLACE INTO ledger_meta VALUES('deployment_hold',?)",('true' if enabled else 'false',))
 
     def snapshot(self,market):

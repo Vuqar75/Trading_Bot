@@ -68,7 +68,20 @@ class TelegramTransport:
                     text = ''
                 stamp = msg.get('date', 0)
                 fresh = type(stamp) is int and stamp >= int(self.started) and 0 <= time.time()-stamp <= 120
-                unified.receive(ident, authorized, text, fresh=fresh)
+                command = text.split()[0].split('@')[0] if text.split() else ''
+                if authorized and command == '/close' and getattr(store, 'shared', None):
+                    # The financial read transaction spans queue commit. Rollback-journal
+                    # mode prevents a position writer committing between snapshot and receipt.
+                    store.db.execute('BEGIN')
+                    try:
+                        spot = store.get('position')
+                        row = store.db.execute("SELECT value FROM futures_meta WHERE key='position'").fetchone()
+                        futures = json.loads(row[0]) if row else None
+                        unified.receive(ident, authorized, text, fresh=fresh, positions={'spot':spot, 'futures':futures})
+                    finally:
+                        store.db.rollback()
+                else:
+                    unified.receive(ident, authorized, text, fresh=fresh)
                 continue
             command = text.split()[0].split('@')[0] if isinstance(text, str) and text.split() else ''
             if authorized and command in {'/timeframe', '/leverage'} and isinstance(text, str):

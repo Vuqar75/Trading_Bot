@@ -56,7 +56,7 @@ class UnifiedQueue:
             if not self.db.execute('SELECT 1 FROM unified_updates LIMIT 1').fetchone():
                 self.db.execute("UPDATE unified_state SET value=? WHERE key='offset'", (str(max(int(self.state('offset')), int(offset))),))
 
-    def receive(self, ident, authorized, text, *, fresh=True, now=None):
+    def receive(self, ident, authorized, text, *, fresh=True, now=None, positions=None):
         if type(ident) is not int or not 0 <= ident < 2**63-1 or type(authorized) is not bool:
             raise ValueError('Invalid update')
         text = text if authorized and isinstance(text, str) else ''
@@ -99,7 +99,12 @@ class UnifiedQueue:
                         self._notify('[SPOT] Плечо доступно только в futures paper.')
                     elif len(parts) > (2 if command in ('/timeframe', '/leverage') else 1):
                         self._notify('['+market.upper()+'] Некорректные параметры.')
+                    elif command == '/close' and (not positions or not isinstance(positions.get(market), dict) or not positions[market].get('id') or not positions[market].get('quantity')):
+                        self._notify('['+market.upper()+'] Закрытие недоступно: снимок позиции не подтверждён.')
                     else:
+                        if command == '/close':
+                            pos = positions[market]
+                            payload = {'position': pos['id'], 'quantity': str(pos['quantity']), 'received_at': now, 'expires': now + 120}
                         if command in ('/resume', '/timeframe', '/leverage'):
                             payload = {'received_at': now, 'expires': now + 120}
                         jobs = [(market, ' '.join([command] + parts[1:]))]

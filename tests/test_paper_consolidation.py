@@ -72,6 +72,49 @@ class PaperConsolidationTests(unittest.TestCase):
         with sqlite3.connect(self.target) as db:self.assertEqual(db.execute('pragma integrity_check').fetchone()[0],'ok')
         with self.assertRaises(ValueError):consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
 
+    def test_real_poller_commits_position_snapshot_and_replay_preserves_it(self):
+        from trading_bot.unified_queue import UnifiedQueue
+        consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
+        store=RuntimeStore(self.target,{'mode':'paper','interval':'15m'},shared=True)
+        queue=UnifiedQueue(Path(self.tmp.name)/'queue.db')
+        self.addCleanup(store.close);self.addCleanup(queue.close)
+        now=int(time.time())
+        queue.receive(10,True,'/mode futures')
+        update={'update_id':11,'message':{'from':{'id':1},'chat':{'id':1,'type':'private'},'date':now,'text':'/close'}}
+        transport=TelegramTransport('FAKE','1',lambda req:{'ok':True,'result':[update]},started=now-1)
+        transport.poll(store,queue)
+        payload=json.loads(queue.pending('futures')[0]['payload'])
+        self.assertEqual(payload['position'],self.expected_future['id'])
+        self.assertEqual(payload['quantity'],self.expected_future['quantity'])
+        queue.receive(11,True,'/close',positions={'futures':{'id':'replacement','quantity':'999'}})
+        self.assertEqual(json.loads(queue.pending('futures')[0]['payload']),payload)
+        queue.receive(12,True,'/mode spot')
+        self.assertEqual(queue.pending('futures')[0]['update_id'],11)
+
+    def test_close_receipt_holds_financial_snapshot_through_queue_commit(self):
+        from trading_bot.unified_queue import UnifiedQueue
+        consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
+        store=RuntimeStore(self.target,{'mode':'paper','interval':'15m'},shared=True)
+        queue=UnifiedQueue(Path(self.tmp.name)/'queue-lock.db')
+        self.addCleanup(store.close);self.addCleanup(queue.close)
+        now=int(time.time());seen=[];original=queue.receive
+        def receive(*args, **kwargs):
+            def writer():
+                db=sqlite3.connect(self.target,isolation_level=None,timeout=.05)
+                try:
+                    db.execute('BEGIN IMMEDIATE')
+                    db.execute("UPDATE futures_meta SET value='true' WHERE key='paused'")
+                    try:db.commit();seen.append('committed')
+                    except sqlite3.OperationalError:seen.append('locked');db.rollback()
+                finally:db.close()
+            thread=threading.Thread(target=writer);thread.start();thread.join()
+            return original(*args,**kwargs)
+        queue.receive=receive
+        msg={'update_id':1,'message':{'from':{'id':1},'chat':{'id':1,'type':'private'},'date':now,'text':'/close'}}
+        TelegramTransport('FAKE','1',lambda req:{'ok':True,'result':[msg]},started=now-1).poll(store,queue)
+        self.assertEqual(seen,['locked'])
+        self.assertEqual(json.loads(queue.pending('spot')[0]['payload'])['position'],self.expected_spot['id'])
+
     def test_shared_financial_mutation_is_atomic_idempotent_and_journaled(self):
         consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
         shared=SharedPaperStore(self.target);self.addCleanup(shared.close)

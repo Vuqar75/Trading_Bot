@@ -93,12 +93,47 @@ def test_notification(queue):
     raise RuntimeError('Telegram test notification was not acknowledged')
 
 
+def release_entries(shared, queue, offset, previous):
+    """Serialize restoration with durable receipt of manual pauses.
+
+    Lock financial DB then command queue, the same order as close receipt and
+    coordinated backup. Keep queue locked until the financial commit completes.
+    """
+    with closing(sqlite3.connect(queue,isolation_level=None,timeout=10)) as q:
+        try:
+            with shared.transaction():
+                q.execute('BEGIN IMMEDIATE')
+                if q.execute("SELECT 1 FROM unified_jobs WHERE status='PENDING' LIMIT 1").fetchone():
+                    raise RuntimeError('Queue has pending work')
+                pauses=q.execute("SELECT command,market FROM unified_updates WHERE id>=? AND command IN ('/pause','/pause_all')",(offset,)).fetchall()
+                manual={x for command,market in pauses for x in (('spot','futures') if command=='/pause_all' else (market,))}
+                if not shared.deployment_hold():raise RuntimeError('Deployment hold not active')
+                shared._validate_hold_change(False)
+                shared.db.execute("INSERT OR REPLACE INTO ledger_meta VALUES('deployment_hold','false')")
+                for market in ('spot','futures'):
+                    if not previous[market] and market not in manual:shared._set(market,'paused',False)
+            return manual
+        finally:
+            if q.in_transaction:q.rollback()
+
+
+def require_no_interrupted_cutover(home):
+    for archive in home.glob('before-wallet-*'):
+        if not archive.is_dir():raise RuntimeError('Unexpected cutover archive')
+        try:stage=json.loads((archive/'manifest.json').read_text())['stage']
+        except (OSError,ValueError,KeyError,TypeError):
+            raise RuntimeError('Unresolved cutover archive requires manual inspection') from None
+        if stage not in ('complete','rolled_back_paused'):
+            raise RuntimeError('Interrupted cutover requires manual reconciliation')
+
+
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--expected-commit',required=True);parser.add_argument('--execute',action='store_true');args=parser.parse_args()
     if not args.execute or os.geteuid()!=0:raise SystemExit('Root and explicit --execute are required')
     if subprocess.check_output(['hostname'],text=True).strip()!='tradingbot-paper-test':raise SystemExit('Unexpected VM')
     head=subprocess.check_output(['git','-C',str(CODE),'rev-parse','HEAD'],text=True).strip()
     if head!=args.expected_commit or subprocess.check_output(['git','-C',str(CODE),'status','--porcelain'],text=True).strip():raise SystemExit('Unexpected candidate checkout')
+    require_no_interrupted_cutover(HOME)
     for p in (SPOT,FUTURE,QUEUE,OBSERVER):
         if p.is_symlink() or not p.is_file() or HOME.resolve() not in p.resolve().parents:raise SystemExit('Unexpected source path')
         if any(Path(str(p)+suffix).exists() for suffix in ('-wal','-journal')):raise SystemExit('Source has active journal sidecar')
@@ -204,17 +239,10 @@ def main():
         if int(next(line.split()[1] for line in Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:')))<102400:raise RuntimeError('Insufficient memory headroom')
         call('systemctl','start','tradingbot-paper-backup.service')
         test_notification(QUEUE)
-        with closing(sqlite3.connect(QUEUE,isolation_level=None,timeout=10)) as q:
-            if q.execute("SELECT 1 FROM unified_jobs WHERE status='PENDING' LIMIT 1").fetchone():raise RuntimeError('Queue has pending work')
-            pauses=q.execute("SELECT command,market FROM unified_updates WHERE id>=? AND command IN ('/pause','/pause_all')",(offset,)).fetchall()
-            manual={x for command,market in pauses for x in (('spot','futures') if command=='/pause_all' else (market,))}
         mark('healthy_on_hold_and_backup_complete')
         shared=SharedPaperStore(TARGET)
-        try:shared.set_deployment_hold(False)
+        try:manual=release_entries(shared,QUEUE,offset,manifest['previous_paused'])
         finally:shared.close()
-        for label,unit in [('spot','tradingbot-spot.service'),('futures','tradingbot-futures.service')]:
-            if not manifest['previous_paused'][label] and label not in manual:
-                call('systemctl','kill','--kill-who=main','--signal=USR1',unit)
         time.sleep(18)
         final={}
         for label,mode,file in [('spot','paper','runtime-health.json'),('futures','futures-paper','futures-health.json')]:
