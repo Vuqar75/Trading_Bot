@@ -36,7 +36,7 @@ class CrossPaperStrategy:
         info=signal_details([price for _,price in parsed])
         return parsed[-1][0],{k:str(v) if isinstance(v,Decimal) else v for k,v in info.items()}
 
-    def tick(self, quotes, candles, server_ms, *, now=None):
+    def tick(self, quotes, candles, server_ms, *, now=None, clock=None):
         now=time.time() if now is None else now
         try:
             if type(server_ms) is not int or abs(server_ms-int(now*1000))>60000:
@@ -47,14 +47,14 @@ class CrossPaperStrategy:
         risk=self.book.risk(quotes,now=now);actions=[]
         if risk['positions'] and risk['buffer']<=0:
             p=risk['positions'][0]
-            result=self.book.close('liquidate:'+p['id'],p['symbol'],p['id'],p['quantity'],quotes,now=now,liquidate=True)
+            result=self.book.close('liquidate:'+p['id'],p['symbol'],p['id'],p['quantity'],quotes,now=now,liquidate=True,clock=clock)
             return [{'action':'LIQUIDATION','result':result}]
         for p in risk['positions']:
             mark=amount(quotes[p['symbol']]['mark'],positive=True)
             movement=(mark/amount(p['entry'],positive=True)-1)*(1 if p['direction']=='LONG' else -1)
             reason='STOP' if movement<=Decimal('-.02') else 'TAKE' if movement>=Decimal('.04') else None
             if reason:
-                result=self.book.close('protect:'+p['id']+':'+reason,p['symbol'],p['id'],p['quantity'],quotes,now=now,reason=reason)
+                result=self.book.close('protect:'+p['id']+':'+reason,p['symbol'],p['id'],p['quantity'],quotes,now=now,reason=reason,clock=clock)
                 actions.append({'action':reason,'symbol':p['symbol'],'result':result})
         settings=self.db.execute('SELECT leverage,interval FROM cross_settings WHERE id=1').fetchone()
         if not settings:raise ValueError('Missing cross settings')
@@ -76,7 +76,7 @@ class CrossPaperStrategy:
             if not paused and not occupied and symbol not in closed and action in ('BUY','SELL'):
                 try:
                     result=self.book.open('signal:'+symbol+':'+str(stamp),symbol,'LONG' if action=='BUY' else 'SHORT',
-                                          '5',settings['leverage'],quotes,now=now,expected_interval=settings['interval'])
+                                          '5',settings['leverage'],quotes,now=now,expected_interval=settings['interval'],clock=clock)
                     self.fault('after_open_commit')
                     actions.append({'action':'OPEN','symbol':symbol,'result':result})
                 except ValueError as exc:

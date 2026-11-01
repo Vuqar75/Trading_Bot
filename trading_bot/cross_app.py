@@ -24,15 +24,17 @@ from .unified_queue import UnifiedQueue
 log=logging.getLogger('cross-paper')
 
 
-def cycle(book, queue, receiver, strategy, sync, reader, *, started, now=None):
-    now=time.time() if now is None else now
+def cycle(book, queue, receiver, strategy, sync, reader, *, started, now=None, clock=time.time):
+    live_clock=clock if now is None else None
+    now=clock() if now is None else now
     process_cross(queue,receiver,book,started=started,now=now)
     quotes=sync.refresh(now=now)
     settings=book.db.execute('SELECT interval FROM cross_settings WHERE id=1').fetchone()
     if not settings:raise ValueError('Cross settings missing')
     candles={symbol:reader.candles(symbol,settings['interval'],quotes[symbol]['server_ms']) for symbol in SYMBOLS}
     server=max(q['server_ms'] for q in quotes.values())
-    return strategy.tick(quotes,candles,server,now=now)
+    finished=clock() if live_clock else now
+    return strategy.tick(quotes,candles,server,now=finished,clock=live_clock)
 
 
 def main():
@@ -69,7 +71,9 @@ def main():
                 write_report(path.parent/'cross-health.json',{'time':time.time(),'mode':'futures-cross-paper',
                     'paused':bool(book.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]),
                     'error':error,'positions':len(book._positions()),'data_complete':complete})
-                if args.once:break
+                if args.once:
+                    if error:raise SystemExit(1)
+                    break
                 stop.wait(args.poll_seconds)
         finally:
             if queue:queue.close()

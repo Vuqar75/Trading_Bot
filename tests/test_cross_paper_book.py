@@ -52,6 +52,18 @@ class CrossPaperBookTests(unittest.TestCase):
         eth=self.book.open('eth','ETHUSDT','SHORT','5',1,self.quotes,now=100)
         return btc,eth
 
+    def test_execution_rechecks_clock_after_waiting_for_transaction(self):
+        with self.assertRaises(ValueError):
+            self.book.open('late-open','BTCUSDT','LONG','5',1,self.quotes,now=100,clock=lambda:221)
+        self.assertEqual(self.book.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],0)
+        position=self.book.open('timely-open','BTCUSDT','LONG','5',1,self.quotes,now=100,clock=lambda:101)
+        with self.assertRaises(ValueError):
+            self.book.close('late-close','BTCUSDT',position['id'],position['quantity'],self.quotes,now=100,clock=lambda:221)
+        self.assertEqual(self.book.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],1)
+        self.book.close('timely-close','BTCUSDT',position['id'],position['quantity'],self.quotes,now=100,clock=lambda:102)
+        row=self.book.db.execute("SELECT created FROM ledger_events WHERE kind='CROSS_CLOSE'").fetchone()
+        self.assertEqual(row[0],102)
+
     def test_opposite_results_affect_same_equity_and_available(self):
         btc,eth=self.positions()
         changed={'BTCUSDT':self.quote('80',101),'ETHUSDT':self.quote('180',101)}
@@ -318,6 +330,21 @@ with patch.object(socket,'socket',deny),patch.object(app,'CrossPublicData',Fake)
         health=json.loads((self.path.parent/'cross-health.json').read_text())
         self.assertTrue(health['paused']);self.assertTrue(health['data_complete']);self.assertIsNone(health['error'])
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],0)
+
+    def test_cross_process_once_returns_failure_on_data_error(self):
+        queue=Path(self.tmp.name)/'failure-queue.db';q=UnifiedQueue(queue);q.close()
+        code='''import sys
+from unittest.mock import patch
+import trading_bot.cross_app as app
+class Fake:
+ def schedule(self,symbol):raise RuntimeError('unavailable')
+with patch.object(app,'CrossPublicData',Fake):
+ sys.argv=['cross-app','--db',sys.argv[1],'--queue',sys.argv[2],'--once'];app.main()
+'''
+        child=subprocess.run([sys.executable,'-c',code,str(self.path),str(queue)],capture_output=True,text=True,timeout=30)
+        self.assertNotEqual(child.returncode,0)
+        health=json.loads((self.path.parent/'cross-health.json').read_text())
+        self.assertTrue(health['paused']);self.assertEqual(health['error'],'RuntimeError')
 
     def test_late_funding_debt_is_explicit_and_only_cross_cash_settles_it(self):
         btc,eth=self.positions();tracker=CrossFundingTracker(self.book);self.book.invalidate_all()

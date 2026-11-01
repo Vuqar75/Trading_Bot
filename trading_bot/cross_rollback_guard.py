@@ -26,8 +26,8 @@ def check_cross_code_rollback(financial,queue,baseline_queue):
         if not shared.ledger.reconcile()['balanced']:reasons.append('journal_integrity')
         try:shared._assert_consistent('spot');shared._assert_consistent('futures')
         except ValueError:reasons.append('existing_market_drift')
-        for account in ('free','reserved','margin','funding','liability'):
-            if shared.ledger.balance('futures_cross:'+account):reasons.append('cross_balance:'+account)
+        for item in db.execute("SELECT DISTINCT account,asset FROM ledger_postings WHERE account LIKE 'futures_cross:%'"):
+            if shared.ledger.balance(item['account'],item['asset']):reasons.append('cross_balance:'+item['account']+':'+item['asset'])
         if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_positions'").fetchone():
             from .cross_paper_book import CrossPaperBook
             book=object.__new__(CrossPaperBook);book.shared=shared;book.db=db;book.ledger=shared.ledger

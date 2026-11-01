@@ -48,5 +48,11 @@ class CrossRollbackGuardTests(unittest.TestCase):
         self.q.receive(2,True,'/pause')
         self.assertIn('pending_commands',self.check()['reasons'])
 
+    def test_non_usdt_cross_balance_cannot_be_hidden_from_guard(self):
+        with self.shared.transaction():
+            self.shared.ledger._post('unexpected-asset','FINANCIAL_METADATA',{},[('futures_cross:unexpected','ETH','1'),('external:test','ETH','-1')])
+        result=self.check();self.assertFalse(result['safe_for_old_code'])
+        self.assertTrue(any('ETH' in reason for reason in result['reasons']))
+
 
 if __name__=='__main__':unittest.main()

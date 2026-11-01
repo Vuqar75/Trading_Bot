@@ -255,7 +255,7 @@ class CrossPaperBook:
     def _remember(self, operation, fingerprint, result):
         self.db.execute('INSERT INTO cross_operations VALUES(?,?,?)', (operation, fingerprint, json.dumps(result, sort_keys=True)))
 
-    def open(self, operation, symbol, direction, margin, leverage, quotes, *, now=None, expected_interval=None):
+    def open(self, operation, symbol, direction, margin, leverage, quotes, *, now=None, expected_interval=None, clock=None):
         now = time.time() if now is None else now
         if symbol not in SYMBOLS or direction not in ('LONG','SHORT') or type(leverage) is not int or not 1 <= leverage <= 10:
             raise ValueError('Invalid cross position')
@@ -277,7 +277,8 @@ class CrossPaperBook:
                 raise ValueError('Leverage does not match cross settings')
             if expected_interval is not None and self.db.execute('SELECT interval FROM cross_settings WHERE id=1').fetchone()[0] != expected_interval:
                 raise ValueError('Interval does not match cross settings')
-            marks = self._current_marks(quotes, now)
+            current=now if clock is None else clock()
+            marks = self._current_marks(quotes, current)
             risk = self._risk(marks)
             if risk['buffer'] <= 0 or risk['available'] < margin + margin*leverage*FEE_BPS/10000:
                 raise ValueError('Insufficient cross collateral')
@@ -290,10 +291,10 @@ class CrossPaperBook:
                 quantity = margin*leverage/fill
             fee = quantity*fill*FEE_BPS/10000
             pos = {'symbol':symbol,'id':uuid.uuid4().hex,'direction':direction,'quantity':encode(quantity),
-                   'entry':encode(fill),'margin':encode(margin),'leverage':leverage,'funding':'0','opened_ms':int(now*1000)}
+                   'entry':encode(fill),'margin':encode(margin),'leverage':leverage,'funding':'0','opened_ms':int(current*1000)}
             self.ledger._post('cross:open:'+operation,'CROSS_OPEN',pos,
                 [(WALLET+':free','USDT',-margin),(WALLET+':margin','USDT',margin),
-                 (WALLET+':free','USDT',-fee),('external:cross_fees','USDT',fee)],created=now)
+                 (WALLET+':free','USDT',-fee),('external:cross_fees','USDT',fee)],created=current)
             self.db.execute('INSERT INTO cross_positions VALUES(:symbol,:id,:direction,:quantity,:entry,:margin,:leverage,:funding,:opened_ms)',pos)
             from .cross_funding_tracker import CrossFundingTracker
             tracker=object.__new__(CrossFundingTracker);tracker.book=self;tracker.shared=self.shared;tracker.db=self.db
@@ -409,14 +410,14 @@ class CrossPaperBook:
             self._check();self._remember(operation,fingerprint,result)
             return result
 
-    def _settle_liability(self, operation):
+    def _settle_liability(self, operation, *, now=None):
         """Settle known cross debt from cross cash inside the caller's transaction."""
         if not self.db.in_transaction:raise ValueError('Settlement requires a transaction')
         debt=-self.ledger.balance(WALLET+':liability')
         paid=min(debt,self.ledger.balance(WALLET+':free'))
         if paid>0:
             self.ledger._post('cross:liability-settlement:'+operation,'CROSS_LIABILITY_SETTLEMENT',{'amount':encode(paid)},
-                [(WALLET+':free','USDT',-paid),(WALLET+':liability','USDT',paid)])
+                [(WALLET+':free','USDT',-paid),(WALLET+':liability','USDT',paid)],created=now)
         return paid
 
     def close(self, operation, symbol, position_id, quantity, quotes, *, now=None, liquidate=False, confirm_expires=None, clock=None, reason='MANUAL'):
@@ -452,17 +453,17 @@ class CrossPaperBook:
                 posts=[(WALLET+':margin','USDT',-margin),(WALLET+':free','USDT',margin)]
                 for a,b,v in [(WALLET+':free',WALLET+':funding',funding),(WALLET+':free','external:cross_pnl',gross),('external:cross_fees',WALLET+':free',fee)]:
                     if v:posts.extend([(a,'USDT',v),(b,'USDT',-v)])
-                self.ledger._post('cross:close:'+operation+':'+item['symbol'],'CROSS_CLOSE',details,posts,created=now)
+                self.ledger._post('cross:close:'+operation+':'+item['symbol'],'CROSS_CLOSE',details,posts,created=current)
                 self.db.execute('DELETE FROM cross_positions WHERE symbol=?',(item['symbol'],));results.append(details)
                 self._notify(('Модельная ликвидация ' if liquidate else 'Закрыта ')+item['symbol']+' '+item['direction']+', объём '+item['quantity']+'; причина '+reason+'; gross '+encode(gross)+', комиссия выхода '+encode(fee)+', funding '+encode(funding)+' USDT.')
             deficit=-self.ledger.balance(WALLET+':free')
             if deficit>0:
                 if not liquidate:raise ValueError('Insufficient cash to settle selected position')
-                self.ledger._post('cross:adjustment:'+operation,'CROSS_LIQUIDATION_ADJUSTMENT',{'quantity':encode(deficit)},[(WALLET+':free','USDT',deficit),('external:cross_liquidation_adjustment','USDT',-deficit)],created=now)
-            self._settle_liability('close:'+operation)
+                self.ledger._post('cross:adjustment:'+operation,'CROSS_LIQUIDATION_ADJUSTMENT',{'quantity':encode(deficit)},[(WALLET+':free','USDT',deficit),('external:cross_liquidation_adjustment','USDT',-deficit)],created=current)
+            self._settle_liability('close:'+operation,now=current)
             debt=-self.ledger.balance(WALLET+':liability')
             if debt>0 and liquidate:
-                self.ledger._post('cross:adjustment-liability:'+operation,'CROSS_LIQUIDATION_ADJUSTMENT',{'quantity':encode(debt)},[(WALLET+':liability','USDT',debt),('external:cross_liquidation_adjustment','USDT',-debt)],created=now)
+                self.ledger._post('cross:adjustment-liability:'+operation,'CROSS_LIQUIDATION_ADJUSTMENT',{'quantity':encode(debt)},[(WALLET+':liability','USDT',debt),('external:cross_liquidation_adjustment','USDT',-debt)],created=current)
             if liquidate and (deficit>0 or debt>0):
                 self._notify('Модельная корректировка при ликвидации: '+encode(max(Decimal(0),deficit)+debt)+' USDT; проводка сохранена.')
             result={'closed':results,'adjustment':encode(max(Decimal(0),deficit)+(debt if liquidate else 0))}

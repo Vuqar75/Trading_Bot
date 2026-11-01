@@ -235,7 +235,7 @@ class PaperWalletLedger:
             if row['destination']=='futures_cross':
                 from .cross_paper_book import CrossPaperBook
                 book=object.__new__(CrossPaperBook);book.db=self.db;book.ledger=self
-                book._settle_liability('transfer:'+token)
+                book._settle_liability('transfer:'+token,now=now)
             self.db.execute("UPDATE transfer_proposals SET status='DONE',event_id=? WHERE id=?", (event,token))
             return event
 
