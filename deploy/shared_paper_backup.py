@@ -2,8 +2,10 @@
 import fcntl
 import re
 import shutil
+import sys
 from datetime import datetime,timezone
 from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from trading_bot.paper_coordinated_backup import coordinated_backup
 
 home=Path('/var/lib/tradingbot');root=home/'paper-coordinated-backups'

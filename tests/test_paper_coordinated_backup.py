@@ -1,5 +1,6 @@
 import json
 import os
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -82,3 +83,19 @@ class CoordinatedBackupTests(unittest.TestCase):
         finally:blocker.rollback();blocker.close()
         coordinated_backup(self.financial,self.queue,self.observer,self.dest)
         self.assertTrue(self.dest.exists())
+
+    def test_systemd_backup_script_imports_package_in_isolated_python(self):
+        home=self.root/'home';(home/'paper-financial').mkdir(parents=True)
+        (home/'Trading_Bot_paper_state/monitor').mkdir(parents=True)
+        shutil.copy2(self.financial,home/'paper-financial/shared-paper.db')
+        shutil.copy2(self.queue,home/'Trading_Bot_paper_state/unified-commands.db')
+        shutil.copy2(self.observer,home/'Trading_Bot_paper_state/monitor/observation.db')
+        script=Path(__file__).resolve().parents[1]/'deploy/shared_paper_backup.py'
+        code=("import sys; from pathlib import Path; p=Path(sys.argv[1]); "
+              "s=p.read_text().replace('/var/lib/tradingbot',sys.argv[2]); "
+              "exec(compile(s,str(p),'exec'),{'__file__':str(p),'__name__':'__main__'})")
+        result=subprocess.run([sys.executable,'-I','-c',code,str(script),str(home)],capture_output=True,text=True)
+        self.assertEqual(result.returncode,0,result.stderr)
+        backups=list((home/'paper-coordinated-backups').glob('paper-*'))
+        self.assertEqual(len(backups),1)
+        self.assertTrue((backups[0]/'manifest.json').exists())
