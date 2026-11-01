@@ -20,6 +20,7 @@ from trading_bot.outbox_relay import FuturesOutboxRelay
 from trading_bot.app import TelegramTransport
 from trading_bot.unified_receiver import MarketReceiver
 from trading_bot.futures_app import FuturesApplication
+from trading_bot.paper_rollback_guard import check_rollback
 
 
 class PaperConsolidationTests(unittest.TestCase):
@@ -119,6 +120,25 @@ class PaperConsolidationTests(unittest.TestCase):
         shared=SharedPaperStore(self.target);self.addCleanup(shared.close)
         self.assertEqual(shared.ledger.balance('spot:free'),Decimal('0.00000001'))
         self.assertEqual(Decimal(shared.snapshot('spot')['cash']),Decimal('1E-8'))
+
+    def test_rollback_gate_accepts_unmodified_candidate_and_rejects_transfer(self):
+        consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
+        self.assertTrue(check_rollback(self.target,self.spot,self.future)['safe_for_financial_rollback'])
+        shared=SharedPaperStore(self.target)
+        try:
+            p=shared.propose_transfer('rollback-test','spot','reserve','1',now=1);shared.confirm_transfer(p['id'],now=2)
+        finally:shared.close()
+        result=check_rollback(self.target,self.spot,self.future)
+        self.assertFalse(result['safe_for_financial_rollback']);self.assertIn('new_financial_events',result['reasons'])
+
+    def test_rollback_gate_rejects_protective_exit_and_funding_changes(self):
+        consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
+        future=FuturesStore(self.target,shared=True)
+        try:
+            pos=future.get('position');future.close_position(Decimal(100),2000,'rollback-close','STOP',pos['id'])
+        finally:future.close()
+        result=check_rollback(self.target,self.spot,self.future)
+        self.assertFalse(result['safe_for_financial_rollback']);self.assertIn('futures_changed',result['reasons'])
 
     def test_shared_financial_drift_blocks_resume_but_allows_pause(self):
         consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
@@ -416,6 +436,22 @@ class PaperConsolidationTests(unittest.TestCase):
         self.assertEqual(spot.shared.ledger.balance('spot:reserved'),0)
         self.assertEqual(spot.shared.ledger.balance('spot:free'),before-Decimal('5.005'))
         self.assertEqual(spot.shared.ledger.balance('spot:position','BTC'),Decimal('.05'))
+        self.assertTrue(spot.shared.ledger.reconcile()['balanced'])
+
+    def test_partial_buy_preserves_unfilled_cash_reserve(self):
+        consolidate_snapshots(self.spot,self.future,self.target,captured_at=1)
+        spot=RuntimeStore(self.target,{'mode':'paper','interval':'15m'},shared=True);self.addCleanup(spot.close)
+        pos=spot.get('position');cid=spot.prepare('SELL','.1',Decimal('100'),'clear-for-partial-buy','STOP',target=pos['id']);spot.claim(cid)
+        spot.apply(cid,PaperExchange.inspect_saved(spot.db.execute('select * from runtime_orders where client_id=?',(cid,)).fetchone()))
+        spot.command(101,True,'/resume',routed=True);before=Decimal(spot.get('cash'))
+        cid=spot.prepare('BUY','.05',Decimal('100'),'partial-buy','SIGNAL');spot.claim(cid)
+        report=PaperExchange.inspect_saved(spot.db.execute('select * from runtime_orders where client_id=?',(cid,)).fetchone())
+        report['order'].update(status='PARTIALLY_FILLED',executedQty='.02',cummulativeQuoteQty='2')
+        report['fills'][0].update(qty='.02',quoteQty='2',commission='.002')
+        spot.apply(cid,report);spot.apply(cid,report)
+        self.assertEqual(spot.shared.ledger.balance('spot:reserved'),Decimal('3.008'))
+        self.assertEqual(spot.shared.ledger.balance('spot:free'),before-Decimal('5.01'))
+        self.assertEqual(spot.shared.ledger.balance('spot:position','BTC'),Decimal('.02'))
         self.assertTrue(spot.shared.ledger.reconcile()['balanced'])
 
     def test_futures_open_journals_margin_and_entry_fee(self):

@@ -3,7 +3,7 @@ import sqlite3
 import tempfile
 import time
 import unittest
-from decimal import Decimal
+from decimal import Decimal,localcontext
 from pathlib import Path
 from trading_bot.app import Application,TelegramTransport
 from trading_bot.futures_store import FuturesStore
@@ -110,3 +110,16 @@ class WalletCommandTests(unittest.TestCase):
         snapshot(Path(self.tmp.name)/'shared.db',obs,now=before+2)
         with sqlite3.connect(obs) as db:values=[Decimal(r[0]) for r in db.execute('select equity from samples order by ts')]
         self.assertEqual(len(values),2);self.assertEqual(values[0],values[1])
+
+    def test_today_funding_and_entry_fee_use_event_times_baku(self):
+        path=Path(self.tmp.name)/'shared.db'
+        f=FuturesStore(path,shared=True);self.addCleanup(f.close)
+        pos=f.get('position');now=time.time();stamp=int(now*1000)-1000
+        f.apply_funding(pos['id'],[{'time':stamp,'rate':'.002','mark':'100'}],int(now*1000))
+        data=live_report(self.shared,now=now+1,period='today')
+        with localcontext() as ctx:
+            ctx.prec=28
+            expected=Decimal(pos['quantity'])*Decimal('100')*Decimal('.002')
+        self.assertEqual(data['funding_total'],expected)
+        self.assertEqual(data['future_fees'],Decimal(pos['entry_fee']))
+        self.assertIsNone(data['spot_fees'])
