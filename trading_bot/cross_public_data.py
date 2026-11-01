@@ -9,6 +9,7 @@ from .testnet_observer import ObservationError, number
 
 
 class CrossPublicData(FuturesData):
+    PATHS=FuturesData.PATHS | {'/fapi/v1/fundingInfo'}
     @staticmethod
     def symbol(symbol):
         if symbol not in SYMBOLS:
@@ -26,6 +27,29 @@ class CrossPublicData(FuturesData):
         price=number(row['markPrice'])
         if price<=0:raise ObservationError('Zero mark price')
         return price,server
+
+    def schedule(self, symbol):
+        """Read current deadline and interval; this does not prove past coverage."""
+        symbol=self.symbol(symbol)
+        server=self.get('/fapi/v1/time')['serverTime']
+        row=self.get('/fapi/v1/premiumIndex',{'symbol':symbol})
+        info=self.get('/fapi/v1/fundingInfo')
+        if type(server) is not int or not isinstance(row,dict) or row.get('symbol')!=symbol or not isinstance(info,list):
+            raise ObservationError('Invalid funding schedule response')
+        if any(not isinstance(item,dict) or not isinstance(item.get('symbol'),str) for item in info):
+            raise ObservationError('Invalid funding interval data')
+        stamp=row.get('time');deadline=row.get('nextFundingTime')
+        if type(stamp) is not int or type(deadline) is not int or not -5000<=server-stamp<=60000 or deadline<=server:
+            raise ObservationError('Invalid funding schedule time')
+        entries=[x for x in info if isinstance(x,dict) and x.get('symbol')==symbol]
+        if len(entries)>1:raise ObservationError('Conflicting funding schedule')
+        hours=entries[0].get('fundingIntervalHours') if entries else 8
+        if type(hours) is not int or not 1<=hours<=24:raise ObservationError('Invalid funding interval')
+        if deadline-server>hours*3600000+5000:raise ObservationError('Funding deadline exceeds interval')
+        price=number(row.get('markPrice'))
+        if price<=0:raise ObservationError('Invalid mark price')
+        return {'symbol':symbol,'mark':str(price),'server_ms':server,'mark_ms':stamp,
+                'next_due_ms':deadline,'interval_ms':hours*3600000,'interval_adjusted':bool(entries)}
 
     def candles(self, symbol, interval, server):
         symbol=self.symbol(symbol)

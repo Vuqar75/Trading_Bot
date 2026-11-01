@@ -42,5 +42,15 @@ class CrossPublicDataTests(unittest.TestCase):
         self.assertEqual(len(events),1001)
         self.assertEqual({x['rate_type'] for x in events if x['time']==998},{'Regular','Special'})
 
+    def test_schedule_uses_adjustments_or_documented_default(self):
+        def transport(req):
+            parsed=urlparse(req.full_url)
+            if parsed.path.endswith('/time'):return {'serverTime':100000}
+            if parsed.path.endswith('/fundingInfo'):return [{'symbol':'ETHUSDT','fundingIntervalHours':4}]
+            return {'symbol':parse_qs(parsed.query)['symbol'][0],'time':100000,'nextFundingTime':100001,'markPrice':'100'}
+        reader=CrossPublicData(transport)
+        self.assertEqual(reader.schedule('BTCUSDT')['interval_ms'],8*3600000)
+        self.assertEqual(reader.schedule('ETHUSDT')['interval_ms'],4*3600000)
+
 
 if __name__=='__main__':unittest.main()
