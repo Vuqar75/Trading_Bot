@@ -1,0 +1,149 @@
+"""Durable, market-bound Telegram command queue; transport independent.
+
+This module is not wired to the running paper applications yet.
+"""
+import hashlib
+import json
+import secrets
+import sqlite3
+import time
+from contextlib import contextmanager
+
+
+class UnifiedQueue:
+    def __init__(self, path, fault=lambda point: None):
+        self.db = sqlite3.connect(path, isolation_level=None, timeout=5)
+        self.db.row_factory = sqlite3.Row
+        self.fault = fault
+        self.db.execute('PRAGMA synchronous=FULL')
+        self.db.execute('PRAGMA foreign_keys=ON')
+        with self.transaction():
+            tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
+            expected = {'unified_state', 'unified_updates', 'unified_jobs', 'unified_proposals', 'unified_outbox'}
+            if tables and tables != expected:
+                raise ValueError('Dedicated unified queue database required')
+            self.db.execute('CREATE TABLE IF NOT EXISTS unified_state(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+            self.db.execute('CREATE TABLE IF NOT EXISTS unified_updates(id INTEGER PRIMARY KEY,fingerprint TEXT NOT NULL,command TEXT NOT NULL,market TEXT NOT NULL)')
+            self.db.execute('CREATE TABLE IF NOT EXISTS unified_jobs(id INTEGER PRIMARY KEY,update_id INTEGER NOT NULL REFERENCES unified_updates(id),market TEXT NOT NULL,command TEXT NOT NULL,payload TEXT NOT NULL,status TEXT NOT NULL DEFAULT \'PENDING\',result TEXT,UNIQUE(update_id,market))')
+            self.db.execute('CREATE TABLE IF NOT EXISTS unified_proposals(id TEXT PRIMARY KEY,market TEXT NOT NULL,position TEXT NOT NULL,quantity TEXT NOT NULL,expires REAL NOT NULL,status TEXT NOT NULL)')
+            self.db.execute('CREATE TABLE IF NOT EXISTS unified_outbox(id INTEGER PRIMARY KEY,message TEXT NOT NULL)')
+            self.db.execute("INSERT OR IGNORE INTO unified_state VALUES('mode','spot')")
+            self.db.execute("INSERT OR IGNORE INTO unified_state VALUES('offset','0')")
+
+    @contextmanager
+    def transaction(self):
+        self.db.execute('BEGIN IMMEDIATE')
+        try:
+            yield
+            self.fault('before_commit')
+            self.db.commit()
+            self.fault('after_commit')
+        except BaseException:
+            self.db.rollback()
+            raise
+
+    def close(self):
+        self.db.close()
+
+    def state(self, key):
+        return self.db.execute('SELECT value FROM unified_state WHERE key=?', (key,)).fetchone()[0]
+
+    def _notify(self, text):
+        self.db.execute('INSERT INTO unified_outbox(message) VALUES(?)', (text,))
+
+    def receive(self, ident, authorized, text, *, fresh=True, now=None):
+        if type(ident) is not int or not 0 <= ident < 2**63-1 or type(authorized) is not bool:
+            raise ValueError('Invalid update')
+        text = text if authorized and isinstance(text, str) else ''
+        # Freshness is evaluated at first committed receipt, not on a replay.
+        fingerprint = hashlib.sha256(json.dumps([authorized, text], ensure_ascii=False).encode()).hexdigest()
+        now = time.time() if now is None else now
+        with self.transaction():
+            old = self.db.execute('SELECT fingerprint FROM unified_updates WHERE id=?', (ident,)).fetchone()
+            if old:
+                if old[0] != fingerprint:
+                    raise ValueError('Update identity conflict')
+                return
+            if ident < int(self.state('offset')):
+                raise ValueError('Update precedes committed offset')
+            parts = text.split()
+            command = parts[0].split('@')[0] if parts else ''
+            mode = self.state('mode')
+            market = mode
+            payload = {}
+            jobs = []
+            if authorized:
+                if command == '/mode' and len(parts) <= 2:
+                    if len(parts) == 2 and parts[1] in ('spot', 'futures'):
+                        mode = parts[1]
+                        self.db.execute("UPDATE unified_state SET value=? WHERE key='mode'", (mode,))
+                    elif len(parts) == 2:
+                        self._notify('Режим: используйте /mode spot или /mode futures.')
+                    self._notify('Выбранный рынок: ' + mode.upper())
+                elif command == '/pause_all' and len(parts) == 1:
+                    jobs = [('spot', '/pause'), ('futures', '/pause')]
+                    self._notify('Пауза обоих рынков запрошена; ожидаются подтверждения.')
+                elif command == '/status' and len(parts) == 1:
+                    jobs = [('spot', '/status'), ('futures', '/status')]
+                elif command == '/status' and len(parts) == 2 and parts[1] in ('spot', 'futures'):
+                    market = parts[1]; jobs = [(market, '/status')]
+                elif command in ('/signal', '/history', '/pause', '/resume', '/timeframe', '/leverage', '/close'):
+                    if not fresh and command in ('/resume', '/close', '/timeframe', '/leverage'):
+                        self._notify('['+market.upper()+'] Команда устарела.')
+                    elif command == '/leverage' and market != 'futures':
+                        self._notify('[SPOT] Плечо доступно только в futures paper.')
+                    elif len(parts) > (2 if command in ('/timeframe', '/leverage') else 1):
+                        self._notify('['+market.upper()+'] Некорректные параметры.')
+                    else:
+                        jobs = [(market, ' '.join([command] + parts[1:]))]
+                elif command in ('/confirm', '/cancel') and len(parts) == 2 and fresh:
+                    proposal = self.db.execute('SELECT * FROM unified_proposals WHERE id=?', (parts[1],)).fetchone()
+                    if proposal is None or proposal['status'] != 'OPEN' or proposal['expires'] <= now:
+                        self._notify('Подтверждение не найдено или устарело.')
+                    elif command == '/cancel':
+                        self.db.execute("UPDATE unified_proposals SET status='CANCELED' WHERE id=?", (parts[1],))
+                        self._notify('['+proposal['market'].upper()+'] Предложение отменено.')
+                    else:
+                        market = proposal['market']
+                        payload = {'proposal': proposal['id'], 'position': proposal['position'], 'quantity': proposal['quantity'], 'expires': proposal['expires']}
+                        self.db.execute("UPDATE unified_proposals SET status='CONFIRMED' WHERE id=?", (parts[1],))
+                        jobs = [(market, '/confirmed_close')]
+                else:
+                    self._notify('Рынок: '+mode.upper()+'. Команды: /mode, /status, /signal, /history, /pause, /resume, /timeframe, /leverage (futures), /close, /confirm ID, /cancel ID, /pause_all.')
+            self.db.execute('INSERT INTO unified_updates VALUES(?,?,?,?)', (ident, fingerprint, command, market))
+            for destination, action in jobs:
+                self.db.execute('INSERT INTO unified_jobs(update_id,market,command,payload) VALUES(?,?,?,?)', (ident, destination, action, json.dumps(payload, sort_keys=True)))
+            self.db.execute("UPDATE unified_state SET value=? WHERE key='offset'", (str(ident+1),))
+
+    def add_proposal(self, update_id, market, position, quantity, *, now=None, ttl=120):
+        now = time.time() if now is None else now
+        if market not in ('spot', 'futures') or not position or not quantity or ttl <= 0:
+            raise ValueError('Invalid close proposal')
+        with self.transaction():
+            job = self.db.execute("SELECT * FROM unified_jobs WHERE update_id=? AND market=? AND command='/close'", (update_id, market)).fetchone()
+            if not job:
+                raise ValueError('Missing close request')
+            if job['status'] == 'DONE':
+                return job['result']
+            ident = secrets.token_hex(6)
+            self.db.execute('INSERT INTO unified_proposals VALUES(?,?,?,?,?,?)', (ident, market, position, quantity, now+ttl, 'OPEN'))
+            self.db.execute("UPDATE unified_jobs SET status='DONE',result=? WHERE id=?", (ident, job['id']))
+            self._notify('['+market.upper()+'] Закрыть позицию '+position+', объём '+quantity+'? /confirm '+ident+' или /cancel '+ident+'.')
+            return ident
+
+    def pending(self, market):
+        return self.db.execute("SELECT * FROM unified_jobs WHERE market=? AND status='PENDING' ORDER BY id", (market,)).fetchall()
+
+    def acknowledge(self, job_id, result, *, applied=True):
+        with self.transaction():
+            row = self.db.execute('SELECT * FROM unified_jobs WHERE id=?', (job_id,)).fetchone()
+            if not row:
+                raise ValueError('Unknown job')
+            if row['status'] == 'DONE':
+                return
+            self.db.execute("UPDATE unified_jobs SET status=?,result=? WHERE id=?", ('DONE' if applied else 'FAILED', result, job_id))
+            self._notify('['+row['market'].upper()+'] '+result)
+            update = self.db.execute('SELECT command FROM unified_updates WHERE id=?', (row['update_id'],)).fetchone()
+            if update['command'] == '/pause_all':
+                waiting = [r[0] for r in self.db.execute("SELECT market FROM unified_jobs WHERE update_id=? AND status!='DONE'", (row['update_id'],))]
+                self._notify('Пауза обоих рынков: ожидается '+', '.join(waiting) if waiting else 'Пауза подтверждена обоими рынками.')
