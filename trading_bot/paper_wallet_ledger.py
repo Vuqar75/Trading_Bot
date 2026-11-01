@@ -11,8 +11,8 @@ import time
 from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation, localcontext
 
-WALLETS = ('reserve', 'spot', 'futures_isolated')
-TRADING = ('spot', 'futures_isolated')
+WALLETS = ('reserve', 'spot', 'futures_isolated', 'futures_cross')
+TRADING = ('spot', 'futures_isolated', 'futures_cross')
 ASSETS = ('USDT', 'BTC')
 
 
@@ -167,12 +167,25 @@ class PaperWalletLedger:
                 raise ValueError('Insufficient free or reserved funds')
             return created
 
-    def _transfer_allowed(self, source, destination, quantity):
+    def _transfer_allowed(self, source, destination, quantity, *, now=None):
         if source not in WALLETS or destination not in WALLETS or source == destination:
             raise ValueError('Unsupported transfer')
         for wallet in (source,destination):
-            if wallet in TRADING and not self.db.execute('SELECT paused FROM wallet_state WHERE wallet=?', (wallet,)).fetchone()[0]:
-                raise ValueError('Trading wallet must be paused')
+            if wallet in TRADING:
+                state=self.db.execute('SELECT paused FROM wallet_state WHERE wallet=?', (wallet,)).fetchone()
+                if not state:raise ValueError('Trading wallet not activated')
+                if not state[0]:raise ValueError('Trading wallet must be paused')
+        if 'futures_cross' in (source,destination):
+            if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_anchor'").fetchone():
+                raise ValueError('Cross not activated')
+            hold=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()
+            if hold and hold[0]=='true':raise ValueError('Deployment hold is active')
+            from .cross_paper_book import CrossPaperBook
+            book=object.__new__(CrossPaperBook);book.db=self.db;book.ledger=self
+            book._check()
+            if source=='futures_cross':
+                marks=book._marks(book.stored_quotes(),time.time() if now is None else now)
+                if book._risk(marks)['available'] < quantity:raise ValueError('Insufficient cross collateral')
         if self.balance(source+':free') < quantity:
             raise ValueError('Insufficient confirmed free funds')
 
@@ -190,7 +203,7 @@ class PaperWalletLedger:
                 return dict(old)
             if not self.db.execute("SELECT 1 FROM ledger_meta WHERE key='imported'").fetchone():
                 raise ValueError('Opening snapshot required')
-            self._transfer_allowed(source, destination, quantity)
+            self._transfer_allowed(source, destination, quantity, now=now)
             token = 'T-'+secrets.token_hex(8)
             source_after = encode(self.balance(source+':free')-quantity)
             destination_after = encode(self.balance(destination+':free')+quantity)
@@ -209,7 +222,7 @@ class PaperWalletLedger:
             if row['status'] != 'OPEN' or now >= row['expires']:
                 raise ValueError('Transfer confirmation expired or canceled')
             quantity = amount(row['quantity'], positive=True)
-            self._transfer_allowed(row['source'], row['destination'], quantity)
+            self._transfer_allowed(row['source'], row['destination'], quantity, now=now)
             event = 'transfer:'+token
             self._post(event,'TRANSFER',{'source':row['source'],'destination':row['destination'],'quantity':row['quantity']},
                        [(row['source']+':free','USDT',-quantity),(row['destination']+':free','USDT',quantity)],created=now)

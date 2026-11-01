@@ -180,9 +180,9 @@ class SharedPaperStore:
             raise ValueError('Journal/state mismatch: '+market+' financial projection')
         return snapshot
 
-    def _sync_pause_and_validate(self,source,destination):
+    def _sync_pause_and_validate(self,source,destination,quantity=None,now=None):
         if self.deployment_hold():raise ValueError('Deployment hold is active')
-        if source not in ('reserve','spot','futures_isolated') or destination not in ('reserve','spot','futures_isolated') or source==destination:
+        if source not in ('reserve','spot','futures_isolated','futures_cross') or destination not in ('reserve','spot','futures_isolated','futures_cross') or source==destination:
             raise ValueError('Unsupported transfer')
         for wallet,market in (('spot','spot'),('futures_isolated','futures')):
             paused=self._get(market,'paused')
@@ -197,6 +197,18 @@ class SharedPaperStore:
                 raise ValueError('Spot order unresolved')
         if 'futures_isolated' in (source,destination) and (self._get('futures','blocked') or self._get('futures','error')):
             raise ValueError('Futures requires recovery')
+        if 'futures_cross' in (source,destination):
+            row=self.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()
+            schema=self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_quotes'").fetchone()
+            if not row or not schema:raise ValueError('Cross not activated')
+            if row[0] != 1:raise ValueError('Trading wallet must be paused')
+            if source=='futures_cross':
+                from .cross_paper_book import CrossPaperBook
+                cross=object.__new__(CrossPaperBook);cross.shared=self;cross.db=self.db;cross.ledger=self.ledger
+                cross._check()
+                marks=cross._marks(cross.stored_quotes(),time.time() if now is None else now)
+                if quantity is None or cross._risk(marks)['available'] < amount(quantity,positive=True):
+                    raise ValueError('Insufficient cross collateral')
 
     def propose_transfer(self,request_id,source,destination,value,*,now=None,ttl=120):
         with self.transaction():
@@ -204,7 +216,7 @@ class SharedPaperStore:
             self._assert_consistent('spot');self._assert_consistent('futures')
             if self.db.execute('SELECT 1 FROM transfer_proposals WHERE request_id=?',(request_id,)).fetchone():
                 return self.ledger.propose_transfer(request_id,source,destination,value,now=now,ttl=ttl)
-            self._sync_pause_and_validate(source,destination)
+            self._sync_pause_and_validate(source,destination,value,now)
             return self.ledger.propose_transfer(request_id,source,destination,value,now=now,ttl=ttl)
 
     def confirm_transfer(self,token,*,now=None):
@@ -214,7 +226,7 @@ class SharedPaperStore:
             row=self.db.execute('SELECT * FROM transfer_proposals WHERE id=?',(token,)).fetchone()
             if not row:raise ValueError('Unknown transfer confirmation')
             if row['status']=='DONE':return row['event_id']
-            self._sync_pause_and_validate(row['source'],row['destination'])
+            self._sync_pause_and_validate(row['source'],row['destination'],row['quantity'],now)
             event=self.ledger.confirm_transfer(token,now=now)
             self.fault('after_transfer_post')
             quantity=amount(row['quantity'],positive=True)
