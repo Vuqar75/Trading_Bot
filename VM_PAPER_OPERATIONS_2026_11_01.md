@@ -1,3 +1,14 @@
+# Актуальное состояние после установки 1 ноября 2026
+
+Единый paper-журнал установлен на существующей VM. Подтверждённая работающая
+версия `aeea6f591afcbd17f8d649d639652bf5b3cbcbe4`; финансовая база
+`/var/lib/tradingbot/paper-financial/shared-paper.db`. Подробная сверка, текущий
+статус, копии и команды эксплуатации — в начале HANDOFF.md. Ниже сохранена
+история разработки: её прежние формулировки о неустановленном состоянии и
+старых позициях исторические, а не актуальные инструкции. Используются только
+paper-режимы Spot и isolated futures. Старые финансовые базы сохранены root:0400;
+не использовать их как действующие и не восстанавливать поверх новых событий.
+
 # Paper bots on VM: migration and operations
 
 On 2026-11-01 the user authorized migration of the existing paper bots to `tradingbot-paper-test` (`europe-west1-b`), without changing parameters or starting live/Testnet orders. Cloud Shell entries paused 12:29:18 Baku; both processes stopped. Before VM startup three independent SQLite backups were created, integrity checked and transferred with matching SHA-256. Original DBs and snapshots remain on Cloud Shell. Existing checkout directories were renamed to `Trading_Bot_paper_observation_MIGRATED_DISABLED` and `Trading_Bot_futures_paper_MIGRATED_DISABLED`; marker-only directories replace old launch paths. Process scans found no old trading processes; cron inspection found no matching launcher and no matching user systemd service. This prevents accidental execution of old documented paths, not malicious/manual startup or distributed fencing.

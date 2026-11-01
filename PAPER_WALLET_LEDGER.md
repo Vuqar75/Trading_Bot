@@ -1,3 +1,14 @@
+# Актуальное состояние после установки 1 ноября 2026
+
+Единый paper-журнал установлен на существующей VM. Подтверждённая работающая
+версия `aeea6f591afcbd17f8d649d639652bf5b3cbcbe4`; финансовая база
+`/var/lib/tradingbot/paper-financial/shared-paper.db`. Подробная сверка, текущий
+статус, копии и команды эксплуатации — в начале HANDOFF.md. Ниже сохранена
+история разработки: её прежние формулировки о неустановленном состоянии и
+старых позициях исторические, а не актуальные инструкции. Используются только
+paper-режимы Spot и isolated futures. Старые финансовые базы сохранены root:0400;
+не использовать их как действующие и не восстанавливать поверх новых событий.
+
 # Paper wallets: offline checkpoints, not yet deployable
 
 This is unfinished and not installed. The current VM still uses separate Spot and futures databases. The continuation adds an experimental consolidated SQLite path, runtime adapters, wallet command routing and coordinated backup, but these have only been tested offline. Do not deploy until the remaining gates in HANDOFF.md have passed.
