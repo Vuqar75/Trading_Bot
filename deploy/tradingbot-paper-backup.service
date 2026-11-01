@@ -1,0 +1,14 @@
+[Unit]
+Description=Consistent Spot, Futures and observation SQLite backups
+
+[Service]
+Type=oneshot
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot-paper
+UMask=0077
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tradingbot
+ExecStart=/usr/bin/python3 -B deploy/paper_vm_backup.py

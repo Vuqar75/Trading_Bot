@@ -1,0 +1,24 @@
+[Unit]
+Description=Futures paper
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot-paper
+Environment=HOME=/var/lib/tradingbot
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tradingbot
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=90
+ExecStart=/usr/bin/python3 -B -m trading_bot.futures_app --db /var/lib/tradingbot/Trading_Bot_futures_state/futures-paper.db --margin 10 --fee-bps 5 --slippage-bps 2 --maintenance-bps 50 --allow-paper-signal
+
+[Install]
+WantedBy=multi-user.target
