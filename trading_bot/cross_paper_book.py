@@ -22,11 +22,15 @@ class CrossPaperBook:
     def __init__(self, shared):
         self.shared, self.db, self.ledger = shared, shared.db, shared.ledger
         with shared.transaction():
-            self.db.execute('CREATE TABLE IF NOT EXISTS cross_positions(symbol TEXT PRIMARY KEY, id TEXT NOT NULL UNIQUE, direction TEXT NOT NULL, quantity TEXT NOT NULL, entry TEXT NOT NULL, margin TEXT NOT NULL, leverage INTEGER NOT NULL, funding TEXT NOT NULL)')
+            self.db.execute('CREATE TABLE IF NOT EXISTS cross_positions(symbol TEXT PRIMARY KEY, id TEXT NOT NULL UNIQUE, direction TEXT NOT NULL, quantity TEXT NOT NULL, entry TEXT NOT NULL, margin TEXT NOT NULL, leverage INTEGER NOT NULL, funding TEXT NOT NULL, opened_ms INTEGER NOT NULL)')
+            if 'opened_ms' not in {row[1] for row in self.db.execute('PRAGMA table_info(cross_positions)')}:
+                raise ValueError('Unsupported experimental cross position schema')
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_operations(id TEXT PRIMARY KEY, fingerprint TEXT NOT NULL, result TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_anchor(id INTEGER PRIMARY KEY CHECK(id=1), event_id TEXT NOT NULL REFERENCES ledger_events(id))')
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_settings(id INTEGER PRIMARY KEY CHECK(id=1), leverage INTEGER NOT NULL, interval TEXT NOT NULL)')
-            self.db.execute('CREATE TABLE IF NOT EXISTS cross_funding(position_id TEXT NOT NULL, symbol TEXT NOT NULL, funding_time INTEGER NOT NULL, revision INTEGER NOT NULL, rate TEXT NOT NULL, mark TEXT NOT NULL, value TEXT NOT NULL, source TEXT NOT NULL, PRIMARY KEY(position_id,funding_time,revision))')
+            self.db.execute('CREATE TABLE IF NOT EXISTS cross_funding(position_id TEXT NOT NULL, symbol TEXT NOT NULL, funding_time INTEGER NOT NULL, rate_type TEXT NOT NULL, revision INTEGER NOT NULL, rate TEXT NOT NULL, mark TEXT NOT NULL, value TEXT NOT NULL, source TEXT NOT NULL, PRIMARY KEY(position_id,funding_time,rate_type,revision))')
+            if 'rate_type' not in {row[1] for row in self.db.execute('PRAGMA table_info(cross_funding)')}:
+                raise ValueError('Unsupported experimental cross funding schema')
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_quotes(symbol TEXT PRIMARY KEY, mark TEXT NOT NULL, observed REAL NOT NULL, funding_complete INTEGER NOT NULL CHECK(funding_complete IN (0,1)))')
             for verb in ('UPDATE', 'DELETE'):
                 self.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_cross_funding_{verb.lower()} BEFORE {verb} ON cross_funding BEGIN SELECT RAISE(ABORT,'immutable cross funding'); END")
@@ -108,6 +112,15 @@ class CrossPaperBook:
         with self.shared.transaction():
             self.db.execute('UPDATE cross_quotes SET funding_complete=0 WHERE symbol=?',(symbol,))
 
+    def invalidate_all(self):
+        with self.shared.transaction():
+            self.db.execute('UPDATE cross_quotes SET funding_complete=0')
+
+    def fail_closed(self):
+        with self.shared.transaction():
+            self.db.execute('UPDATE cross_quotes SET funding_complete=0')
+            self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
+
     def _current_marks(self, quotes, now):
         supplied=self._marks(quotes,now)
         stored=self.stored_quotes()
@@ -176,14 +189,14 @@ class CrossPaperBook:
     def _remember(self, operation, fingerprint, result):
         self.db.execute('INSERT INTO cross_operations VALUES(?,?,?)', (operation, fingerprint, json.dumps(result, sort_keys=True)))
 
-    def open(self, operation, symbol, direction, margin, leverage, quotes, *, now=None):
+    def open(self, operation, symbol, direction, margin, leverage, quotes, *, now=None, expected_interval=None):
         now = time.time() if now is None else now
         if symbol not in SYMBOLS or direction not in ('LONG','SHORT') or type(leverage) is not int or not 1 <= leverage <= 10:
             raise ValueError('Invalid cross position')
         margin = amount(margin, positive=True)
         if margin > 5:
             raise ValueError('Cross margin exceeds paper limit')
-        data = ['open',symbol,direction,encode(margin),leverage]
+        data = ['open',symbol,direction,encode(margin),leverage,expected_interval]
         with self.shared.transaction(), localcontext() as ctx:
             ctx.prec = 120
             self._check()
@@ -194,6 +207,8 @@ class CrossPaperBook:
                 raise ValueError('Cross is paused')
             if self.db.execute('SELECT leverage FROM cross_settings WHERE id=1').fetchone()[0] != leverage:
                 raise ValueError('Leverage does not match cross settings')
+            if expected_interval is not None and self.db.execute('SELECT interval FROM cross_settings WHERE id=1').fetchone()[0] != expected_interval:
+                raise ValueError('Interval does not match cross settings')
             marks = self._current_marks(quotes, now)
             risk = self._risk(marks)
             if risk['buffer'] <= 0 or risk['available'] < margin + margin*leverage*FEE_BPS/10000:
@@ -207,38 +222,39 @@ class CrossPaperBook:
                 quantity = margin*leverage/fill
             fee = quantity*fill*FEE_BPS/10000
             pos = {'symbol':symbol,'id':uuid.uuid4().hex,'direction':direction,'quantity':encode(quantity),
-                   'entry':encode(fill),'margin':encode(margin),'leverage':leverage,'funding':'0'}
+                   'entry':encode(fill),'margin':encode(margin),'leverage':leverage,'funding':'0','opened_ms':int(now*1000)}
             self.ledger._post('cross:open:'+operation,'CROSS_OPEN',pos,
                 [(WALLET+':free','USDT',-margin),(WALLET+':margin','USDT',margin),
                  (WALLET+':free','USDT',-fee),('external:cross_fees','USDT',fee)],created=now)
-            self.db.execute('INSERT INTO cross_positions VALUES(:symbol,:id,:direction,:quantity,:entry,:margin,:leverage,:funding)',pos)
+            self.db.execute('INSERT INTO cross_positions VALUES(:symbol,:id,:direction,:quantity,:entry,:margin,:leverage,:funding,:opened_ms)',pos)
             if self._risk(marks)['buffer'] <= 0:
                 raise ValueError('Cross maintenance buffer exhausted')
             self._anchor(operation);self._check();self._remember(operation,fingerprint,pos)
             return pos
 
-    def funding(self, operation, symbol, position_id, stamp, revision, rate, mark, source, *, now=None):
+    def funding(self, operation, symbol, position_id, stamp, revision, rate, mark, source, *, now=None, rate_type='Regular'):
         now = time.time() if now is None else now
-        if symbol not in SYMBOLS or type(stamp) is not int or stamp < 0 or type(revision) is not int or revision < 0 or not source:
+        if symbol not in SYMBOLS or rate_type not in ('Regular','Special') or type(stamp) is not int or stamp < 0 or type(revision) is not int or revision < 0 or not source:
             raise ValueError('Invalid funding identity')
         rate, mark = amount(rate), amount(mark, positive=True)
         if abs(rate) >= 1:
             raise ValueError('Invalid funding rate')
-        data = ['funding',symbol,position_id,stamp,revision,encode(rate),encode(mark),source]
+        data = ['funding',symbol,position_id,stamp,rate_type,revision,encode(rate),encode(mark),source]
         with self.shared.transaction(), localcontext() as ctx:
             ctx.prec = 120
             self._check();fingerprint, previous = self._prior(operation,data)
             if previous is not None:return previous
             p = self.db.execute('SELECT * FROM cross_positions WHERE symbol=? AND id=?',(symbol,position_id)).fetchone()
             if not p:raise ValueError('Funding position unknown')
-            prior = self.db.execute('SELECT revision,value FROM cross_funding WHERE position_id=? AND funding_time=? ORDER BY revision DESC LIMIT 1',(position_id,stamp)).fetchone()
+            if not p['opened_ms'] <= stamp <= int(now*1000):raise ValueError('Funding outside position lifetime')
+            prior = self.db.execute('SELECT revision,value FROM cross_funding WHERE position_id=? AND funding_time=? AND rate_type=? ORDER BY revision DESC LIMIT 1',(position_id,stamp,rate_type)).fetchone()
             if revision != (prior['revision']+1 if prior else 0):raise ValueError('Funding revision conflict')
             value = amount(p['quantity'])*mark*rate*(-1 if p['direction']=='LONG' else 1)
             delta = value-(amount(prior['value']) if prior else 0)
-            details = {'symbol':symbol,'position_id':position_id,'time':stamp,'revision':revision,'rate':encode(rate),'mark':encode(mark),'value':encode(value),'source':source}
+            details = {'symbol':symbol,'position_id':position_id,'time':stamp,'rate_type':rate_type,'revision':revision,'rate':encode(rate),'mark':encode(mark),'value':encode(value),'source':source}
             postings = [(WALLET+':funding','USDT',delta),('external:cross_funding','USDT',-delta)] if delta else []
             self.ledger._post('cross:funding:'+operation,'CROSS_FUNDING' if postings else 'FINANCIAL_METADATA',details,postings,created=now)
-            self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,revision,encode(rate),encode(mark),encode(value),source))
+            self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,rate_type,revision,encode(rate),encode(mark),encode(value),source))
             self.db.execute('UPDATE cross_positions SET funding=? WHERE symbol=?',(encode(amount(p['funding'])+delta),symbol))
             result={'value':encode(value),'delta':encode(delta)}
             self._anchor(operation);self._check();self._remember(operation,fingerprint,result)

@@ -45,20 +45,26 @@ class CrossPublicData(FuturesData):
         if type(start) is not int or type(end) is not int or start<0 or end<0:
             raise ObservationError('Invalid funding range')
         if start>end:return []
-        result=[];cursor=start
+        found={};cursor=start
         for _ in range(100):
             page=self.get('/fapi/v1/fundingRate',{'symbol':symbol,'startTime':cursor,'endTime':end,'limit':1000})
             if not isinstance(page,list) or len(page)>1000:raise ObservationError('Invalid funding page')
-            previous=cursor-1
+            previous=cursor-1;page_keys=set()
             for row in page:
                 stamp=row.get('fundingTime')
-                if row.get('symbol')!=symbol or type(stamp) is not int or not previous<stamp<=end:
+                rate_type=row.get('rateType','Regular')
+                key=(stamp,rate_type)
+                if row.get('symbol')!=symbol or type(stamp) is not int or not previous<=stamp<=end or rate_type not in ('Regular','Special') or key in page_keys:
                     raise ObservationError('Funding page identity/order conflict')
                 rate,mark=signed_number(row['fundingRate']),number(row['markPrice'])
                 if mark<=0 or abs(rate)>=1:raise ObservationError('Invalid funding value')
-                result.append({'time':stamp,'rate':str(rate),'mark':str(mark),'symbol':symbol})
+                event={'time':stamp,'rate':str(rate),'mark':str(mark),'symbol':symbol,'rate_type':rate_type}
+                if key in found and found[key]!=event:raise ObservationError('Conflicting funding page')
+                found[key]=event;page_keys.add(key)
                 previous=stamp
-            if len(page)<1000:return result
-            cursor=previous+1
-            if cursor>end:return result
+            if len(page)<1000:return [found[k] for k in sorted(found)]
+            # Inclusive overlap is needed when two rate types share a timestamp.
+            # A full page without time progress cannot establish completeness.
+            if previous<=cursor:raise ObservationError('Ambiguous funding page boundary')
+            cursor=previous
         raise ObservationError('Funding page limit reached')

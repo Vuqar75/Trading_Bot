@@ -31,5 +31,16 @@ class CrossPublicDataTests(unittest.TestCase):
         # A successful empty response supplies no coverage flag.
         self.assertIsInstance(reader.funding('BTCUSDT',0,100),list)
 
+    def test_funding_boundary_keeps_same_time_distinct_rate_types(self):
+        def row(stamp,kind='Regular'):
+            return {'symbol':'BTCUSDT','fundingTime':stamp,'fundingRate':'.001','markPrice':'100','rateType':kind}
+        page=[row(i) for i in range(999)]+[row(998,'Special')]
+        def transport(req):
+            cursor=int(parse_qs(urlparse(req.full_url).query)['startTime'][0])
+            return page if cursor==0 else [row(998),row(998,'Special'),row(999)]
+        events=CrossPublicData(transport).funding('BTCUSDT',0,1000)
+        self.assertEqual(len(events),1001)
+        self.assertEqual({x['rate_type'] for x in events if x['time']==998},{'Regular','Special'})
+
 
 if __name__=='__main__':unittest.main()

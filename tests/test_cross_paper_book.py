@@ -10,6 +10,7 @@ from decimal import Decimal
 from pathlib import Path
 
 from trading_bot.cross_paper_book import CrossPaperBook
+from trading_bot.cross_paper_strategy import CrossPaperStrategy
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_shared_store import SharedPaperStore
@@ -56,14 +57,17 @@ class CrossPaperBookTests(unittest.TestCase):
 
     def test_funding_deduplication_and_explicit_revision(self):
         btc,eth=self.positions()
-        x=self.book.funding('fund-1','BTCUSDT',btc['id'],10,0,'.001','100','fixture',now=100)
-        self.assertEqual(self.book.funding('fund-1','BTCUSDT',btc['id'],10,0,'.001','100','fixture',now=101),x)
+        x=self.book.funding('fund-1','BTCUSDT',btc['id'],100000,0,'.001','100','fixture',now=100)
+        self.assertEqual(self.book.funding('fund-1','BTCUSDT',btc['id'],100000,0,'.001','100','fixture',now=101),x)
         self.assertLess(Decimal(x['value']),0)
-        y=self.book.funding('fund-2','ETHUSDT',eth['id'],10,0,'.001','200','fixture',now=100)
+        y=self.book.funding('fund-2','ETHUSDT',eth['id'],100000,0,'.001','200','fixture',now=100)
         self.assertGreater(Decimal(y['value']),0)
-        correction=self.book.funding('fund-1-correction','BTCUSDT',btc['id'],10,1,'.002','100','corrected fixture',now=100)
+        correction=self.book.funding('fund-1-correction','BTCUSDT',btc['id'],100000,1,'.002','100','corrected fixture',now=100)
         self.assertEqual(Decimal(correction['delta']),Decimal(x['value']))
-        with self.assertRaisesRegex(ValueError,'revision'):self.book.funding('another','BTCUSDT',btc['id'],10,1,'.002','100','fixture',now=100)
+        special=self.book.funding('fund-special','BTCUSDT',btc['id'],100000,0,'.003','100','fixture',now=100,rate_type='Special')
+        self.assertLess(Decimal(special['value']),0)
+        with self.assertRaisesRegex(ValueError,'revision'):self.book.funding('another','BTCUSDT',btc['id'],100000,1,'.002','100','fixture',now=100)
+        with self.assertRaisesRegex(ValueError,'lifetime'):self.book.funding('too-early','BTCUSDT',btc['id'],99999,0,'.001','100','fixture',now=100)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
     def test_shared_liquidation_records_deficit_and_preserves_other_wallets(self):
@@ -168,6 +172,51 @@ class CrossPaperBookTests(unittest.TestCase):
             self.assertTrue(self.shared.ledger.reconcile()['balanced'])
         self.assertEqual(self.book.open('crash','BTCUSDT','LONG','5',1,self.quotes,now=100)['symbol'],'BTCUSDT')
         self.assertEqual(len(self.book.risk(self.quotes,now=100)['positions']),1)
+
+    def test_strategy_two_signals_duplicate_tick_and_protection_while_paused(self):
+        strategy=CrossPaperStrategy(self.book);period=900000;server=31*period+1000
+        now=server/1000;quotes={s:{**q,'time':now} for s,q in self.quotes.items()}
+        candles={symbol:[(i*period,'100') for i in range(30)]+[(30*period,last)]
+                 for symbol,last in [('BTCUSDT','101'),('ETHUSDT','99')]}
+        actions=strategy.tick(quotes,candles,server,now=now)
+        self.assertEqual([x['action'] for x in actions],['OPEN','OPEN'])
+        self.assertEqual(strategy.tick(quotes,candles,server,now=now),[])
+        self.book.set_paused(True)
+        high={'BTCUSDT':{'mark':'105','time':now+1,'funding_complete':True},'ETHUSDT':{'mark':'200','time':now+1,'funding_complete':True}}
+        actions=strategy.tick(high,candles,server,now=now+1)
+        self.assertEqual([(x['action'],x['symbol']) for x in actions],[('TAKE','BTCUSDT')])
+        positions=self.book.risk(high,now=now+1)['positions']
+        self.assertEqual([p['symbol'] for p in positions],['ETHUSDT'])
+
+    def test_strategy_incomplete_market_or_future_candle_pauses_entries(self):
+        strategy=CrossPaperStrategy(self.book);period=900000;server=31*period+1000
+        now=server/1000;quotes={s:{**q,'time':now} for s,q in self.quotes.items()}
+        candles={symbol:[(i*period,'100') for i in range(31)] for symbol in ('BTCUSDT','ETHUSDT')}
+        bad={**quotes,'ETHUSDT':{'mark':'200','time':now,'funding_complete':False}}
+        with self.assertRaisesRegex(ValueError,'Incomplete'):strategy.tick(bad,candles,server,now=now)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.book.record_quotes(quotes,now=now);self.book.set_paused(False,now=now)
+        candles['ETHUSDT'][-1]=(32*period,'100')
+        with self.assertRaises(ValueError):strategy.tick(quotes,candles,server,now=now)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],0)
+
+    def test_strategy_death_after_open_does_not_repeat_entry(self):
+        period=900000;server=31*period+1000
+        now=server/1000;quotes={s:{**q,'time':now} for s,q in self.quotes.items()}
+        candles={s:[(i*period,'100') for i in range(30)]+[(30*period,last)]
+                 for s,last in [('BTCUSDT','101'),('ETHUSDT','99')]}
+        code=("import os,sys,json; from trading_bot.paper_shared_store import SharedPaperStore; "
+              "from trading_bot.cross_paper_book import CrossPaperBook; "
+              "from trading_bot.cross_paper_strategy import CrossPaperStrategy; "
+              "s=SharedPaperStore(sys.argv[1]); b=CrossPaperBook(s); "
+              "a=CrossPaperStrategy(b,fault=lambda p:os._exit(74) if p=='after_open_commit' else None); "
+              "a.tick(json.loads(sys.argv[2]),json.loads(sys.argv[3]),int(sys.argv[4]),now=int(sys.argv[4])/1000)")
+        child=subprocess.run([sys.executable,'-c',code,str(self.path),json.dumps(quotes),json.dumps(candles),str(server)])
+        self.assertEqual(child.returncode,74)
+        CrossPaperStrategy(self.book).tick(quotes,candles,server,now=now)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_OPEN'").fetchone()[0],2)
+        self.assertEqual(len(self.book.risk(quotes,now=now)['positions']),2)
 
 
 if __name__ == '__main__':
