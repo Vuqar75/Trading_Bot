@@ -1,7 +1,4 @@
-"""Durable, market-bound Telegram command queue; transport independent.
-
-This module is not wired to the running paper applications yet.
-"""
+"""Durable, market-bound Telegram command queue; transport independent."""
 import hashlib
 import json
 import secrets
@@ -11,6 +8,7 @@ from contextlib import contextmanager
 
 
 class UnifiedQueue:
+    outbox_table = 'unified_outbox'
     def __init__(self, path, fault=lambda point: None):
         self.db = sqlite3.connect(path, isolation_level=None, timeout=5)
         self.db.row_factory = sqlite3.Row
@@ -49,7 +47,14 @@ class UnifiedQueue:
         return self.db.execute('SELECT value FROM unified_state WHERE key=?', (key,)).fetchone()[0]
 
     def _notify(self, text):
+        if not text.startswith('['):
+            text = '[Управление] ' + text
         self.db.execute('INSERT INTO unified_outbox(message) VALUES(?)', (text,))
+
+    def seed_offset(self, offset):
+        with self.transaction():
+            if not self.db.execute('SELECT 1 FROM unified_updates LIMIT 1').fetchone():
+                self.db.execute("UPDATE unified_state SET value=? WHERE key='offset'", (str(max(int(self.state('offset')), int(offset))),))
 
     def receive(self, ident, authorized, text, *, fresh=True, now=None):
         if type(ident) is not int or not 0 <= ident < 2**63-1 or type(authorized) is not bool:
@@ -84,7 +89,7 @@ class UnifiedQueue:
                     jobs = [('spot', '/pause'), ('futures', '/pause')]
                     self._notify('Пауза обоих рынков запрошена; ожидаются подтверждения.')
                 elif command == '/status' and len(parts) == 1:
-                    jobs = [('spot', '/status'), ('futures', '/status')]
+                    jobs = [('spot', '/brief_status'), ('futures', '/brief_status')]
                 elif command == '/status' and len(parts) == 2 and parts[1] in ('spot', 'futures'):
                     market = parts[1]; jobs = [(market, '/status')]
                 elif command in ('/signal', '/history', '/pause', '/resume', '/timeframe', '/leverage', '/close'):
@@ -95,6 +100,8 @@ class UnifiedQueue:
                     elif len(parts) > (2 if command in ('/timeframe', '/leverage') else 1):
                         self._notify('['+market.upper()+'] Некорректные параметры.')
                     else:
+                        if command in ('/resume', '/timeframe', '/leverage'):
+                            payload = {'received_at': now, 'expires': now + 120}
                         jobs = [(market, ' '.join([command] + parts[1:]))]
                 elif command in ('/confirm', '/cancel') and len(parts) == 2 and fresh:
                     proposal = self.db.execute('SELECT * FROM unified_proposals WHERE id=?', (parts[1],)).fetchone()
@@ -105,7 +112,7 @@ class UnifiedQueue:
                         self._notify('['+proposal['market'].upper()+'] Предложение отменено.')
                     else:
                         market = proposal['market']
-                        payload = {'proposal': proposal['id'], 'position': proposal['position'], 'quantity': proposal['quantity'], 'expires': proposal['expires']}
+                        payload = {'proposal': proposal['id'], 'position': proposal['position'], 'quantity': proposal['quantity'], 'expires': proposal['expires'], 'received_at': now}
                         self.db.execute("UPDATE unified_proposals SET status='CONFIRMED' WHERE id=?", (parts[1],))
                         jobs = [(market, '/confirmed_close')]
                 else:
@@ -146,4 +153,4 @@ class UnifiedQueue:
             update = self.db.execute('SELECT command FROM unified_updates WHERE id=?', (row['update_id'],)).fetchone()
             if update['command'] == '/pause_all':
                 waiting = [r[0] for r in self.db.execute("SELECT market FROM unified_jobs WHERE update_id=? AND status!='DONE'", (row['update_id'],))]
-                self._notify('Пауза обоих рынков: ожидается '+', '.join(waiting) if waiting else 'Пауза подтверждена обоими рынками.')
+                self._notify('Пауза обоих рынков: ожидается '+', '.join(waiting) if waiting else 'Команды паузы применены к обоим рынкам; текущее состояние: /status.')

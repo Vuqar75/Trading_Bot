@@ -33,7 +33,7 @@ class UnifiedQueueTests(unittest.TestCase):
         self.q.acknowledge(a['id'], 'На паузе')
         self.q.acknowledge(b['id'], 'Не удалось', applied=False)
         messages = [r[0] for r in self.q.db.execute('select message from unified_outbox')]
-        self.assertFalse(any('подтверждена обоими' in m for m in messages))
+        self.assertFalse(any('применены к обоим' in m for m in messages))
         self.assertTrue(any('futures' in m for m in messages))
 
     def test_market_unavailable_does_not_block_other_jobs(self):

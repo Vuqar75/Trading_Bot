@@ -160,6 +160,8 @@ class FuturesStore:
             pos = self.get('position')
             if not pos or pos['id'] != target:
                 return False
+            if reason == 'MANUAL' and not self.manual_request_valid(self.get('close_request'), pos):
+                return False
             if pos['funding_cursor'] < server:
                 raise ObservationError('Funding must be reconciled before close')
             buying = pos['direction'] == 'SHORT'
@@ -185,6 +187,17 @@ class FuturesStore:
             from .trade_notifications import futures_receipt
             self.notify(futures_receipt('CLOSE', pos, interval=self.get('interval'), payload=payload))
             return True
+
+    @staticmethod
+    def manual_request_valid(request, pos, now=None):
+        if not isinstance(request, dict) or not isinstance(pos, dict) or request.get('target') != pos.get('id'):
+            return False
+        if 'quantity' not in request:
+            return True
+        try:
+            return number(request['quantity']) == number(pos['quantity']) and number(pos['quantity']) > 0 and (time.time() if now is None else now) < request['expires']
+        except (KeyError, TypeError, ValueError, ObservationError):
+            return False
 
     def record_equity(self, mark, server):
         with self.transaction():
@@ -223,7 +236,7 @@ class FuturesStore:
                   'Ошибка: '+error_text(self.get('error')), 'Сделки моделируются, на биржу не отправляются.']
         return '\n'.join(lines)
 
-    def command(self, update_id, authorized, command, target=None):
+    def command(self, update_id, authorized, command, target=None, *, routed=False):
         fingerprint = hashlib.sha256(json.dumps([authorized, command, target]).encode()).hexdigest()
         with self.transaction():
             saved = self.db.execute('SELECT fingerprint FROM futures_commands WHERE update_id=?', (update_id,)).fetchone()
@@ -231,7 +244,7 @@ class FuturesStore:
                 if saved[0] != fingerprint:
                     raise ObservationError('Command identity conflict')
                 return
-            if update_id < self.get('offset'):
+            if not routed and update_id < self.get('offset'):
                 raise ObservationError('Unexpected old command')
             self.db.execute('INSERT INTO futures_commands VALUES(?,?)', (update_id, fingerprint))
             if authorized:
@@ -289,4 +302,5 @@ class FuturesStore:
                     from .user_text import FUTURES_HELP
                     text = FUTURES_HELP
                 self.notify(text)
-            self.set('offset', update_id+1)
+            if not routed:
+                self.set('offset', update_id+1)

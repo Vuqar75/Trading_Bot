@@ -82,6 +82,17 @@ class RuntimeStore:
     def pending(self):
         return self.db.execute("SELECT * FROM runtime_orders WHERE phase!='SETTLED' ORDER BY created").fetchall()
 
+    @staticmethod
+    def manual_request_valid(request, pos, now=None):
+        if not isinstance(request, dict) or not isinstance(pos, dict) or request.get('target') != pos.get('id'):
+            return False
+        if 'quantity' not in request:  # Pre-existing non-unified commands.
+            return True
+        try:
+            return number(request['quantity']) == number(pos['quantity']) and number(pos['quantity']) > 0 and (time.time() if now is None else now) < request['expires']
+        except (KeyError, TypeError, ValueError, ObservationError):
+            return False
+
     def loss(self):
         start = int(time.time() // 86400) * 86400
         rows = self.db.execute('SELECT pnl,known FROM runtime_closes WHERE ts>=?', (start,)).fetchall()
@@ -107,12 +118,16 @@ class RuntimeStore:
             elif side == 'SELL':
                 if target != pos['id'] or qty > number(pos['quantity']):
                     raise ObservationError('Stale or excessive close')
+                if reason == 'MANUAL' and not self.manual_request_valid(self.get('close_request'), pos):
+                    raise ObservationError('Confirmed close is stale')
             else:
                 raise ObservationError('Invalid side')
             client = 'rt' + uuid.uuid4().hex
             self.db.execute('INSERT INTO runtime_orders VALUES(?,?,?,?,?,\'PREPARED\',NULL,?,?)',
                             (client, business_key, side, str(qty), str(price), reason, time.time()))
             self.set('binding:' + client, pos['id'])
+            if reason == 'MANUAL':
+                self.set('manual_binding:' + client, self.get('close_request'))
             return client
 
     def claim(self, client):
@@ -129,6 +144,14 @@ class RuntimeStore:
                 raise ObservationError('Entry no longer allowed')
             if order['side'] == 'SELL' and number(order['quantity']) > number(pos['quantity']):
                 raise ObservationError('Close quantity changed')
+            if order['reason'] == 'MANUAL':
+                request = self.get('manual_binding:' + client)
+                if request != self.get('close_request') or not self.manual_request_valid(request, pos):
+                    self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?", (client,))
+                    if request == self.get('close_request'):
+                        self.set('close_request', None)
+                    self.notify('Подтверждение закрытия устарело или позиция изменилась; сделка не отправлена.')
+                    return None
             self.db.execute("UPDATE runtime_orders SET phase='SUBMITTING' WHERE client_id=?", (client,))
         return dict(order)
 
@@ -240,7 +263,7 @@ class RuntimeStore:
                     client=client, entry=entry.get('price'), entry_is_cost=entry.get('is_cost', False), entry_fees=entry.get('fees'),
                     net=self.get('order_net:' + client, '0'), known=known))
 
-    def command(self, update_id, authorized, command, target=None):
+    def command(self, update_id, authorized, command, target=None, *, routed=False):
         fingerprint = hashlib.sha256(json.dumps([authorized, command, target]).encode()).hexdigest()
         with self.transaction():
             prior = self.db.execute('SELECT fingerprint FROM runtime_commands WHERE update_id=?', (update_id,)).fetchone()
@@ -248,7 +271,7 @@ class RuntimeStore:
                 if prior[0] != fingerprint:
                     raise ObservationError('Update identity conflict')
                 return
-            if update_id < self.get('offset'):
+            if not routed and update_id < self.get('offset'):
                 raise ObservationError('Unexpected older update')
             self.db.execute('INSERT INTO runtime_commands VALUES(?,?)', (update_id, fingerprint))
             if authorized:
@@ -303,4 +326,5 @@ class RuntimeStore:
                     from .user_text import SPOT_HELP
                     message = SPOT_HELP
                 self.notify(message)
-            self.set('offset', update_id + 1)
+            if not routed:
+                self.set('offset', update_id + 1)

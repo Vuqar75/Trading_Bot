@@ -11,6 +11,7 @@ sources = [
     (home/'Trading_Bot_paper_state/runtime-paper.db', 'spot.db', 'runtime_meta'),
     (home/'Trading_Bot_futures_state/futures-paper.db', 'futures.db', 'futures_meta'),
     (home/'Trading_Bot_paper_state/monitor/observation.db', 'observation.db', 'samples'),
+    (home/'Trading_Bot_paper_state/unified-commands.db', 'unified-commands.db', 'unified_updates'),
 ]
 for source, name, required in sources:
     if not source.is_file():

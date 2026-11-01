@@ -35,3 +35,9 @@ sudo systemctl kill --kill-who=main --signal=USR1 tradingbot-futures.service
 ```
 
 Verify subsequent health shows `paused: false`; do not send signals merely because the systemd service is active. Stop/restart removes continuous risk monitoring during the outage. Never start the saved Cloud Shell copies while VM copies run. Network loss, VM shutdown, single-disk failure and lack of distributed fencing remain availability risks.
+
+## Unified Telegram paper control — pending deployment
+
+In the new implementation `/mode` shows the selected market, `/mode spot` and `/mode futures` select it without stopping either worker. `/status` requests a short status from both with separate quote timestamps; `/status spot` and `/status futures` request detailed reports. `/signal`, `/history`, `/pause`, `/resume`, `/timeframe` apply to the selected market; `/leverage` applies only to futures. `/close` proposes the current position and size, and gives a short-lived `/confirm ID` and `/cancel ID`. Confirmation is bound to that market, position, quantity and expiry; it is rechecked at execution. `/pause_all` tracks each market separately. A temporarily unavailable worker may delay its reply while the other continues. These are paper-only controls, not real or Testnet trading.
+
+Both worker services require `UNIFIED_PAPER_QUEUE=/var/lib/tradingbot/Trading_Bot_paper_state/unified-commands.db`; only Spot polls Telegram. The backup service includes the queue. Backups of separate SQLite files are individually consistent, not a coordinated cross-database recovery point: do not restore one database in isolation and assume command acknowledgements match another. Plan coordinated restore and reconciliation. The queue must be retained with the trade databases; losing it loses routing/confirmation history.

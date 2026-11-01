@@ -49,8 +49,9 @@ class TelegramTransport:
             raise ObservationError('Telegram request not acknowledged')
         return result['result']
 
-    def poll(self, store):
-        updates = self.call('getUpdates', {'offset': store.get('offset'), 'timeout': 0, 'limit': 20, 'allowed_updates': ['message']})
+    def poll(self, store, unified=None):
+        offset = int(unified.state('offset')) if unified is not None else store.get('offset')
+        updates = self.call('getUpdates', {'offset': offset, 'timeout': 0, 'limit': 20, 'allowed_updates': ['message']})
         previous = -1
         for update in updates:
             ident = update.get('update_id')
@@ -62,6 +63,13 @@ class TelegramTransport:
                 and hmac.compare_digest(str(msg.get('chat', {}).get('id', '')), self.owner)
                 and msg.get('chat', {}).get('type') == 'private')
             text = msg.get('text', '') if authorized else ''
+            if unified is not None:
+                if not isinstance(text, str) or 'edit_date' in msg:
+                    text = ''
+                stamp = msg.get('date', 0)
+                fresh = type(stamp) is int and stamp >= int(self.started) and 0 <= time.time()-stamp <= 120
+                unified.receive(ident, authorized, text, fresh=fresh)
+                continue
             command = text.split()[0].split('@')[0] if isinstance(text, str) and text.split() else ''
             if authorized and command in {'/timeframe', '/leverage'} and isinstance(text, str):
                 command = ' '.join([command] + text.split()[1:])
@@ -78,7 +86,10 @@ class TelegramTransport:
             store.command(ident, authorized, command, (store.get('position') or {}).get('id') if command == '/close' else None)
 
     def flush(self, store):
-        for row in store.db.execute('SELECT id,message FROM runtime_outbox ORDER BY id LIMIT 5').fetchall():
+        table = getattr(store, 'outbox_table', 'runtime_outbox')
+        if table not in ('runtime_outbox', 'unified_outbox'):
+            raise ValueError('Unknown outbox')
+        for row in store.db.execute('SELECT id,message FROM '+table+' ORDER BY id LIMIT 5').fetchall():
             label = getattr(store, 'delivery_label', '')
             body = row['message']
             cut = len(body)
@@ -93,9 +104,9 @@ class TelegramTransport:
             self.call('sendMessage', {'chat_id': self.owner, 'text': text})
             with store.transaction():
                 if remaining:
-                    store.db.execute('UPDATE runtime_outbox SET message=? WHERE id=?', (remaining, row['id']))
+                    store.db.execute('UPDATE '+table+' SET message=? WHERE id=?', (remaining, row['id']))
                 else:
-                    store.db.execute('DELETE FROM runtime_outbox WHERE id=?', (row['id'],))
+                    store.db.execute('DELETE FROM '+table+' WHERE id=?', (row['id'],))
 
 
 
@@ -144,7 +155,8 @@ class Application:
         client = self.store.prepare(side, quantity, price, key, reason, target=target, daily_limit=self.daily_loss)
         if client is None:
             return
-        self.store.claim(client)  # Durable BEFORE the only submit attempt.
+        if self.store.claim(client) is None:  # Durable BEFORE the only submit attempt.
+            return
         try:
             self.exchange.submit(client, side, quantity)
         except Exception:
@@ -168,6 +180,12 @@ class Application:
         if not price:
             raise ObservationError('Zero quote')
         request = self.store.get('close_request')
+        if request and not self.store.manual_request_valid(request, pos):
+            with self.store.transaction():
+                if self.store.get('close_request') == request:
+                    self.store.set('close_request', None)
+                    self.store.notify('[Spot paper] Подтверждение закрытия устарело или позиция изменилась.')
+            request = None
         movement = (price / (number(pos['cost']) / qty) - 1) * 100
         reason = ('MANUAL' if request and request['target'] == pos['id'] else
                   'STOP' if movement <= -self.stop else 'TAKE' if movement >= self.take else None)
@@ -220,6 +238,12 @@ class Application:
         if self.store.pending() or self.store.get('blocked'):
             return
         request = self.store.get('close_request')
+        if request and not self.store.manual_request_valid(request, pos):
+            with self.store.transaction():
+                if self.store.get('close_request') == request:
+                    self.store.set('close_request', None)
+                    self.store.notify('[Spot paper] Подтверждение закрытия устарело или позиция изменилась.')
+            request = None
         quantity = number(pos['quantity'])
         fresh = self.store.get('last_candle') != stamp
         close_reason = None
@@ -312,10 +336,28 @@ def main():
     with process_lock(args.db + '.lock'):
         store = RuntimeStore(args.db, identity)
         relay = None
+        unified = None
+        receiver = None
+        worker_started = time.time()
         try:
+            unified_path = os.getenv('UNIFIED_PAPER_QUEUE')
+            if unified_path:
+                if args.mode != 'paper' or not telegram or not args.futures_outbox_db:
+                    raise ObservationError('Unified control requires paper mode, Telegram and futures relay')
+                from .unified_queue import UnifiedQueue
+                from .unified_receiver import MarketReceiver
+                unified = UnifiedQueue(unified_path)
+                unified.seed_offset(store.get('offset'))
+                receiver = MarketReceiver(args.db, 'spot')
+                store.delivery_label = '[Spot paper]'
             if args.futures_outbox_db:
                 from .outbox_relay import FuturesOutboxRelay
-                relay = FuturesOutboxRelay(args.futures_outbox_db)
+                try:
+                    relay = FuturesOutboxRelay(args.futures_outbox_db)
+                except Exception:
+                    if not unified:
+                        raise
+                    log.warning('Futures relay unavailable; Spot remains active')
             app = Application(store, exchange, reader, interval=args.interval, amount=args.amount)
             while running:
                 if activate:
@@ -333,18 +375,34 @@ def main():
                         store.set('paused', True)
                         store.set('error', {'stage': 'trading', 'type': type(exc).__name__, 'time': time.time(), 'reason': str(exc) if isinstance(exc, ObservationError) else 'Internal failure'})
                     log.error('Trading cycle failed: %s', type(exc).__name__)
+                if unified:
+                    try:
+                        from .unified_worker import process_market
+                        process_market(unified, receiver, store, 'spot', started=worker_started)
+                    except Exception as exc:
+                        log.error('Spot command queue failed: %s', type(exc).__name__)
                 if telegram:
                     try:
-                        telegram.poll(store)
+                        telegram.poll(store, unified)
                         telegram.flush(store)
-                        if relay:
-                            telegram.flush(relay)
+                        if unified:
+                            telegram.flush(unified)
                         with store.transaction():
                             store.set('telegram_error', None)
                     except Exception as exc:
                         with store.transaction():
                             store.set('telegram_error', {'type': type(exc).__name__, 'time': time.time()})
                         log.error('Telegram cycle failed: %s', type(exc).__name__)
+                    if args.futures_outbox_db:
+                        try:
+                            if relay is None:
+                                relay = FuturesOutboxRelay(args.futures_outbox_db)
+                            telegram.flush(relay)
+                        except Exception as exc:
+                            if relay:
+                                relay.close()
+                                relay = None
+                            log.warning('Futures relay unavailable: %s', type(exc).__name__)
                 write_report(Path(args.db).parent / 'runtime-health.json', {'time': time.time(), 'mode': args.mode,
                     'paused': store.get('paused'), 'pending': len(store.pending()), 'error': store.get('error'),
                     'quote': store.get('quote'), 'blocked': store.get('blocked'), 'telegram_error': store.get('telegram_error')})
@@ -359,6 +417,10 @@ def main():
         finally:
             if relay:
                 relay.close()
+            if receiver:
+                receiver.close()
+            if unified:
+                unified.close()
             store.close()
 
 

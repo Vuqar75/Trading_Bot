@@ -1,6 +1,6 @@
-"""Offline building block: exactly-once local command application.
+"""Exactly-once local command application.
 
-No network and no integration with the running bot.  A caller must retry the
+No network. A caller must retry the
 same stable request identity after an uncertain result, then acknowledge the
 source queue separately. Never call a network operation in the handler.
 """
@@ -61,7 +61,7 @@ class MarketReceiver:
             elif command == '/resume':
                 pos = self._get('position')
                 unresolved = self.market == 'spot' and self.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone()
-                if self._get('blocked') or self._get('error') or unresolved or (self.market == 'spot' and (not isinstance(pos, dict) or not pos.get('fees_known'))):
+                if self._get('blocked') or self._get('error') or unresolved or (payload.get('expires') is not None and now >= payload['expires']) or (self.market == 'spot' and (not isinstance(pos, dict) or not pos.get('fees_known'))):
                     result = 'Входы заблокированы до успешной проверки.'
                 else:
                     self._set('paused', False)

@@ -9,6 +9,7 @@ User=tradingbot
 Group=tradingbot
 WorkingDirectory=/opt/trading-bot-paper
 Environment=HOME=/var/lib/tradingbot
+Environment=UNIFIED_PAPER_QUEUE=/var/lib/tradingbot/Trading_Bot_paper_state/unified-commands.db
 UMask=0077
 NoNewPrivileges=true
 PrivateTmp=true

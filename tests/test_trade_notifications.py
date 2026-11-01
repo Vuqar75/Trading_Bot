@@ -42,7 +42,7 @@ class NotificationTests(unittest.TestCase):
     def test_partial_order_net_cumulative(self):
         self.app.execute('BUY','.1',Decimal(100),'open','SIGNAL')
         pos=self.s.get('position')
-        cid=self.s.prepare('SELL','.1',Decimal(102),'close','MANUAL',target=pos['id'])
+        cid=self.s.prepare('SELL','.1',Decimal(102),'close','STOP',target=pos['id'])
         self.s.claim(cid)
         order={'clientOrderId':cid,'symbol':'BTCUSDT','orderId':1,'side':'SELL','status':'PARTIALLY_FILLED','origQty':'.1','executedQty':'.04','cummulativeQuoteQty':'4.08'}
         fill={'id':1,'orderId':1,'symbol':'BTCUSDT','isBuyer':False,'qty':'.04','quoteQty':'4.08','commission':'.00408','commissionAsset':'USDT'}
@@ -59,7 +59,7 @@ class NotificationTests(unittest.TestCase):
         pos=self.s.get('position')
         pos.pop('entry_price')
         self.s.set('position',pos)
-        self.app.execute('SELL','.1',Decimal(102),'close','MANUAL',pos['id'])
+        self.app.execute('SELL','.1',Decimal(102),'close','STOP',pos['id'])
         self.assertIn('Вход (себестоимость)',self.messages()[-1])
 
     def test_unvalued_fee_is_not_final_profit(self):
@@ -69,7 +69,7 @@ class NotificationTests(unittest.TestCase):
         report['fills'][0].update(commissionAsset='BNB',commission='.0001')
         self.s.apply(cid,report)
         pos=self.s.get('position')
-        self.app.execute('SELL','.1',Decimal(102),'close','MANUAL',pos['id'])
+        self.app.execute('SELL','.1',Decimal(102),'close','STOP',pos['id'])
         self.assertIn('предварительный',self.messages()[-1])
         self.assertIn('BNB',self.messages()[-1])
 

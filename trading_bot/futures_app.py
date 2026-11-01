@@ -42,11 +42,25 @@ class FuturesApplication:
             value = s.valuation(mark)
             movement = (mark/number(pos['entry'])-1)*100*(1 if pos['direction'] == 'LONG' else -1)
             request = s.get('close_request')
+            if request and not s.manual_request_valid(request, pos):
+                with s.transaction():
+                    if s.get('close_request') == request:
+                        s.set('close_request', None)
+                        s.notify('Подтверждение закрытия устарело или позиция изменилась.')
+                request = None
             reason = ('MODEL_LIQUIDATION' if value['isolated'] <= value['maintenance'] else
                       'MANUAL' if request and request['target'] == pos['id'] else
                       'STOP' if movement <= -2 else 'TAKE' if movement >= 4 else None)
             if reason:
-                s.close_position(mark, server, 'close:'+pos['id'], reason, pos['id'], candle=(server//(INTERVALS[s.get('interval')]*1000)-1)*INTERVALS[s.get('interval')]*1000)
+                candle = (server//(INTERVALS[s.get('interval')]*1000)-1)*INTERVALS[s.get('interval')]*1000
+                closed = s.close_position(mark, server, 'close:'+pos['id'], reason, pos['id'], candle=candle)
+                if not closed and reason == 'MANUAL':
+                    protective = ('MODEL_LIQUIDATION' if value['isolated'] <= value['maintenance'] else
+                                  'STOP' if movement <= -2 else 'TAKE' if movement >= 4 else None)
+                    if protective:
+                        closed = s.close_position(mark, server, 'close:'+pos['id'], protective, pos['id'], candle=candle)
+                if not closed:
+                    return
                 with s.transaction():
                     s.set('reverse', None)
                     s.set('error', None)
@@ -136,7 +150,18 @@ def main():
             locks.enter_context(process_lock(db+'.delivery.lock'))
         store = FuturesStore(db, margin=args.margin, fee_bps=args.fee_bps,
                              slippage_bps=args.slippage_bps, maintenance_bps=args.maintenance_bps)
+        unified = None
+        receiver = None
+        worker_started = time.time()
         try:
+            unified_path = os.getenv('UNIFIED_PAPER_QUEUE')
+            if unified_path:
+                if telegram:
+                    raise ObservationError('Unified futures must not poll Telegram')
+                from .unified_queue import UnifiedQueue
+                from .unified_receiver import MarketReceiver
+                unified = UnifiedQueue(unified_path)
+                receiver = MarketReceiver(db, 'futures')
             app = FuturesApplication(store, FuturesData())
             while running:
                 try:
@@ -146,6 +171,12 @@ def main():
                         store.set('paused', True)
                         store.set('error', {'type': type(exc).__name__, 'reason': str(exc) if isinstance(exc, ObservationError) else 'Internal failure', 'time': time.time()})
                     logging.error('Futures cycle failed: %s', type(exc).__name__)
+                if unified:
+                    try:
+                        from .unified_worker import process_market
+                        process_market(unified, receiver, store, 'futures', started=worker_started)
+                    except Exception as exc:
+                        logging.error('Futures command queue failed: %s', type(exc).__name__)
                 if activate:
                     activate = False
                     if not store.get('error') and not store.get('blocked'):
@@ -171,6 +202,10 @@ def main():
                         break
                     time.sleep(1)
         finally:
+            if receiver:
+                receiver.close()
+            if unified:
+                unified.close()
             store.close()
 
 
