@@ -29,15 +29,20 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
             elif cmd=='/cancel_transfer':
                 shared.cancel_transfer(payload['token']);result='Предложение перевода отменено.'
             elif cmd in ('/wallets','/wallet','/balance_report'):
-                if cmd=='/wallet' and parts[1] not in ('reserve','spot','futures_isolated'):
-                    raise ValueError('Доступны reserve, spot и futures_isolated')
+                if cmd=='/wallet' and parts[1] not in ('reserve','spot','futures_isolated','futures_cross'):
+                    raise ValueError('Доступны reserve, spot, futures_isolated и futures_cross')
                 period=parts[1] if cmd=='/balance_report' and len(parts)==2 else 'all'
                 data=live_report(shared,period=period)
                 if cmd=='/wallet':
-                    w=parts[1];v=data['wallets'][w]
+                    w=parts[1]
+                    if w not in data['wallets']:raise ValueError('Кошелёк пока недоступен')
+                    v=data['wallets'][w]
                     result=f"{w}: свободно {v['free']} USDT; резерв {v['reserved']} USDT. Сверка пройдена."
                     if w=='spot':result+=f" Spot актив: {data['btc']} BTC."
                     if w=='futures_isolated':result+=f" Маржа {data['margin']} USDT; funding {data['funding_open']} USDT."
+                    if w=='futures_cross':
+                        cross=data['cross'];available=cross['available'] if cross['available'] is not None else 'неизвестно'
+                        result+=f" Общая маржа {cross['margin']} USDT; доступно для перевода {available}; позиций {len(cross['positions'])}."
                 else:result=render_live_report(data)
             elif cmd=='/transfers':
                 with shared.transaction():

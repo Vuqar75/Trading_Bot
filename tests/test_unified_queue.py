@@ -21,6 +21,19 @@ class UnifiedQueueTests(unittest.TestCase):
         self.assertEqual(self.q.state('mode'), 'futures')
         self.assertEqual(self.q.state('offset'), '12')
 
+    def test_report_bound_to_selected_market_balance_report_is_global(self):
+        self.q.receive(1,True,'/mode futures_cross')
+        self.q.receive(2,True,'/report')
+        self.q.receive(3,True,'/balance_report today')
+        self.q.receive(4,True,'/mode spot')
+        self.q.receive(5,True,'/report')
+        self.assertEqual(self.q.pending('futures_cross')[0]['command'],'/report')
+        self.assertEqual(self.q.pending('spot')[0]['command'],'/report')
+        self.assertEqual(self.q.pending('wallet')[0]['command'],'/balance_report today')
+        self.q.receive(6,True,'/help')
+        text=self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id DESC').fetchone()[0]
+        self.assertIn('/report',text);self.assertIn('/balance_report',text)
+
     def test_foreign_sender_cannot_change_mode_or_enqueue(self):
         self.q.receive(1, False, '/mode futures')
         self.assertEqual(self.q.state('mode'), 'spot')

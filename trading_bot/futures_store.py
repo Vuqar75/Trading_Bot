@@ -313,6 +313,9 @@ class FuturesStore:
                     rows = self.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE' ORDER BY id DESC LIMIT 10").fetchall()
                     from .trade_notifications import REASONS
                     text = '\n\n'.join(f"{when(r['ts'])} | {p['direction']} {p['leverage']}×\nЧистый результат {Decimal(p['net']):+.4f}, комиссии {Decimal(p['fees']):.4f}, funding {Decimal(p['funding']):+.4f} USDT | {REASONS.get(p['reason'], 'Не указана')}" for r in rows for p in [json.loads(r['payload'])]) or 'История пуста.'
+                elif cmd == '/report':
+                    from .telegram_reports import futures_daily_report
+                    text = futures_daily_report(self)
                 elif cmd == 'STALE_COMMAND':
                     text = 'Команда устарела, отправьте новую.'
                 else:

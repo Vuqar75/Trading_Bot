@@ -65,6 +65,16 @@ class UnifiedIntegrationTests(unittest.TestCase):
         self.assertFalse(self.queue.pending('spot'))
         self.assertEqual(self.spot.db.execute("select count(*) from runtime_meta where key='unified-applied:3'").fetchone()[0],1)
 
+    def test_report_routes_to_selected_spot_and_isolated(self):
+        self.queue.receive(1,True,'/report')
+        self.queue.receive(2,True,'/mode futures')
+        self.queue.receive(3,True,'/report')
+        self.process('spot');self.process('futures')
+        spot=self.spot.db.execute('SELECT message FROM runtime_outbox ORDER BY id DESC LIMIT 1').fetchone()[0]
+        futures=self.future.db.execute('SELECT message FROM runtime_outbox ORDER BY id DESC LIMIT 1').fetchone()[0]
+        self.assertIn('Баку',spot);self.assertIn('всё время',spot)
+        self.assertIn('Сегодня по Баку',futures);self.assertIn('За всё время',futures)
+
     def test_partial_pause_all_other_market_continues(self):
         self.queue.receive(1,True,'/pause_all')
         self.process('spot')

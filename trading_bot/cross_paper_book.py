@@ -31,7 +31,11 @@ class CrossPaperBook:
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_funding(position_id TEXT NOT NULL, symbol TEXT NOT NULL, funding_time INTEGER NOT NULL, rate_type TEXT NOT NULL, revision INTEGER NOT NULL, rate TEXT NOT NULL, mark TEXT NOT NULL, value TEXT NOT NULL, source TEXT NOT NULL, PRIMARY KEY(position_id,funding_time,rate_type,revision))')
             if 'rate_type' not in {row[1] for row in self.db.execute('PRAGMA table_info(cross_funding)')}:
                 raise ValueError('Unsupported experimental cross funding schema')
-            self.db.execute('CREATE TABLE IF NOT EXISTS cross_quotes(symbol TEXT PRIMARY KEY, mark TEXT NOT NULL, observed REAL NOT NULL, funding_complete INTEGER NOT NULL CHECK(funding_complete IN (0,1)))')
+            self.db.execute('CREATE TABLE IF NOT EXISTS cross_quotes(symbol TEXT PRIMARY KEY, mark TEXT NOT NULL, observed REAL NOT NULL, funding_complete INTEGER NOT NULL CHECK(funding_complete IN (0,1)), server_ms INTEGER NOT NULL, next_due_ms INTEGER NOT NULL, interval_ms INTEGER NOT NULL)')
+            if 'next_due_ms' not in {row[1] for row in self.db.execute('PRAGMA table_info(cross_quotes)')}:
+                raise ValueError('Unsupported experimental cross quote schema')
+            self.db.execute('CREATE TABLE IF NOT EXISTS cross_funding_cursor(position_id TEXT PRIMARY KEY, symbol TEXT NOT NULL, next_due INTEGER NOT NULL, interval_ms INTEGER NOT NULL)')
+            self.db.execute('CREATE TABLE IF NOT EXISTS cross_cursor_anchor(position_id TEXT PRIMARY KEY, event_id TEXT NOT NULL REFERENCES ledger_events(id))')
             for verb in ('UPDATE', 'DELETE'):
                 self.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_cross_funding_{verb.lower()} BEFORE {verb} ON cross_funding BEGIN SELECT RAISE(ABORT,'immutable cross funding'); END")
             self.db.execute("INSERT OR IGNORE INTO wallet_state(wallet,paused) VALUES('futures_cross',1)")
@@ -59,6 +63,11 @@ class CrossPaperBook:
         row=self.db.execute('SELECT e.details FROM cross_anchor a JOIN ledger_events e ON e.id=a.event_id WHERE a.id=1').fetchone()
         if not row or json.loads(row[0]).get('after') != positions:
             raise ValueError('Cross position journal mismatch')
+        from .cross_funding_tracker import CrossFundingTracker
+        tracker=object.__new__(CrossFundingTracker);tracker.book=self;tracker.shared=getattr(self,'shared',None);tracker.db=self.db
+        for position in positions:
+            cursor=tracker._check_cursor(position['id'])
+            if cursor['symbol']!=position['symbol']:raise ValueError('Funding cursor symbol mismatch')
         with localcontext() as ctx:
             ctx.prec = 120
             if sum((amount(p['margin']) for p in positions), Decimal(0)) != self.ledger.balance(WALLET+':margin'):
@@ -75,7 +84,9 @@ class CrossPaperBook:
             self._check()
             if not paused:
                 if self.shared.deployment_hold():raise ValueError('Deployment hold is active')
-                marks=self._marks(self.stored_quotes(),time.time() if now is None else now)
+                current=time.time() if now is None else now
+                self._require_coverage(current)
+                marks=self._marks(self.stored_quotes(),current)
                 if self._risk(marks)['buffer'] <= 0:raise ValueError('Cross margin buffer exhausted')
             self.db.execute("UPDATE wallet_state SET paused=? WHERE wallet='futures_cross'", (int(paused),))
 
@@ -91,19 +102,44 @@ class CrossPaperBook:
 
     def record_quotes(self, quotes, *, now=None):
         """Persist a complete offline data snapshot; caller must prove funding coverage."""
+        try:
+            return self._record_quotes(quotes,now=now)
+        except (ValueError,TypeError,KeyError):
+            self.fail_closed()
+            raise
+
+    def _record_quotes(self, quotes, *, now=None):
         now = time.time() if now is None else now
         marks = self._marks(quotes, now)
         with self.shared.transaction():
             self._check()
+            pending=self.db.execute('SELECT position_id,funding_time,rate_type,revision FROM cross_funding WHERE revision>0').fetchall()
+            if pending:
+                if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_correction_receipts'").fetchone():
+                    raise ValueError('Cross funding correction requires reconciliation')
+                for item in pending:
+                    if not self.db.execute('SELECT 1 FROM cross_correction_receipts WHERE position_id=? AND due=? AND rate_type=? AND revision=?',tuple(item)).fetchone():
+                        raise ValueError('Cross funding correction requires reconciliation')
             for symbol in SYMBOLS:
                 seen = float(quotes[symbol]['time'])
-                previous = self.db.execute('SELECT mark,observed FROM cross_quotes WHERE symbol=?',(symbol,)).fetchone()
-                if previous and (seen < previous['observed'] or (seen == previous['observed'] and amount(previous['mark']) != marks[symbol])):
+                server,due,interval=(quotes[symbol][k] for k in ('server_ms','next_due_ms','interval_ms'))
+                if any(type(x) is not int or x<=0 for x in (server,due,interval)) or not server<due<=server+interval or abs(seen*1000-server)>60000:
+                    raise ValueError('Invalid cross funding schedule')
+                position=self.db.execute('SELECT id FROM cross_positions WHERE symbol=?',(symbol,)).fetchone()
+                if position:
+                    from .cross_funding_tracker import CrossFundingTracker
+                    tracker=object.__new__(CrossFundingTracker);tracker.book=self;tracker.shared=self.shared;tracker.db=self.db
+                    cursor=tracker._check_cursor(position['id'])
+                    if int(now*1000)>=cursor['next_due'] or server>=cursor['next_due'] or due!=cursor['next_due'] or interval!=cursor['interval_ms']:
+                        raise ValueError('Cross funding coverage requires reconciliation')
+                previous = self.db.execute('SELECT mark,observed,server_ms FROM cross_quotes WHERE symbol=?',(symbol,)).fetchone()
+                if previous and (seen < previous['observed'] or server<previous['server_ms'] or (seen == previous['observed'] and amount(previous['mark']) != marks[symbol])):
                     raise ValueError('Contradictory cross quote')
-                self.db.execute('INSERT OR REPLACE INTO cross_quotes VALUES(?,?,?,1)',(symbol,encode(marks[symbol]),seen))
+                self.db.execute('INSERT OR REPLACE INTO cross_quotes VALUES(?,?,?,1,?,?,?)',(symbol,encode(marks[symbol]),seen,server,due,interval))
 
     def stored_quotes(self):
-        return {r['symbol']:{'mark':r['mark'],'time':r['observed'],'funding_complete':bool(r['funding_complete'])}
+        return {r['symbol']:{'mark':r['mark'],'time':r['observed'],'funding_complete':bool(r['funding_complete']),
+                              'server_ms':r['server_ms'],'next_due_ms':r['next_due_ms'],'interval_ms':r['interval_ms']}
                 for r in self.db.execute('SELECT * FROM cross_quotes')}
 
     def invalidate_data(self, symbol):
@@ -122,6 +158,7 @@ class CrossPaperBook:
             self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
 
     def _current_marks(self, quotes, now):
+        self._require_coverage(now)
         supplied=self._marks(quotes,now)
         stored=self.stored_quotes()
         actual=self._marks(stored,now)
@@ -129,6 +166,14 @@ class CrossPaperBook:
             if supplied[symbol]!=actual[symbol] or float(quotes[symbol]['time'])!=float(stored[symbol]['time']):
                 raise ValueError('Cross quote snapshot superseded')
         return actual
+
+    def _require_coverage(self, now):
+        from .cross_funding_tracker import CrossFundingTracker
+        tracker=object.__new__(CrossFundingTracker);tracker.book=self;tracker.shared=getattr(self,'shared',None);tracker.db=self.db
+        for position in self._positions():
+            cursor=tracker._check_cursor(position['id'])
+            if int(now*1000)>=cursor['next_due']:
+                raise ValueError('Cross funding coverage requires reconciliation')
 
     @staticmethod
     def _marks(quotes, now):
@@ -227,12 +272,25 @@ class CrossPaperBook:
                 [(WALLET+':free','USDT',-margin),(WALLET+':margin','USDT',margin),
                  (WALLET+':free','USDT',-fee),('external:cross_fees','USDT',fee)],created=now)
             self.db.execute('INSERT INTO cross_positions VALUES(:symbol,:id,:direction,:quantity,:entry,:margin,:leverage,:funding,:opened_ms)',pos)
+            from .cross_funding_tracker import CrossFundingTracker
+            tracker=object.__new__(CrossFundingTracker);tracker.book=self;tracker.shared=self.shared;tracker.db=self.db
+            schedule=self.db.execute('SELECT next_due_ms,interval_ms,server_ms FROM cross_quotes WHERE symbol=?',(symbol,)).fetchone()
+            if not schedule or schedule['server_ms']>=schedule['next_due_ms']:raise ValueError('Cross funding schedule unavailable')
+            self.db.execute('INSERT INTO cross_funding_cursor VALUES(?,?,?,?)',(pos['id'],symbol,schedule['next_due_ms'],schedule['interval_ms']))
+            tracker._anchor_cursor(pos['id'],'cross:cursor:init:'+pos['id'])
             if self._risk(marks)['buffer'] <= 0:
                 raise ValueError('Cross maintenance buffer exhausted')
             self._anchor(operation);self._check();self._remember(operation,fingerprint,pos)
             return pos
 
     def funding(self, operation, symbol, position_id, stamp, revision, rate, mark, source, *, now=None, rate_type='Regular'):
+        try:
+            return self._funding(operation,symbol,position_id,stamp,revision,rate,mark,source,now=now,rate_type=rate_type)
+        except (ValueError,TypeError,KeyError):
+            self.fail_closed()
+            raise
+
+    def _funding(self, operation, symbol, position_id, stamp, revision, rate, mark, source, *, now=None, rate_type='Regular'):
         now = time.time() if now is None else now
         if symbol not in SYMBOLS or rate_type not in ('Regular','Special') or type(stamp) is not int or stamp < 0 or type(revision) is not int or revision < 0 or not source:
             raise ValueError('Invalid funding identity')
@@ -248,7 +306,13 @@ class CrossPaperBook:
             if not p:raise ValueError('Funding position unknown')
             if not p['opened_ms'] <= stamp <= int(now*1000):raise ValueError('Funding outside position lifetime')
             prior = self.db.execute('SELECT revision,value FROM cross_funding WHERE position_id=? AND funding_time=? AND rate_type=? ORDER BY revision DESC LIMIT 1',(position_id,stamp,rate_type)).fetchone()
+            from .cross_funding_tracker import CrossFundingTracker
+            tracker=object.__new__(CrossFundingTracker);tracker.book=self;tracker.shared=self.shared;tracker.db=self.db
+            cursor=tracker._check_cursor(position_id)
+            if stamp!=cursor['next_due'] and not (stamp<cursor['next_due'] and prior):
+                raise ValueError('Funding does not match recorded deadline')
             if revision != (prior['revision']+1 if prior else 0):raise ValueError('Funding revision conflict')
+            self.db.execute('UPDATE cross_quotes SET funding_complete=0')
             value = amount(p['quantity'])*mark*rate*(-1 if p['direction']=='LONG' else 1)
             delta = value-(amount(prior['value']) if prior else 0)
             details = {'symbol':symbol,'position_id':position_id,'time':stamp,'rate_type':rate_type,'revision':revision,'rate':encode(rate),'mark':encode(mark),'value':encode(value),'source':source}

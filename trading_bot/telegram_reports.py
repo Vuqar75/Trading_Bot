@@ -112,3 +112,22 @@ def daily_report(store, now=None):
         f'Реализованный результат сегодня: {net:+.4f} USDT'+(' (предварительный: не все комиссии оценены)' if not known else ''),
         f"Результат за всё время: {Decimal(store.get('pnl')):+.4f} USDT",
         'Суточные комиссии и просадка: см. отчёт наблюдателя; отсутствие данных не означает ноль.'])
+
+
+def futures_daily_report(store, now=None):
+    import json
+    now=time.time() if now is None else now
+    local=datetime.fromtimestamp(now,timezone(timedelta(hours=4)))
+    start=local.replace(hour=0,minute=0,second=0,microsecond=0).timestamp()
+    closed=[(r['ts'],json.loads(r['payload'])) for r in store.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE'")]
+    today=[p for ts,p in closed if start<=ts<=now]
+    total=[p for ts,p in closed if ts<=now]
+    def totals(rows):
+        return (sum((Decimal(p['net']) for p in rows),Decimal(0)),
+                sum((Decimal(p['fees']) for p in rows),Decimal(0)),
+                sum((Decimal(p['funding']) for p in rows),Decimal(0)))
+    d=totals(today);a=totals(total)
+    return '\n'.join(['Futures isolated • PAPER • торговый отчёт',
+        'Сегодня по Баку ('+local.strftime('%d.%m.%Y')+'): закрыто '+str(len(today))+f', net {d[0]:+.4f}, комиссии {d[1]:.4f}, funding {d[2]:+.4f} USDT.',
+        'За всё время: закрыто '+str(len(total))+f', net {a[0]:+.4f}, комиссии {a[1]:.4f}, funding {a[2]:+.4f} USDT.',
+        'Показаны закрытые позиции; комиссии и funding открытой позиции здесь не суммируются.'])

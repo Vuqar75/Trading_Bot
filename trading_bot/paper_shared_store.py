@@ -206,7 +206,9 @@ class SharedPaperStore:
                 from .cross_paper_book import CrossPaperBook
                 cross=object.__new__(CrossPaperBook);cross.shared=self;cross.db=self.db;cross.ledger=self.ledger
                 cross._check()
-                marks=cross._marks(cross.stored_quotes(),time.time() if now is None else now)
+                current=time.time() if now is None else now
+                cross._require_coverage(current)
+                marks=cross._marks(cross.stored_quotes(),current)
                 if quantity is None or cross._risk(marks)['available'] < amount(quantity,positive=True):
                     raise ValueError('Insufficient cross collateral')
 

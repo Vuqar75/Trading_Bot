@@ -50,8 +50,43 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 exit_price=fp*(1+(1 if direction=='SHORT' else -1)*slip/10000)
                 close_cost=qty*exit_price*fee/10000+qty*fp*slip/10000
                 isolated=max(Decimal(0),margin+funding_open-entry_fee+future_open-close_cost)
-        total=None if incomplete else sum((v['free']+v['reserved'] for v in balances.values()),Decimal(0)) + (btc*sp if btc else 0) + isolated
         start=datetime.fromtimestamp(now,ZoneInfo('Asia/Baku')).replace(hour=0,minute=0,second=0,microsecond=0).timestamp()
+        cross=None;cross_value=Decimal(0)
+        if shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_positions'").fetchone():
+            from .cross_paper_book import CrossPaperBook
+            book=object.__new__(CrossPaperBook);book.shared=shared;book.db=shared.db;book.ledger=shared.ledger
+            book._check()
+            positions_cross=book._positions()
+            balances['futures_cross']={'free':shared.ledger.balance('futures_cross:free'),'reserved':shared.ledger.balance('futures_cross:reserved')}
+            if positions_cross:
+                try:
+                    book._require_coverage(now)
+                    marks=book._marks(book.stored_quotes(),now)
+                    cross=book._risk(marks)
+                    cross_value=cross['margin']+cross['funding']+cross['gross']-cross['exit_cost']
+                except ValueError:
+                    incomplete.append('Futures cross: оценка или funding неполны')
+                    cross={'positions':positions_cross,'free':balances['futures_cross']['free'],
+                           'reserved':balances['futures_cross']['reserved'],
+                           'margin':shared.ledger.balance('futures_cross:margin'),
+                           'funding':shared.ledger.balance('futures_cross:funding'),
+                           'gross':None,'equity':None,'maintenance':None,'exit_cost':None,'buffer':None,'available':None}
+            else:
+                free=balances['futures_cross']['free'];reserved=balances['futures_cross']['reserved']
+                cross={'positions':[],'free':free,'reserved':reserved,'margin':Decimal(0),'funding':Decimal(0),
+                       'gross':Decimal(0),'equity':free+reserved,'maintenance':Decimal(0),'exit_cost':Decimal(0),'buffer':free+reserved,'available':free}
+            cross.update(realized=Decimal(0),fees=Decimal(0),funding_total=Decimal(0),adjustment=Decimal(0))
+            for row in shared.db.execute("SELECT e.kind,e.created,e.details,p.account,p.amount FROM ledger_events e JOIN ledger_postings p ON p.event_id=e.id WHERE p.account IN ('external:cross_pnl','external:cross_fees','external:cross_funding','external:cross_liquidation_adjustment')"):
+                timestamp=row['created']
+                if row['kind']=='CROSS_FUNDING':
+                    details=json.loads(row['details']);timestamp=details['time']/1000
+                if period=='today' and not start<=timestamp<=now:continue
+                value=amount(row['amount'])
+                if row['account']=='external:cross_pnl':cross['realized']-=value
+                elif row['account']=='external:cross_fees':cross['fees']+=value
+                elif row['account']=='external:cross_funding':cross['funding_total']-=value
+                else:cross['adjustment']-=value
+        total=None if incomplete else sum((v['free']+v['reserved'] for v in balances.values()),Decimal(0)) + (btc*sp if btc else 0) + isolated + cross_value
         spot_closes=shared.db.execute('SELECT ts,pnl,known FROM runtime_closes').fetchall()
         future_closes=[(r['ts'],json.loads(r['payload'])) for r in shared.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE'")]
         selected_spot=[r for r in spot_closes if period=='all' or start<=r['ts']<=now]
@@ -101,7 +136,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
               'spot_realized':spot_realized,'futures_realized':futures_realized,'spot_fees':spot_fees if period=='all' else None,
               'future_fees':future_fees,'funding_total':funding_total,'transfers':transfers,'total':total,
               'incomplete':incomplete,'spot_quote_time':(shared._get('spot','quote') or {}).get('time'),
-              'futures_quote_time':(shared._get('futures','quote') or {}).get('time'),'period':period}
+              'futures_quote_time':(shared._get('futures','quote') or {}).get('time'),'period':period,'cross':cross}
         return data
 
 
@@ -116,8 +151,15 @@ def render_live_report(data):
               'Spot комиссии по активам: '+('неизвестно за день' if data['spot_fees'] is None else (', '.join(_fmt(v)+' '+k for k,v in sorted(data['spot_fees'].items())) or 'нет зафиксированных')),
               'Futures комиссии: '+_fmt(data['future_fees'])+' USDT; funding: '+_fmt(data['funding_total'])+' USDT',
               'Внешние движения: история не подтверждена; внутренних переводов: '+str(len(data['transfers'])),
-              'Сверка проводок и остатков: пройдена. Цена Spot: '+(when(data['spot_quote_time']) if data['spot_quote_time'] else 'нет данных')+'; Futures: '+(when(data['futures_quote_time']) if data['futures_quote_time'] else 'нет данных'),
-              'futures_cross и margin_cross: недоступны.']
+              'Сверка проводок и остатков: пройдена. Цена Spot: '+(when(data['spot_quote_time']) if data['spot_quote_time'] else 'нет данных')+'; Futures: '+(when(data['futures_quote_time']) if data['futures_quote_time'] else 'нет данных')]
+    cross=data.get('cross')
+    if cross is None:lines.append('futures_cross и margin_cross: недоступны.')
+    else:
+        lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+'; запас риска '+_fmt(cross['buffer'])+'; доступно для перевода '+_fmt(cross['available'])+'.')
+        lines.append('Cross результат открытых позиций: '+_fmt(cross['gross'])+'; реализованный до комиссий: '+_fmt(cross['realized'])+'; комиссии: '+_fmt(cross['fees'])+'; funding: '+_fmt(cross['funding_total'])+'; модельная корректировка: '+_fmt(cross['adjustment'])+' USDT.')
+        for pos in cross['positions']:
+            lines.append(pos['symbol']+' '+pos['direction']+' — '+pos['quantity']+'; вход '+pos['entry']+'; маржа '+pos['margin']+' USDT.')
+        lines.append('margin_cross: недоступен.')
     if data['incomplete']:lines.append('Неполные данные: '+ '; '.join(data['incomplete']))
     if data['period']=='today':lines.append('Суточные Spot-комиссии не подтверждены временными метками старой истории.')
     return '\n'.join(lines)

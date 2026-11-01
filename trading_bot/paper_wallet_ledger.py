@@ -184,7 +184,9 @@ class PaperWalletLedger:
             book=object.__new__(CrossPaperBook);book.db=self.db;book.ledger=self
             book._check()
             if source=='futures_cross':
-                marks=book._marks(book.stored_quotes(),time.time() if now is None else now)
+                current=time.time() if now is None else now
+                book._require_coverage(current)
+                marks=book._marks(book.stored_quotes(),current)
                 if book._risk(marks)['available'] < quantity:raise ValueError('Insufficient cross collateral')
         if self.balance(source+':free') < quantity:
             raise ValueError('Insufficient confirmed free funds')

@@ -79,11 +79,11 @@ class UnifiedQueue:
             jobs = []
             if authorized:
                 if command == '/mode' and len(parts) <= 2:
-                    if len(parts) == 2 and parts[1] in ('spot', 'futures'):
+                    if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross'):
                         mode = parts[1]
                         self.db.execute("UPDATE unified_state SET value=? WHERE key='mode'", (mode,))
                     elif len(parts) == 2:
-                        self._notify('Режим: используйте /mode spot или /mode futures.')
+                        self._notify('Режим: используйте /mode spot, /mode futures или /mode futures_cross.')
                     self._notify('Выбранный рынок: ' + mode.upper())
                 elif command == '/pause_all' and len(parts) == 1:
                     jobs = [('spot', '/pause'), ('futures', '/pause')]
@@ -92,10 +92,10 @@ class UnifiedQueue:
                     jobs = [('spot', '/brief_status'), ('futures', '/brief_status')]
                 elif command == '/status' and len(parts) == 2 and parts[1] in ('spot', 'futures'):
                     market = parts[1]; jobs = [(market, '/status')]
-                elif command in ('/signal', '/history', '/pause', '/resume', '/timeframe', '/leverage', '/close'):
+                elif command in ('/signal', '/history', '/report', '/pause', '/resume', '/timeframe', '/leverage', '/close'):
                     if not fresh and command in ('/resume', '/close', '/timeframe', '/leverage'):
                         self._notify('['+market.upper()+'] Команда устарела.')
-                    elif command == '/leverage' and market != 'futures':
+                    elif command == '/leverage' and market not in ('futures','futures_cross'):
                         self._notify('[SPOT] Плечо доступно только в futures paper.')
                     elif len(parts) > (2 if command in ('/timeframe', '/leverage') else 1):
                         self._notify('['+market.upper()+'] Некорректные параметры.')
@@ -133,7 +133,7 @@ class UnifiedQueue:
                         self.db.execute("UPDATE unified_proposals SET status='CONFIRMED' WHERE id=?", (parts[1],))
                         jobs = [(market, '/confirmed_close')]
                 else:
-                    self._notify('Рынок: '+mode.upper()+'. Команды: /mode, /status, /signal, /history, /pause, /resume, /timeframe, /leverage (futures), /close, /confirm ID, /cancel ID, /pause_all. Кошельки: /wallets, /wallet, /transfer, /transfers, /balance_report.')
+                    self._notify('Рынок: '+mode.upper()+'. Команды выбранного рынка: /signal, /history, /report (сегодня по Баку и за всё время), /pause, /resume, /timeframe, /leverage (futures), /close. /mode выбирает рынок; /status — состояние; /confirm ID, /cancel ID, /pause_all. /wallets, /wallet, /transfer, /transfers и /balance_report — общие кошельки и средства всех рынков.')
             self.db.execute('INSERT INTO unified_updates VALUES(?,?,?,?)', (ident, fingerprint, command, market))
             for destination, action in jobs:
                 self.db.execute('INSERT INTO unified_jobs(update_id,market,command,payload) VALUES(?,?,?,?)', (ident, destination, action, json.dumps(payload, sort_keys=True)))
