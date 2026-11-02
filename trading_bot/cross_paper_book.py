@@ -343,6 +343,11 @@ class CrossPaperBook:
             value = amount(p['quantity'])*mark*rate*(-1 if p['direction']=='LONG' else 1)
             delta = value-(amount(prior['value']) if prior else 0)
             details = {'symbol':symbol,'position_id':position_id,'time':stamp,'rate_type':rate_type,'revision':revision,'rate':encode(rate),'mark':encode(mark),'value':encode(value),'source':source}
+            prefix='binance-usdm-public:fundingTime='
+            if source.startswith(prefix):
+                raw=source[len(prefix):]
+                if not raw.isdigit():raise ValueError('Invalid reported funding timestamp')
+                details['reported_time']=int(raw)
             postings = [(WALLET+':funding','USDT',delta),('external:cross_funding','USDT',-delta)] if delta else []
             self.ledger._post('cross:funding:'+operation,'CROSS_FUNDING' if postings else 'FINANCIAL_METADATA',details,postings,created=now)
             self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,rate_type,revision,encode(rate),encode(mark),encode(value),source))
@@ -402,6 +407,11 @@ class CrossPaperBook:
                 posts.append(('external:cross_funding','USDT',-delta))
             details={'symbol':symbol,'position_id':position_id,'time':stamp,'rate_type':rate_type,'revision':revision,
                      'rate':encode(rate),'mark':encode(mark),'value':encode(value),'delta':encode(delta),'source':source}
+            prefix='binance-usdm-public:fundingTime='
+            if source.startswith(prefix):
+                raw=source[len(prefix):]
+                if not raw.isdigit():raise ValueError('Invalid reported funding timestamp')
+                details['reported_time']=int(raw)
             self.ledger._post('cross:late-funding:'+operation,'CROSS_LATE_FUNDING' if posts else 'FINANCIAL_METADATA',details,posts,created=now)
             self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,rate_type,revision,encode(rate),encode(mark),encode(value),source))
             self._notify('Позднее исправление funding '+symbol+': изменение '+fmt(delta)+' USDT; обязательство '+fmt(-self.ledger.balance(WALLET+':liability'))+' USDT.')

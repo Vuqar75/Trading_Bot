@@ -295,6 +295,105 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
+    def test_public_funding_one_millisecond_after_due_is_once_after_restart(self):
+        # Observed on the VM for both pairs: the public source reports the
+        # regular event at 08:00:00.001 while the saved deadline is 08:00:00.000.
+        self.positions()
+        class Reader:
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,
+                        'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':'.001',
+                         'mark':'100' if symbol=='BTCUSDT' else '200'}]
+        self.book.set_paused(True)
+        for _ in range(2):
+            # A fresh adapter instance models retry after a worker restart.
+            quotes=CrossDataSync(self.book,Reader()).refresh(now=28001)
+            self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],2)
+            self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],2)
+            self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_quotes WHERE funding_complete!=0').fetchone()[0],2)
+            self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+            self.assertEqual(len(self.book.risk(quotes,now=28001)['positions']),2)
+            rows=self.shared.db.execute('SELECT funding_time,source FROM cross_funding ORDER BY symbol').fetchall()
+            self.assertEqual([(r['funding_time'],r['source']) for r in rows],[(28000000,'binance-usdm-public:fundingTime=28000001')]*2)
+            events=[json.loads(r[0]) for r in self.shared.db.execute("SELECT details FROM ledger_events WHERE kind='CROSS_FUNDING'")]
+            self.assertEqual([(e['time'],e['reported_time']) for e in events],[(28000000,28000001)]*2)
+            self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_shifted_funding_missing_then_duplicate_stays_paused_without_posting(self):
+        self.positions()
+        class Reader:
+            events=[]
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,
+                        'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':stamp,'rate_type':'Regular','rate':'.001',
+                         'mark':'100' if symbol=='BTCUSDT' else '200'} for stamp in self.events]
+        reader=Reader()
+        with self.assertRaisesRegex(ValueError,'not published'):CrossDataSync(self.book,reader).refresh(now=28001)
+        reader.events=[28000001,28000002]
+        with self.assertRaisesRegex(ValueError,'Duplicate'):CrossDataSync(self.book,reader).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        reader.events=[28000001]
+        CrossDataSync(self.book,reader).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],2)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_funding_before_and_at_expected_boundary_are_not_conflated(self):
+        self.positions()
+        class Reader:
+            stamp=27999999
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,
+                        'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':self.stamp,'rate_type':'Regular','rate':'.001',
+                         'mark':'100' if symbol=='BTCUSDT' else '200'}]
+        reader=Reader()
+        with self.assertRaisesRegex(ValueError,'does not match recorded deadline'):
+            CrossDataSync(self.book,reader).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
+        reader.stamp=28000000
+        CrossDataSync(self.book,reader).refresh(now=28001)
+        rows=self.shared.db.execute('SELECT funding_time,source FROM cross_funding ORDER BY symbol').fetchall()
+        self.assertEqual([(r['funding_time'],r['source']) for r in rows],[(28000000,'binance-usdm-public')]*2)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_shifted_funding_process_crash_after_first_commit_then_recovery(self):
+        self.positions();self.book.set_paused(True);self.shared.close()
+        script='''import os,sys\nfrom trading_bot.paper_shared_store import SharedPaperStore\nfrom trading_bot.cross_paper_book import CrossPaperBook\nfrom trading_bot.cross_data_sync import CrossDataSync\nclass Reader:\n def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}\n def funding(self,symbol,start,end):return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'}]\ns=SharedPaperStore(sys.argv[1]);b=CrossPaperBook(s);original=b.funding\nif sys.argv[2]=='crash':\n def crash(*args,**kwargs):\n  original(*args,**kwargs);os._exit(75)\n b.funding=crash\nCrossDataSync(b,Reader()).refresh(now=28001);s.close()'''
+        first=subprocess.run([sys.executable,'-B','-c',script,str(self.path),'crash'],timeout=30)
+        self.assertEqual(first.returncode,75)
+        second=subprocess.run([sys.executable,'-B','-c',script,str(self.path),'resume'],timeout=30)
+        self.assertEqual(second.returncode,0)
+        self.shared=SharedPaperStore(self.path);self.addCleanup(self.shared.close)
+        rows=self.shared.db.execute('SELECT funding_time,source FROM cross_funding ORDER BY symbol').fetchall()
+        self.assertEqual([(r['funding_time'],r['source']) for r in rows],[(28000000,'binance-usdm-public:fundingTime=28000001')]*2)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],2)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_after_shifted_funding_paused_position_still_gets_protective_exit(self):
+        self.positions();self.book.set_paused(True)
+        class Reader:
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,
+                        'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':'.001',
+                         'mark':'100' if symbol=='BTCUSDT' else '200'}]
+        quotes=CrossDataSync(self.book,Reader()).refresh(now=28001)
+        quotes={symbol:{**q,'time':28002,'server_ms':28002000,'mark':'80' if symbol=='BTCUSDT' else '200'} for symbol,q in quotes.items()}
+        candles={symbol:[(i*900000,'100') for i in range(31)] for symbol in ('BTCUSDT','ETHUSDT')}
+        actions=CrossPaperStrategy(self.book).tick(quotes,candles,28002000,now=28002)
+        self.assertEqual([(a['action'],a['symbol']) for a in actions],[('STOP','BTCUSDT')])
+        self.assertEqual([p['symbol'] for p in self.book._positions()],['ETHUSDT'])
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
     def test_cross_cycle_fake_market_opens_both_and_pauses_on_data_failure(self):
         period=900000;server=31*period+1000;now=server/1000
         q=UnifiedQueue(Path(self.tmp.name)/'cycle-queue.db');self.addCleanup(q.close)

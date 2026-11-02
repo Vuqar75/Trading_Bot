@@ -9,6 +9,7 @@ import time
 from .cross_paper_book import SYMBOLS
 from .cross_funding_tracker import CrossFundingTracker
 from .paper_wallet_ledger import amount
+from .cross_funding_period import assign_period
 
 
 class CrossDataSync:
@@ -46,6 +47,34 @@ class CrossDataSync:
                 schedule=schedules[symbol]
                 events=self.reader.funding(symbol,min(h['position']['opened_ms'] for h in relevant),schedule['server_ms'])
                 if not isinstance(events,list):raise ValueError('Funding history unavailable')
+                # Paper policy: associate a published time with the single
+                # evidenced half-open funding interval, while retaining the
+                # exchange's original millisecond timestamp in the source.
+                # Only the current active interval or an already journaled
+                # association can be mapped; all other cases remain fail closed.
+                mapped=[]
+                for original in events:
+                    event=dict(original);raw=event['time'];kind=event.get('rate_type','Regular')
+                    source='binance-usdm-public:fundingTime='+str(raw)
+                    prior=self.db.execute('SELECT DISTINCT funding_time FROM cross_funding WHERE symbol=? AND rate_type=? AND source=?',(symbol,kind,source)).fetchall()
+                    if len(prior)>1:raise ValueError('Ambiguous reported funding timestamp')
+                    if prior:
+                        event['time']=prior[0][0];event['reported_time']=raw
+                    else:
+                        matches=[]
+                        for item in relevant:
+                            if item['closed_ms'] is not None:continue
+                            p=item['position'];cursor=self.tracker._check_cursor(p['id'])
+                            due=cursor['next_due'];interval=cursor['interval_ms']
+                            if due<raw<due+interval:
+                                if (schedule['interval_ms']!=interval or schedule['next_due_ms']!=due+interval or
+                                    not due<=schedule['server_ms']<due+interval or raw>schedule['server_ms']):
+                                    raise ValueError('Funding period schedule not proven')
+                                matches.append(assign_period(raw,[(due,due+interval)],opened_ms=p['opened_ms']))
+                        if len(matches)>1:raise ValueError('Ambiguous funding period ownership')
+                        if matches:event['time']=matches[0];event['reported_time']=raw
+                    mapped.append(event)
+                events=mapped
                 events_by_symbol[symbol]=events
                 returned={(e['time'],e.get('rate_type','Regular')) for e in events}
                 if len(returned)!=len(events):raise ValueError('Duplicate funding history event')
@@ -62,7 +91,10 @@ class CrossDataSync:
                     if not owners:continue
                     item=owners[0];p=item['position'];cursor=self.tracker._check_cursor(p['id'])
                     if item['closed_ms'] is None and stamp>cursor['next_due']:raise ValueError('Funding history outside known window')
-                    previous=self.db.execute('SELECT revision,rate,mark FROM cross_funding WHERE position_id=? AND funding_time=? AND rate_type=? ORDER BY revision DESC LIMIT 1',(p['id'],stamp,kind)).fetchone()
+                    previous=self.db.execute('SELECT revision,rate,mark,source FROM cross_funding WHERE position_id=? AND funding_time=? AND rate_type=? ORDER BY revision DESC LIMIT 1',(p['id'],stamp,kind)).fetchone()
+                    event_source=('binance-usdm-public:fundingTime='+str(event['reported_time']) if 'reported_time' in event else 'binance-usdm-public')
+                    if previous and ('reported_time' in event or previous['source'].startswith('binance-usdm-public:fundingTime=')) and previous['source']!=event_source:
+                        raise ValueError('Reported funding timestamp changed')
                     if previous and amount(previous['rate'])==amount(event['rate']) and amount(previous['mark'])==amount(event['mark']):revision=previous['revision']
                     else:
                         revision=previous['revision']+1 if previous else 0
@@ -70,7 +102,7 @@ class CrossDataSync:
                         operation='sync:'+hashlib.sha256(canonical.encode()).hexdigest()
                         fn=self.book.funding if item['closed_ms'] is None else self.book.late_funding
                         fn(operation,symbol,p['id'],stamp,revision,event['rate'],event['mark'],
-                           'binance-usdm-public',now=now,rate_type=kind)
+                           event_source,now=now,rate_type=kind)
                     if stamp<cursor['next_due']:
                         receipt=self.db.execute('SELECT 1 FROM cross_correction_receipts WHERE position_id=? AND due=? AND rate_type=? AND revision=?',(p['id'],stamp,kind,revision)).fetchone()
                         if not receipt:self.tracker.confirm_correction(p['id'],{**event,'revision':revision})
