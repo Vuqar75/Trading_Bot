@@ -29,6 +29,9 @@ def process_cross(queue, receiver, book, *, started=0, now=None, clock=time.time
     now=clock() if now is None else now
     for job in queue.pending('futures_cross')[:20]:
         command=job['command'];payload=json.loads(job['payload']);uid=job['update_id']
+        if receiver.hold_resume and command in ('/close','/confirmed_close'):
+            queue.acknowledge(job['id'],'Ручное закрытие недоступно во время проверки восстановления.',applied=False)
+            continue
         if command=='/resume' or command=='/confirmed_close' or command.startswith(('/timeframe ','/leverage ')):
             prior_close=command=='/confirmed_close' and book.db.execute('SELECT 1 FROM cross_operations WHERE id=?',('telegram:'+str(uid),)).fetchone()
             if payload.get('received_at',0)<started and not prior_close:

@@ -427,6 +427,19 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertEqual(len(self.book.risk(self.quotes,now=100)['positions']),2)
 
+    def test_recovery_hold_rejects_confirmed_manual_close_without_trade(self):
+        btc,_=self.positions();self.book.set_paused(True)
+        q=UnifiedQueue(Path(self.tmp.name)/'recovery-queue.db');self.addCleanup(q.close)
+        q.receive(1,True,'/mode futures_cross',now=100)
+        q.receive(2,True,'/close BTCUSDT',positions={'futures_cross':{'BTCUSDT':btc}},now=100)
+        token=q.add_proposal(2,'futures_cross',btc['id'],btc['quantity'],now=100)
+        q.receive(3,True,'/confirm '+token,now=101)
+        process_cross(q,CrossCommandReceiver(self.book,hold_resume=True),self.book,now=101,clock=lambda:101)
+        self.assertFalse(q.pending('futures_cross'))
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],2)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_CLOSE'").fetchone()[0],0)
+        self.assertTrue(any('во время проверки' in r[0] for r in q.db.execute('SELECT message FROM unified_outbox')))
+
     def test_cross_cycle_fake_market_opens_both_and_pauses_on_data_failure(self):
         period=900000;server=31*period+1000;now=server/1000
         q=UnifiedQueue(Path(self.tmp.name)/'cycle-queue.db');self.addCleanup(q.close)
