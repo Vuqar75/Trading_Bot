@@ -355,6 +355,16 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
+    def test_shifted_special_funding_requires_separate_evidence(self):
+        self.positions()
+        class Reader:
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [{'symbol':symbol,'time':28000001,'rate_type':'Special','rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'}]
+        with self.assertRaisesRegex(ValueError,'Special funding period is not proven'):
+            CrossDataSync(self.book,Reader()).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+
     def test_funding_before_and_at_expected_boundary_are_not_conflated(self):
         self.positions()
         class Reader:

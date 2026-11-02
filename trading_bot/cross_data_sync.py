@@ -67,6 +67,7 @@ class CrossDataSync:
                             p=item['position'];cursor=self.tracker._check_cursor(p['id'])
                             due=cursor['next_due'];interval=cursor['interval_ms']
                             if due<raw<due+interval:
+                                if kind!='Regular':raise ValueError('Special funding period is not proven')
                                 if (schedule['interval_ms']!=interval or schedule['next_due_ms']!=due+interval or
                                     not due<=schedule['server_ms']<due+interval or raw>schedule['server_ms']):
                                     raise ValueError('Funding period schedule not proven')
