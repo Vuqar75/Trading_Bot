@@ -1,4 +1,38 @@
-# Актуальное состояние после установки 1 ноября 2026
+# Актуальное состояние после установки 2 ноября 2026
+
+Рабочая версия трёх paper-рынков —
+`77e5ce13bf6b30bb080b53319129b13c6b4a808d`, каталог `/opt/trading-bot-cross`.
+Единая финансовая база и история всех рынков —
+`/var/lib/tradingbot/paper-financial/shared-paper.db`; отдельной старой базы
+cross нет. Команды и переключение `/mode futures_cross` проходят через единственный
+Spot Telegram-поллер и общую очередь. Состояние и фактические результаты — в
+начале HANDOFF.md; данные ниже до заголовка Paper bots являются историческими.
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-monitor.service tradingbot-paper-backup.timer --no-pager
+sudo cat /var/lib/tradingbot/paper-financial/runtime-health.json
+sudo cat /var/lib/tradingbot/paper-financial/futures-health.json
+sudo cat /var/lib/tradingbot/paper-financial/cross-health.json
+sudo systemctl start tradingbot-paper-backup.service
+sudo journalctl -u tradingbot-paper-backup.service -n 20 --no-pager
+```
+
+Остановка отдельного рынка: `sudo systemctl stop tradingbot-cross.service`
+(аналогично `tradingbot-spot.service`, `tradingbot-futures.service`). Запуск:
+`sudo systemctl start tradingbot-cross.service`. Перезапуск и reboot оставляют
+входы на паузе; защита открытой позиции не работает, пока её процесс остановлен.
+Для возобновления после проверки здоровья использовать Telegram `/mode spot`,
+`/mode futures` или `/mode futures_cross`, затем `/resume` в нужном контексте;
+`/pause_all` запрещает новые входы во всех рынках. Не закрывать позиции для
+проверки. Сохранять единственный polling и не запускать старые писатели.
+
+Согласованные копии financial/queue/observation создаются штатным сервисом в
+`/var/lib/tradingbot/paper-coordinated-backups/`. Это тот же диск. После новых
+сделок, переводов или funding старую копию нельзя просто восстановить поверх
+журнала: сначала сохранить и согласовать все новые события; при неопределённости
+оставить входы на паузе. Старые инструкции ниже — исторические.
+
+# Историческое состояние после установки 1 ноября 2026
 
 Единый paper-журнал установлен на существующей VM. Подтверждённая работающая
 версия `aeea6f591afcbd17f8d649d639652bf5b3cbcbe4`; финансовая база
