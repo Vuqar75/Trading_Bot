@@ -67,7 +67,9 @@ class MarginInterestLedger:
             interest=sum((amount(row['interest']) for row in rows),Decimal(0))
             if any(amount(row['principal'])<0 or amount(row['interest'])<0 or row['status'] not in ('OPEN','CLOSED') or (row['status']=='CLOSED' and (amount(row['principal']) or amount(row['interest']))) for row in rows):
                 raise ValueError('Invalid margin loan state')
-            if self.ledger.balance(WALLET+':principal',asset)!=-principal or self.ledger.balance(WALLET+':interest',asset)!=-interest or self.ledger.balance(WALLET+':free',asset)<0:
+            if (self.ledger.balance(WALLET+':principal',asset)!=-principal or
+                self.ledger.balance(WALLET+':interest',asset)!=-interest or
+                self.ledger.balance(WALLET+':free',asset)<0 or self.ledger.balance(WALLET+':reserved',asset)<0):
                 raise ValueError('Margin balances disagree with loans')
 
     def set_rate(self, asset, rate, *, effective_ms):
