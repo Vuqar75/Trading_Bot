@@ -309,7 +309,8 @@ class FuturesStore:
                         if age > 120:
                             text += '\nДанные устарели.'
                         if 'fast' in snap:
-                            text += f"\nSMA 10: {snap['old_fast']:.2f} → {snap['fast']:.2f}\nSMA 30: {snap['old_slow']:.2f} → {snap['slow']:.2f}"
+                            from .display_amount import display_amount as fmt
+                            text += f"\nSMA 10: {fmt(str(snap['old_fast']))} → {fmt(str(snap['fast']))}\nSMA 30: {fmt(str(snap['old_slow']))} → {fmt(str(snap['slow']))}"
                 elif cmd == '/history':
                     rows = self.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE' ORDER BY id DESC LIMIT 10").fetchall()
                     from .trade_notifications import REASONS

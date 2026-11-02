@@ -24,6 +24,8 @@ with tempfile.TemporaryDirectory(prefix='cross-copy-rehearsal-') as temp:
     from trading_bot.cross_paper_book import CrossPaperBook
     from trading_bot.cross_rollout import freeze_entries,allocate_initial_cross,release_entries_after_cutover
     from trading_bot.cross_snapshot_guard import financial_history_unchanged
+    from trading_bot.cross_unit_switch import hold_writer_locks,switch_unit_files,restore_unit_files
+    from trading_bot.cross_service_interlock import arm_interlock,release_interlock
     from trading_bot.paper_shared_store import SharedPaperStore
     from trading_bot.paper_wallet_live_report import live_report
     from trading_bot.unified_queue import UnifiedQueue
@@ -68,6 +70,32 @@ with tempfile.TemporaryDirectory(prefix='cross-copy-rehearsal-') as temp:
     finally:q.close();shared.close()
     after=root/'after-allocation';coordinated_backup(financial,queue,observer,after,timeout=8)
     if financial_history_unchanged(before/'financial.db',after/'financial.db'):raise RuntimeError('Old financial snapshot was not rejected')
+    unit_dir=root/'unit-copies';unit_dir.mkdir();candidate=root/'unit-candidates';candidate.mkdir();archive=root/'unit-archive';archive.mkdir()
+    names=('tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service')
+    templates=('vm-cross-spot-paper.service','vm-cross-isolated-paper.service','vm-cross-futures-paper.service')
+    for name,template in zip(names,templates):
+        shutil.copyfile(repo/'deploy'/template,candidate/name)
+        if name!='tradingbot-cross.service':shutil.copyfile(Path('/etc/systemd/system')/name,unit_dir/name)
+    marker=root/'service-start-interlock'
+    arm_interlock(unit_dir,marker,names,'cross:freeze:vm-copy',reload_units=lambda:True)
+    crash_code=("import os,sys\nfrom pathlib import Path\nfrom trading_bot.cross_unit_switch import hold_writer_locks,switch_unit_files\n"
+        "r=Path(sys.argv[1])\nwith hold_writer_locks(r/'active/financial.db'):\n"
+        " switch_unit_files(r/'unit-copies',r/'unit-candidates',r/'unit-archive',"
+        "('tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service'),"
+        "new_units=('tradingbot-cross.service',),assert_safe=lambda:True,"
+        "fault=lambda p:os._exit(75) if p=='switched:tradingbot-spot.service' else None)\n")
+    crash=subprocess.run([sys.executable,'-B','-c',crash_code,str(root)],cwd=repo,timeout=30)
+    if crash.returncode!=75 or not marker.exists():raise RuntimeError('Copied unit switch crash did not preserve interlock')
+    condition=subprocess.run(['systemd-analyze','condition','ConditionPathExists=!'+str(marker)],capture_output=True,timeout=15)
+    if condition.returncode==0:raise RuntimeError('Systemd condition did not block simulated restart')
+    with hold_writer_locks(financial):
+        try:
+            restore_unit_files(unit_dir,archive,names,assert_safe=lambda:True,
+                               verify_rollback=lambda:financial_history_unchanged(before/'financial.db',after/'financial.db'))
+        except ValueError:pass
+        else:raise RuntimeError('Old snapshot guard did not refuse unit rollback')
+        switch_unit_files(unit_dir,candidate,archive,names,new_units=('tradingbot-cross.service',),assert_safe=lambda:True)
+        release_interlock(unit_dir,marker,names,'cross:freeze:vm-copy',verify_safe=lambda:True)
     shared=SharedPaperStore(financial);q=UnifiedQueue(queue)
     try:
         release=release_entries_after_cutover(shared,q,'cross:release:vm-copy')
@@ -85,4 +113,5 @@ with tempfile.TemporaryDirectory(prefix='cross-copy-rehearsal-') as temp:
       'restored_three_database_backup':True,'prior_pauses':frozen['paused'],'fixed_price_capital_before_after':total,
       'virtual_transfer':'50 isolated to cross, exactly once','positions_preserved':True,
       'pnl_unchanged':True,'ledger_balanced':balanced,'old_snapshot_rejected':True,
-      'release_replay_keeps_simulated_restart_paused':True},sort_keys=True),flush=True)
+      'release_replay_keeps_simulated_restart_paused':True,
+      'copied_unit_file_crash_recovery':True,'simulated_systemd_interlock':True},sort_keys=True),flush=True)

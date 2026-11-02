@@ -161,7 +161,7 @@ def render_live_report(data):
         lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+'; обязательства '+_fmt(-cross['liability'])+'; запас риска '+_fmt(cross['buffer'])+'; доступно для перевода '+_fmt(cross['available'])+'.')
         lines.append('Cross результат открытых позиций: '+_fmt(cross['gross'])+'; реализованный до комиссий: '+_fmt(cross['realized'])+'; комиссии: '+_fmt(cross['fees'])+'; funding: '+_fmt(cross['funding_total'])+'; модельная корректировка: '+_fmt(cross['adjustment'])+' USDT.')
         for pos in cross['positions']:
-            lines.append(pos['symbol']+' '+pos['direction']+' — '+_fmt(pos['quantity'],pos['symbol'][:-4])+' '+pos['symbol'][:-4]+'; вход '+_fmt(pos['entry'])+'; маржа '+_fmt(pos['margin'])+' USDT.')
+            lines.append(pos['symbol']+' '+pos['direction']+' — '+_fmt(pos['quantity'],pos['symbol'][:-4])+' '+pos['symbol'][:-4]+'; вход '+_fmt(pos['entry'])+' USDT; маржа '+_fmt(pos['margin'])+' USDT.')
         lines.append('margin_cross: недоступен.')
     if data['incomplete']:lines.append('Неполные данные: '+ '; '.join(data['incomplete']))
     if data['period']=='today':lines.append('Суточные Spot-комиссии не подтверждены временными метками старой истории.')

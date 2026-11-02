@@ -124,3 +124,24 @@ class CrossUnitSwitchTests(unittest.TestCase):
         self.assertEqual((self.units/'spot.service').read_text(),'new spot.service')
         with closing(SharedPaperStore(financial)) as shared:
             self.assertEqual(shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='TRANSFER'").fetchone()[0],1)
+
+    def test_new_cross_unit_replays_and_rollback_removes_only_created_unit(self):
+        names=self.names+('cross.service',);(self.candidate/'cross.service').write_text('new cross.service')
+        def crash(point):
+            if point=='switched:cross.service':raise RuntimeError('crash after new unit')
+        with self.assertRaisesRegex(RuntimeError,'crash'):
+            switch_unit_files(self.units,self.candidate,self.archive,names,assert_safe=self.safe,new_units=('cross.service',),fault=crash)
+        self.assertEqual((self.units/'cross.service').read_text(),'new cross.service')
+        with self.assertRaisesRegex(ValueError,'New unit set changed'):
+            switch_unit_files(self.units,self.candidate,self.archive,names,assert_safe=self.safe)
+        self.assertTrue(switch_unit_files(self.units,self.candidate,self.archive,names,assert_safe=self.safe,new_units=('cross.service',))['all_switched'])
+        self.assertTrue(restore_unit_files(self.units,self.archive,names,assert_safe=self.safe,verify_rollback=lambda:True)['all_restored'])
+        self.assertFalse((self.units/'cross.service').exists())
+        self.assertEqual((self.units/'spot.service').read_text(),'old spot.service')
+
+    def test_existing_unrecognized_cross_unit_is_never_overwritten(self):
+        names=self.names+('cross.service',);(self.candidate/'cross.service').write_text('new cross.service')
+        (self.units/'cross.service').write_text('user-owned existing unit')
+        with self.assertRaisesRegex(ValueError,'already exists'):
+            switch_unit_files(self.units,self.candidate,self.archive,names,assert_safe=self.safe,new_units=('cross.service',))
+        self.assertEqual((self.units/'cross.service').read_text(),'user-owned existing unit')

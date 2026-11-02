@@ -53,8 +53,8 @@ def signal_report(store):
     if snap.get('candle') is not None:
         lines.append('Начало закрытой свечи: ' + when(snap['candle']/1000))
     if 'fast' in snap:
-        lines += [f"Предыдущие: SMA 10 = {snap['old_fast']:.2f}; SMA 30 = {snap['old_slow']:.2f}",
-                  f"Последние: SMA 10 = {snap['fast']:.2f}; SMA 30 = {snap['slow']:.2f}"]
+        lines += [f"Предыдущие: SMA 10 = {fmt(str(snap['old_fast']))}; SMA 30 = {fmt(str(snap['old_slow']))}",
+                  f"Последние: SMA 10 = {fmt(str(snap['fast']))}; SMA 30 = {fmt(str(snap['slow']))}"]
     lines.append('Сигнал: ' + {'BUY': 'пересечение вверх — покупка', 'SELL': 'пересечение вниз — выход из LONG', 'HOLD': 'нет нового пересечения'}.get(action, action))
     qty = Decimal(store.get('position')['quantity'])
     if store.pending() or store.get('blocked'):

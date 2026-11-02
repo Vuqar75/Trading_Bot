@@ -62,7 +62,7 @@ def _write(path, data, mode):
         if os.path.exists(name):os.unlink(name)
 
 
-def switch_unit_files(unit_dir, candidate_dir, archive, units, *, assert_safe, fault=lambda p:None):
+def switch_unit_files(unit_dir, candidate_dir, archive, units, *, assert_safe, new_units=(), fault=lambda p:None):
     """Replace named unit files while all writers remain stopped.
 
     Replaying after a crash is safe only while the caller preserves the same
@@ -70,36 +70,44 @@ def switch_unit_files(unit_dir, candidate_dir, archive, units, *, assert_safe, f
     """
     if any(Path(p).is_symlink() for p in (unit_dir,candidate_dir,archive)):raise ValueError('Symlink directory rejected')
     unit_dir=Path(unit_dir).resolve(strict=True);candidate_dir=Path(candidate_dir).resolve(strict=True)
-    archive=Path(archive).resolve(strict=True);names=tuple(units)
+    archive=Path(archive).resolve(strict=True);names=tuple(units);new_units=set(new_units)
     if not names or len(set(names))!=len(names) or any(Path(n).name!=n or not n.endswith(('.service','.timer')) for n in names):
         raise ValueError('Invalid unit names')
+    if not new_units.issubset(names):raise ValueError('Unknown new unit')
     _require(assert_safe,'Stopped writers not proven')
+    manifest=archive/'unit-switch.json'
+    if manifest.is_symlink():raise ValueError('Invalid switch manifest')
+    resuming=manifest.exists()
     originals={};desired={}
     for name in names:
         src=candidate_dir/name;target=unit_dir/name
-        if src.is_symlink() or target.is_symlink() or not src.is_file() or not target.is_file():raise ValueError('Unit files must be regular files')
-        originals[name]=target.read_bytes();desired[name]=src.read_bytes()
-    manifest=archive/'unit-switch.json'
-    if manifest.is_symlink():raise ValueError('Invalid switch manifest')
-    if not manifest.exists():
+        if src.is_symlink() or target.is_symlink() or not src.is_file() or (target.exists() and not target.is_file()):raise ValueError('Unit files must be regular files')
+        if not target.exists() and name not in new_units:raise ValueError('Existing unit is missing')
+        if target.exists() and name in new_units and not resuming:raise ValueError('New unit already exists')
+        originals[name]=target.read_bytes() if target.exists() else None;desired[name]=src.read_bytes()
+    if not resuming:
         for name in names:
             saved=archive/(name+'.before')
             if saved.exists() or saved.is_symlink():raise ValueError('Unresolved unit archive')
-            _write(saved,originals[name],0o600)
-        state={'units':{name:{'before':_digest(originals[name]),'after':_digest(desired[name])} for name in names}}
+            if originals[name] is not None:_write(saved,originals[name],0o600)
+        state={'units':{name:{'before':_digest(originals[name]) if originals[name] is not None else None,'after':_digest(desired[name])} for name in names}}
         _write(manifest,json.dumps(state,sort_keys=True).encode(),0o600)
     else:
         state=json.loads(manifest.read_text())
         if set(state.get('units',{}))!=set(names):raise ValueError('Unit manifest mismatch')
+        if {name for name in names if state['units'][name]['before'] is None}!=new_units:raise ValueError('New unit set changed')
         for name in names:
             saved=archive/(name+'.before')
-            if saved.is_symlink() or not saved.is_file() or _digest(saved.read_bytes())!=state['units'][name]['before'] or _digest(desired[name])!=state['units'][name]['after']:
+            before=state['units'][name]['before']
+            if saved.is_symlink() or (before is None and saved.exists()) or (before is not None and (not saved.is_file() or _digest(saved.read_bytes())!=before)) or _digest(desired[name])!=state['units'][name]['after']:
                 raise ValueError('Unit archive or candidate changed')
-            if _digest(originals[name]) not in (state['units'][name]['before'],state['units'][name]['after']):
+            current=_digest(originals[name]) if originals[name] is not None else None
+            if current not in (before,state['units'][name]['after']):
                 raise ValueError('Unexpected current unit content')
     for name in names:
         _require(assert_safe,'Stopped writers not proven')
-        if _digest((unit_dir/name).read_bytes())!=state['units'][name]['after']:
+        target=unit_dir/name
+        if not target.exists() or _digest(target.read_bytes())!=state['units'][name]['after']:
             _write(unit_dir/name,desired[name],0o644)
         fault('switched:'+name)
     _require(assert_safe,'Stopped writers not proven')
@@ -119,13 +127,20 @@ def restore_unit_files(unit_dir, archive, units, *, assert_safe, verify_rollback
     _require(assert_safe,'Stopped writers not proven');_require(verify_rollback,'Rollback safety not proven')
     for name in names:
         target=unit_dir/name;saved=archive/(name+'.before')
-        if target.is_symlink() or saved.is_symlink() or not target.is_file() or not saved.is_file():raise ValueError('Invalid archived unit')
-        if _digest(saved.read_bytes())!=state['units'][name]['before'] or _digest(target.read_bytes()) not in (state['units'][name]['before'],state['units'][name]['after']):
+        before=state['units'][name]['before']
+        if target.is_symlink() or saved.is_symlink() or (target.exists() and not target.is_file()) or (before is not None and not saved.is_file()) or (before is None and saved.exists()):raise ValueError('Invalid archived unit')
+        current=_digest(target.read_bytes()) if target.exists() else None
+        if (before is not None and _digest(saved.read_bytes())!=before) or current not in (before,state['units'][name]['after']):
             raise ValueError('Unit archive or current unit changed')
     for name in names:
         _require(assert_safe,'Stopped writers not proven');_require(verify_rollback,'Rollback safety not proven')
-        if _digest((unit_dir/name).read_bytes())!=state['units'][name]['before']:
-            _write(unit_dir/name,(archive/(name+'.before')).read_bytes(),0o644)
+        target=unit_dir/name;before=state['units'][name]['before']
+        if before is None and target.exists():
+            target.unlink();dfd=os.open(unit_dir,os.O_RDONLY)
+            try:os.fsync(dfd)
+            finally:os.close(dfd)
+        elif before is not None and (not target.exists() or _digest(target.read_bytes())!=before):
+            _write(target,(archive/(name+'.before')).read_bytes(),0o644)
         fault('restored:'+name)
     _require(assert_safe,'Stopped writers not proven');_require(verify_rollback,'Rollback safety not proven')
     return {'units':list(names),'all_restored':True}
