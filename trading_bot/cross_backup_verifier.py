@@ -16,7 +16,8 @@ from .paper_shared_store import SharedPaperStore
 from .paper_wallet_ledger import PaperWalletLedger
 
 
-def verify_restorable_backup(backup, *, freeze_id, scratch_parent):
+def verify_restorable_backup(backup, *, freeze_id, scratch_parent, require_paused=True):
+    if type(require_paused) is not bool:raise ValueError('Invalid pause requirement')
     if not isinstance(freeze_id,str) or not freeze_id.startswith('cross:freeze:'):
         raise ValueError('Explicit freeze identity required')
     root=Path(backup)
@@ -51,8 +52,13 @@ def verify_restorable_backup(backup, *, freeze_id, scratch_parent):
             states={market:shared._assert_consistent(market) for market in ('spot','futures')}
             row=db.execute("SELECT value FROM ledger_meta WHERE key='cross_cutover_freeze'").fetchone()
             frozen=json.loads(row[0]) if row else {}
-            if frozen.get('request_id')!=freeze_id or not shared.deployment_hold() or any(states[m]['paused'] is not True for m in states):
+            if frozen.get('request_id')!=freeze_id:raise ValueError('Backup does not contain expected freeze')
+            if require_paused and (not shared.deployment_hold() or any(states[m]['paused'] is not True for m in states)):
                 raise ValueError('Backup does not contain expected paused freeze')
+            if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_positions'").fetchone():
+                from .cross_paper_book import CrossPaperBook
+                book=object.__new__(CrossPaperBook);book.shared=shared;book.db=db;book.ledger=shared.ledger
+                book._check()
         with closing(sqlite3.connect((restored/'queue.db').as_uri()+'?mode=ro',uri=True)) as db:
             offset=db.execute("SELECT value FROM unified_state WHERE key='offset'").fetchone()
             pending=db.execute("SELECT count(*) FROM unified_jobs WHERE status='PENDING'").fetchone()[0]

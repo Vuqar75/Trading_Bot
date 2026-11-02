@@ -70,13 +70,13 @@ def freeze_entries(shared, queue, request_id, *, now=None):
         if q.in_transaction:q.rollback()
 
 
-def allocate_initial_cross(shared, queue, request_id, *, now=None):
+def allocate_initial_cross(shared, queue, request_id, *, now=None, keep_hold=False):
     """Release deployment hold and transfer exactly 50 paper USDT atomically.
 
     The queue is locked until the financial commit. A completed request is
     idempotent even after a crash; no other source or amount is permitted.
     """
-    if not isinstance(request_id,str) or not request_id.startswith('cross:initial:'):
+    if not isinstance(request_id,str) or not request_id.startswith('cross:initial:') or type(keep_hold) is not bool:
         raise ValueError('Explicit rollout identity required')
     live_clock=now is None
     q=queue.db
@@ -92,6 +92,9 @@ def allocate_initial_cross(shared, queue, request_id, *, now=None):
             if old and old['status']=='DONE':
                 if old['source']!='futures_isolated' or old['destination']!='futures_cross' or amount(old['quantity'])!=50:
                     raise ValueError('Conflicting initial allocation')
+                marker=shared.db.execute("SELECT value FROM ledger_meta WHERE key='cross_cutover_allocation'").fetchone()
+                if not marker or bool(json.loads(marker[0]).get('hold_after',False))!=keep_hold:
+                    raise ValueError('Conflicting allocation hold policy')
                 return {'token':old['id'],'event':old['event_id'],'replayed':True}
             if old:raise ValueError('Initial allocation is incomplete; inspect before retry')
             shared._validate_hold_change(False)
@@ -114,10 +117,11 @@ def allocate_initial_cross(shared, queue, request_id, *, now=None):
             shared._sync_pause_and_validate('futures_isolated','futures_cross','50',now)
             proposal=shared.ledger.propose_transfer(request_id,'futures_isolated','futures_cross','50',now=now)
             event=shared.ledger.confirm_transfer(proposal['id'],now=now)
-            shared.db.execute("INSERT INTO ledger_meta VALUES('cross_cutover_allocation',?)",(json.dumps({'request_id':request_id,'token':proposal['id'],'event':event},sort_keys=True),))
+            shared.db.execute("INSERT INTO ledger_meta VALUES('cross_cutover_allocation',?)",(json.dumps({'request_id':request_id,'token':proposal['id'],'event':event,'hold_after':keep_hold},sort_keys=True),))
             shared._set('futures','cash',encode(amount(shared._get('futures','cash'))-Decimal(50)))
             for market in ('spot','futures'):
                 shared._record_projection(market,before[market],shared.snapshot(market),'shared:transfer-projection:'+proposal['id']+':'+market,{'transfer':proposal['id']})
+            if keep_hold:shared.db.execute("INSERT OR REPLACE INTO ledger_meta VALUES('deployment_hold','true')")
             shared._assert_consistent('spot');shared._assert_consistent('futures');cross._check()
             if not shared.ledger.reconcile()['balanced']:raise ValueError('Journal integrity mismatch')
             return {'token':proposal['id'],'event':event,'replayed':False}
@@ -163,7 +167,9 @@ def release_entries_after_cutover(shared, queue, request_id, *, now=None):
             postings=shared.db.execute('SELECT account,asset,amount FROM ledger_postings WHERE event_id=? ORDER BY ordinal',(allocation['event'],)).fetchall()
             if [(p['account'],p['asset'],amount(p['amount'])) for p in postings] != [('futures_isolated:free','USDT',Decimal(-50)),('futures_cross:free','USDT',Decimal(50))]:
                 raise ValueError('Initial allocation postings disagree')
-            if shared.deployment_hold():raise ValueError('Deployment hold is active')
+            held=shared.deployment_hold()
+            if held is not bool(allocation.get('hold_after',False)):
+                raise ValueError('Deployment hold changed since allocation')
             if q.execute("SELECT 1 FROM unified_jobs WHERE status='PENDING' LIMIT 1").fetchone():
                 raise ValueError('Pending commands require processing')
             shared._validate_hold_change(False)
@@ -177,6 +183,7 @@ def release_entries_after_cutover(shared, queue, request_id, *, now=None):
             if cross._risk(marks)['buffer']<=0:raise ValueError('Cross margin buffer exhausted')
             pauses=q.execute("SELECT command,market FROM unified_updates WHERE id>=? AND command IN ('/pause','/pause_all')",(freeze['queue_offset'],)).fetchall()
             manual={m for command,market in pauses for m in (('spot','futures','futures_cross') if command=='/pause_all' else (market,))}
+            if held:shared.db.execute("INSERT OR REPLACE INTO ledger_meta VALUES('deployment_hold','false')")
             enabled=[]
             for market in ('spot','futures'):
                 if freeze['paused'][market] is False and market not in manual:

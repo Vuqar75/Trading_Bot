@@ -23,6 +23,8 @@ from trading_bot.unified_queue import UnifiedQueue
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.paper_coordinated_backup import coordinated_backup
 from trading_bot.cross_snapshot_guard import financial_history_unchanged
+from trading_bot.cross_verified_allocation import allocate_verified_cross
+from trading_bot.cross_migration_verifier import verify_same_price_migration
 from trading_bot.cross_backup_verifier import verify_restorable_backup
 
 
@@ -202,6 +204,126 @@ class CrossRolloutTests(unittest.TestCase):
         self.assertEqual(before['total'],after['total'])
         self.assertEqual(before_pnl,(after['spot_realized'],after['futures_realized'],after['futures_open']))
 
+    def test_allocation_can_keep_hold_across_restart_until_verified_release(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            result=allocate_initial_cross(self.shared,self.q,'cross:initial:fixture',now=100,keep_hold=True)
+        self.assertFalse(result['replayed']);self.assertTrue(self.shared.deployment_hold())
+        with closing(RuntimeStore(self.path,{'mode':'paper','interval':'15m'},shared=True)) as spot:
+            spot.command(88,True,'/resume',routed=True)
+            self.assertTrue(spot.get('paused'))
+        self.assertTrue(self.shared.deployment_hold())
+        self.assertTrue(allocate_initial_cross(self.shared,self.q,'cross:initial:fixture',now=101,keep_hold=True)['replayed'])
+        with self.assertRaisesRegex(ValueError,'hold policy'):
+            allocate_initial_cross(self.shared,self.q,'cross:initial:fixture',now=101,keep_hold=False)
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            released=release_entries_after_cutover(self.shared,self.q,'cross:release:fixture',now=100)
+        self.assertIn('futures_cross',released['enabled']);self.assertFalse(self.shared.deployment_hold())
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='TRANSFER'").fetchone()[0],1)
+
+    def test_unexpected_hold_change_blocks_release(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            allocate_initial_cross(self.shared,self.q,'cross:initial:fixture',now=100,keep_hold=True)
+        with self.shared.transaction():self.shared.db.execute("UPDATE ledger_meta SET value='false' WHERE key='deployment_hold'")
+        with self.assertRaisesRegex(ValueError,'hold changed'):
+            release_entries_after_cutover(self.shared,self.q,'cross:release:fixture',now=100)
+        self.assertTrue(self.shared.snapshot('spot')['paused'])
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+
+    def test_held_allocation_survives_process_death_on_both_commit_boundaries(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        code=("import os,sys; from unittest.mock import patch; from trading_bot.paper_shared_store import SharedPaperStore; "
+              "from trading_bot.unified_queue import UnifiedQueue; from trading_bot.cross_rollout import allocate_initial_cross; "
+              "s=SharedPaperStore(sys.argv[1]); q=UnifiedQueue(sys.argv[2]); "
+              "s.fault=lambda p:os._exit(79) if p==sys.argv[3] else None; "
+              "p=patch('trading_bot.paper_shared_store.time.time',return_value=100); p.start(); "
+              "allocate_initial_cross(s,q,'cross:initial:fixture',now=100,keep_hold=True)")
+        for point in ('before_commit','after_commit'):
+            child=subprocess.run([sys.executable,'-c',code,str(self.path),str(self.qpath),point])
+            self.assertEqual(child.returncode,79);self.assertTrue(self.shared.deployment_hold())
+            self.assertEqual(self.shared.ledger.balance('futures_cross:free'),Decimal(50 if point=='after_commit' else 0))
+        self.assertTrue(allocate_initial_cross(self.shared,self.q,'cross:initial:fixture',now=101,keep_hold=True)['replayed'])
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='TRANSFER'").fetchone()[0],1)
+
+    def test_verified_allocation_replays_after_real_crash_at_commit(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        code=("import os,sys; from unittest.mock import patch; from trading_bot.paper_shared_store import SharedPaperStore; "
+              "from trading_bot.unified_queue import UnifiedQueue; from trading_bot.cross_verified_allocation import allocate_verified_cross; "
+              "s=SharedPaperStore(sys.argv[1]); q=UnifiedQueue(sys.argv[2]); "
+              "p=patch('trading_bot.paper_shared_store.time.time',return_value=100); p.start(); "
+              "allocate_verified_cross(s,q,'cross:initial:fixture',assert_quiescent=lambda:True,now=100,"
+              "fault=lambda p:os._exit(78) if p=='after_allocation_commit' else None)")
+        child=subprocess.run([sys.executable,'-c',code,str(self.path),str(self.qpath)])
+        self.assertEqual(child.returncode,78);self.assertTrue(self.shared.deployment_hold())
+        self.assertEqual(self.shared.ledger.balance('futures_cross:free'),Decimal(50))
+        result=allocate_verified_cross(self.shared,self.q,'cross:initial:fixture',assert_quiescent=lambda:True,now=100)
+        self.assertTrue(result['replayed']);self.assertTrue(self.shared.deployment_hold())
+        self.assertEqual(self.shared.snapshot('futures')['position'],self.existing_position)
+        self.assertTrue(self.shared.db.execute("SELECT 1 FROM ledger_meta WHERE key='cross_allocation_verified'").fetchone())
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='TRANSFER'").fetchone()[0],1)
+
+    def test_verified_allocation_blocks_unknown_fence_or_changed_quotes(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        with self.assertRaisesRegex(ValueError,'fenced'):
+            allocate_verified_cross(self.shared,self.q,'cross:initial:fixture',assert_quiescent=lambda:False,now=100)
+        def crash(point):
+            if point=='after_allocation_commit':raise RuntimeError('simulated crash')
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            with self.assertRaisesRegex(RuntimeError,'crash'):
+                allocate_verified_cross(self.shared,self.q,'cross:initial:fixture',assert_quiescent=lambda:True,now=100,fault=crash)
+        with self.shared.transaction():self.shared._set('spot','quote',{'price':'101','time':101})
+        with self.assertRaisesRegex(ValueError,'Quote snapshot changed'):
+            allocate_verified_cross(self.shared,self.q,'cross:initial:fixture',assert_quiescent=lambda:True,now=101)
+        self.assertTrue(self.shared.deployment_hold())
+
+    def test_migration_compares_same_saved_prices_and_preserves_sources(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        before=self.path.parent/'migration-before.db';after=self.path.parent/'migration-after.db'
+        with closing(sqlite3.connect(self.path)) as src,closing(sqlite3.connect(before)) as dst:src.backup(dst)
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            allocate_verified_cross(self.shared,self.q,'cross:initial:fixture',assert_quiescent=lambda:True,now=100)
+        with self.shared.transaction():
+            self.shared._set('spot','quote',{'price':'105','time':101})
+            self.shared._set('futures','quote',{'price':'106','time':101,'server_ms':1001})
+            p=self.shared._get('futures','position');p['funding_cursor']=1001;self.shared._set('futures','position',p)
+        with closing(sqlite3.connect(self.path)) as src,closing(sqlite3.connect(after)) as dst:src.backup(dst)
+        result=verify_same_price_migration(before,after,scratch_parent=self.path.parent)
+        self.assertEqual(result['capital_before'],result['capital_after'])
+        self.assertEqual(result['spot_price'],'100');self.assertEqual(result['futures_price'],'100')
+        with closing(sqlite3.connect(after)) as db:
+            saved=json.loads(db.execute("SELECT value FROM runtime_meta WHERE key='quote'").fetchone()[0])
+            self.assertEqual(saved['price'],'105')
+        self.assertEqual(self.shared.snapshot('futures')['position']['funding'],self.existing_position['funding'])
+
+    def test_migration_refuses_intervening_funding_change(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        before=self.path.parent/'migration-before.db';after=self.path.parent/'migration-after.db'
+        with closing(sqlite3.connect(self.path)) as src,closing(sqlite3.connect(before)) as dst:src.backup(dst)
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            allocate_verified_cross(self.shared,self.q,'cross:initial:fixture',assert_quiescent=lambda:True,now=100)
+        def change(db):
+            p=self.shared._get('futures','position');p['funding']='0.1';self.shared._set('futures','position',p)
+        self.shared.apply('futures','unexpected-funding',{'fixture':True},change)
+        with closing(sqlite3.connect(self.path)) as src,closing(sqlite3.connect(after)) as dst:src.backup(dst)
+        with self.assertRaisesRegex(ValueError,'funding'):
+            verify_same_price_migration(before,after,scratch_parent=self.path.parent)
+        self.assertTrue(self.shared.deployment_hold())
+
+    def test_migration_refuses_additional_even_balanced_financial_event(self):
+        self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100)
+        before=self.path.parent/'migration-before.db';after=self.path.parent/'migration-after.db'
+        with closing(sqlite3.connect(self.path)) as src,closing(sqlite3.connect(before)) as dst:src.backup(dst)
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            allocate_verified_cross(self.shared,self.q,'cross:initial:fixture',assert_quiescent=lambda:True,now=100)
+        with self.shared.transaction():
+            self.shared.ledger._post('unexpected','CROSS_FUNDING',{'fixture':True},
+                                     [('external:a','USDT','-0.01'),('external:b','USDT','0.01')],created=100)
+        with closing(sqlite3.connect(self.path)) as src,closing(sqlite3.connect(after)) as dst:src.backup(dst)
+        with self.assertRaisesRegex(ValueError,'Unexpected financial event'):
+            verify_same_price_migration(before,after,scratch_parent=self.path.parent)
+        self.assertTrue(self.shared.deployment_hold())
+
     def test_pending_command_or_insufficient_funds_keeps_hold(self):
         self.q.receive(1,True,'/pause',now=100)
         with self.assertRaisesRegex(ValueError,'Pending'):self.allocate()
@@ -255,7 +377,7 @@ class CrossRolloutTests(unittest.TestCase):
         result=verify_restorable_backup(backup,freeze_id='cross:freeze:fixture',scratch_parent=root)
         self.assertTrue(result['ledger_balanced']);self.assertEqual(result['pending_commands'],0)
         self.assertEqual(list(root.glob('cross-restore-check-*')),[])
-        with self.assertRaisesRegex(ValueError,'expected paused freeze'):
+        with self.assertRaisesRegex(ValueError,'expected freeze'):
             verify_restorable_backup(backup,freeze_id='cross:freeze:other',scratch_parent=root)
         with (backup/'observation.db').open('ab') as stream:stream.write(b'changed')
         with self.assertRaisesRegex(ValueError,'hash mismatch'):
