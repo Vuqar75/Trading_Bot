@@ -1,4 +1,62 @@
-# Актуальное состояние после установки 1 ноября 2026
+# Актуальное состояние после восстановления funding, 2 ноября 2026
+
+Spot, isolated и наблюдатель работают из `/opt/trading-bot-cross` на коммите
+`77e5ce13bf6b30bb080b53319129b13c6b4a808d`; только cross работает из
+`/opt/trading-bot-cross-funding` на `543dfa2f9dc5c54f6917ec3d4ac3f2bd19cfaa4b`.
+Единая финансовая база и очередь общие и не заменялись. Cross оставлен на паузе;
+последняя проверка показала две позиции и выполняющийся защитный цикл. Точное
+состояние, финансирование, backup и ограничения находятся в начале HANDOFF.md.
+Версии разных сервисов обновлять согласованно, не запуская вторых писателей.
+
+У cross-health есть `protection_checked_at`, `data_complete`, `error`, `paused`
+и `resume_held`. Свежая отметка означает, что цикл дошёл до проверки риска и
+защитных условий; проверять её вместе со свежестью времени, данными и паузой.
+При неизвестном funding или старых котировках входы запрещены, нельзя считать,
+что защитные действия прошли. На 2 ноября временный `--hold-resume` снят после
+проверки; обычный запуск всё равно оставляет cross на паузе. Не возобновлять
+без нужного указания и проверки здоровья.
+
+Архив `/var/lib/tradingbot/cross-funding-recovery-20261102` содержит unit и
+согласованные копии до установки. После новых проводок старую БД поверх текущей
+не восстанавливать: сохранить и согласовать все новые события. После установки
+создан backup `/var/lib/tradingbot/paper-coordinated-backups/paper-20261102T114033097924Z`.
+Ниже — история предыдущего состояния; его утверждения об единой версии устарели.
+
+# Историческое состояние после установки 2 ноября 2026
+
+Рабочая версия трёх paper-рынков —
+`77e5ce13bf6b30bb080b53319129b13c6b4a808d`, каталог `/opt/trading-bot-cross`.
+Единая финансовая база и история всех рынков —
+`/var/lib/tradingbot/paper-financial/shared-paper.db`; отдельной старой базы
+cross нет. Команды и переключение `/mode futures_cross` проходят через единственный
+Spot Telegram-поллер и общую очередь. Состояние и фактические результаты — в
+начале HANDOFF.md; данные ниже до заголовка Paper bots являются историческими.
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-monitor.service tradingbot-paper-backup.timer --no-pager
+sudo cat /var/lib/tradingbot/paper-financial/runtime-health.json
+sudo cat /var/lib/tradingbot/paper-financial/futures-health.json
+sudo cat /var/lib/tradingbot/paper-financial/cross-health.json
+sudo systemctl start tradingbot-paper-backup.service
+sudo journalctl -u tradingbot-paper-backup.service -n 20 --no-pager
+```
+
+Остановка отдельного рынка: `sudo systemctl stop tradingbot-cross.service`
+(аналогично `tradingbot-spot.service`, `tradingbot-futures.service`). Запуск:
+`sudo systemctl start tradingbot-cross.service`. Перезапуск и reboot оставляют
+входы на паузе; защита открытой позиции не работает, пока её процесс остановлен.
+Для возобновления после проверки здоровья использовать Telegram `/mode spot`,
+`/mode futures` или `/mode futures_cross`, затем `/resume` в нужном контексте;
+`/pause_all` запрещает новые входы во всех рынках. Не закрывать позиции для
+проверки. Сохранять единственный polling и не запускать старые писатели.
+
+Согласованные копии financial/queue/observation создаются штатным сервисом в
+`/var/lib/tradingbot/paper-coordinated-backups/`. Это тот же диск. После новых
+сделок, переводов или funding старую копию нельзя просто восстановить поверх
+журнала: сначала сохранить и согласовать все новые события; при неопределённости
+оставить входы на паузе. Старые инструкции ниже — исторические.
+
+# Историческое состояние после установки 1 ноября 2026
 
 Единый paper-журнал установлен на существующей VM. Подтверждённая работающая
 версия `aeea6f591afcbd17f8d649d639652bf5b3cbcbe4`; финансовая база
