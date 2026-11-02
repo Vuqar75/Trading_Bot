@@ -30,7 +30,7 @@ class CrossCommandReceiver:
                 result='Новые входы на паузе; контроль открытых позиций продолжается.'
             elif name=='/resume' and len(parts)==1:
                 try:
-                    if self.hold_resume or self.book.shared.deployment_hold() or self.book.runtime_error() or self.book.ledger.balance('futures_cross:liability')<0:
+                    if self.hold_resume or self.book.shared.deployment_hold() or self.book.runtime_error() or self.book.funding_conflict() or self.book.ledger.balance('futures_cross:liability')<0:
                         raise ValueError('Cross is blocked')
                     self.book._require_coverage(now)
                     marks=self.book._marks(self.book.stored_quotes(),now)

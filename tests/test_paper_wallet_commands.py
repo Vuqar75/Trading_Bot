@@ -15,6 +15,7 @@ from trading_bot.paper_wallet_worker import process_wallet
 from trading_bot.runtime_exchange import PaperExchange
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.unified_queue import UnifiedQueue
+from trading_bot.unified_worker import process_market
 from trading_bot.paper_monitor import snapshot
 
 
@@ -74,7 +75,10 @@ class WalletCommandTests(unittest.TestCase):
             self.assertNotIn('1.234567',text)
             self.assertIn('меньше 0.0001',text)
         self.assertIn('0.00000001 BTC',messages[0])
-        self.assertIn('-меньше 0.0001',messages[2])
+        self.assertIn('-меньше 0.0001',messages[3])
+        for text in messages[3:]:self.assertIn('окончательность публикации источником не гарантирована',text)
+        self.assertNotIn('Общий капитал',messages[2])
+        self.assertEqual(messages[2].count('[Кошельки]'),1)
         self.assertEqual(data['wallets']['spot']['free'],Decimal('1.23456789'))
         self.assertEqual(data['cross']['positions'][0]['quantity'],'0.00000001')
 
@@ -99,10 +103,48 @@ class WalletCommandTests(unittest.TestCase):
         self.q.receive(1,True,'/wallet spot');self.q.receive(2,True,'/wallet futures_cross');self.q.receive(3,True,'/balance_report today')
         self._process()
         results=[r[0] for r in self.q.db.execute('select message from unified_outbox')]
-        self.assertTrue(any('свободно' in x and 'spot' in x for x in results))
+        self.assertTrue(any('свободно' in x and 'Spot' in x for x in results))
         self.assertTrue(any('Доступны reserve' in x for x in results))
         self.assertTrue(any('сегодня по Баку' in x for x in results))
         self.assertTrue(any('не подтверждены' in x for x in results))
+
+    def test_capital_breakdown_matches_single_snapshot_without_mutation(self):
+        before=list(self.shared.db.execute('SELECT id,fingerprint FROM ledger_events ORDER BY id'))
+        data=live_report(self.shared,now=time.time())
+        with localcontext() as ctx:
+            ctx.prec=120
+            self.assertEqual(sum(data['valuation_terms'].values(),Decimal(0)),data['total'])
+        self.assertTrue(data['valuation_ok'])
+        self.assertLess(data['valuation_terms']['isolated_entry_fee'],0)
+        self.assertLess(data['valuation_terms']['isolated_exit_cost'],0)
+        text=render_live_report(data)
+        for label in ('Проверка расчёта оценки: пройдена','Проверка проводок и остатков: пройдена',
+                      'оценочные издержки выхода','комиссия входа isolated','Futures isolated'):
+            self.assertIn(label,text)
+        self.assertEqual(before,list(self.shared.db.execute('SELECT id,fingerprint FROM ledger_events ORDER BY id')))
+        self.assertNotIn('[Кошельки]',text)
+
+    def test_transfer_availability_requires_pause_and_known_state(self):
+        data=live_report(self.shared,now=time.time())
+        self.assertEqual(data['available']['spot'],data['wallets']['spot']['free'])
+        with self.shared.transaction():self.shared._set('spot','paused',False)
+        data=live_report(self.shared,now=time.time())
+        self.assertIsNone(data['available']['spot'])
+        self.assertIsNotNone(data['available']['futures_isolated'])
+
+    def test_informational_market_reply_is_durable_without_extra_ack_after_crash(self):
+        store=RuntimeStore(Path(self.tmp.name)/'shared.db',{'mode':'paper','interval':'15m'},shared=True)
+        self.addCleanup(store.close)
+        before=store.db.execute('SELECT count(*) FROM runtime_outbox').fetchone()[0]
+        self.q.receive(44,True,'/report')
+        def crash(point):
+            if point=='after_destination_commit':raise RuntimeError('injected failure')
+        with self.assertRaises(RuntimeError):process_market(self.q,None,store,'spot',fault=crash)
+        self.assertEqual(store.db.execute('SELECT count(*) FROM runtime_outbox').fetchone()[0],before+1)
+        process_market(self.q,None,store,'spot')
+        self.assertFalse(self.q.pending('spot'))
+        self.assertEqual(store.db.execute('SELECT count(*) FROM runtime_outbox').fetchone()[0],before+1)
+        self.assertEqual(self.q.db.execute('SELECT count(*) FROM unified_outbox').fetchone()[0],0)
 
     def test_cancel_does_not_confirm_and_close_tokens_are_separate(self):
         self.q.receive(1,True,'/transfer spot reserve 10');self._process()

@@ -88,11 +88,16 @@ class CrossPaperBookTests(unittest.TestCase):
         with localcontext() as ctx:
             ctx.prec=120
             self.assertEqual(data['total'],Decimal('1950')+risk['equity']-risk['exit_cost'])
+            self.assertEqual(sum(data['valuation_terms'].values(),Decimal(0)),data['total'])
+            self.assertEqual(data['valuation_terms']['cross_exit_cost'],-risk['exit_cost'])
+        self.assertTrue(data['valuation_ok'])
         self.assertEqual(data['cross']['margin'],Decimal(10))
         self.assertIn('Futures cross • PAPER',render_live_report(data))
         self.book.invalidate_data('ETHUSDT')
         incomplete=live_report(self.shared,now=100,period='today')
         self.assertIsNone(incomplete['total']);self.assertIsNone(incomplete['cross']['gross'])
+        self.assertIsNone(incomplete['valuation_ok'])
+        self.assertIsNone(incomplete['valuation_terms']['cross_exit_cost'])
         self.assertIn('неполны',render_live_report(incomplete))
 
     def test_cross_trade_report_has_baku_day_and_cumulative(self):
@@ -342,6 +347,145 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],2)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
+    def test_open_at_deadline_then_event_one_ms_later_is_booked(self):
+        # A new position can open on the boundary when the next scheduled due
+        # has advanced, before the event actually occurs one millisecond later.
+        now=28000
+        quotes={s:{**q,'time':now,'server_ms':28000000,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        self.book.record_quotes(quotes,now=now)
+        pos=self.book.open('boundary-open','BTCUSDT','LONG','5',1,quotes,now=now)
+        class Reader:
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':'.001','mark':'100'}] if symbol=='BTCUSDT' else []
+        CrossDataSync(self.book,Reader()).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding WHERE position_id=?',(pos['id'],)).fetchone()[0],1)
+        saved=self.shared.ledger.balance('futures_cross:funding')
+        self.shared.close();self.shared=SharedPaperStore(self.path);self.addCleanup(self.shared.close)
+        self.book=CrossPaperBook(self.shared);CrossDataSync(self.book,Reader()).refresh(now=28001)
+        self.assertEqual(self.shared.ledger.balance('futures_cross:funding'),saved)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding WHERE position_id=?',(pos['id'],)).fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_closed_after_actual_event_gets_late_funding_once(self):
+        now=28000
+        quotes={s:{**q,'time':now,'server_ms':28000000,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        self.book.record_quotes(quotes,now=now)
+        pos=self.book.open('boundary-open-close','BTCUSDT','LONG','5',1,quotes,now=now)
+        self.book.close('boundary-close','BTCUSDT',pos['id'],pos['quantity'],quotes,now=28000.003)
+        class Reader:
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':'.001','mark':'100'}] if symbol=='BTCUSDT' else []
+        for attempt in range(2):
+            if attempt:
+                self.shared.close();self.shared=SharedPaperStore(self.path);self.addCleanup(self.shared.close)
+                self.book=CrossPaperBook(self.shared)
+            CrossDataSync(self.book,Reader()).refresh(now=28001)
+            self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_LATE_FUNDING'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_position_closed_exactly_at_event_is_not_charged(self):
+        now=28000
+        quotes={s:{**q,'time':now,'server_ms':28000000,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        self.book.record_quotes(quotes,now=now)
+        pos=self.book.open('close-at-event','BTCUSDT','LONG','5',1,quotes,now=now)
+        self.book.close('close-at-event-confirmed','BTCUSDT',pos['id'],pos['quantity'],quotes,now=28000.001)
+        class Reader:
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':'.001','mark':'100'}] if symbol=='BTCUSDT' else []
+        CrossDataSync(self.book,Reader()).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_missing_observed_previous_window_blocks_without_posting(self):
+        # If the process has not observed the old deadline, subtraction from
+        # the current interval is not proof of the past schedule.
+        with self.shared.transaction():self.shared.db.execute('DELETE FROM cross_quotes')
+        now=28000
+        quotes={s:{**q,'time':now,'server_ms':28000000,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        self.book.record_quotes(quotes,now=now)
+        self.book.open('no-window','BTCUSDT','LONG','5',1,quotes,now=now)
+        class Reader:
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':'.001','mark':'100'}] if symbol=='BTCUSDT' else []
+        with self.assertRaisesRegex(ValueError,'recorded deadline'):CrossDataSync(self.book,Reader()).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+
+    def test_reported_funding_before_open_never_posts(self):
+        btc,eth=self.positions()
+        self.book.invalidate_all()
+        with self.assertRaisesRegex(ValueError,'outside position lifetime'):
+            self.book.funding('too-early','BTCUSDT',btc['id'],28000000,0,'.001','100',
+                              'binance-usdm-public:fundingTime=99999',now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
+        self.assertEqual(self.shared.ledger.balance('futures_cross:funding'),Decimal(0))
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_reported_funding_at_closed_boundary_never_posts(self):
+        btc,eth=self.positions();tracker=CrossFundingTracker(self.book);self.book.invalidate_all()
+        for position,symbol,mark in ((btc,'BTCUSDT','100'),(eth,'ETHUSDT','200')):
+            self.book.funding('initial:'+symbol,symbol,position['id'],28000000,0,'.001',mark,'fixture',now=28001)
+            tracker.confirm(position['id'],expected_due=28000000,server_ms=28001000,observed_due=56800000,
+                            observed_interval=28800000,events=[{'symbol':symbol,'time':28000000,'rate_type':'Regular','rate':'.001','mark':mark}])
+        quotes={s:{**q,'time':28001,'server_ms':28001000,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        self.book.record_quotes(quotes,now=28001)
+        self.book.close('closed-boundary','BTCUSDT',btc['id'],btc['quantity'],quotes,now=28001)
+        before=self.shared.ledger.balance('futures_cross:free')
+        with self.assertRaisesRegex(ValueError,'outside position lifetime'):
+            self.book.late_funding('at-close','BTCUSDT',btc['id'],28000000,1,'.002','100',
+                                   'binance-usdm-public:fundingTime=28001000',now=28002)
+        self.assertEqual(before,self.shared.ledger.balance('futures_cross:free'))
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_LATE_FUNDING'").fetchone()[0],0)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_published_rate_change_blocks_without_new_financial_event(self):
+        self.positions()
+        class Reader:
+            rate='.001'
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [{'symbol':symbol,'time':28000001,'rate_type':'Regular','rate':self.rate,'mark':'100' if symbol=='BTCUSDT' else '200'}]
+        reader=Reader();CrossDataSync(self.book,reader).refresh(now=28001)
+        before=[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding ORDER BY symbol')]
+        balance=self.shared.ledger.balance('futures_cross:funding')
+        reader.rate='.002'
+        with self.assertRaisesRegex(ValueError,'funding.*changed'):CrossDataSync(self.book,reader).refresh(now=28001)
+        self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding ORDER BY symbol')])
+        self.assertEqual(balance,self.shared.ledger.balance('futures_cross:funding'))
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.shared.close()
+        self.shared=SharedPaperStore(self.path);self.addCleanup(self.shared.close)
+        self.book=CrossPaperBook(self.shared)
+        reader.rate='.001'
+        with self.assertRaisesRegex(ValueError,'explicit reconciliation'):CrossDataSync(self.book,reader).refresh(now=28001)
+        with self.assertRaisesRegex(ValueError,'requires recovery'):self.book.set_paused(False,now=28001)
+
+    def test_late_second_event_after_confirmation_blocks_without_posting(self):
+        self.positions()
+        class Reader:
+            extra=False
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':stamp,'rate_type':'Regular','rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'} for stamp in ([28000001,28000002] if self.extra else [28000001])]
+        reader=Reader();CrossDataSync(self.book,reader).refresh(now=28001)
+        before=[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding ORDER BY symbol')]
+        balance=self.shared.ledger.balance('futures_cross:funding');reader.extra=True
+        with self.assertRaises(ValueError):CrossDataSync(self.book,reader).refresh(now=28001)
+        self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding ORDER BY symbol')])
+        self.assertEqual(balance,self.shared.ledger.balance('futures_cross:funding'))
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+
+    def test_regular_and_special_same_period_block_before_posting(self):
+        self.positions()
+        class Reader:
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [{'symbol':symbol,'time':28000000,'rate_type':kind,'rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'} for kind in ('Regular','Special')]
+        sync=CrossDataSync(self.book,Reader())
+        with self.assertRaisesRegex(ValueError,'Duplicate or ambiguous'):sync.refresh(now=28001)
+        self.assertEqual(sync.page_status,'loaded_available_pages');self.assertEqual(sync.model_status,'unconfirmed')
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+
     def test_changed_reported_funding_timestamp_blocks_replay(self):
         self.positions()
         class Reader:
@@ -350,7 +494,7 @@ class CrossPaperBookTests(unittest.TestCase):
             def funding(self,symbol,start,end):return [{'symbol':symbol,'time':self.stamp,'rate_type':'Regular','rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'}]
         reader=Reader();CrossDataSync(self.book,reader).refresh(now=28001)
         reader.stamp=28000002
-        with self.assertRaisesRegex(ValueError,'disappeared'):CrossDataSync(self.book,reader).refresh(now=28001)
+        with self.assertRaisesRegex(ValueError,'funding event changed'):CrossDataSync(self.book,reader).refresh(now=28001)
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],2)
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
@@ -376,7 +520,7 @@ class CrossPaperBookTests(unittest.TestCase):
                 return [{'symbol':symbol,'time':self.stamp,'rate_type':'Regular','rate':'.001',
                          'mark':'100' if symbol=='BTCUSDT' else '200'}]
         reader=Reader()
-        with self.assertRaisesRegex(ValueError,'does not match recorded deadline'):
+        with self.assertRaisesRegex(ValueError,'not published'):
             CrossDataSync(self.book,reader).refresh(now=28001)
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],0)
         reader.stamp=28000000
@@ -482,7 +626,7 @@ with patch.object(socket,'socket',deny),patch.object(app,'CrossPublicData',Fake)
         child=subprocess.run([sys.executable,'-c',code,str(self.path),str(queue)],capture_output=True,text=True,timeout=30)
         self.assertEqual(child.returncode,0,child.stderr)
         health=json.loads((self.path.parent/'cross-health.json').read_text())
-        self.assertTrue(health['paused']);self.assertTrue(health['data_complete']);self.assertIsNone(health['error'])
+        self.assertTrue(health['paused']);self.assertEqual(health['funding_pages'],'loaded_available_pages');self.assertEqual(health['funding_paper_model'],'matches_paper_assumption');self.assertEqual(health['funding_publication_finality'],'not_guaranteed_by_source');self.assertTrue(health['quotes_fresh']);self.assertTrue(health['protection_fresh']);self.assertNotIn('data_complete',health);self.assertIsNone(health['error'])
         self.assertTrue(health['resume_held']);self.assertIsInstance(health['protection_checked_at'],float)
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],0)
 
@@ -545,11 +689,11 @@ with patch.object(app,'CrossPublicData',Fake):
             def funding(self,symbol,start,end):
                 return [{'symbol':symbol,'time':28000000,'rate_type':'Regular','rate':'.002' if symbol=='BTCUSDT' else '.001',
                          'mark':'100' if symbol=='BTCUSDT' else '200'}]
-        fresh=CrossDataSync(self.book,Reader()).refresh(now=28002)
-        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_LATE_FUNDING'").fetchone()[0],1)
-        self.assertEqual(len(self.book.risk(fresh,now=28002)['positions']),1)
-        CrossDataSync(self.book,Reader()).refresh(now=28002)
-        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_LATE_FUNDING'").fetchone()[0],1)
+        for _ in range(2):
+            with self.assertRaises(ValueError):
+                CrossDataSync(self.book,Reader()).refresh(now=28002)
+            self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='CROSS_LATE_FUNDING'").fetchone()[0],0)
+            self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
     def test_shared_liquidation_records_deficit_and_preserves_other_wallets(self):

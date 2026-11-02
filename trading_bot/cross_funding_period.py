@@ -11,8 +11,7 @@ No missing, duplicate, ambiguous, or future event is inferred or manufactured.
 def assign_period(reported_ms, windows, *, opened_ms, closed_ms=None):
     """Select exactly one evidenced [deadline, next_deadline) window.
 
-    A paper position must exist at both the period deadline and the actual
-    event timestamp; otherwise ownership across a close is ambiguous.
+    The position must exist at the actual event timestamp.
     """
     if (type(reported_ms) is not int or type(opened_ms) is not int or
         reported_ms < 0 or opened_ms < 0 or
@@ -23,7 +22,7 @@ def assign_period(reported_ms, windows, *, opened_ms, closed_ms=None):
         if type(due) is not int or type(end) is not int or due<0 or end<=due:
             raise ValueError('Invalid evidenced funding window')
         if due<=reported_ms<end:
-            if not opened_ms<=due or (closed_ms is not None and (due>closed_ms or reported_ms>closed_ms)):
+            if not opened_ms<=reported_ms or (closed_ms is not None and reported_ms>=closed_ms):
                 raise ValueError('Funding ownership across position boundary is ambiguous')
             hits.append(due)
     if len(hits)!=1:raise ValueError('Funding period is missing or ambiguous')
@@ -42,3 +41,4 @@ def require_unique_regular(events, due, next_due):
             raise ValueError('Duplicate or ambiguous funding event')
         kinds.add(kind)
     if 'Regular' not in kinds:raise ValueError('Expected funding payment is not published')
+    if len(events)!=1:raise ValueError('Duplicate or ambiguous funding event')

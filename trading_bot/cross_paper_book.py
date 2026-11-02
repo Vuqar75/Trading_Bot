@@ -37,10 +37,14 @@ class CrossPaperBook:
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_quotes(symbol TEXT PRIMARY KEY, mark TEXT NOT NULL, observed REAL NOT NULL, funding_complete INTEGER NOT NULL CHECK(funding_complete IN (0,1)), server_ms INTEGER NOT NULL, next_due_ms INTEGER NOT NULL, interval_ms INTEGER NOT NULL)')
             if 'next_due_ms' not in {row[1] for row in self.db.execute('PRAGMA table_info(cross_quotes)')}:
                 raise ValueError('Unsupported experimental cross quote schema')
+            self.db.execute('CREATE TABLE IF NOT EXISTS cross_schedule_windows(symbol TEXT NOT NULL, due INTEGER NOT NULL, next_due INTEGER NOT NULL, event_id TEXT NOT NULL REFERENCES ledger_events(id), PRIMARY KEY(symbol,due))')
+            self.db.execute('CREATE TABLE IF NOT EXISTS cross_prior_interval_receipts(position_id TEXT NOT NULL, due INTEGER NOT NULL, next_due INTEGER NOT NULL, PRIMARY KEY(position_id,due))')
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_funding_cursor(position_id TEXT PRIMARY KEY, symbol TEXT NOT NULL, next_due INTEGER NOT NULL, interval_ms INTEGER NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_cursor_anchor(position_id TEXT PRIMARY KEY, event_id TEXT NOT NULL REFERENCES ledger_events(id))')
             for verb in ('UPDATE', 'DELETE'):
                 self.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_cross_funding_{verb.lower()} BEFORE {verb} ON cross_funding BEGIN SELECT RAISE(ABORT,'immutable cross funding'); END")
+                self.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_cross_schedule_{verb.lower()} BEFORE {verb} ON cross_schedule_windows BEGIN SELECT RAISE(ABORT,'immutable schedule'); END")
+                self.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_cross_prior_{verb.lower()} BEFORE {verb} ON cross_prior_interval_receipts BEGIN SELECT RAISE(ABORT,'immutable prior receipt'); END")
             self.db.execute("INSERT OR IGNORE INTO wallet_state(wallet,paused) VALUES('futures_cross',1)")
             if not self.db.execute('SELECT 1 FROM cross_settings WHERE id=1').fetchone():
                 if self._positions():raise ValueError('Missing cross settings')
@@ -61,13 +65,27 @@ class CrossPaperBook:
         row=self.db.execute("SELECT value FROM cross_runtime WHERE key='error'").fetchone()
         return json.loads(row[0]) if row else 'UNKNOWN'
 
+    def observed_funding_window(self, symbol, due):
+        row=self.db.execute('SELECT w.next_due,e.kind,e.details FROM cross_schedule_windows w JOIN ledger_events e ON e.id=w.event_id WHERE w.symbol=? AND w.due=?',(symbol,due)).fetchone()
+        if not row:return None
+        detail=json.loads(row['details'])
+        if (row['kind']!='FINANCIAL_METADATA' or detail.get('symbol')!=symbol or detail.get('due')!=due or
+            detail.get('next_due')!=row['next_due'] or type(detail.get('prior_server_ms')) is not int or
+            type(detail.get('server_ms')) is not int or type(detail.get('interval_ms')) is not int or
+            not detail['prior_server_ms']<due<=detail['server_ms'] or due+detail['interval_ms']!=row['next_due']):
+            raise ValueError('Observed funding schedule evidence mismatch')
+        return row['next_due']
+
+    def funding_conflict(self):
+        return self.db.execute("SELECT 1 FROM cross_runtime WHERE key='funding_history_conflict'").fetchone() is not None
+
     def set_runtime_error(self, error):
         if error is not None and (not isinstance(error,str) or len(error)>100):raise ValueError('Invalid runtime error')
         with self.shared.transaction():
             old=self.runtime_error()
             self.db.execute("INSERT OR REPLACE INTO cross_runtime VALUES('error',?)",(json.dumps(error),))
             if old!=error:
-                self._notify('Ошибка данных или учёта; входы на паузе.' if error else 'Данные восстановлены; входы остаются на паузе до команды владельца.')
+                self._notify('Противоречие funding: история изменилась или неоднозначна; входы на паузе, нужна сверка.' if error in ('FundingReconciliationRequired','FundingHistoryContradiction') else 'Ошибка данных или учёта; входы на паузе.' if error else 'Данные восстановлены; входы остаются на паузе до команды владельца.')
 
     def _anchor(self, operation):
         event='cross:anchor:'+operation
@@ -103,7 +121,7 @@ class CrossPaperBook:
         with self.shared.transaction():
             self._check()
             if not paused:
-                if self.shared.deployment_hold() or self.runtime_error():raise ValueError('Cross requires recovery')
+                if self.shared.deployment_hold() or self.runtime_error() or self.funding_conflict():raise ValueError('Cross requires recovery')
                 if self.ledger.balance(WALLET+':liability')<0:raise ValueError('Cross liability requires settlement')
                 current=time.time() if now is None else now
                 self._require_coverage(current)
@@ -153,7 +171,17 @@ class CrossPaperBook:
                     cursor=tracker._check_cursor(position['id'])
                     if int(now*1000)>=cursor['next_due'] or server>=cursor['next_due'] or due!=cursor['next_due'] or interval!=cursor['interval_ms']:
                         raise ValueError('Cross funding coverage requires reconciliation')
-                previous = self.db.execute('SELECT mark,observed,server_ms FROM cross_quotes WHERE symbol=?',(symbol,)).fetchone()
+                previous = self.db.execute('SELECT mark,observed,server_ms,next_due_ms,interval_ms FROM cross_quotes WHERE symbol=?',(symbol,)).fetchone()
+                if previous and previous['next_due_ms']!=due:
+                    old_due=previous['next_due_ms'];old_interval=previous['interval_ms']
+                    if previous['server_ms']<old_due<=server and due==old_due+old_interval and interval==old_interval:
+                        event_id='cross:schedule-window:'+symbol+':'+str(old_due)
+                        detail={'symbol':symbol,'due':old_due,'next_due':due,'prior_server_ms':previous['server_ms'],'server_ms':server,'interval_ms':interval}
+                        existing=self.db.execute('SELECT next_due FROM cross_schedule_windows WHERE symbol=? AND due=?',(symbol,old_due)).fetchone()
+                        if existing and existing['next_due']!=due:raise ValueError('Contradictory observed funding window')
+                        if not existing:
+                            self.ledger._post(event_id,'FINANCIAL_METADATA',detail,[])
+                            self.db.execute('INSERT INTO cross_schedule_windows VALUES(?,?,?,?)',(symbol,old_due,due,event_id))
                 if previous and (seen < previous['observed'] or server<previous['server_ms'] or (seen == previous['observed'] and amount(previous['mark']) != marks[symbol])):
                     raise ValueError('Contradictory cross quote')
                 self.db.execute('INSERT OR REPLACE INTO cross_quotes VALUES(?,?,?,1,?,?,?)',(symbol,encode(marks[symbol]),seen,server,due,interval))
@@ -273,7 +301,7 @@ class CrossPaperBook:
             if self.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]:
                 raise ValueError('Cross is paused')
             if self.shared.deployment_hold():raise ValueError('Deployment hold is active')
-            if self.runtime_error():raise ValueError('Cross requires recovery')
+            if self.runtime_error() or self.funding_conflict():raise ValueError('Cross requires recovery')
             if self.db.execute('SELECT leverage FROM cross_settings WHERE id=1').fetchone()[0] != leverage:
                 raise ValueError('Leverage does not match cross settings')
             if expected_interval is not None and self.db.execute('SELECT interval FROM cross_settings WHERE id=1').fetchone()[0] != expected_interval:
@@ -330,13 +358,21 @@ class CrossPaperBook:
             if previous is not None:return previous
             p = self.db.execute('SELECT * FROM cross_positions WHERE symbol=? AND id=?',(symbol,position_id)).fetchone()
             if not p:raise ValueError('Funding position unknown')
-            if not p['opened_ms'] <= stamp <= int(now*1000):raise ValueError('Funding outside position lifetime')
+            raw_time=stamp
+            prefix='binance-usdm-public:fundingTime='
+            if source.startswith(prefix):
+                raw=source[len(prefix):]
+                if not raw.isdigit():raise ValueError('Invalid reported funding timestamp')
+                raw_time=int(raw)
+            if not p['opened_ms'] <= raw_time <= int(now*1000):raise ValueError('Funding outside position lifetime')
             prior = self.db.execute('SELECT revision,value FROM cross_funding WHERE position_id=? AND funding_time=? AND rate_type=? ORDER BY revision DESC LIMIT 1',(position_id,stamp,rate_type)).fetchone()
             from .cross_funding_tracker import CrossFundingTracker
             tracker=object.__new__(CrossFundingTracker);tracker.book=self;tracker.shared=self.shared;tracker.db=self.db
             cursor=tracker._check_cursor(position_id)
             covered=self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_coverage_receipts'").fetchone() and self.db.execute('SELECT 1 FROM cross_coverage_receipts WHERE position_id=? AND due=?',(position_id,stamp)).fetchone()
-            if stamp!=cursor['next_due'] and not (stamp<cursor['next_due'] and (prior or covered)):
+            window=self.db.execute('SELECT next_due FROM cross_schedule_windows WHERE symbol=? AND due=?',(symbol,stamp)).fetchone()
+            prior_observed=bool(window and self.observed_funding_window(symbol,stamp)==window['next_due']==cursor['next_due'] and stamp<=p['opened_ms']<=raw_time<window['next_due'])
+            if stamp!=cursor['next_due'] and not (stamp<cursor['next_due'] and (prior or covered or prior_observed)):
                 raise ValueError('Funding does not match recorded deadline')
             if revision != (prior['revision']+1 if prior else 0):raise ValueError('Funding revision conflict')
             self.db.execute('UPDATE cross_quotes SET funding_complete=0')
@@ -351,6 +387,8 @@ class CrossPaperBook:
             postings = [(WALLET+':funding','USDT',delta),('external:cross_funding','USDT',-delta)] if delta else []
             self.ledger._post('cross:funding:'+operation,'CROSS_FUNDING' if postings else 'FINANCIAL_METADATA',details,postings,created=now)
             self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,rate_type,revision,encode(rate),encode(mark),encode(value),source))
+            if prior_observed:
+                self.db.execute('INSERT OR IGNORE INTO cross_prior_interval_receipts VALUES(?,?,?)',(position_id,stamp,window['next_due']))
             self.db.execute('UPDATE cross_positions SET funding=? WHERE symbol=?',(encode(amount(p['funding'])+delta),symbol))
             self._notify('Funding '+symbol+': изменение '+fmt(delta)+' USDT; ревизия '+str(revision)+'.')
             result={'value':encode(value),'delta':encode(delta)}
@@ -385,9 +423,17 @@ class CrossPaperBook:
             if len(openings)!=1 or len(closings)!=1 or openings[0].get('symbol')!=symbol or closings[0][1].get('symbol')!=symbol:
                 raise ValueError('Closed position history incomplete')
             p=openings[0];closed_ms=int(closings[0][0]*1000)
-            if not p['opened_ms']<=stamp<=closed_ms or stamp>int(now*1000):raise ValueError('Funding outside position lifetime')
-            if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_coverage_receipts'").fetchone() or not self.db.execute('SELECT 1 FROM cross_coverage_receipts WHERE position_id=? AND due=?',(position_id,stamp)).fetchone():
-                raise ValueError('Late funding requires prior schedule evidence')
+            raw_time=stamp
+            prefix='binance-usdm-public:fundingTime='
+            if source.startswith(prefix):
+                raw=source[len(prefix):]
+                if not raw.isdigit():raise ValueError('Invalid reported funding timestamp')
+                raw_time=int(raw)
+            if not p['opened_ms']<=raw_time<closed_ms or raw_time>int(now*1000):raise ValueError('Funding outside position lifetime')
+            covered=self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_coverage_receipts'").fetchone() and self.db.execute('SELECT 1 FROM cross_coverage_receipts WHERE position_id=? AND due=?',(position_id,stamp)).fetchone()
+            next_due=self.observed_funding_window(symbol,stamp)
+            prior_observed=bool(next_due and stamp<=p['opened_ms']<=raw_time<closed_ms and raw_time<next_due)
+            if not covered and not prior_observed:raise ValueError('Late funding requires prior schedule evidence')
             prior=self.db.execute('SELECT revision,value FROM cross_funding WHERE position_id=? AND funding_time=? AND rate_type=? ORDER BY revision DESC LIMIT 1',(position_id,stamp,rate_type)).fetchone()
             if revision!=(prior['revision']+1 if prior else 0):raise ValueError('Funding revision conflict')
             value=amount(p['quantity'])*mark*rate*(-1 if p['direction']=='LONG' else 1)
@@ -414,7 +460,8 @@ class CrossPaperBook:
                 details['reported_time']=int(raw)
             self.ledger._post('cross:late-funding:'+operation,'CROSS_LATE_FUNDING' if posts else 'FINANCIAL_METADATA',details,posts,created=now)
             self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,rate_type,revision,encode(rate),encode(mark),encode(value),source))
-            self._notify('Позднее исправление funding '+symbol+': изменение '+fmt(delta)+' USDT; обязательство '+fmt(-self.ledger.balance(WALLET+':liability'))+' USDT.')
+            if prior_observed:self.db.execute('INSERT OR IGNORE INTO cross_prior_interval_receipts VALUES(?,?,?)',(position_id,stamp,next_due))
+            self._notify(('Позднее начисление funding ' if revision==0 else 'Позднее исправление funding ')+symbol+': изменение '+fmt(delta)+' USDT; обязательство '+fmt(-self.ledger.balance(WALLET+':liability'))+' USDT.')
             if self.ledger.balance(WALLET+':liability')<0:
                 self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
             result={'value':encode(value),'delta':encode(delta),'liability':encode(self.ledger.balance(WALLET+':liability'))}

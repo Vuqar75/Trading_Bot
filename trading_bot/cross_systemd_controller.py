@@ -160,7 +160,7 @@ class SystemdPaperController:
                 data=json.loads((root/'cross-health.json').read_text());started=self._service_start_wall(self.CROSS)
                 if started is None or data.get('mode')!='futures-cross-paper' or not isinstance(data.get('time'),(float,int)) or data['time']<started-1 or not 0<=now-data['time']<=120:return False
                 row=self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()
-                if not row or data.get('error') or data.get('data_complete') is not True or data.get('paused')!=bool(row[0]) or (paused and not row[0]):return False
+                if not row or data.get('error') or (data.get('funding_pages')!='loaded_available_pages' or data.get('funding_paper_model')!='matches_paper_assumption' or data.get('funding_publication_finality')!='not_guaranteed_by_source' or data.get('quotes_fresh') is not True or data.get('protection_fresh') is not True) or data.get('paused')!=bool(row[0]) or (paused and not row[0]):return False
             if any(self.shared._get(m,'blocked') or self.shared._get(m,'error') for m in ('spot','futures')):return False
             return self.shared.ledger.reconcile()['balanced']
         except (OSError,ValueError,TypeError,KeyError,StopIteration):return False

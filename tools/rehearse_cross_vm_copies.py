@@ -44,7 +44,7 @@ with tempfile.TemporaryDirectory(prefix='cross-copy-rehearsal-') as temp:
         run=subprocess.run([sys.executable,'-B','-m','trading_bot.cross_app','--db',str(financial),'--queue',str(queue),'--once'],cwd=repo,stdout=out,stderr=subprocess.STDOUT,timeout=90)
     if run.returncode:raise RuntimeError('Public cross data unavailable in isolated rehearsal')
     health=json.loads((active/'cross-health.json').read_text())
-    if not health['paused'] or health['error'] or not health['data_complete']:raise RuntimeError('Copy cross health not ready')
+    if not health['paused'] or health['error'] or (health['funding_pages']!='loaded_available_pages' or health['funding_paper_model']!='matches_paper_assumption' or health['funding_publication_finality']!='not_guaranteed_by_source' or not health['quotes_fresh'] or not health['protection_fresh']):raise RuntimeError('Copy cross health not ready')
     before=root/'before-allocation'
     coordinated_backup(financial,queue,observer,before,timeout=8)
     verified=verify_restorable_backup(before,freeze_id='cross:freeze:vm-copy',scratch_parent=root)

@@ -12,8 +12,8 @@ class FundingPeriodTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'missing'):assign_period(999,windows,opened_ms=1)
 
     def test_position_boundary_and_overlapping_evidence_block(self):
-        with self.assertRaisesRegex(ValueError,'ownership'):assign_period(1001,[(1000,1100)],opened_ms=1001)
-        with self.assertRaisesRegex(ValueError,'ownership'):assign_period(1001,[(1000,1100)],opened_ms=1,closed_ms=1000)
+        self.assertEqual(assign_period(1001,[(1000,1100)],opened_ms=1001),1000)
+        with self.assertRaisesRegex(ValueError,'ownership'):assign_period(1001,[(1000,1100)],opened_ms=1,closed_ms=1001)
         with self.assertRaisesRegex(ValueError,'ambiguous'):assign_period(1001,[(1000,1100),(1000,1050)],opened_ms=1)
 
     def test_missing_duplicate_and_late_events_fail_closed(self):
@@ -21,6 +21,7 @@ class FundingPeriodTests(unittest.TestCase):
         require_unique_regular([event],1000,1100)
         with self.assertRaisesRegex(ValueError,'not published'):require_unique_regular([],1000,1100)
         with self.assertRaisesRegex(ValueError,'Duplicate'):require_unique_regular([event,event],1000,1100)
+        with self.assertRaisesRegex(ValueError,'ambiguous'):require_unique_regular([event,dict(event,rate_type='Special')],1000,1100)
         with self.assertRaisesRegex(ValueError,'ambiguous'):require_unique_regular([dict(event,reported_time=1100)],1000,1100)
 
 

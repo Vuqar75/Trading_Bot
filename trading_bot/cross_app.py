@@ -66,12 +66,19 @@ def main():
                     # Do not print exception bodies, URLs or potentially sensitive data.
                     log.error('Cross paper cycle failed: %s',type(exc).__name__)
                     book.fail_closed();error=type(exc).__name__;book.set_runtime_error(error)
+                check_time=time.time()
                 try:
-                    check_time=time.time();book._require_coverage(check_time);book._marks(book.stored_quotes(),check_time);complete=True
-                except ValueError:complete=False
-                write_report(path.parent/'cross-health.json',{'time':time.time(),'mode':'futures-cross-paper',
+                    snapshot=book.stored_quotes()
+                    book._marks({s:{**q,'funding_complete':True} for s,q in snapshot.items()},check_time)
+                    quotes_fresh=True
+                except (ValueError,TypeError,KeyError):quotes_fresh=False
+                protection_fresh=(strategy.last_protection_at is not None and 0<=check_time-strategy.last_protection_at<=120)
+                write_report(path.parent/'cross-health.json',{'time':check_time,'mode':'futures-cross-paper',
                     'paused':bool(book.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]),
-                    'error':error,'positions':len(book._positions()),'data_complete':complete,
+                    'error':error,'positions':len(book._positions()),
+                    'funding_pages':sync.page_status,'funding_paper_model':sync.model_status,
+                    'funding_publication_finality':'not_guaranteed_by_source',
+                    'quotes_fresh':quotes_fresh,'protection_fresh':protection_fresh,
                     'protection_checked_at':strategy.last_protection_at,'resume_held':args.hold_resume})
                 if args.once:
                     if error:raise SystemExit(1)

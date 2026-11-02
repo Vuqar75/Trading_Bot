@@ -155,7 +155,7 @@ class UnifiedQueue:
                         self.db.execute("UPDATE unified_proposals SET status='CONFIRMED' WHERE id=?", (parts[1],))
                         jobs = [(market, '/confirmed_close')]
                 else:
-                    self._notify('Рынок: '+market_label(mode)+'. Выбор: /mode spot, /mode futures (isolated), /mode futures_cross (paper). Команды выбранного рынка: /signal, /history, /report (сегодня по Баку и за всё время), /pause, /resume, /timeframe, /leverage (futures), /close. /status — состояние; /confirm ID, /cancel ID, /pause_all. /wallets, /wallet, /transfer, /transfers и /balance_report — общие кошельки и средства всех рынков.')
+                    self._notify('Рынок: '+market_label(mode)+'. Выбор: /mode spot, /mode futures (isolated), /mode futures_cross (paper). Команды выбранного рынка: /signal, /history, /report (сегодня по Баку и за всё время), /pause, /resume, /timeframe, /leverage (futures), /close. /status — состояние; /confirm ID, /cancel ID, /pause_all. /wallets — краткие остатки, /wallet ИМЯ — доступность перевода, /balance_report [today|all] — подробный общий капитал; /transfer и /transfers — виртуальные переводы.')
             self.db.execute('INSERT INTO unified_updates VALUES(?,?,?,?)', (ident, fingerprint, command, market))
             for destination, action in jobs:
                 self.db.execute('INSERT INTO unified_jobs(update_id,market,command,payload) VALUES(?,?,?,?)', (ident, destination, action, json.dumps(payload, sort_keys=True)))
@@ -188,7 +188,7 @@ class UnifiedQueue:
     def pending(self, market):
         return self.db.execute("SELECT * FROM unified_jobs WHERE market=? AND status='PENDING' ORDER BY id", (market,)).fetchall()
 
-    def acknowledge(self, job_id, result, *, applied=True):
+    def acknowledge(self, job_id, result, *, applied=True, notify=True):
         with self.transaction():
             row = self.db.execute('SELECT * FROM unified_jobs WHERE id=?', (job_id,)).fetchone()
             if not row:
@@ -197,7 +197,7 @@ class UnifiedQueue:
                 return
             self.db.execute("UPDATE unified_jobs SET status=?,result=? WHERE id=?", ('DONE' if applied else 'FAILED', result, job_id))
             label='Кошельки' if row['market']=='wallet' else market_label(row['market'])
-            self._notify('['+label+'] '+result)
+            if notify:self._notify('['+label+'] '+result)
             update = self.db.execute('SELECT command FROM unified_updates WHERE id=?', (row['update_id'],)).fetchone()
             if update['command'] == '/pause_all':
                 waiting = [r[0] for r in self.db.execute("SELECT market FROM unified_jobs WHERE update_id=? AND status!='DONE'", (row['update_id'],))]
