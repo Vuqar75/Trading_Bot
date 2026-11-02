@@ -4,7 +4,8 @@ import time
 from datetime import datetime
 from decimal import Decimal, localcontext
 from zoneinfo import ZoneInfo
-from .paper_wallet_ledger import amount, encode
+from .paper_wallet_ledger import amount
+from .display_amount import display_amount as fmt
 
 
 def cross_trade_report(shared, *, now=None):
@@ -41,7 +42,7 @@ def cross_trade_report(shared, *, now=None):
         for name,label in [('today','Сегодня по Баку ('+local.strftime('%d.%m.%Y')+')'),('all','За всё время')]:
             v=periods[name]
             if v['known']:
-                lines.append(label+': закрыто '+str(v['count'])+', net '+encode(v['net'])+', комиссии '+encode(v['fees'])+', funding '+encode(v['funding'])+', модельная корректировка '+encode(v['adjustment'])+' USDT.')
+                lines.append(label+': закрыто '+str(v['count'])+', net '+fmt(v['net'])+', комиссии '+fmt(v['fees'])+', funding '+fmt(v['funding'])+', модельная корректировка '+fmt(v['adjustment'])+' USDT.')
             else:
                 lines.append(label+': закрыто '+str(v['count'])+'; результат и комиссии неполные — не найдена комиссия входа.')
         lines.append('Результат относится к закрытым позициям; модельная корректировка показана отдельно.')

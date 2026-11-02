@@ -4,6 +4,7 @@ import json
 import secrets
 import sqlite3
 import time
+from .display_amount import display_amount
 from contextlib import contextmanager
 
 
@@ -180,7 +181,8 @@ class UnifiedQueue:
             ident = (symbol+'-' if symbol else '')+secrets.token_hex(6)
             self.db.execute('INSERT INTO unified_proposals VALUES(?,?,?,?,?,?)', (ident, market, position, quantity, now+ttl, 'OPEN'))
             self.db.execute("UPDATE unified_jobs SET status='DONE',result=? WHERE id=?", (ident, job['id']))
-            self._notify('['+market_label(market)+'] Закрыть '+(symbol+' ' if symbol else '')+'позицию '+position+', объём '+quantity+'? /confirm '+ident+' или /cancel '+ident+'.')
+            asset=symbol[:-4] if symbol else 'BTC'
+            self._notify('['+market_label(market)+'] Закрыть '+(symbol+' ' if symbol else '')+'позицию '+position+', объём '+display_amount(quantity,asset)+' '+asset+'? /confirm '+ident+' или /cancel '+ident+'.')
             return ident
 
     def pending(self, market):

@@ -10,6 +10,7 @@ import uuid
 from decimal import Decimal, localcontext
 
 from .paper_wallet_ledger import amount, encode
+from .display_amount import display_amount as fmt
 
 SYMBOLS = ('BTCUSDT', 'ETHUSDT')
 WALLET = 'futures_cross'
@@ -304,7 +305,7 @@ class CrossPaperBook:
             tracker._anchor_cursor(pos['id'],'cross:cursor:init:'+pos['id'])
             if self._risk(marks)['buffer'] <= 0:
                 raise ValueError('Cross maintenance buffer exhausted')
-            self._notify('Открыта '+symbol+' '+direction+', объём '+pos['quantity']+', маржа '+pos['margin']+' USDT, плечо '+str(leverage)+'×; комиссия '+encode(fee)+' USDT.')
+            self._notify('Открыта '+symbol+' '+direction+', объём '+fmt(pos['quantity'],symbol[:-4])+' '+symbol[:-4]+', маржа '+fmt(pos['margin'])+' USDT, плечо '+str(leverage)+'×; комиссия '+fmt(fee)+' USDT.')
             self._anchor(operation);self._check();self._remember(operation,fingerprint,pos)
             return pos
 
@@ -346,7 +347,7 @@ class CrossPaperBook:
             self.ledger._post('cross:funding:'+operation,'CROSS_FUNDING' if postings else 'FINANCIAL_METADATA',details,postings,created=now)
             self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,rate_type,revision,encode(rate),encode(mark),encode(value),source))
             self.db.execute('UPDATE cross_positions SET funding=? WHERE symbol=?',(encode(amount(p['funding'])+delta),symbol))
-            self._notify('Funding '+symbol+': изменение '+encode(delta)+' USDT; ревизия '+str(revision)+'.')
+            self._notify('Funding '+symbol+': изменение '+fmt(delta)+' USDT; ревизия '+str(revision)+'.')
             result={'value':encode(value),'delta':encode(delta)}
             self._anchor(operation);self._check();self._remember(operation,fingerprint,result)
             return result
@@ -403,7 +404,7 @@ class CrossPaperBook:
                      'rate':encode(rate),'mark':encode(mark),'value':encode(value),'delta':encode(delta),'source':source}
             self.ledger._post('cross:late-funding:'+operation,'CROSS_LATE_FUNDING' if posts else 'FINANCIAL_METADATA',details,posts,created=now)
             self.db.execute('INSERT INTO cross_funding VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,stamp,rate_type,revision,encode(rate),encode(mark),encode(value),source))
-            self._notify('Позднее исправление funding '+symbol+': изменение '+encode(delta)+' USDT; обязательство '+encode(-self.ledger.balance(WALLET+':liability'))+' USDT.')
+            self._notify('Позднее исправление funding '+symbol+': изменение '+fmt(delta)+' USDT; обязательство '+fmt(-self.ledger.balance(WALLET+':liability'))+' USDT.')
             if self.ledger.balance(WALLET+':liability')<0:
                 self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
             result={'value':encode(value),'delta':encode(delta),'liability':encode(self.ledger.balance(WALLET+':liability'))}
@@ -455,7 +456,7 @@ class CrossPaperBook:
                     if v:posts.extend([(a,'USDT',v),(b,'USDT',-v)])
                 self.ledger._post('cross:close:'+operation+':'+item['symbol'],'CROSS_CLOSE',details,posts,created=current)
                 self.db.execute('DELETE FROM cross_positions WHERE symbol=?',(item['symbol'],));results.append(details)
-                self._notify(('Модельная ликвидация ' if liquidate else 'Закрыта ')+item['symbol']+' '+item['direction']+', объём '+item['quantity']+'; причина '+reason+'; gross '+encode(gross)+', комиссия выхода '+encode(fee)+', funding '+encode(funding)+' USDT.')
+                self._notify(('Модельная ликвидация ' if liquidate else 'Закрыта ')+item['symbol']+' '+item['direction']+', объём '+fmt(item['quantity'],item['symbol'][:-4])+' '+item['symbol'][:-4]+'; причина '+reason+'; gross '+fmt(gross)+', комиссия выхода '+fmt(fee)+', funding '+fmt(funding)+' USDT.')
             deficit=-self.ledger.balance(WALLET+':free')
             if deficit>0:
                 if not liquidate:raise ValueError('Insufficient cash to settle selected position')
@@ -465,7 +466,7 @@ class CrossPaperBook:
             if debt>0 and liquidate:
                 self.ledger._post('cross:adjustment-liability:'+operation,'CROSS_LIQUIDATION_ADJUSTMENT',{'quantity':encode(debt)},[(WALLET+':liability','USDT',debt),('external:cross_liquidation_adjustment','USDT',-debt)],created=current)
             if liquidate and (deficit>0 or debt>0):
-                self._notify('Модельная корректировка при ликвидации: '+encode(max(Decimal(0),deficit)+debt)+' USDT; проводка сохранена.')
+                self._notify('Модельная корректировка при ликвидации: '+fmt(max(Decimal(0),deficit)+debt)+' USDT; проводка сохранена.')
             result={'closed':results,'adjustment':encode(max(Decimal(0),deficit)+(debt if liquidate else 0))}
             self._anchor(operation);self._check();self._remember(operation,fingerprint,result)
             return result

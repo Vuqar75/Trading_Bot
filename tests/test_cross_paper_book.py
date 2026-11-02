@@ -15,7 +15,7 @@ from trading_bot.cross_paper_strategy import CrossPaperStrategy
 from trading_bot.cross_funding_tracker import CrossFundingTracker
 from trading_bot.cross_data_sync import CrossDataSync
 from trading_bot.cross_command_receiver import CrossCommandReceiver
-from trading_bot.cross_worker import process_cross
+from trading_bot.cross_worker import process_cross, _status
 from trading_bot.cross_app import cycle
 from trading_bot.cross_trade_report import cross_trade_report
 from trading_bot.cross_report_worker import process_cross_reports
@@ -51,6 +51,15 @@ class CrossPaperBookTests(unittest.TestCase):
         btc=self.book.open('btc','BTCUSDT','LONG','5',1,self.quotes,now=100)
         eth=self.book.open('eth','ETHUSDT','SHORT','5',1,self.quotes,now=100)
         return btc,eth
+
+    def test_cross_status_and_notifications_round_display_only(self):
+        btc,eth=self.positions()
+        text=_status(self.shared,100)
+        self.assertIn('BTCUSDT LONG',text);self.assertIn('ETHUSDT SHORT',text)
+        self.assertIn('0.049990002 BTC',text);self.assertNotIn(btc['quantity'],text)
+        messages='\n'.join(r[0] for r in self.shared.db.execute('SELECT message FROM futures_outbox'))
+        self.assertIn('0.049990002 BTC',messages);self.assertNotIn(btc['quantity'],messages)
+        self.assertEqual(self.book.db.execute("SELECT quantity FROM cross_positions WHERE symbol='BTCUSDT'").fetchone()[0],btc['quantity'])
 
     def test_execution_rechecks_clock_after_waiting_for_transaction(self):
         with self.assertRaises(ValueError):

@@ -96,7 +96,8 @@ def snapshot(source, monitor, now=None):
 def render_report(report):
     from .telegram_reports import when
     d=report['daily_baku']
-    def amount(v):return 'нет подтверждённых данных' if v is None else f'{Decimal(v):+.4f} USDT'
+    from .display_amount import display_amount
+    def amount(v):return 'нет подтверждённых данных' if v is None else display_amount(v,signed=True)+' USDT'
     return '\n'.join([
         'Наблюдение Spot • BTCUSDT • виртуальные деньги',
         'Обновлён: '+when(datetime.fromisoformat(report['as_of_utc']).timestamp()),

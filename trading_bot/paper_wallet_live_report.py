@@ -2,24 +2,15 @@
 import json
 import time
 from datetime import datetime
-from decimal import Decimal, localcontext, ROUND_HALF_UP
+from decimal import Decimal, localcontext
 from zoneinfo import ZoneInfo
 from .paper_wallet_ledger import amount
 from .telegram_reports import when
+from .display_amount import display_amount
 
 
-def _fmt(value):
-    if value is None:return 'неизвестно'
-    if isinstance(value,float):raise TypeError('Amounts must not use float')
-    value=Decimal(value)
-    if not value.is_finite():raise ValueError('Non-finite amount')
-    if not value:return '0'
-    if value.copy_abs()<Decimal('0.0001'):
-        return ('-' if value.is_signed() else '')+'меньше 0.0001'
-    with localcontext() as ctx:
-        ctx.prec=max(28,len(value.as_tuple().digits)+max(0,value.adjusted())+5)
-        rounded=value.quantize(Decimal('0.0001'),rounding=ROUND_HALF_UP)
-    return format(rounded,'f').rstrip('0').rstrip('.')
+def _fmt(value, unit='USDT'):
+    return display_amount(value,unit)
 
 
 def live_report(shared, *, now=None, period='all', max_age=120):
@@ -157,10 +148,10 @@ def render_live_report(data):
     lines=['[Кошельки] Paper-отчёт: '+title,'Общий капитал (оценка): '+_fmt(data['total'])+' USDT']
     for wallet,values in data['wallets'].items():
         lines.append(wallet+': свободно '+_fmt(values['free'])+' USDT; резерв '+_fmt(values['reserved'])+' USDT')
-    lines += ['Spot актив: '+_fmt(data['btc'])+' BTC; результат к себестоимости: '+_fmt(data['spot_open'])+' USDT',
+    lines += ['Spot актив: '+_fmt(data['btc'],'BTC')+' BTC; результат к себестоимости: '+_fmt(data['spot_open'])+' USDT',
               'Futures маржа: '+_fmt(data['margin'])+' USDT; открытый результат до выхода: '+_fmt(data['futures_open'])+' USDT',
               'Реализованный результат с учтёнными издержками: Spot '+_fmt(data['spot_realized'])+' USDT; futures '+_fmt(data['futures_realized'])+' USDT',
-              'Spot комиссии по активам: '+('неизвестно за день' if data['spot_fees'] is None else (', '.join(_fmt(v)+' '+k for k,v in sorted(data['spot_fees'].items())) or 'нет зафиксированных')),
+              'Spot комиссии по активам: '+('неизвестно за день' if data['spot_fees'] is None else (', '.join(_fmt(v,k)+' '+k for k,v in sorted(data['spot_fees'].items())) or 'нет зафиксированных')),
               'Futures комиссии: '+_fmt(data['future_fees'])+' USDT; funding: '+_fmt(data['funding_total'])+' USDT',
               'Внешние движения: история не подтверждена; внутренних переводов: '+str(len(data['transfers'])),
               'Сверка проводок и остатков: пройдена. Цена Spot: '+(when(data['spot_quote_time']) if data['spot_quote_time'] else 'нет данных')+'; Futures: '+(when(data['futures_quote_time']) if data['futures_quote_time'] else 'нет данных')]
@@ -170,7 +161,7 @@ def render_live_report(data):
         lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+'; обязательства '+_fmt(-cross['liability'])+'; запас риска '+_fmt(cross['buffer'])+'; доступно для перевода '+_fmt(cross['available'])+'.')
         lines.append('Cross результат открытых позиций: '+_fmt(cross['gross'])+'; реализованный до комиссий: '+_fmt(cross['realized'])+'; комиссии: '+_fmt(cross['fees'])+'; funding: '+_fmt(cross['funding_total'])+'; модельная корректировка: '+_fmt(cross['adjustment'])+' USDT.')
         for pos in cross['positions']:
-            lines.append(pos['symbol']+' '+pos['direction']+' — '+_fmt(pos['quantity'])+'; вход '+_fmt(pos['entry'])+'; маржа '+_fmt(pos['margin'])+' USDT.')
+            lines.append(pos['symbol']+' '+pos['direction']+' — '+_fmt(pos['quantity'],pos['symbol'][:-4])+' '+pos['symbol'][:-4]+'; вход '+_fmt(pos['entry'])+'; маржа '+_fmt(pos['margin'])+' USDT.')
         lines.append('margin_cross: недоступен.')
     if data['incomplete']:lines.append('Неполные данные: '+ '; '.join(data['incomplete']))
     if data['period']=='today':lines.append('Суточные Spot-комиссии не подтверждены временными метками старой истории.')

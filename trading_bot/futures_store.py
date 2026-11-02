@@ -226,26 +226,27 @@ class FuturesStore:
             self.db.execute("INSERT OR IGNORE INTO futures_events(business_key,ts,event,payload) VALUES(?,?,'EQUITY',?)", ('equity:'+str(server//60000), time.time(), payload))
 
     def status_text(self):
+        from .display_amount import display_amount as fmt
         pos, quote = self.get('position'), self.get('quote')
         lines = ['Виртуальные фьючерсы USD-M | BTCUSDT | Изолированная маржа (Isolated)',
                  f"Таймфрейм: {self.get('interval')} | Плечо: {self.get('leverage')}×",
-                 f'Маржа на вход: {self.margin} USDT',
+                 f'Маржа на вход: {fmt(self.margin)} USDT',
                  'Входы: '+('на паузе' if self.get('paused') else 'разрешены'),
-                 f"Свободный баланс: {Decimal(self.get('cash')):.4f} USDT",
-                 f"Реализованный PnL: {Decimal(self.get('pnl')):+.4f} USDT",
-                 f"Макс. выборочная просадка: {Decimal(self.get('max_drawdown', '0')):.4f} USDT"]
+                 f"Свободный баланс: {fmt(self.get('cash'))} USDT",
+                 f"Реализованный PnL: {fmt(self.get('pnl'),signed=True)} USDT",
+                 f"Макс. выборочная просадка: {fmt(self.get('max_drawdown', '0'))} USDT"]
         if pos:
-            lines += [f"Позиция: {pos['direction']}, {Decimal(pos['quantity']):.8f} BTC, вход {Decimal(pos['entry']):.2f}",
-                      f"Funding (начислено + / списано −): {Decimal(pos['funding']):+.4f} USDT"]
+            lines += [f"Позиция: {pos['direction']}, {fmt(pos['quantity'],'BTC')} BTC, вход {fmt(pos['entry'])} USDT",
+                      f"Funding (начислено + / списано −): {fmt(pos['funding'],signed=True)} USDT"]
         else:
             lines.append('Позиция: нет')
         if quote:
             age = max(0, int(time.time()-quote['time']))
-            lines.append(f"Расчётная цена фьючерса (mark): {Decimal(quote['price']):.2f}, {when(quote['time'])}, {age} сек. назад"+(' — УСТАРЕЛА' if age > 120 else ''))
+            lines.append(f"Расчётная цена фьючерса (mark): {fmt(quote['price'])} USDT, {when(quote['time'])}, {age} сек. назад"+(' — УСТАРЕЛА' if age > 120 else ''))
             value = self.valuation(Decimal(quote['price']))
-            lines.append(f"Средства с учётом модельного закрытия: {value['equity']:.4f} USDT")
+            lines.append(f"Средства с учётом модельного закрытия: {fmt(value['equity'])} USDT")
             if pos:
-                lines.append(f"Результат движения цены без комиссий: {value['gross']:+.4f} USDT")
+                lines.append(f"Результат движения цены без комиссий: {fmt(value['gross'],signed=True)} USDT")
         from .user_text import error_text
         lines += ['Источник: публичный Binance USD-M, не спотовый Testnet',
                   'Ошибка: '+error_text(self.get('error')), 'Сделки моделируются, на биржу не отправляются.']
@@ -312,7 +313,8 @@ class FuturesStore:
                 elif cmd == '/history':
                     rows = self.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE' ORDER BY id DESC LIMIT 10").fetchall()
                     from .trade_notifications import REASONS
-                    text = '\n\n'.join(f"{when(r['ts'])} | {p['direction']} {p['leverage']}×\nЧистый результат {Decimal(p['net']):+.4f}, комиссии {Decimal(p['fees']):.4f}, funding {Decimal(p['funding']):+.4f} USDT | {REASONS.get(p['reason'], 'Не указана')}" for r in rows for p in [json.loads(r['payload'])]) or 'История пуста.'
+                    from .display_amount import display_amount as fmt
+                    text = '\n\n'.join(f"{when(r['ts'])} | {p['direction']} {p['leverage']}×\nЧистый результат {fmt(p['net'],signed=True)}, комиссии {fmt(p['fees'])}, funding {fmt(p['funding'],signed=True)} USDT | {REASONS.get(p['reason'], 'Не указана')}" for r in rows for p in [json.loads(r['payload'])]) or 'История пуста.'
                 elif cmd == '/report':
                     from .telegram_reports import futures_daily_report
                     text = futures_daily_report(self)

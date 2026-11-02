@@ -5,19 +5,19 @@ from decimal import Decimal
 from .cross_trade_report import cross_trade_report
 from .paper_wallet_live_report import live_report
 from .telegram_reports import when
+from .display_amount import display_amount as fmt
 
 
 def _status(shared, now):
     report=live_report(shared,now=now);cross=report['cross']
     if cross is None:raise ValueError('Cross not activated')
-    def fmt(v):return 'неизвестно' if v is None else str(v)
     state=shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]
     settings=shared.db.execute('SELECT leverage,interval FROM cross_settings WHERE id=1').fetchone()
     lines=['Futures cross • PAPER',('Входы на паузе' if state else 'Входы разрешены')+', '+settings['interval']+', плечо '+str(settings['leverage'])+'×.',
            'Капитал '+fmt(cross['equity'])+' USDT; свободно '+fmt(cross['free'])+'; маржа '+fmt(cross['margin'])+'; обязательства '+fmt(-cross['liability'])+'.',
            'Открытый результат '+fmt(cross['gross'])+'; funding '+fmt(cross['funding'])+'; запас риска '+fmt(cross['buffer'])+'.']
     if shared.db.execute("SELECT value FROM cross_runtime WHERE key='error'").fetchone()[0]!='null':lines.append('Последняя ошибка: требуется проверка данных или учёта.')
-    for p in cross['positions']:lines.append(p['symbol']+' '+p['direction']+' '+p['quantity']+'; вход '+p['entry']+'.')
+    for p in cross['positions']:lines.append(p['symbol']+' '+p['direction']+' '+fmt(p['quantity'],p['symbol'][:-4])+' '+p['symbol'][:-4]+'; вход '+fmt(p['entry'])+' USDT.')
     for symbol in ('BTCUSDT','ETHUSDT'):
         q=shared.db.execute('SELECT observed,funding_complete FROM cross_quotes WHERE symbol=?',(symbol,)).fetchone()
         lines.append(symbol+': '+(when(q['observed'])+(' — данные неполны или устарели' if not q['funding_complete'] or not 0<=now-q['observed']<=120 else '') if q else 'нет данных'))
@@ -75,6 +75,6 @@ def process_cross(queue, receiver, book, *, started=0, now=None, clock=time.time
             queue.acknowledge(job['id'],text);continue
         if command=='/history':
             rows=book.db.execute("SELECT created,details FROM ledger_events WHERE kind='CROSS_CLOSE' ORDER BY created DESC,id DESC LIMIT 10").fetchall()
-            text='\n'.join(when(r['created'])+' | '+(p:=json.loads(r['details']))['symbol']+' | gross '+p['gross']+' USDT; funding '+p['funding'] for r in rows) or 'История закрытий пуста.'
+            text='\n'.join(when(r['created'])+' | '+(p:=json.loads(r['details']))['symbol']+' | gross '+fmt(p['gross'])+' USDT; funding '+fmt(p['funding']) for r in rows) or 'История закрытий пуста.'
             queue.acknowledge(job['id'],text+'\nОбщий результат и комиссии: /report.');continue
         queue.acknowledge(job['id'],'Команда cross не поддерживается.',applied=False)

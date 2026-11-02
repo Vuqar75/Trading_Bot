@@ -71,6 +71,17 @@ class UnifiedQueueTests(unittest.TestCase):
         self.q.receive(5, True, '/confirm '+token, now=12)
         self.assertEqual(len(self.q.pending('futures')), 1)
 
+    def test_close_display_rounding_preserves_exact_identity(self):
+        quantity='0.0001200000123456789'
+        self.q.receive(1,True,'/mode futures_cross',now=10)
+        self.q.receive(2,True,'/close ETHUSDT',positions={'futures_cross':{'ETHUSDT':{'id':'position','quantity':quantity}}},now=10)
+        token=self.q.add_proposal(2,'futures_cross','position',quantity,now=10)
+        message=self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id DESC').fetchone()[0]
+        self.assertIn('0.00012 ETH',message);self.assertNotIn(quantity,message)
+        self.assertEqual(self.q.db.execute('SELECT quantity FROM unified_proposals WHERE id=?',(token,)).fetchone()[0],quantity)
+        self.q.receive(3,True,'/confirm '+token,now=11)
+        self.assertIn(quantity,self.q.pending('futures_cross')[0]['payload'])
+
     def test_expired_and_canceled_confirmation_are_rejected(self):
         self.q.receive(1, True, '/close', positions={'spot':{'id':'p','quantity':'1'}})
         token = self.q.add_proposal(1, 'spot', 'p', '1', now=10, ttl=5)

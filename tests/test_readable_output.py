@@ -32,7 +32,7 @@ class ReadableOutputTests(unittest.TestCase):
     def test_history_includes_actual_prices_fees_and_baku(self):
         self.trade('1',102)
         text=history(self.s)
-        for value in ['Баку','100.00','102.00','+0.1798','Стоп-лосс','Комиссии продажи']:
+        for value in ['Баку','100 USDT','102 USDT','+0.1798','Стоп-лосс','Комиссии продажи']:
             self.assertIn(value,text)
         self.assertNotIn('STOP',text)
 

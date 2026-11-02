@@ -3,6 +3,7 @@ import time
 from datetime import datetime, timezone, timedelta
 from decimal import Decimal
 from .user_text import block_text, error_text
+from .display_amount import display_amount as fmt
 
 
 def when(stamp):
@@ -16,19 +17,19 @@ def status(store):
     mode = 'Симуляция (виртуальные деньги)' if identity['mode'] == 'paper' else 'Spot Testnet (тестовые средства)'
     lines = [mode, 'Пара: BTCUSDT | Рынок: Spot | Без плеча',
              'Таймфрейм: ' + store.get('selected_interval', identity.get('interval', '15m')),
-             'Размер входа: до ' + identity.get('amount', '10') + ' USDT',
+             'Размер входа: до ' + fmt(identity.get('amount', '10')) + ' USDT',
              'Новые входы: ' + ('на паузе' if store.get('paused') else 'разрешены')]
     qty = Decimal(pos['quantity'])
-    lines.append('Позиция: нет' if not qty else f"Позиция: LONG {qty:.8f} BTC\nСредняя себестоимость: {Decimal(pos['cost'])/qty:.2f} USDT/BTC")
+    lines.append('Позиция: нет' if not qty else f"Позиция: LONG {fmt(qty,'BTC')} BTC\nСредняя себестоимость: {fmt(Decimal(pos['cost'])/qty)} USDT/BTC")
     if quote:
         age = max(0, int(time.time()-quote['time']))
-        lines.append(f"Котировка: {Decimal(quote['price']):.2f} USDT\nПолучена: {when(quote['time'])}, {age} сек. назад" + (' — УСТАРЕЛА' if age > 120 else ''))
+        lines.append(f"Котировка: {fmt(quote['price'])} USDT\nПолучена: {when(quote['time'])}, {age} сек. назад" + (' — УСТАРЕЛА' if age > 120 else ''))
         if qty:
             estimate = qty*Decimal(quote['price'])*Decimal('.999')-Decimal(pos['cost'])
-            lines.append(f'Оценка результата закрытия с комиссией 0,1%: {estimate:+.4f} USDT')
+            lines.append(f'Оценка результата закрытия с комиссией 0,1%: {fmt(estimate,signed=True)} USDT')
     else:
         lines.append('Котировка: ещё не получена')
-    lines += [f"Накопленный реализованный PnL: {Decimal(store.get('pnl')):+.4f} USDT",
+    lines += [f"Накопленный реализованный PnL: {fmt(store.get('pnl'),signed=True)} USDT",
               'Комиссии: учтены' if pos['fees_known'] else 'Есть неоценённые комиссии; PnL предварительный',
               f'Незавершённых ордеров: {len(store.pending())}',
               'Блокировка: ' + block_text(store.get('blocked'))]
@@ -87,15 +88,15 @@ def history(store):
         for f in fills:
             asset = f['commissionAsset']
             fees[asset] = fees.get(asset, Decimal(0))+Decimal(f['commission'])
-        part = [when(row['closed_at']), f'Продано: {qty:.8f} BTC']
+        part = [when(row['closed_at']), f"Продано: {fmt(qty,'BTC')} BTC"]
         entry = store.get('entry_snapshot:'+row['client_id'])
         if entry:
-            part.append(('Вход (себестоимость): ' if entry['is_cost'] else 'Цена входа: ')+f"{Decimal(entry['price']):.2f} USDT")
+            part.append(('Вход (себестоимость): ' if entry['is_cost'] else 'Цена входа: ')+f"{fmt(entry['price'])} USDT")
         else:
             part.append('Цена входа: в старой записи отдельно не сохранена')
         if qty:
-            part.append(f'Средняя цена выхода: {quote/qty:.2f} USDT')
-        part += ['Комиссии продажи: '+fees_text(fees), f"Результат с учтёнными комиссиями: {net:+.4f} USDT"+(' (предварительный)' if not row['known'] else ''), 'Причина: '+REASONS.get(row['reason'], 'Не указана')]
+            part.append(f'Средняя цена выхода: {fmt(quote/qty)} USDT')
+        part += ['Комиссии продажи: '+fees_text(fees), f"Результат с учтёнными комиссиями: {fmt(net,signed=True)} USDT"+(' (предварительный)' if not row['known'] else ''), 'Причина: '+REASONS.get(row['reason'], 'Не указана')]
         entries.append('\n'.join(part))
     return '\n\n'.join(entries)
 
@@ -110,8 +111,8 @@ def daily_report(store, now=None):
     all_known=not store.db.execute('SELECT 1 FROM runtime_closes WHERE known=0 LIMIT 1').fetchone()
     return '\n'.join(['Spot • BTCUSDT • отчёт за '+local.strftime('%d.%m.%Y')+' (Баку)',
         'Обновлён: '+when(now), f'Ордеров с выходами сегодня: {len({r["client_id"] for r in rows})} (возможны частичные)',
-        f'Реализованный результат сегодня: {net:+.4f} USDT' if known else 'Реализованный результат сегодня: неизвестен — не все комиссии оценены.',
-        f"Результат за всё время: {Decimal(store.get('pnl')):+.4f} USDT" if all_known else 'Результат за всё время: неизвестен — не все комиссии оценены.',
+        f'Реализованный результат сегодня: {fmt(net,signed=True)} USDT' if known else 'Реализованный результат сегодня: неизвестен — не все комиссии оценены.',
+        f"Результат за всё время: {fmt(store.get('pnl'),signed=True)} USDT" if all_known else 'Результат за всё время: неизвестен — не все комиссии оценены.',
         'Суточные комиссии и просадка: см. отчёт наблюдателя; отсутствие данных не означает ноль.'])
 
 
@@ -132,7 +133,7 @@ def futures_daily_report(store, now=None):
     d=totals(today);a=totals(total)
     def line(label,rows,values):
         if values is None:return label+': закрыто '+str(len(rows))+'; результат, комиссии или funding неизвестны.'
-        return label+': закрыто '+str(len(rows))+f', net {values[0]:+.4f}, комиссии {values[1]:.4f}, funding {values[2]:+.4f} USDT.'
+        return label+': закрыто '+str(len(rows))+f', net {fmt(values[0],signed=True)}, комиссии {fmt(values[1])}, funding {fmt(values[2],signed=True)} USDT.'
     return '\n'.join(['Futures isolated • PAPER • торговый отчёт',
         line('Сегодня по Баку ('+local.strftime('%d.%m.%Y')+')',today,d),
         line('За всё время',total,a),

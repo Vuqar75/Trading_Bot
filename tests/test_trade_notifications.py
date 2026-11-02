@@ -31,9 +31,9 @@ class NotificationTests(unittest.TestCase):
         pos=self.s.get('position')
         self.app.execute('SELL','.1',Decimal(102),'close','TAKE',pos['id'])
         entry,exit=self.messages()[-2:]
-        for word in ['Spot','LONG','15m','100.00','0.01000000 USDT','Баку']:
+        for word in ['Spot','LONG','15m','100 USDT','0.01 USDT','Баку']:
             self.assertIn(word,entry)
-        for word in ['закрыта','Цена входа: 100.00','102.00','+0.1798','Тейк-профит','0.01020000 USDT']:
+        for word in ['закрыта','Цена входа: 100 USDT','102 USDT','+0.1798','Тейк-профит','0.0102 USDT']:
             self.assertIn(word,exit)
         row=self.s.db.execute("SELECT * FROM runtime_orders WHERE side='SELL'").fetchone()
         self.s.apply(row['client_id'],PaperExchange.inspect_saved(row))
@@ -52,7 +52,7 @@ class NotificationTests(unittest.TestCase):
         second={**fill,'id':2,'qty':'.06','quoteQty':'6.12','commission':'.00612'}
         self.s.apply(cid,{'order':order,'fills':[fill,second]})
         self.assertIn('+0.1798',self.messages()[-1])
-        self.assertIn('0.01020000 USDT',self.messages()[-1])
+        self.assertIn('0.0102 USDT',self.messages()[-1])
 
     def test_legacy_entry_label_is_cost_not_fake_price(self):
         self.app.execute('BUY','.1',Decimal(100),'open','SIGNAL')

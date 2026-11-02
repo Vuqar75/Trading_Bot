@@ -71,8 +71,9 @@ class WalletCommandTests(unittest.TestCase):
         messages=[r[0] for r in self.q.db.execute('select message from unified_outbox')]
         self.assertEqual(len(messages),6)
         for text in messages:
-            self.assertNotIn('1.234567',text);self.assertNotIn('0.00000001',text)
+            self.assertNotIn('1.234567',text)
             self.assertIn('меньше 0.0001',text)
+        self.assertIn('0.00000001 BTC',messages[0])
         self.assertIn('-меньше 0.0001',messages[2])
         self.assertEqual(data['wallets']['spot']['free'],Decimal('1.23456789'))
         self.assertEqual(data['cross']['positions'][0]['quantity'],'0.00000001')

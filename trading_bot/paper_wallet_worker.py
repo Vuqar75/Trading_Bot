@@ -16,8 +16,8 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                 _,source,destination,value=parts
                 p=shared.propose_transfer('telegram:'+str(job['update_id']),source,destination,value)
                 deadline=datetime.fromtimestamp(p['expires'],ZoneInfo('Asia/Baku')).strftime('%H:%M:%S Баку')
-                result=(f"Перевод {p['quantity']} USDT: {p['source']} → {p['destination']}. "
-                        f"После перевода: {p['source_after']} и {p['destination_after']} USDT. "
+                result=(f"Перевод {_fmt(p['quantity'])} USDT: {p['source']} → {p['destination']}. "
+                        f"После перевода: {_fmt(p['source_after'])} и {_fmt(p['destination_after'])} USDT. "
                         f"Подтвердите /confirm {p['id']} или отмените /cancel {p['id']} до {deadline}.")
             elif cmd=='/confirm_transfer':
                 token=payload['token']
@@ -38,7 +38,7 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                     if w not in data['wallets']:raise ValueError('Кошелёк пока недоступен. Доступны reserve, spot и futures_isolated.')
                     v=data['wallets'][w]
                     result=f"{w}: свободно {_fmt(v['free'])} USDT; резерв {_fmt(v['reserved'])} USDT. Сверка пройдена."
-                    if w=='spot':result+=f" Spot актив: {_fmt(data['btc'])} BTC."
+                    if w=='spot':result+=f" Spot актив: {_fmt(data['btc'],'BTC')} BTC."
                     if w=='futures_isolated':result+=f" Маржа {_fmt(data['margin'])} USDT; funding {_fmt(data['funding_open'])} USDT."
                     if w=='futures_cross':
                         cross=data['cross'];available=_fmt(cross['available'])
@@ -48,7 +48,7 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                 with shared.transaction():
                     rows=shared.db.execute("SELECT created,details FROM ledger_events WHERE kind='TRANSFER' ORDER BY created DESC,id DESC LIMIT 10").fetchall()
                     items=[(r['created'],json.loads(r['details'])) for r in rows]
-                result='\n'.join(datetime.fromtimestamp(ts,ZoneInfo('Asia/Baku')).strftime('%Y-%m-%d %H:%M:%S Баку')+' | '+p['source']+' → '+p['destination']+' | '+p['quantity']+' USDT' for ts,p in items) or 'Переводов пока нет.'
+                result='\n'.join(datetime.fromtimestamp(ts,ZoneInfo('Asia/Baku')).strftime('%Y-%m-%d %H:%M:%S Баку')+' | '+p['source']+' → '+p['destination']+' | '+_fmt(p['quantity'])+' USDT' for ts,p in items) or 'Переводов пока нет.'
             else:raise ValueError('Неизвестная команда кошельков')
             fault('after_destination_commit')
             queue.acknowledge(job['id'],result)
