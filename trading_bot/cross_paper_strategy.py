@@ -16,6 +16,7 @@ from .paper_wallet_ledger import amount
 class CrossPaperStrategy:
     def __init__(self, book, *, fault=lambda point:None):
         self.book=book;self.shared=book.shared;self.db=book.db;self.fault=fault
+        self.last_protection_at=None
         with self.shared.transaction():
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_signals(symbol TEXT PRIMARY KEY, candle INTEGER NOT NULL, payload TEXT NOT NULL)')
 
@@ -48,6 +49,7 @@ class CrossPaperStrategy:
         if risk['positions'] and risk['buffer']<=0:
             p=risk['positions'][0]
             result=self.book.close('liquidate:'+p['id'],p['symbol'],p['id'],p['quantity'],quotes,now=now,liquidate=True,clock=clock)
+            self.last_protection_at=now
             return [{'action':'LIQUIDATION','result':result}]
         for p in risk['positions']:
             mark=amount(quotes[p['symbol']]['mark'],positive=True)
@@ -56,6 +58,7 @@ class CrossPaperStrategy:
             if reason:
                 result=self.book.close('protect:'+p['id']+':'+reason,p['symbol'],p['id'],p['quantity'],quotes,now=now,reason=reason,clock=clock)
                 actions.append({'action':reason,'symbol':p['symbol'],'result':result})
+        self.last_protection_at=now
         settings=self.db.execute('SELECT leverage,interval FROM cross_settings WHERE id=1').fetchone()
         if not settings:raise ValueError('Missing cross settings')
         try:

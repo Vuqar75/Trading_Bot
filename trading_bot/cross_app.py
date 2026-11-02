@@ -41,6 +41,7 @@ def main():
     parser=argparse.ArgumentParser(description='Experimental virtual USD-M cross paper only')
     parser.add_argument('--db',required=True);parser.add_argument('--queue',required=True)
     parser.add_argument('--poll-seconds',type=int,default=10);parser.add_argument('--once',action='store_true')
+    parser.add_argument('--hold-resume',action='store_true',help='Keep paper entries paused during recovery verification')
     args=parser.parse_args()
     if not 5<=args.poll_seconds<=300:raise SystemExit('Invalid polling interval')
     logging.basicConfig(level=logging.INFO,format='%(asctime)s %(levelname)s %(message)s')
@@ -54,7 +55,7 @@ def main():
         try:
             queue=UnifiedQueue(queue_path)
             book=CrossPaperBook(shared);book.set_paused(True)
-            receiver=CrossCommandReceiver(book);reader=CrossPublicData()
+            receiver=CrossCommandReceiver(book,hold_resume=args.hold_resume);reader=CrossPublicData()
             sync=CrossDataSync(book,reader);strategy=CrossPaperStrategy(book)
             started=time.time();error=None
             while not stop.is_set():
@@ -70,7 +71,8 @@ def main():
                 except ValueError:complete=False
                 write_report(path.parent/'cross-health.json',{'time':time.time(),'mode':'futures-cross-paper',
                     'paused':bool(book.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]),
-                    'error':error,'positions':len(book._positions()),'data_complete':complete})
+                    'error':error,'positions':len(book._positions()),'data_complete':complete,
+                    'protection_checked_at':strategy.last_protection_at,'resume_held':args.hold_resume})
                 if args.once:
                     if error:raise SystemExit(1)
                     break

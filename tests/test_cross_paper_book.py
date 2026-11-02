@@ -342,6 +342,19 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],2)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
+    def test_changed_reported_funding_timestamp_blocks_replay(self):
+        self.positions()
+        class Reader:
+            stamp=28000001
+            def schedule(self,symbol):return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [{'symbol':symbol,'time':self.stamp,'rate_type':'Regular','rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'}]
+        reader=Reader();CrossDataSync(self.book,reader).refresh(now=28001)
+        reader.stamp=28000002
+        with self.assertRaisesRegex(ValueError,'disappeared'):CrossDataSync(self.book,reader).refresh(now=28001)
+        self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],2)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
     def test_funding_before_and_at_expected_boundary_are_not_conflated(self):
         self.positions()
         class Reader:
@@ -388,11 +401,21 @@ class CrossPaperBookTests(unittest.TestCase):
         quotes=CrossDataSync(self.book,Reader()).refresh(now=28001)
         quotes={symbol:{**q,'time':28002,'server_ms':28002000,'mark':'80' if symbol=='BTCUSDT' else '200'} for symbol,q in quotes.items()}
         candles={symbol:[(i*900000,'100') for i in range(31)] for symbol in ('BTCUSDT','ETHUSDT')}
-        actions=CrossPaperStrategy(self.book).tick(quotes,candles,28002000,now=28002)
+        strategy=CrossPaperStrategy(self.book)
+        actions=strategy.tick(quotes,candles,28002000,now=28002)
+        self.assertEqual(strategy.last_protection_at,28002)
         self.assertEqual([(a['action'],a['symbol']) for a in actions],[('STOP','BTCUSDT')])
         self.assertEqual([p['symbol'] for p in self.book._positions()],['ETHUSDT'])
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_recovery_hold_rejects_resume_but_not_position_protection(self):
+        self.positions();self.book.set_paused(True)
+        receiver=CrossCommandReceiver(self.book,hold_resume=True)
+        result=receiver.apply(901,'/resume',{},now=100)
+        self.assertIn('пауз',result)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertEqual(len(self.book.risk(self.quotes,now=100)['positions']),2)
 
     def test_cross_cycle_fake_market_opens_both_and_pauses_on_data_failure(self):
         period=900000;server=31*period+1000;now=server/1000
@@ -431,12 +454,13 @@ class Fake:
   return [(last-(39-i)*period,'100') for i in range(40)]
 def deny(*args,**kwargs):raise AssertionError('network prohibited')
 with patch.object(socket,'socket',deny),patch.object(app,'CrossPublicData',Fake):
- sys.argv=['cross-app','--db',sys.argv[1],'--queue',sys.argv[2],'--once'];app.main()
+ sys.argv=['cross-app','--db',sys.argv[1],'--queue',sys.argv[2],'--once','--hold-resume'];app.main()
 '''
         child=subprocess.run([sys.executable,'-c',code,str(self.path),str(queue)],capture_output=True,text=True,timeout=30)
         self.assertEqual(child.returncode,0,child.stderr)
         health=json.loads((self.path.parent/'cross-health.json').read_text())
         self.assertTrue(health['paused']);self.assertTrue(health['data_complete']);self.assertIsNone(health['error'])
+        self.assertTrue(health['resume_held']);self.assertIsInstance(health['protection_checked_at'],float)
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_positions').fetchone()[0],0)
 
     def test_cross_process_once_returns_failure_on_data_error(self):
