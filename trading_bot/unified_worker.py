@@ -48,4 +48,7 @@ def process_market(queue, receiver, store, market, *, started=0, fault=lambda po
             continue
         store.command(job['update_id'], True, action, routed=True)
         fault('after_destination_commit')
-        queue.acknowledge(job['id'], 'Команда обработана; подробный ответ отправляется отдельно.')
+        # These commands write their answer durably to the market outbox in
+        # store.command; acknowledging the queue must not send a second reply.
+        informational=action in ('/status','/signal','/history','/report','/timeframe','/leverage')
+        queue.acknowledge(job['id'], 'Ответ сохранён в журнале рынка.', notify=not informational)

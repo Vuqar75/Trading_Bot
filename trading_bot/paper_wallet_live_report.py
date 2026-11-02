@@ -35,6 +35,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 return price if 0<=age<=max_age else None
             except (ValueError,KeyError,TypeError,OverflowError):return None
         sp=quote('spot');fp=quote('futures');spot_open=Decimal(0);future_open=Decimal(0);isolated=Decimal(0)
+        close_cost=Decimal(0);isolated_floor=Decimal(0)
         if btc:
             if sp is None:incomplete.append('Spot-цена отсутствует или устарела')
             else:spot_open=btc*sp-amount(positions['spot']['cost'])
@@ -50,7 +51,9 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 fee=amount(identity['fee_bps']);slip=amount(identity['slippage_bps'])
                 exit_price=fp*(1+(1 if direction=='SHORT' else -1)*slip/10000)
                 close_cost=qty*exit_price*fee/10000+qty*fp*slip/10000
-                isolated=max(Decimal(0),margin+funding_open-entry_fee+future_open-close_cost)
+                isolated_raw=margin+funding_open-entry_fee+future_open-close_cost
+                isolated=max(Decimal(0),isolated_raw)
+                isolated_floor=isolated-isolated_raw
         start=datetime.fromtimestamp(now,ZoneInfo('Asia/Baku')).replace(hour=0,minute=0,second=0,microsecond=0).timestamp()
         cross=None;cross_value=Decimal(0)
         if shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_positions'").fetchone():
@@ -90,6 +93,33 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 elif row['account']=='external:cross_funding':cross['funding_total']-=value
                 else:cross['adjustment']-=value
         total=None if incomplete else sum((v['free']+v['reserved'] for v in balances.values()),Decimal(0)) + (btc*sp if btc else 0) + isolated + cross_value
+        # Separate terms preserve the existing valuation exactly. Entry fees
+        # and estimated exit costs are not removed from the journal balances.
+        cash=sum((v['free']+v['reserved'] for v in balances.values()),Decimal(0))
+        spot_value=btc*sp if btc and sp is not None else (Decimal(0) if not btc else None)
+        iso_known=not pos or fp is not None
+        terms={'cash':cash,'spot_asset':spot_value,'isolated_margin':margin,
+               'isolated_funding':funding_open,'isolated_open':future_open if iso_known else None,
+               'isolated_entry_fee':-entry_fee,'isolated_exit_cost':-close_cost if iso_known else None,
+               'isolated_floor':isolated_floor if iso_known else None,
+               'cross_margin':cross['margin'] if cross else Decimal(0),
+               'cross_funding':cross['funding'] if cross else Decimal(0),
+               'cross_open':cross['gross'] if cross else Decimal(0),
+               'cross_liability':cross['liability'] if cross else Decimal(0),
+               'cross_exit_cost':-cross['exit_cost'] if cross and cross['exit_cost'] is not None else (None if cross else Decimal(0))}
+        valuation_ok=None if total is None or any(v is None for v in terms.values()) else sum(terms.values(),Decimal(0))==total
+        available={w:None for w in balances}
+        if not shared.deployment_hold():
+            available['reserve']=balances['reserve']['free']
+            if spot['paused'] and positions['spot']['fees_known'] and not shared._get('spot','error') and not shared._get('spot','blocked') and not shared.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone():
+                available['spot']=balances['spot']['free']
+            if future['paused'] and not shared._get('futures','error') and not shared._get('futures','blocked'):
+                available['futures_isolated']=balances['futures_isolated']['free']
+            if cross and shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0] and not book.runtime_error():
+                try:
+                    book._require_coverage(now)
+                    available['futures_cross']=book._risk(book._marks(book.stored_quotes(),now))['available']
+                except ValueError:pass
         spot_closes=shared.db.execute('SELECT ts,pnl,known FROM runtime_closes').fetchall()
         future_closes=[(r['ts'],json.loads(r['payload'])) for r in shared.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE'")]
         selected_spot=[r for r in spot_closes if period=='all' or start<=r['ts']<=now]
@@ -139,26 +169,48 @@ def live_report(shared, *, now=None, period='all', max_age=120):
               'spot_realized':spot_realized,'futures_realized':futures_realized,'spot_fees':spot_fees if period=='all' else None,
               'future_fees':future_fees,'funding_total':funding_total,'transfers':transfers,'total':total,
               'incomplete':incomplete,'spot_quote_time':(shared._get('spot','quote') or {}).get('time'),
-              'futures_quote_time':(shared._get('futures','quote') or {}).get('time'),'period':period,'cross':cross}
+              'futures_quote_time':(shared._get('futures','quote') or {}).get('time'),'period':period,'cross':cross,
+              'valuation_terms':terms,'valuation_ok':valuation_ok,'available':available}
         return data
+
+
+def render_wallets(data):
+    labels={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross'}
+    lines=['PAPER: свободно | резерв ордеров | маржа позиций (USDT)']
+    for wallet,values in data['wallets'].items():
+        margin=data['margin'] if wallet=='futures_isolated' else (data['cross']['margin'] if wallet=='futures_cross' and data.get('cross') else Decimal(0))
+        lines.append(labels.get(wallet,wallet)+': '+_fmt(values['free'])+' | '+_fmt(values['reserved'])+' | '+_fmt(margin))
+    lines.append('Резерв ордеров не включает маржу позиций. /wallet ИМЯ — доступность перевода; /balance_report — оценка капитала.')
+    return '\n'.join(lines)
 
 
 def render_live_report(data):
     title='сегодня по Баку' if data['period']=='today' else 'за всю историю'
-    lines=['[Кошельки] Paper-отчёт: '+title,'Общий капитал (оценка): '+_fmt(data['total'])+' USDT']
+    terms=data['valuation_terms']
+    lines=['Paper-отчёт по средствам: '+title,'Общий капитал (оценка): '+_fmt(data['total'])+' USDT']
     for wallet,values in data['wallets'].items():
-        lines.append(wallet+': свободно '+_fmt(values['free'])+' USDT; резерв '+_fmt(values['reserved'])+' USDT')
+        label={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross'}.get(wallet,wallet)
+        lines.append(label+': свободно '+_fmt(values['free'])+' USDT; резерв ордеров '+_fmt(values['reserved'])+' USDT')
+    lines.append('Свободно — средства без резерва ордеров и маржи позиций. Доступность перевода проверяется с учётом паузы, риска и получателя: /wallet ИМЯ.')
+    lines += ['Расчёт оценки капитала (USDT; суммы без повторного учёта):',
+              'Свободные средства + резервы ордеров: '+_fmt(terms['cash']),
+              '+ рыночная стоимость Spot BTC: '+_fmt(terms['spot_asset']),
+              '+ isolated: маржа '+_fmt(terms['isolated_margin'])+'; funding '+_fmt(terms['isolated_funding'])+'; открытый PnL '+_fmt(terms['isolated_open']),
+              '− комиссия входа isolated: '+_fmt(terms['isolated_entry_fee'].copy_negate())+'; − оценочные издержки выхода: '+_fmt(terms['isolated_exit_cost'].copy_negate() if terms['isolated_exit_cost'] is not None else None)+'; корректировка ограничения нулём: '+_fmt(terms['isolated_floor']),
+              '+ cross: маржа '+_fmt(terms['cross_margin'])+'; funding '+_fmt(terms['cross_funding'])+'; открытый PnL '+_fmt(terms['cross_open'])+'; обязательства '+_fmt(terms['cross_liability'])+'; − оценочные издержки выхода '+_fmt(terms['cross_exit_cost'].copy_negate() if terms['cross_exit_cost'] is not None else None),
+              'Учтённые комиссии и реализованный PnL отражены в остатках или отдельных строках выше; повторно не вычитаются. Округлены только показанные числа; сумма строк может отличаться из-за округления.',
+              'Проверка расчёта оценки: '+('пройдена' if data['valuation_ok'] is True else 'расхождение' if data['valuation_ok'] is False else 'неполные данные')+'.']
     lines += ['Spot актив: '+_fmt(data['btc'],'BTC')+' BTC; результат к себестоимости: '+_fmt(data['spot_open'])+' USDT',
-              'Futures маржа: '+_fmt(data['margin'])+' USDT; открытый результат до выхода: '+_fmt(data['futures_open'])+' USDT',
-              'Реализованный результат с учтёнными издержками: Spot '+_fmt(data['spot_realized'])+' USDT; futures '+_fmt(data['futures_realized'])+' USDT',
+              'Futures isolated маржа: '+_fmt(data['margin'])+' USDT; открытый результат до выхода: '+_fmt(data['futures_open'])+' USDT',
+              'Реализованный результат с учтёнными издержками: Spot '+_fmt(data['spot_realized'])+' USDT; futures isolated '+_fmt(data['futures_realized'])+' USDT',
               'Spot комиссии по активам: '+('неизвестно за день' if data['spot_fees'] is None else (', '.join(_fmt(v,k)+' '+k for k,v in sorted(data['spot_fees'].items())) or 'нет зафиксированных')),
-              'Futures комиссии: '+_fmt(data['future_fees'])+' USDT; funding: '+_fmt(data['funding_total'])+' USDT',
+              'Futures isolated комиссии: '+_fmt(data['future_fees'])+' USDT; funding: '+_fmt(data['funding_total'])+' USDT',
               'Внешние движения: история не подтверждена; внутренних переводов: '+str(len(data['transfers'])),
-              'Сверка проводок и остатков: пройдена. Цена Spot: '+(when(data['spot_quote_time']) if data['spot_quote_time'] else 'нет данных')+'; Futures: '+(when(data['futures_quote_time']) if data['futures_quote_time'] else 'нет данных')]
+              'Проверка проводок и остатков: пройдена. Цена Spot: '+(when(data['spot_quote_time']) if data['spot_quote_time'] else 'нет данных')+'; Futures isolated: '+(when(data['futures_quote_time']) if data['futures_quote_time'] else 'нет данных')]
     cross=data.get('cross')
     if cross is None:lines.append('futures_cross и margin_cross: недоступны.')
     else:
-        lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+'; обязательства '+_fmt(-cross['liability'])+'; запас риска '+_fmt(cross['buffer'])+'; доступно для перевода '+_fmt(cross['available'])+'.')
+        lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+' USDT; обязательства '+_fmt(-cross['liability'])+' USDT; запас риска '+_fmt(cross['buffer'])+' USDT; риск-лимит перевода '+_fmt(cross['available'])+' USDT (нужна пауза и проверка получателя).')
         lines.append('Cross результат открытых позиций: '+_fmt(cross['gross'])+'; реализованный до комиссий: '+_fmt(cross['realized'])+'; комиссии: '+_fmt(cross['fees'])+'; funding: '+_fmt(cross['funding_total'])+'; модельная корректировка: '+_fmt(cross['adjustment'])+' USDT.')
         for pos in cross['positions']:
             lines.append(pos['symbol']+' '+pos['direction']+' — '+_fmt(pos['quantity'],pos['symbol'][:-4])+' '+pos['symbol'][:-4]+'; вход '+_fmt(pos['entry'])+' USDT; маржа '+_fmt(pos['margin'])+' USDT.')

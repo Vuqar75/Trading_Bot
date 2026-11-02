@@ -3,7 +3,7 @@ import json
 import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
-from .paper_wallet_live_report import live_report,render_live_report,_fmt
+from .paper_wallet_live_report import live_report,render_live_report,render_wallets,_fmt
 
 
 def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
@@ -37,12 +37,17 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                     w=parts[1]
                     if w not in data['wallets']:raise ValueError('Кошелёк пока недоступен. Доступны reserve, spot и futures_isolated.')
                     v=data['wallets'][w]
-                    result=f"{w}: свободно {_fmt(v['free'])} USDT; резерв {_fmt(v['reserved'])} USDT. Сверка пройдена."
+                    label={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross'}[w]
+                    available=data['available'].get(w)
+                    result=f"{label}: свободно {_fmt(v['free'])} USDT; резерв ордеров {_fmt(v['reserved'])} USDT. "
+                    result+=('Доступно к запросу перевода: '+_fmt(available)+' USDT.' if available is not None else 'Доступно для перевода: не подтверждено; проверьте паузу и состояние.')
+                    result+=' Свободно — остаток без резервов; маржа позиций показана отдельно. Получатель и средства повторно проверяются при подтверждении.'
                     if w=='spot':result+=f" Spot актив: {_fmt(data['btc'],'BTC')} BTC."
                     if w=='futures_isolated':result+=f" Маржа {_fmt(data['margin'])} USDT; funding {_fmt(data['funding_open'])} USDT."
                     if w=='futures_cross':
-                        cross=data['cross'];available=_fmt(cross['available'])
-                        result+=f" Общая маржа {_fmt(cross['margin'])} USDT; доступно для перевода {available}; позиций {len(cross['positions'])}."
+                        cross=data['cross']
+                        result+=f" Общая маржа {_fmt(cross['margin'])} USDT; позиций {len(cross['positions'])}."
+                elif cmd=='/wallets':result=render_wallets(data)
                 else:result=render_live_report(data)
             elif cmd=='/transfers':
                 with shared.transaction():

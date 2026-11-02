@@ -88,11 +88,16 @@ class CrossPaperBookTests(unittest.TestCase):
         with localcontext() as ctx:
             ctx.prec=120
             self.assertEqual(data['total'],Decimal('1950')+risk['equity']-risk['exit_cost'])
+            self.assertEqual(sum(data['valuation_terms'].values(),Decimal(0)),data['total'])
+            self.assertEqual(data['valuation_terms']['cross_exit_cost'],-risk['exit_cost'])
+        self.assertTrue(data['valuation_ok'])
         self.assertEqual(data['cross']['margin'],Decimal(10))
         self.assertIn('Futures cross • PAPER',render_live_report(data))
         self.book.invalidate_data('ETHUSDT')
         incomplete=live_report(self.shared,now=100,period='today')
         self.assertIsNone(incomplete['total']);self.assertIsNone(incomplete['cross']['gross'])
+        self.assertIsNone(incomplete['valuation_ok'])
+        self.assertIsNone(incomplete['valuation_terms']['cross_exit_cost'])
         self.assertIn('неполны',render_live_report(incomplete))
 
     def test_cross_trade_report_has_baku_day_and_cumulative(self):
