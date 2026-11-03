@@ -2,6 +2,7 @@
 import hashlib
 import json
 import secrets
+import time
 
 from .margin_interest_ledger import MarginInterestLedger
 from .paper_wallet_ledger import amount, encode
@@ -34,10 +35,12 @@ class MarginRepayProposals:
                 (token,request_id,fingerprint,loan_id,loan['asset'],encode(quantity),encode(principal),encode(interest),now_ms+ttl_ms,'OPEN',None))
             return dict(self.db.execute('SELECT * FROM margin_repay_proposals WHERE id=?',(token,)).fetchone())
 
-    def confirm(self,token,*,now_ms):
-        now_ms=self.loans._time(now_ms)
+    def confirm(self,token,*,now_ms=None,clock_ms=None):
         if not isinstance(token,str) or not token.startswith('R-'):raise ValueError('Not a repayment confirmation')
         with self.ledger.transaction():
+            # Re-read time after acquiring the SQLite write lock: waiting for
+            # a competing process must not extend the confirmation deadline.
+            now_ms=self.loans._time(now_ms if now_ms is not None else (clock_ms() if clock_ms else int(time.time()*1000)))
             row=self.db.execute('SELECT * FROM margin_repay_proposals WHERE id=?',(token,)).fetchone()
             if not row:raise ValueError('Unknown repayment confirmation')
             if row['status']=='DONE':return json.loads(row['result'])
@@ -51,10 +54,10 @@ class MarginRepayProposals:
             self.db.execute("UPDATE margin_repay_proposals SET status='DONE',result=? WHERE id=?",(json.dumps(result,sort_keys=True),token))
             return result
 
-    def cancel(self,token,*,now_ms):
-        now_ms=self.loans._time(now_ms)
+    def cancel(self,token,*,now_ms=None,clock_ms=None):
         if not isinstance(token,str) or not token.startswith('R-'):raise ValueError('Not a repayment confirmation')
         with self.ledger.transaction():
+            now_ms=self.loans._time(now_ms if now_ms is not None else (clock_ms() if clock_ms else int(time.time()*1000)))
             row=self.db.execute('SELECT status,expires_ms FROM margin_repay_proposals WHERE id=?',(token,)).fetchone()
             if row and row['status']=='CANCELED':return
             if not row or row['status']!='OPEN' or now_ms>=row['expires_ms']:raise ValueError('Repayment confirmation expired or completed')

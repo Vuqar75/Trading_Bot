@@ -182,7 +182,7 @@ class SharedPaperStore:
 
     def _sync_pause_and_validate(self,source,destination,quantity=None,now=None):
         if self.deployment_hold():raise ValueError('Deployment hold is active')
-        if source not in ('reserve','spot','futures_isolated','futures_cross') or destination not in ('reserve','spot','futures_isolated','futures_cross') or source==destination:
+        if source not in ('reserve','spot','futures_isolated','futures_cross','margin_cross') or destination not in ('reserve','spot','futures_isolated','futures_cross','margin_cross') or source==destination:
             raise ValueError('Unsupported transfer')
         for wallet,market in (('spot','spot'),('futures_isolated','futures')):
             paused=self._get(market,'paused')

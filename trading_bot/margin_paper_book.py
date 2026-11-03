@@ -6,9 +6,10 @@ there are no network operations or order endpoints in this module.
 """
 import hashlib
 import json
-from decimal import Decimal, localcontext, ROUND_DOWN
+from decimal import Decimal, localcontext
 
 from .margin_interest_ledger import MarginInterestLedger
+from .margin_spot_filters import affordable_lot, sellable_lot, validate_lot
 from .paper_wallet_ledger import amount, encode
 
 WALLET='margin_cross'
@@ -26,6 +27,11 @@ class MarginPaperBook:
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_positions(id TEXT PRIMARY KEY,symbol TEXT NOT NULL UNIQUE,direction TEXT NOT NULL,quantity TEXT NOT NULL,entry TEXT NOT NULL,own TEXT NOT NULL,leverage INTEGER NOT NULL,loan_id TEXT,opened_ms INTEGER NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_trade_operations(id TEXT PRIMARY KEY,fingerprint TEXT NOT NULL,result TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_position_anchor(id INTEGER PRIMARY KEY CHECK(id=1),event_id TEXT NOT NULL REFERENCES ledger_events(id))')
+            self.db.execute('CREATE TABLE IF NOT EXISTS margin_settings(id INTEGER PRIMARY KEY CHECK(id=1),leverage INTEGER NOT NULL,interval TEXT NOT NULL)')
+            self.db.execute("INSERT OR IGNORE INTO margin_settings VALUES(1,2,'15m')")
+            self.db.execute('CREATE TABLE IF NOT EXISTS margin_runtime(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
+            self.db.execute("INSERT OR IGNORE INTO margin_runtime VALUES('error','null')")
+            self.db.execute('CREATE TABLE IF NOT EXISTS margin_market_quotes(symbol TEXT PRIMARY KEY,payload TEXT NOT NULL)')
             self.db.execute("INSERT OR IGNORE INTO wallet_state(wallet,paused) VALUES('margin_cross',1)")
             if not self.db.execute('SELECT 1 FROM margin_position_anchor WHERE id=1').fetchone():
                 if self.db.execute('SELECT 1 FROM margin_positions LIMIT 1').fetchone():raise ValueError('Missing margin position anchor')
@@ -34,6 +40,12 @@ class MarginPaperBook:
 
     def _positions(self):
         return [dict(row) for row in self.db.execute('SELECT * FROM margin_positions ORDER BY symbol')]
+
+    def fail_closed(self,reason):
+        if not isinstance(reason,str) or not reason or len(reason)>100:raise ValueError('Invalid margin error')
+        with self.ledger.transaction():
+            self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
+            self.db.execute("INSERT OR REPLACE INTO margin_runtime VALUES('error',?)",(json.dumps(reason),))
 
     def _anchor(self,operation):
         ident='margin:position-anchor:'+operation
@@ -67,6 +79,68 @@ class MarginPaperBook:
             marks[asset]=amount(q.get('price'),positive=True)
         return marks
 
+    @staticmethod
+    def _filters(quotes,symbol,now_ms):
+        row=quotes.get(symbol) if isinstance(quotes,dict) else None
+        filters=row.get('filters') if isinstance(row,dict) else None
+        if (not isinstance(filters,dict) or type(filters.get('observed_ms')) is not int or
+            not 0<=now_ms-filters['observed_ms']<=120_000):
+            raise ValueError('Missing or stale Spot filters')
+        if row.get('source')=='https://api.binance.com' and (not filters.get('notional_price') or
+            type(filters.get('notional_time_ms')) is not int or not 0<=now_ms-filters['notional_time_ms']<=120_000):
+            raise ValueError('Missing or stale Spot notional reference')
+        return filters
+
+    @staticmethod
+    def _quote_identity(row):
+        return {key:row.get(key) for key in ('price','time_ms','server_ms','source','price_kind','filters')}
+
+    def record_quotes(self,quotes,*,now_ms):
+        """Atomically publish both already-fetched prices; no network is done here."""
+        self._marks(quotes,now_ms)
+        with self.ledger.transaction():
+            self._check()
+            for symbol in PAIRS:
+                row=self._quote_identity(quotes[symbol])
+                if (type(row['server_ms']) is not int or not row['time_ms']<=row['server_ms'] or
+                    abs(row['server_ms']-now_ms)>60000 or not isinstance(row['source'],str) or not row['source'] or
+                    row['price_kind']!='last_public_trade'):
+                    raise ValueError('Invalid Spot quote provenance')
+                old=self.db.execute('SELECT payload FROM margin_market_quotes WHERE symbol=?',(symbol,)).fetchone()
+                if old:
+                    previous=json.loads(old['payload'])
+                    if (row['time_ms']<previous['time_ms'] or row['server_ms']<previous['server_ms'] or
+                        (row['time_ms']==previous['time_ms'] and amount(row['price'])!=amount(previous['price']))):
+                        raise ValueError('Contradictory Spot quote')
+                self.db.execute('INSERT OR REPLACE INTO margin_market_quotes VALUES(?,?)',(symbol,json.dumps(row,sort_keys=True)))
+
+    def stored_quotes(self):
+        return {row['symbol']:json.loads(row['payload']) for row in self.db.execute('SELECT symbol,payload FROM margin_market_quotes')}
+
+    def _current_marks(self,quotes,now_ms):
+        supplied=self._marks(quotes,now_ms);stored=self.stored_quotes();actual=self._marks(stored,now_ms)
+        for symbol in PAIRS:
+            if self._quote_identity(quotes[symbol])!=stored[symbol]:raise ValueError('Spot quote snapshot superseded')
+        if supplied!=actual:raise ValueError('Spot quote snapshot mismatch')
+        return actual
+
+    def validate_transfer(self,quantity,*,outgoing,now_ms):
+        """Called under the caller's financial transaction; never fetches data."""
+        quantity=amount(quantity,positive=True)
+        if type(outgoing) is not bool or type(now_ms) is not int:raise ValueError('Invalid margin transfer')
+        self._check()
+        row=self.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()
+        if not row or row[0]!=1:raise ValueError('Margin wallet must be paused')
+        if outgoing:
+            error=self.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()
+            if not error or json.loads(error[0]) is not None:raise ValueError('Margin requires recovery')
+            if self.db.execute("SELECT 1 FROM margin_loans l WHERE l.status='OPEN' AND NOT EXISTS (SELECT 1 FROM margin_positions p WHERE p.id=l.position_id)").fetchone():
+                raise ValueError('Unattached margin liability')
+            self._accrue_all(now_ms);self._check()
+            marks=self._marks(self.stored_quotes(),now_ms);risk=self._risk(marks)
+            if risk['available']<quantity or (risk['positions'] and risk['equity']-quantity<=risk['maintenance']):
+                raise ValueError('Insufficient margin collateral')
+
     def _prior(self,operation,parts):
         if not isinstance(operation,str) or not operation:raise ValueError('Operation identity required')
         fp=hashlib.sha256(json.dumps(parts,sort_keys=True,separators=(',',':')).encode()).hexdigest()
@@ -89,16 +163,17 @@ class MarginPaperBook:
 
     def risk(self,quotes,*,now_ms):
         with self.ledger.transaction():
-            self._check();marks=self._marks(quotes,now_ms)
+            self._check();marks=self._current_marks(quotes,now_ms)
             self._accrue_all(now_ms);self._check();return self._risk(marks)
 
     def _accrue_all(self,now_ms):
         for row in self.db.execute("SELECT id FROM margin_loans WHERE status='OPEN' ORDER BY id").fetchall():
             self.loans.accrue(row['id'],now_ms=now_ms)
 
-    def _trade(self,event,symbol,side,quantity,mark,now_ms):
+    def _trade(self,event,symbol,side,quantity,mark,filters,now_ms):
         with localcontext() as ctx:
             ctx.prec=120
+            quantity=validate_lot(quantity,mark,filters)
             base=PAIRS[symbol];price=mark*(1+SLIPPAGE if side=='BUY' else 1-SLIPPAGE)
             notional=quantity*price;fee=notional*FEE
             if side=='BUY':
@@ -115,14 +190,20 @@ class MarginPaperBook:
         quantity=amount(quantity,positive=True);own=amount(own,positive=True)
         if symbol not in PAIRS or direction not in ('LONG','SHORT') or not isinstance(position_id,str) or not position_id or own>5 or type(leverage) is not int or not 1<=leverage<=3:raise ValueError('Invalid margin entry')
         marks=self._marks(quotes,now_ms);mark=marks[PAIRS[symbol]]
+        filters=self._filters(quotes,symbol,now_ms);validate_lot(quantity,mark,filters)
         parts=['open',position_id,symbol,direction,encode(quantity),encode(own),leverage,encode(mark),now_ms]
         with self.ledger.transaction(),localcontext() as ctx:
             ctx.prec=120
             fp,prior=self._prior(operation,parts)
             if prior is not None:return prior
             self._check()
+            marks=self._current_marks(quotes,now_ms);mark=marks[PAIRS[symbol]]
+            filters=self._filters(quotes,symbol,now_ms);validate_lot(quantity,mark,filters)
             self._accrue_all(now_ms)
             if self.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0]:raise ValueError('Margin is paused')
+            error=self.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()
+            hold=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()
+            if not error or json.loads(error[0]) is not None or (hold and hold[0]=='true'):raise ValueError('Margin requires recovery')
             if self.db.execute('SELECT 1 FROM margin_positions WHERE symbol=?',(symbol,)).fetchone() or self.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0]>=2:raise ValueError('Margin position limit')
             if self.db.execute("SELECT 1 FROM margin_loans l WHERE l.status='OPEN' AND NOT EXISTS (SELECT 1 FROM margin_positions p WHERE p.id=l.position_id)").fetchone():raise ValueError('Unattached margin liability')
             risk=self._risk(marks)
@@ -135,40 +216,43 @@ class MarginPaperBook:
             if borrowed:
                 self.loans.borrow(operation+':borrow',loan,position_id,'USDT' if direction=='LONG' else PAIRS[symbol],encode(borrowed),now_ms=now_ms)
             else:loan=None
-            actual,fee=self._trade('margin:open:'+operation,symbol,'BUY' if direction=='LONG' else 'SELL',quantity,mark,now_ms)
+            actual,fee=self._trade('margin:open:'+operation,symbol,'BUY' if direction=='LONG' else 'SELL',quantity,mark,filters,now_ms)
             self.db.execute('INSERT INTO margin_positions VALUES(?,?,?,?,?,?,?,?,?)',(position_id,symbol,direction,encode(quantity),encode(actual),encode(own),leverage,loan,now_ms))
             result={'position_id':position_id,'symbol':symbol,'direction':direction,'quantity':encode(quantity),'fee':encode(fee),'loan_id':loan}
             self._remember(operation,fp,result);self._anchor('open:'+operation);self._check()
             if self._risk(marks)['equity']<=self._risk(marks)['maintenance']:raise ValueError('Margin maintenance exhausted')
             return result
 
-    def close(self,operation,symbol,position_id,expected_quantity,quotes,*,now_ms):
-        return self._close(operation,symbol,position_id,expected_quantity,quotes,now_ms=now_ms,liquidation=False)
+    def close(self,operation,symbol,position_id,expected_quantity,quotes,*,now_ms,expires_ms=None,clock_ms=None):
+        return self._close(operation,symbol,position_id,expected_quantity,quotes,now_ms=now_ms,liquidation=False,expires_ms=expires_ms,clock_ms=clock_ms)
 
-    def _close(self,operation,symbol,position_id,expected_quantity,quotes,*,now_ms,liquidation):
-        marks=self._marks(quotes,now_ms)
+    def _close(self,operation,symbol,position_id,expected_quantity,quotes,*,now_ms,liquidation,expires_ms=None,clock_ms=None):
         expected_quantity=amount(expected_quantity,positive=True)
         if symbol not in PAIRS or type(liquidation) is not bool:raise ValueError('Invalid margin close')
-        parts=['close',symbol,position_id,encode(expected_quantity),encode(marks[PAIRS[symbol]]),now_ms,liquidation]
+        if expires_ms is not None and (type(expires_ms) is not int or not callable(clock_ms)):raise ValueError('Expiry requires a live clock')
+        parts=['close',symbol,position_id,encode(expected_quantity),liquidation]
         with self.ledger.transaction(),localcontext() as ctx:
-            ctx.prec=40;ctx.rounding=ROUND_DOWN
+            ctx.prec=120
             fp,prior=self._prior(operation,parts)
             if prior is not None:return prior
+            now_ms=clock_ms() if clock_ms else now_ms
+            if type(now_ms) is not int or now_ms<0 or (expires_ms is not None and now_ms>=expires_ms):raise ValueError('Margin close confirmation expired')
             self._check();p=self.db.execute('SELECT * FROM margin_positions WHERE symbol=? AND id=?',(symbol,position_id)).fetchone()
             if not p or amount(p['quantity'])!=expected_quantity:raise ValueError('Position changed or missing')
+            marks=self._current_marks(quotes,now_ms)
+            filters=self._filters(quotes,symbol,now_ms)
             mark=marks[PAIRS[symbol]];loan_id=p['loan_id']
             if loan_id:self.loans.accrue(loan_id,now_ms=now_ms)
             loan=self.db.execute('SELECT * FROM margin_loans WHERE id=?',(loan_id,)).fetchone() if loan_id else None
             debt=amount(loan['principal'])+amount(loan['interest']) if loan and loan['status']=='OPEN' else Decimal(0)
             if p['direction']=='LONG':
-                self._trade('margin:close:'+operation,symbol,'SELL',amount(p['quantity']),mark,now_ms)
+                qty=sellable_lot(p['quantity'],mark,filters) if liquidation else validate_lot(p['quantity'],mark,filters)
+                if qty:self._trade('margin:close:'+operation,symbol,'SELL',qty,mark,filters,now_ms)
             elif debt:
                 already_owned=self.ledger.balance(WALLET+':free',PAIRS[symbol])
                 needed=max(Decimal(0),debt-already_owned)
-                cost=needed*mark*(1+SLIPPAGE)*(1+FEE);free=self.ledger.balance(WALLET+':free')
-                if cost>free and not liquidation:raise ValueError('Insufficient USDT to buy borrowed asset')
-                qty=needed if cost<=free else free/(mark*(1+SLIPPAGE)*(1+FEE))
-                if qty>0:self._trade('margin:close:'+operation,symbol,'BUY',qty,mark,now_ms)
+                qty=affordable_lot(needed,self.ledger.balance(WALLET+':free'),mark*(1+SLIPPAGE),FEE,mark,filters,allow_partial=liquidation)
+                if qty>0:self._trade('margin:close:'+operation,symbol,'BUY',qty,mark,filters,now_ms)
             paid=Decimal(0)
             if debt:
                 asset='USDT' if p['direction']=='LONG' else PAIRS[symbol]
@@ -186,7 +270,7 @@ class MarginPaperBook:
         with self.ledger.transaction():
             fp,prior=self._prior(operation,parts)
             if prior is not None:return prior
-            self._check();self._accrue_all(now_ms)
+            self._check();marks=self._current_marks(quotes,now_ms);self._accrue_all(now_ms)
             risk=self._risk(marks)
             if not risk['positions'] or risk['equity']>risk['maintenance']:
                 raise ValueError('Margin maintenance has not been breached')
@@ -200,7 +284,9 @@ class MarginPaperBook:
             for symbol,asset in PAIRS.items():
                 debt=-(self.ledger.balance(WALLET+':principal',asset)+self.ledger.balance(WALLET+':interest',asset))
                 surplus=max(Decimal(0),self.ledger.balance(WALLET+':free',asset)-debt)
-                if surplus:self._trade('margin:liquidate-surplus:'+operation+':'+asset,symbol,'SELL',surplus,marks[asset],now_ms)
+                filters=self._filters(quotes,symbol,now_ms)
+                qty=sellable_lot(surplus,marks[asset],filters)
+                if qty:self._trade('margin:liquidate-surplus:'+operation+':'+asset,symbol,'SELL',qty,marks[asset],filters,now_ms)
             self._repay_orphans(operation+':before-shorts',now_ms)
             for p in (p for p in positions if p['direction']=='SHORT'):
                 results.append(self._close(operation+':'+p['id'],p['symbol'],p['id'],p['quantity'],quotes,now_ms=now_ms,liquidation=True))

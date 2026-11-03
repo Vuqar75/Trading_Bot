@@ -1,0 +1,92 @@
+import os
+import sqlite3
+import subprocess
+import sys
+import tempfile
+import unittest
+from decimal import Decimal
+from pathlib import Path
+
+from trading_bot.margin_paper_book import MarginPaperBook
+from trading_bot.margin_paper_strategy import MarginPaperStrategy
+from trading_bot.paper_wallet_ledger import PaperWalletLedger
+
+
+PERIOD=900000
+SERVER=31*PERIOD+1000
+FILTER={'lot_rules':[{'min':'.0001','max':'100','step':'.0001'}],
+        'min_notional':'5','max_notional':'0','observed_ms':SERVER}
+
+
+def snapshots(now=SERVER,btc='100'):
+    return {'BTCUSDT':{'price':btc,'time_ms':now,'server_ms':now,'source':'fixture','price_kind':'last_public_trade','filters':FILTER},
+            'ETHUSDT':{'price':'200','time_ms':now,'server_ms':now,'source':'fixture','price_kind':'last_public_trade','filters':FILTER}}
+
+
+def candles():
+    return {'BTCUSDT':[(i*PERIOD,'100') for i in range(30)]+[(30*PERIOD,'101')],
+            'ETHUSDT':[(i*PERIOD,'100') for i in range(30)]+[(30*PERIOD,'99')]}
+
+
+class MarginStrategyTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
+        self.path=Path(self.tmp.name)/'ledger.db';self.ledger=PaperWalletLedger(self.path);self.addCleanup(self.ledger.close)
+        self.book=MarginPaperBook(self.ledger)
+        with self.ledger.transaction():
+            self.ledger._post('seed','FIXTURE',{},[('margin_cross:free','USDT',Decimal(50)),('external:fixture','USDT',Decimal(-50))])
+            self.ledger.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'")
+
+    def test_two_signals_only_once_and_protective_exit_on_pause(self):
+        strategy=MarginPaperStrategy(self.book)
+        first=strategy.tick(snapshots(),candles(),now_ms=SERVER)
+        self.assertEqual([x['action'] for x in first],['OPEN','OPEN'])
+        self.assertEqual(strategy.tick(snapshots(),candles(),now_ms=SERVER),[])
+        with self.ledger.transaction():self.ledger.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
+        tick=strategy.tick(snapshots(SERVER+2000,btc='95'),candles(),now_ms=SERVER+2000)
+        self.assertEqual([x['action'] for x in tick],['STOP'])
+        self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],1)
+        self.assertEqual(strategy.last_protection_ms,SERVER+2000)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_stale_data_blocks_entries_durably(self):
+        strategy=MarginPaperStrategy(self.book)
+        with self.assertRaises(ValueError):strategy.tick(snapshots(),candles(),now_ms=SERVER+200000)
+        self.assertEqual(self.ledger.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+        self.assertNotEqual(self.ledger.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()[0],'null')
+
+    def test_future_candle_is_not_used(self):
+        strategy=MarginPaperStrategy(self.book);future=candles()
+        future['BTCUSDT'][-1]=(31*PERIOD,'101')
+        with self.assertRaises(ValueError):strategy.tick(snapshots(),future,now_ms=SERVER)
+        self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],0)
+
+    def test_process_death_around_decision_commit(self):
+        self.ledger.close()
+        script='''import os,sqlite3,sys
+from trading_bot.margin_paper_book import MarginPaperBook
+from trading_bot.margin_paper_strategy import MarginPaperStrategy
+from trading_bot.paper_wallet_ledger import PaperWalletLedger
+db=sqlite3.connect(sys.argv[1],isolation_level=None);db.row_factory=sqlite3.Row
+db.execute("PRAGMA foreign_keys=ON");db.execute("PRAGMA synchronous=FULL")
+l=object.__new__(PaperWalletLedger);l.db=db;l.fault=lambda p:None
+b=MarginPaperBook(l);p=900000;t=31*p+1000
+f={"lot_rules":[{"min":".0001","max":"100","step":".0001"}],"min_notional":"5","max_notional":"0","observed_ms":t}
+q={"BTCUSDT":{"price":"100","time_ms":t,"server_ms":t,"source":"fixture","price_kind":"last_public_trade","filters":f},"ETHUSDT":{"price":"200","time_ms":t,"server_ms":t,"source":"fixture","price_kind":"last_public_trade","filters":f}}
+c={"BTCUSDT":[(i*p,"100") for i in range(30)]+[(30*p,"101")],"ETHUSDT":[(i*p,"100") for i in range(30)]+[(30*p,"99")]}
+MarginPaperStrategy(b,fault=lambda point:os._exit(73) if point==sys.argv[2] else None).tick(q,c,now_ms=t)
+'''
+        for point,expected in [('after_decision_before_commit',0),('after_decision_commit',1)]:
+            child=subprocess.run([sys.executable,'-B','-c',script,str(self.path),point],timeout=30)
+            self.assertEqual(child.returncode,73)
+            with sqlite3.connect(self.path) as db:
+                self.assertEqual(db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],expected)
+                self.assertEqual(db.execute('SELECT count(*) FROM margin_signals').fetchone()[0],expected)
+        replay=subprocess.run([sys.executable,'-B','-c',script,str(self.path),'never'],timeout=30)
+        self.assertEqual(replay.returncode,0)
+        with sqlite3.connect(self.path) as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],2)
+            self.assertEqual(db.execute("SELECT count(*) FROM ledger_events WHERE kind='MARGIN_TRADE'").fetchone()[0],2)
+
+
+if __name__=='__main__':unittest.main()

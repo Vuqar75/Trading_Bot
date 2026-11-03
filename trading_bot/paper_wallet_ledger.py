@@ -11,8 +11,8 @@ import time
 from contextlib import contextmanager
 from decimal import Decimal, InvalidOperation, localcontext
 
-WALLETS = ('reserve', 'spot', 'futures_isolated', 'futures_cross')
-TRADING = ('spot', 'futures_isolated', 'futures_cross')
+WALLETS = ('reserve', 'spot', 'futures_isolated', 'futures_cross', 'margin_cross')
+TRADING = ('spot', 'futures_isolated', 'futures_cross', 'margin_cross')
 ASSETS = ('USDT', 'BTC')
 
 
@@ -189,6 +189,18 @@ class PaperWalletLedger:
                 book._require_coverage(current)
                 marks=book._marks(book.stored_quotes(),current)
                 if book._risk(marks)['available'] < quantity:raise ValueError('Insufficient cross collateral')
+        if 'margin_cross' in (source,destination):
+            required=('margin_position_anchor','margin_positions','margin_loans','margin_runtime','margin_market_quotes')
+            if any(not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(name,)).fetchone() for name in required):
+                raise ValueError('Margin not activated')
+            hold=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()
+            if hold and hold[0]=='true':raise ValueError('Deployment hold is active')
+            from .margin_paper_book import MarginPaperBook
+            from .margin_interest_ledger import MarginInterestLedger
+            book=object.__new__(MarginPaperBook);book.db=self.db;book.ledger=self
+            book.loans=object.__new__(MarginInterestLedger);book.loans.db=self.db;book.loans.ledger=self
+            current=time.time() if now is None else now
+            book.validate_transfer(quantity,outgoing=source=='margin_cross',now_ms=int(current*1000))
         if self.balance(source+':free') < quantity:
             raise ValueError('Insufficient confirmed free funds')
 

@@ -2,6 +2,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from decimal import Decimal
 from pathlib import Path
@@ -82,6 +83,31 @@ MarginRepayProposals(l).confirm(sys.argv[2],now_ms=102)
             self.assertEqual(job.returncode,0,err.decode())
         self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM ledger_events WHERE kind='MARGIN_REPAY'").fetchone()[0],1)
         self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_expiry_is_rechecked_after_real_sqlite_lock(self):
+        wall_start=int(time.time()*1000)
+        token=self.proposals.propose('request','loan','.5',now_ms=101,ttl_ms=1000)['id']
+        blocker=sqlite3.connect(self.path,isolation_level=None,timeout=5);self.addCleanup(blocker.close)
+        script='''import sqlite3,sys,time
+from trading_bot.margin_repay_proposals import MarginRepayProposals
+from trading_bot.paper_wallet_ledger import PaperWalletLedger
+db=sqlite3.connect(sys.argv[1],isolation_level=None,timeout=10);db.row_factory=sqlite3.Row
+db.execute("PRAGMA foreign_keys=ON");db.execute("PRAGMA synchronous=FULL")
+l=object.__new__(PaperWalletLedger);l.db=db;l.fault=lambda p:None
+p=MarginRepayProposals(l);print("ready",flush=True);sys.stdin.readline()
+try:p.confirm(sys.argv[2],clock_ms=lambda:101+int(time.time()*1000)-int(sys.argv[3]))
+except ValueError as e:
+ if "expired" in str(e):sys.exit(0)
+ raise
+sys.exit(1)
+'''
+        job=subprocess.Popen([sys.executable,'-B','-c',script,str(self.path),token,str(wall_start)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.assertEqual(job.stdout.readline().strip(),b'ready')
+        blocker.execute('BEGIN IMMEDIATE');job.stdin.write(b'go\n');job.stdin.flush()
+        time.sleep(1.2);blocker.rollback()
+        _,err=job.communicate(timeout=20)
+        self.assertEqual(job.returncode,0,err.decode())
+        self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM ledger_events WHERE kind='MARGIN_REPAY'").fetchone()[0],0)
 
 
 if __name__=='__main__':unittest.main()
