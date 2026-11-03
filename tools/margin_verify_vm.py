@@ -144,7 +144,7 @@ def _emergency_hold():
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('phase',choices=('ready','allocate','release','postcheck'));args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('phase',choices=('ready','telegram','allocate','release','postcheck'));args=parser.parse_args()
     if os.geteuid()!=0 or subprocess.check_output(['hostname'],text=True).strip()!='tradingbot-paper-test':raise SystemExit('Unexpected host')
     prepared=json.loads((ARCHIVE/'prepared.json').read_text());candidate=prepared['candidate']
     if len(candidate)!=40 or any(c not in '0123456789abcdef' for c in candidate):raise ValueError('Invalid candidate')
@@ -172,8 +172,31 @@ def main():
         current.update({'candidate':candidate,'cycles':cycles})
         _write(ARCHIVE/'ready.json',json.dumps(current,sort_keys=True).encode(),0o600)
         print('MARGIN_READY_ON_HOLD',flush=True);return
+    if args.phase=='telegram':
+        if not (ARCHIVE/'ready.json').is_file():raise ValueError('Paused health verification required')
+        _market_health(target,held=True)
+        shared=SharedPaperStore(FINANCIAL)
+        try:
+            with shared.transaction():
+                row=shared.db.execute("SELECT value FROM ledger_meta WHERE key='margin_telegram_probe'").fetchone()
+                if row:ident=json.loads(row[0])['outbox_id']
+                else:
+                    cur=shared.db.execute('INSERT INTO futures_outbox(message) VALUES(?)',('[Spot margin cross • PAPER] Проверка связи после обновления. Входы остаются на паузе.',))
+                    ident=cur.lastrowid
+                    shared.db.execute("INSERT INTO ledger_meta VALUES('margin_telegram_probe',?)",(json.dumps({'outbox_id':ident},sort_keys=True),))
+            deadline=time.monotonic()+75
+            while shared.db.execute('SELECT 1 FROM futures_outbox WHERE id=?',(ident,)).fetchone():
+                if time.monotonic()>=deadline:raise ValueError('Telegram API delivery not confirmed')
+                time.sleep(2)
+            if json.loads((FINANCIAL.parent/'runtime-health.json').read_text()).get('telegram_error'):
+                raise ValueError('Telegram poller reports an error')
+        finally:shared.close()
+        _write(ARCHIVE/'telegram-proof.json',json.dumps({'candidate':candidate,'api_accepted':True,'at':time.time()},sort_keys=True).encode(),0o600)
+        print('MARGIN_TELEGRAM_API_ACCEPTED; OWNER_RECEIPT_NOT_CONFIRMED',flush=True);return
     if args.phase=='allocate':
         if not (ARCHIVE/'ready.json').is_file():raise ValueError('Paused health verification required')
+        telegram=json.loads((ARCHIVE/'telegram-proof.json').read_text())
+        if telegram.get('candidate')!=candidate or telegram.get('api_accepted') is not True:raise ValueError('Telegram API verification required')
         _market_health(target,held=True)
         before=ARCHIVE/'pre-allocation';after=ARCHIVE/'post-allocation'
         if not before.exists():
