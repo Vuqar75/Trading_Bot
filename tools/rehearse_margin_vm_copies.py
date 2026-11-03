@@ -91,8 +91,8 @@ with tempfile.TemporaryDirectory(prefix='margin-copy-rehearsal-') as temp:
     shared=SharedPaperStore(financial);q=UnifiedQueue(queue)
     try:
         release=release_margin_cutover(shared,q,'margin:release:vm-copy',protection_checked_ms=health['protection_checked_at'])
-        expected={m for m in ('spot','futures') if not frozen['paused'][m]}|{'margin_cross'}
-        if set(release['enabled'])!=expected:raise RuntimeError('Original pause restoration mismatch')
+        expected_enabled={m for m in ('spot','futures') if not frozen['paused'][m]}|{'margin_cross'}
+        if set(release['enabled'])!=expected_enabled:raise RuntimeError('Original pause restoration mismatch')
         if not shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]:raise RuntimeError('Cross pause changed')
         with shared.transaction():shared.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
         if not release_margin_cutover(shared,q,'margin:release:vm-copy',protection_checked_ms=health['protection_checked_at'])['replayed'] or not shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0]:raise RuntimeError('Release replay changed manual pause')
