@@ -8,6 +8,8 @@ from .display_amount import display_amount as fmt
 from .margin_repay_proposals import MarginRepayProposals
 from .paper_wallet_live_report import live_report
 from .telegram_reports import when
+from .margin_status_reports import loans_report,interest_report,status_report
+from .status_summary import brief_status
 
 
 def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=lambda point:None):
@@ -60,23 +62,15 @@ def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=
             except ValueError:
                 book.fail_closed('LedgerError');queue.acknowledge(job['id'],'Отчёт недоступен: требуется сверка.',applied=False);continue
             if not margin:queue.acknowledge(job['id'],'Margin не активирован.',applied=False);continue
-            paused=book.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0]
-            lines=[('Входы на паузе' if paused else 'Paper-входы разрешены')+'; капитал после долгов '+fmt(margin['equity'])+' USDT.']
-            for loan in margin['loans']:
-                lines.append('Займ '+loan['id']+': основной долг '+fmt(loan['principal'],loan['asset'])+'; проценты '+fmt(loan['interest'],loan['asset'])+' '+loan['asset']+'.')
-            if command=='/interest':
-                lines.append('Модельные ставки за начатый час (не тариф биржи):')
-                for asset in ('USDT','BTC','ETH'):
-                    rate=book.db.execute('SELECT rate FROM margin_loan_rates WHERE asset=? AND effective_ms<=? ORDER BY effective_ms DESC LIMIT 1',(asset,int(now*1000))).fetchone()
-                    lines.append(asset+': '+fmt(Decimal(rate['rate'])*100 if rate else None)+'% в час.')
-                for loan in margin['loans']:
-                    last=book.db.execute('SELECT MAX(period) FROM margin_interest_periods WHERE loan_id=?',(loan['id'],)).fetchone()[0]
-                    due=(loan['opened_ms']+(0 if last is None else last+1)*3600000)/1000
-                    lines.append('Займ '+loan['id']+': следующий период '+when(due)+('. Начисление просрочено.' if due<=now else '.'))
-            if margin['due']:lines.append('Начислены не все периоды; оценка неполна.')
-            for p in margin['positions']:lines.append(p['symbol']+' '+p['direction']+' '+fmt(p['quantity'],p['symbol'][:-4])+' '+p['symbol'][:-4]+'.')
-            if data['incomplete']:lines.append('Неполные данные: '+'; '.join(data['incomplete']))
-            queue.acknowledge(job['id'],'\n'.join(lines));continue
+            if command=='/loans':result=loans_report(margin)
+            elif command=='/interest':result=interest_report(margin,now)
+            elif command=='/status':result=status_report(data,now)
+            else:
+                stamps=[margin['quotes'].get(s,{}).get('time_ms') for s in ('BTCUSDT','ETHUSDT')]
+                stamp=min(stamps)/1000 if all(type(x) is int for x in stamps) else None
+                result=brief_status(paused=margin['paused'],positions=len(margin['positions']),stamp=stamp,now=now,
+                                    problem=bool(margin['error'] or margin['due'] or margin['marks'] is None))
+            queue.acknowledge(job['id'],result);continue
         if command=='/signal':
             rows=book.db.execute('SELECT symbol,candle,payload FROM margin_signals ORDER BY symbol').fetchall()
             queue.acknowledge(job['id'],'\n'.join(r['symbol']+': '+json.loads(r['payload'])['action']+'; свеча '+when(r['candle']/1000) for r in rows) or 'Сигнал ещё не рассчитан.');continue
@@ -86,7 +80,7 @@ def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=
                 text='\n'.join(when(r['at_ms']/1000)+' | '+r['symbol']+' '+r['direction']+' | итог '+fmt(r['net'])+' USDT' for r in rows[-10:]) or 'История закрытий пуста.'
                 queue.acknowledge(job['id'],text+'\nПроценты в криптоактиве оценены по цене выхода; неполные результаты обозначены как неизвестные.');continue
             day=datetime.fromtimestamp(now,ZoneInfo('Asia/Baku')).replace(hour=0,minute=0,second=0,microsecond=0).timestamp()
-            lines=['Spot margin cross • PAPER: торговый отчёт.']
+            lines=['Торговый отчёт.']
             for title,items in (('Сегодня по Баку',[r for r in rows if day<=r['at_ms']/1000<=now]),('За всё время',rows)):
                 with localcontext() as context:
                     context.prec=120

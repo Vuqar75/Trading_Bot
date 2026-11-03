@@ -6,6 +6,7 @@ from .cross_trade_report import cross_trade_report
 from .paper_wallet_live_report import live_report
 from .telegram_reports import when
 from .display_amount import display_amount as fmt
+from .status_summary import brief_status
 
 
 def _status(shared, now):
@@ -13,7 +14,7 @@ def _status(shared, now):
     if cross is None:raise ValueError('Cross not activated')
     state=shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]
     settings=shared.db.execute('SELECT leverage,interval FROM cross_settings WHERE id=1').fetchone()
-    lines=['Futures cross • PAPER',('Входы на паузе' if state else 'Входы разрешены')+', '+settings['interval']+', плечо '+str(settings['leverage'])+'×.',
+    lines=[('Входы на паузе' if state else 'Входы разрешены')+', '+settings['interval']+', плечо '+str(settings['leverage'])+'×.',
            'Капитал '+fmt(cross['equity'])+' USDT; свободно '+fmt(cross['free'])+'; маржа '+fmt(cross['margin'])+'; обязательства '+fmt(-cross['liability'])+'.',
            'Открытый результат '+fmt(cross['gross'])+'; funding '+fmt(cross['funding'])+'; запас риска '+fmt(cross['buffer'])+'.']
     if shared.db.execute("SELECT value FROM cross_runtime WHERE key='error'").fetchone()[0]!='null':lines.append('Последняя ошибка: требуется проверка данных или учёта.')
@@ -67,10 +68,22 @@ def process_cross(queue, receiver, book, *, started=0, now=None, clock=time.time
                 queue.acknowledge(job['id'],'Позиция изменилась или данные неполны; сделка не выполнена.',applied=False);continue
             fault('after_destination_commit')
             queue.acknowledge(job['id'],'Виртуальная позиция '+payload['symbol']+' закрыта; учёт сохранён.');continue
-        if command in ('/report','/status','/brief_status'):
+        if command=='/brief_status':
+            with book.shared.transaction():
+                quotes=book.stored_quotes();stamps=[quotes.get(s,{}).get('time') for s in ('BTCUSDT','ETHUSDT')]
+                stamp=min(stamps) if all(isinstance(x,(int,float)) for x in stamps) else None
+                problem=bool(book.runtime_error() or book.funding_conflict())
+                try:book._check();book._require_coverage(now);book._marks(quotes,now)
+                except ValueError:problem=True
+                paused=bool(book.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0])
+                count=len(book._positions())
+            queue.acknowledge(job['id'],brief_status(paused=paused,positions=count,stamp=stamp,now=now,problem=problem));continue
+        if command in ('/report','/status'):
             try:result=cross_trade_report(book.shared,now=now) if command=='/report' else _status(book.shared,now)
             except ValueError:
                 book.fail_closed();queue.acknowledge(job['id'],'Отчёт недоступен: требуется проверка учёта.',applied=False);continue
+            if command=='/report' and result.startswith('Futures cross • PAPER • торговый отчёт\n'):
+                result='Торговый отчёт\n'+result.split('\n',1)[1]
             queue.acknowledge(job['id'],result);continue
         if command=='/signal':
             rows=book.db.execute('SELECT symbol,candle,payload FROM cross_signals ORDER BY symbol').fetchall() if book.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_signals'").fetchone() else []

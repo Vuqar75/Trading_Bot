@@ -3,6 +3,7 @@ import json
 import time
 from decimal import Decimal
 from .telegram_reports import when
+from .status_summary import brief_status
 
 
 def process_market(queue, receiver, store, market, *, started=0, fault=lambda point: None):
@@ -28,13 +29,9 @@ def process_market(queue, receiver, store, market, *, started=0, fault=lambda po
             quote = store.get('quote') or {}
             stamp = quote.get('time')
             pos = store.get('position')
-            msg = ('входы на паузе' if store.get('paused') else 'входы разрешены')
-            msg += '; позиция: '+(str(pos.get('direction', 'открыта')) if isinstance(pos, dict) and Decimal(str(pos.get('quantity', '0'))) > 0 else 'нет')
-            msg += '; обновление: '+(when(stamp) if stamp else 'нет данных')
-            if stamp and time.time()-stamp > 120:
-                msg += ' (устарело)'
-            if store.get('error') or store.get('blocked'):
-                msg += '; есть ошибка или блокировка'
+            count=int(isinstance(pos,dict) and Decimal(str(pos.get('quantity','0')))>0)
+            msg=brief_status(paused=bool(store.get('paused')),positions=count,stamp=stamp,now=time.time(),
+                             problem=bool(store.get('error') or store.get('blocked')))
             queue.acknowledge(job['id'], msg)
             continue
         if action in ('/pause', '/resume', '/confirmed_close'):

@@ -104,7 +104,10 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             loans=[dict(r) for r in shared.db.execute("SELECT * FROM margin_loans WHERE status='OPEN' ORDER BY id")]
             now_ms=int(now*1000);due=False
             for loan in loans:
-                last=shared.db.execute('SELECT MAX(period) FROM margin_interest_periods WHERE loan_id=?',(loan['id'],)).fetchone()[0]
+                last_row=shared.db.execute('SELECT period,at_ms FROM margin_interest_periods WHERE loan_id=? ORDER BY period DESC LIMIT 1',(loan['id'],)).fetchone()
+                last=last_row['period'] if last_row else None
+                loan['last_accrual_ms']=last_row['at_ms'] if last_row else None
+                loan['next_accrual_ms']=loan['opened_ms']+(0 if last is None else last+1)*HOUR_MS
                 if now_ms<loan['opened_ms'] or last is None or last<(now_ms-loan['opened_ms'])//HOUR_MS:due=True
             if due:incomplete.append('Margin cross: не начислены все причитающиеся периоды процентов')
             marks=None
@@ -121,7 +124,17 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 margin_assets=None;margin_debt=None
             margin_cross_value=None if margin_assets is None or margin_debt is None else margin_assets+margin_debt
             margin_positions=mb._positions()
+            settings=shared.db.execute('SELECT leverage,interval FROM margin_settings WHERE id=1').fetchone()
+            state=shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()
+            error_row=shared.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()
+            if not settings or not state or not error_row:raise ValueError('Margin status unavailable')
+            rates={}
+            for asset in ('USDT','BTC','ETH'):
+                rate=shared.db.execute('SELECT rate FROM margin_loan_rates WHERE asset=? AND effective_ms<=? ORDER BY effective_ms DESC LIMIT 1',(asset,now_ms)).fetchone()
+                rates[asset]=amount(rate['rate']) if rate else None
             margin_cross={'assets':assets,'loans':loans,'positions':margin_positions,'asset_value':margin_assets,'debt_value':margin_debt,'marks':marks,'due':due,
+                          'quotes':mb.stored_quotes(),'rates':rates,'paused':bool(state['paused']),'error':json.loads(error_row['value']),
+                          'leverage':settings['leverage'],'interval':settings['interval'],
                           'locked':sum((amount(pos['own']) for pos in margin_positions),Decimal(0)),
                           'equity':None if due or margin_cross_value is None else balances['margin_cross']['free']+balances['margin_cross']['reserved']+margin_cross_value}
             closes=[json.loads(r['details']) for r in shared.db.execute("SELECT created,details FROM ledger_events WHERE kind='FINANCIAL_METADATA' AND id LIKE 'margin:position-close:%'") if period=='all' or start<=r['created']<=now]
