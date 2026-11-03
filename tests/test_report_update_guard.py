@@ -72,5 +72,22 @@ class ReportUpdateGuardTests(unittest.TestCase):
         with self.shared.transaction():self.shared._set('spot','paused',True)
         self.assertTrue(self.release()['replayed']);self.assertTrue(self.shared.snapshot('spot')['paused'])
 
+    def test_new_namespace_preserves_prior_checkpoint_and_pauses(self):
+        self.freeze();self.release()
+        prior=[tuple(row) for row in self.shared.db.execute("SELECT key,value FROM ledger_meta WHERE key LIKE 'reports_update_%' ORDER BY key")]
+        frozen=freeze_report_update(self.shared,self.q,'diagnostics:freeze:test',now=100,namespace='diagnostics')
+        self.assertFalse(frozen['paused']['spot']);self.assertTrue(frozen['paused']['margin_cross'])
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            done=release_report_update(self.shared,self.q,'diagnostics:release:test',protection_checked_ms=100000,now=100,namespace='diagnostics')
+        self.assertEqual(done['enabled'],['spot'])
+        self.assertEqual(prior,[tuple(row) for row in self.shared.db.execute("SELECT key,value FROM ledger_meta WHERE key LIKE 'reports_update_%' ORDER BY key")])
+
+    def test_diagnostics_refuses_unpaused_margin_without_changing_any_pause(self):
+        with self.shared.transaction():self.shared.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'")
+        with self.assertRaisesRegex(ValueError,'margin and cross paused'):
+            freeze_report_update(self.shared,self.q,'diagnostics:freeze:test',now=100,namespace='diagnostics')
+        self.assertFalse(self.shared.deployment_hold());self.assertFalse(self.shared.snapshot('spot')['paused'])
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],0)
+
 
 if __name__=='__main__':unittest.main()

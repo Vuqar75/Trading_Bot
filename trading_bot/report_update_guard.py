@@ -42,13 +42,14 @@ def _pending(q):
     if q.execute("SELECT 1 FROM unified_jobs WHERE status='PENDING' LIMIT 1").fetchone():raise ValueError('Pending commands require processing')
 
 
-def freeze_report_update(shared,queue,operation,*,now=None):
-    if not isinstance(operation,str) or not operation.startswith('reports:freeze:'):raise ValueError('Explicit operation required')
+def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
+    if namespace not in ('reports','diagnostics') or not isinstance(operation,str) or not operation.startswith(namespace+':freeze:'):raise ValueError('Explicit operation required')
+    freeze_key=namespace+'_update_freeze'
     q=queue.db
     try:
         with shared.transaction():
             q.execute('BEGIN IMMEDIATE');now=time.time() if now is None else now
-            old=shared.db.execute("SELECT value FROM ledger_meta WHERE key='reports_update_freeze'").fetchone()
+            old=shared.db.execute('SELECT value FROM ledger_meta WHERE key=?',(freeze_key,)).fetchone()
             if old:
                 result=json.loads(old[0])
                 if result['operation']!=operation or not shared.deployment_hold():raise ValueError('Existing report hold requires inspection')
@@ -69,9 +70,11 @@ def freeze_report_update(shared,queue,operation,*,now=None):
                 row=shared.db.execute('SELECT paused FROM wallet_state WHERE wallet=?',(market,)).fetchone()
                 if not row or row[0] not in (0,1):raise ValueError('Unknown market pause')
                 paused[market]=bool(row[0])
+            if namespace=='diagnostics' and (not paused['futures_cross'] or not paused['margin_cross']):
+                raise ValueError('Diagnostics require margin and cross paused')
             offset=int(q.execute("SELECT value FROM unified_state WHERE key='offset'").fetchone()[0])
             result={'operation':operation,'paused':paused,'queue_offset':offset,'queue_anchor':_queue_anchor(q,offset),'frozen_at':now}
-            shared.db.execute("INSERT INTO ledger_meta VALUES('reports_update_freeze',?)",(json.dumps(result,sort_keys=True),))
+            shared.db.execute('INSERT INTO ledger_meta VALUES(?,?)',(freeze_key,json.dumps(result,sort_keys=True)))
             shared.db.execute("INSERT OR REPLACE INTO ledger_meta VALUES('deployment_hold','true')")
             for market in ('spot','futures'):shared._set(market,'paused',True)
             for market in ('futures_cross','margin_cross'):shared.db.execute('UPDATE wallet_state SET paused=1 WHERE wallet=?',(market,))
@@ -80,18 +83,19 @@ def freeze_report_update(shared,queue,operation,*,now=None):
         if q.in_transaction:q.rollback()
 
 
-def release_report_update(shared,queue,operation,*,protection_checked_ms,now=None):
-    if not isinstance(operation,str) or not operation.startswith('reports:release:') or type(protection_checked_ms) is not int:raise ValueError('Explicit release and protection time required')
+def release_report_update(shared,queue,operation,*,protection_checked_ms,now=None,namespace='reports'):
+    if namespace not in ('reports','diagnostics') or not isinstance(operation,str) or not operation.startswith(namespace+':release:') or type(protection_checked_ms) is not int:raise ValueError('Explicit release and protection time required')
+    freeze_key=namespace+'_update_freeze';release_key=namespace+'_update_release'
     q=queue.db
     try:
         with shared.transaction():
             q.execute('BEGIN IMMEDIATE');now=time.time() if now is None else now
-            old=shared.db.execute("SELECT value FROM ledger_meta WHERE key='reports_update_release'").fetchone()
+            old=shared.db.execute('SELECT value FROM ledger_meta WHERE key=?',(release_key,)).fetchone()
             if old:
                 result=json.loads(old[0])
                 if result['operation']!=operation:raise ValueError('Existing release requires inspection')
                 return dict(result,replayed=True)
-            row=shared.db.execute("SELECT value FROM ledger_meta WHERE key='reports_update_freeze'").fetchone()
+            row=shared.db.execute('SELECT value FROM ledger_meta WHERE key=?',(freeze_key,)).fetchone()
             if not row or not shared.deployment_hold():raise ValueError('Report hold required')
             frozen=json.loads(row[0]);offset=frozen['queue_offset']
             cur=q.execute("SELECT value FROM unified_state WHERE key='offset'").fetchone()
@@ -114,7 +118,7 @@ def release_report_update(shared,queue,operation,*,protection_checked_ms,now=Non
             if frozen['paused']['margin_cross'] is False and 'margin_cross' not in manual:
                 shared.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'");enabled.append('margin_cross')
             result={'operation':operation,'enabled':enabled,'manual_pauses':sorted(manual),'released_at':now}
-            shared.db.execute("INSERT INTO ledger_meta VALUES('reports_update_release',?)",(json.dumps(result,sort_keys=True),))
+            shared.db.execute('INSERT INTO ledger_meta VALUES(?,?)',(release_key,json.dumps(result,sort_keys=True)))
             shared._assert_consistent('spot');shared._assert_consistent('futures');_cross(shared,now);_margin(shared,now)
             return dict(result,replayed=False)
     finally:

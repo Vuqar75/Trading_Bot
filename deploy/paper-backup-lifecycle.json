@@ -1,0 +1,6 @@
+{
+  "rule": [
+    {"action": {"type": "Delete"}, "condition": {"age": 2, "matchesPrefix": ["paper-backups/hourly/"]}},
+    {"action": {"type": "Delete"}, "condition": {"age": 14, "matchesPrefix": ["paper-backups/daily/"]}}
+  ]
+}

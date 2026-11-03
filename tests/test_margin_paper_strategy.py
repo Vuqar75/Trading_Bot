@@ -69,6 +69,17 @@ class MarginStrategyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'Untrusted'):cycle(None,self.book,queue,receiver,strategy,reader,started=0,clock=lambda:SERVER/1000)
         self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM ledger_events WHERE kind='MARGIN_TRADE'").fetchone()[0],2)
 
+    def test_runtime_cycle_logs_only_allowlisted_diagnostic_fields(self):
+        queue=UnifiedQueue(Path(self.tmp.name)/'commands.db');self.addCleanup(queue.close)
+        receiver=MarginCommandReceiver(self.book);strategy=MarginPaperStrategy(self.book)
+        class Reader:
+            def snapshot(self,symbol,interval):raise ValueError('credential=secret https://example.com/?signature=secret')
+        with self.assertLogs('margin-paper',level='ERROR') as output:
+            with self.assertRaises(ValueError):cycle(None,self.book,queue,receiver,strategy,Reader(),started=0,clock=lambda:SERVER/1000)
+        message=output.output[0];self.assertIn('"stage": "fetch"',message);self.assertIn('BTCUSDT',message)
+        self.assertIn('"file": "margin_app.py"',message);self.assertRegex(message,r'"line": \d+')
+        self.assertNotIn('secret',message);self.assertNotIn('https',message)
+
     def test_stale_data_blocks_entries_durably(self):
         strategy=MarginPaperStrategy(self.book)
         with self.assertRaises(ValueError):strategy.tick(snapshots(),candles(),now_ms=SERVER+200000)

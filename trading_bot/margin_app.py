@@ -2,9 +2,11 @@
 import argparse
 import json
 import logging
+import re
 import signal
 import threading
 import time
+import traceback
 from pathlib import Path
 
 from .app import process_lock
@@ -20,16 +22,38 @@ from .unified_queue import UnifiedQueue
 log=logging.getLogger('margin-paper')
 
 
+def cycle_diagnostic(exc, stage, symbol=None, interval=None):
+    """Return allowlisted context only; exception text and locals are private."""
+    allowed={'commands','settings','fetch','provenance','candles','strategy','postcheck'}
+    value={'stage':stage if stage in allowed else 'unknown',
+           'exception_type':type(exc).__name__ if re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]{0,79}',type(exc).__name__) else 'Exception'}
+    if symbol in PAIRS:value['symbol']=symbol
+    if interval in ('1m','3m','5m','15m','30m','1h','2h','4h','6h','8h','12h','1d','3d','1w','1M'):value['interval']=interval
+    root=Path(__file__).resolve().parent
+    for frame in reversed(traceback.extract_tb(exc.__traceback__)):
+        path=Path(frame.filename)
+        if path.parent.resolve()==root and re.fullmatch(r'[a-z_]+\.py',path.name):
+            value['file']=path.name;value['line']=frame.lineno;break
+    return value
+
+
 def cycle(shared,book,queue,receiver,strategy,reader,*,started,clock=time.time):
-    process_margin(queue,receiver,book,shared,started=started,clock=clock)
-    settings=book.db.execute('SELECT interval FROM margin_settings WHERE id=1').fetchone()
-    if not settings:raise ValueError('Missing margin settings')
-    rows={symbol:reader.snapshot(symbol,settings['interval']) for symbol in PAIRS}
-    if any(q.get('source')!=MarginSpotData.HOST or q.get('price_kind')!='last_public_trade' for q in rows.values()):
-        raise ValueError('Untrusted margin price source')
-    candles={symbol:row.pop('candles') for symbol,row in rows.items()}
-    now_ms=int(clock()*1000)
-    return strategy.tick(rows,candles,now_ms=now_ms,clock_ms=lambda:int(clock()*1000))
+    stage='commands';symbol=None;interval=None
+    try:
+        process_margin(queue,receiver,book,shared,started=started,clock=clock)
+        stage='settings';settings=book.db.execute('SELECT interval FROM margin_settings WHERE id=1').fetchone()
+        if not settings:raise ValueError('Missing margin settings')
+        interval=settings['interval'];stage='fetch';rows={}
+        for symbol in PAIRS:rows[symbol]=reader.snapshot(symbol,interval)
+        symbol=None;stage='provenance'
+        if any(q.get('source')!=MarginSpotData.HOST or q.get('price_kind')!='last_public_trade' for q in rows.values()):
+            raise ValueError('Untrusted margin price source')
+        stage='candles';candles={symbol:row.pop('candles') for symbol,row in rows.items()}
+        stage='strategy';now_ms=int(clock()*1000)
+        return strategy.tick(rows,candles,now_ms=now_ms,clock_ms=lambda:int(clock()*1000))
+    except Exception as exc:
+        log.error('Margin cycle diagnostic: %s',json.dumps(cycle_diagnostic(exc,stage,symbol,interval),sort_keys=True))
+        raise
 
 
 def main():
