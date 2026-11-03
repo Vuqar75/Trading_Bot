@@ -58,7 +58,7 @@ class WalletCommandTests(unittest.TestCase):
     def test_relay_does_not_label_margin_or_cross_as_isolated_futures(self):
         with self.shared.transaction():
             self.shared.db.execute('DELETE FROM futures_outbox')
-            for text in ('[Spot margin cross • PAPER] margin','[Futures cross • PAPER] cross','isolated'):
+            for text in ('[Spot margin cross • PAPER] margin','[Futures cross • PAPER] cross','isolated','[Контроль paper] предупреждение'):
                 self.shared.db.execute('INSERT INTO futures_outbox(message) VALUES(?)',(text,))
         sent=[]
         transport=TelegramTransport('FAKE','1',lambda req:(sent.append(json.loads(req.data)['text']) or {'ok':True,'result':{}}))
@@ -68,6 +68,7 @@ class WalletCommandTests(unittest.TestCase):
         self.assertEqual(sent[0],'[Spot margin cross • PAPER] margin')
         self.assertEqual(sent[1],'[Futures cross • PAPER] cross')
         self.assertEqual(sent[2],'[Futures paper]\nisolated')
+        self.assertEqual(sent[3],'[Контроль paper] предупреждение')
 
     def test_margin_report_counts_assets_and_debt_once_and_marks_due_interest(self):
         book=MarginPaperBook(self.shared.ledger)
