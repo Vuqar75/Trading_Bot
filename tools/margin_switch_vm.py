@@ -54,7 +54,9 @@ def main():
     from trading_bot.paper_coordinated_backup import coordinated_backup
     from trading_bot.paper_shared_store import SharedPaperStore
     from trading_bot.unified_queue import UnifiedQueue
-    stages=ARCHIVE/'candidate-units';unit_archive=ARCHIVE/'unit-archive';unit_archive.mkdir(mode=0o700)
+    stages=ARCHIVE/'candidate-units';unit_archive=ARCHIVE/'unit-archive'
+    if unit_archive.exists() or unit_archive.is_symlink():raise ValueError('Existing unit archive requires inspection')
+    if any((UNITDIR/name).is_symlink() or not (UNITDIR/name).is_file() for name in OLD):raise ValueError('Invalid existing unit')
     original={name:(UNITDIR/name).read_bytes() for name in OLD}
     if (UNITDIR/SERVICES[-1]).exists() or MARKER.exists():raise ValueError('Existing service or interlock')
     for name in OLD:
@@ -66,6 +68,7 @@ def main():
         staged=(stages/name).read_bytes()
         if staged.count(str(TARGET).encode())!=1 or staged.replace(str(TARGET).encode(),old_path)!=original[name]:
             raise ValueError('Existing unit changed after preparation')
+    unit_archive.mkdir(mode=0o700)
     _write(ARCHIVE/'switch-started',json.dumps({'at':time.time(),'candidate':CANDIDATE}).encode(),0o600)
     def mark(stage):
         _write(ARCHIVE/'switch-state',json.dumps({'stage':stage,'at':time.time()}).encode(),0o600)

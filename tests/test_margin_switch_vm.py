@@ -132,5 +132,12 @@ class MarginSwitchVmTests(unittest.TestCase):
         self.assertFalse(self.marker.exists())
         self.assertTrue(all((self.unitdir/n).read_text()=='WorkingDirectory=/opt/trading-bot-paper-c05238e\n' for n in switcher.OLD))
 
+    def test_changed_unit_refuses_before_creating_switch_state(self):
+        (self.unitdir/'tradingbot-spot.service').write_text('changed after preparation')
+        with self.assertRaisesRegex(ValueError,'changed after preparation'):self.execute()
+        self.assertFalse((self.archive/'unit-archive').exists())
+        self.assertFalse((self.archive/'switch-started').exists())
+        self.assertTrue(all(self.states[n]=='active' for n in (*switcher.OLD,switcher.TIMER)))
+
 
 if __name__=='__main__':unittest.main()
