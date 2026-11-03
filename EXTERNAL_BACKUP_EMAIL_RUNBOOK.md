@@ -1,5 +1,24 @@
 # Внешний backup и email-оповещения — подготовка
 
+## Фактическое подключение 3 ноября 2026
+
+Эта запись актуальнее разделов подготовки ниже. Код VM — `2204bd0147cdd914196a320224b946b8ff8d31d7`. Сервисный аккаунт прикреплён без ключей; bucket приватный. Внешний архив состоит из согласованных financial/queue/observation, manifest и metadata, без Telegram-секретов. В 20:25:58 Баку первая загрузка и read-back проверены, отдельное скачивание и изолированное восстановление с integrity/FK и балансом проводок успешно. Восстановление в рабочий путь поверх более новых событий запрещено.
+
+Команды только для состояния на VM:
+
+```bash
+systemctl status tradingbot-external-hourly.timer tradingbot-external-daily.timer tradingbot-heartbeat.timer tradingbot-watchdog.timer
+systemctl status tradingbot-external-backup@hourly.service tradingbot-external-backup@daily.service tradingbot-heartbeat.service
+sudo journalctl -u tradingbot-external-backup@hourly.service -n 30 --no-pager
+sudo stat /var/lib/tradingbot/paper-external-backups/hourly-success.json
+```
+
+Для восстановления скачать объект, указанный в приватном hourly-success.json, в новую закрытую директорию и использовать `trading_bot.paper_external_backup.inspect_restore` с указанным SHA-256. Не запускать из восстановленной копии торговлю и Telegram; отдельно сверить события, состояние позиций, funding и обязательств. SA имеет bucket objectCreator/objectViewer и только отдельное разрешение создания метрик, сервис не имеет скачиваемых ключей. Для сервисного Git назначен safe.directory только для root-owned установленного checkout; при новом checkout его необходимо проверить заново.
+
+Часовые копии хранятся 48 часов, суточные 14 дней, soft delete 7 дней; таймеры включены, обе штатные службы успешно выполнили загрузку. В VM используется snap SDK: чтобы сохранить NoNewPrivileges, unit ставит `/snap/google-cloud-cli/current/bin` первым в PATH, минуя snap-confine. Проверять доступность SDK после обновлений системы. Размер первой сжатой копии 335631 байт. Heartbeat — 5 минут, отсутствие — 15 минут, email открытие/закрытие; для обнаружения неисправностей торговли используется отдельный watchdog. 20:29:09 Баку начато испытание отсутствия heartbeat, только его timer остановлен, автоматическое включение запланировано через 30 минут. Факт внешнего инцидента и получения письма владельцем пока не подтверждён. Не заменять его утверждением о реальной остановке VM. Оценка расходов $0,0224/мес без налогов и неопределённых объёмов; мониторинг оценён отдельно от хранения.
+
+
+
 Проверка 3 ноября 2026. До обновления квоты пользователь запретил переключение VM.
 
 ## Фактическое состояние

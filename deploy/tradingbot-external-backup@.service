@@ -9,6 +9,7 @@ User=tradingbot
 Group=tradingbot
 WorkingDirectory=/opt/trading-bot-paper
 Environment=HOME=/var/lib/tradingbot
+Environment=PATH=/snap/google-cloud-cli/current/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 EnvironmentFile=/etc/tradingbot/paper-backup.env
 UMask=0077
 NoNewPrivileges=true
