@@ -53,11 +53,11 @@ def collect(home,*,now=None,service_status=None):
                 if isinstance(health.get(market),dict) and row:health[market]['blocked']=json.loads(row[0])
             conflict=db.execute("SELECT 1 FROM cross_runtime WHERE key='funding_history_conflict'").fetchone()
             if isinstance(health.get('cross'),dict) and conflict:health['cross']['blocked']='funding_history_conflict'
-            for market,query in (('cross','SELECT observed FROM cross_quotes'),('margin','SELECT payload FROM margin_market_quotes')):
+            for market,query in (('cross','SELECT server_ms FROM cross_quotes'),('margin','SELECT payload FROM margin_market_quotes')):
                 rows=db.execute(query).fetchall();times=[]
                 for row in rows:
                     t=row[0] if market=='cross' else json.loads(row[0]).get('time_ms')
-                    if type(t) in (int,float):times.append(t/1000 if market=='margin' else t)
+                    if type(t) in (int,float):times.append(t/1000)
                 if isinstance(health.get(market),dict):health[market]['data_at']=min(times) if len(times)>=2 else None
     except (OSError,sqlite3.Error,ValueError,TypeError):financial_available=False
     qstate={'pending':None}
@@ -137,7 +137,12 @@ def publish(financial,snapshot,*,now=None,reminder_seconds=3600):
                 parts=event['key'].split(':');market=parts[-1] if parts[-1] in ('spot','futures','cross','margin') else None
                 if market:
                     h=snapshot.get('health',{}).get(market) or {};event['observed_at']=now;event['health_at']=h.get('time')
-                    event['data_at']=h.get('data_at') if market in ('cross','margin') else (h.get('quote') or {}).get('time')
+                    quote=h.get('quote') or {}
+                    if market in ('cross','margin'):event['data_at']=h.get('data_at')
+                    elif market=='futures':
+                        server=quote.get('server_ms');event['data_at']=server/1000 if isinstance(server,(int,float)) else None
+                        event['received_at']=quote.get('time')
+                    else:event['data_at']=None;event['received_at']=quote.get('time')
                     value=h.get('protection_checked_at');event['protection_at']=value/1000 if market=='margin' and isinstance(value,(float,int)) else value
                 db.execute('INSERT INTO futures_outbox(message) VALUES(?)',(format_event(event),))
             db.execute("INSERT OR REPLACE INTO paper_watchdog_state VALUES('incidents',?)",(json.dumps(state,sort_keys=True),))

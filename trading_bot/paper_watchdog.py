@@ -127,7 +127,7 @@ def format_event(event):
     parts=[f"[Контроль системы] {title}: {description}.",
            'Возникло: '+(first+' Баку' if first else 'время возникновения не подтверждено')+'.',
            'Последний успешный контроль: '+last+' Баку.' if last else missing.capitalize()+'.']
-    for label,field in (('Проверка наблюдателя','observed_at'),('Health рынка','health_at'),('Исходные данные','data_at'),('Защитная проверка','protection_at')):
+    for label,field in (('Проверка наблюдателя','observed_at'),('Health рынка','health_at'),('Время источника','data_at'),('Получение котировки','received_at'),('Защитная проверка','protection_at')):
         if field in event:
             value=when(event[field]);parts.append(label+': '+(value+' Баку' if value else 'время не подтверждено')+'.')
     return ' '.join(parts)

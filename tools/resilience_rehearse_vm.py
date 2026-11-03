@@ -57,7 +57,7 @@ with tempfile.TemporaryDirectory(prefix='diagnostics-copy-') as tmp:
                     str(repo/'deploy/paper_watchdog.py'),'--home',str(private)],check=True,timeout=90)
     with closing(sqlite3.connect((private/'paper-financial/shared-paper.db').as_uri()+'?mode=ro',uri=True)) as db:
         if not db.execute("SELECT 1 FROM paper_watchdog_state WHERE key='incidents'").fetchone():raise ValueError('Copy watchdog did not persist')
-        if not db.execute("SELECT 1 FROM futures_outbox WHERE message LIKE '[ÐšÐ¾Ð½Ñ‚Ñ€Ð¾Ð»ÑŒ paper]%' LIMIT 1").fetchone():raise ValueError('Copy watchdog did not enqueue')
+        if not db.execute("SELECT 1 FROM futures_outbox WHERE message LIKE '[Контроль системы]%' LIMIT 1").fetchone():raise ValueError('Copy watchdog did not enqueue')
     print(json.dumps({'candidate':commit,'source':'private coordinated copy','backup_bytes':prepared['size'],
       'restore_content_and_ledger':'verified','copied_margin_long_short_interest_close':'verified',
       'watchdog_systemd_on_copy':'verified','telegram_poller_started':False,'live_databases_modified':False},sort_keys=True),flush=True)

@@ -54,9 +54,11 @@ class WatchdogHardeningTests(unittest.TestCase):
 
     def test_message_baku_occurrence_and_distinct_unknowns(self):
         message=format_event({'key':'protection:cross','kind':'failure','at':10010,'first_seen':10000,
-                              'message':'cross: защита не подтверждена','last_success':None})
+                              'message':'cross: защита не подтверждена','last_success':None,
+                              'observed_at':10010,'health_at':10009,'data_at':10008,'protection_at':10007})
         self.assertTrue(message.startswith('[Контроль системы]'));self.assertIn('1970-01-01 06:46:40',message)
         self.assertIn('защитной проверки',message);self.assertNotIn('Futures paper',message);self.assertNotIn('нет данных UTC',message)
+        for text in ('Проверка наблюдателя','Health рынка','Время источника','Защитная проверка'):self.assertIn(text,message)
 
     def test_open_spot_and_isolated_positions_need_fresh_protection_marks(self):
         s=sample();s['health']['spot'].update(position_open=True,protection_checked_at=None)
