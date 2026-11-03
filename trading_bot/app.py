@@ -111,7 +111,7 @@ class TelegramTransport:
         for row in store.db.execute('SELECT id,message FROM '+table+' ORDER BY id LIMIT 5').fetchall():
             label = getattr(store, 'delivery_label', '')
             body = row['message']
-            if body.startswith('[Futures cross • PAPER]'):
+            if body.startswith(('[Futures cross • PAPER]','[Spot margin cross • PAPER]')):
                 label = ''
             cut = len(body)
             if cut > 3500:

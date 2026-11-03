@@ -1,4 +1,5 @@
 import json
+import sqlite3
 import tempfile
 import unittest
 from decimal import Decimal
@@ -9,6 +10,7 @@ from trading_bot.cross_paper_book import CrossPaperBook
 from trading_bot.futures_store import FuturesStore
 from trading_bot.margin_paper_book import MarginPaperBook
 from trading_bot.margin_rollout import freeze_margin_cutover,allocate_margin_once,release_margin_cutover
+from trading_bot.margin_valuation_verifier import verify_allocation_value
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.runtime_store import RuntimeStore
@@ -113,6 +115,22 @@ class MarginRolloutTests(unittest.TestCase):
         self.assertTrue(self.release()['replayed'])
         self.assertTrue(self.shared.snapshot('spot')['paused'])
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+
+    def test_fixed_price_comparison_and_unexpected_event_guard(self):
+        self.freeze();self.initialize();root=Path(self.tmp.name);before=root/'before.db';after=root/'after.db'
+        db=sqlite3.connect(before)
+        try:self.shared.db.backup(db)
+        finally:db.close()
+        allocation=self.allocate();db=sqlite3.connect(after)
+        try:self.shared.db.backup(db)
+        finally:db.close()
+        result=verify_allocation_value(before,after,allocation['token'],now=100)
+        self.assertEqual(result['capital_before'],result['capital_after']);self.assertTrue(result['history_preserved'])
+        with self.shared.ledger.transaction():self.shared.ledger._post('unrelated','FIXTURE',{},[('reserve:free','USDT',Decimal(1)),('external:fixture','USDT',Decimal(-1))])
+        db=sqlite3.connect(after)
+        try:self.shared.db.backup(db)
+        finally:db.close()
+        with self.assertRaisesRegex(ValueError,'Unexpected financial events'):verify_allocation_value(before,after,allocation['token'],now=100)
 
 
 if __name__=='__main__':unittest.main()

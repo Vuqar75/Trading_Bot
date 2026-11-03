@@ -22,6 +22,7 @@ from trading_bot.margin_app import cycle
 from trading_bot.margin_paper_strategy import MarginPaperStrategy
 from trading_bot.margin_spot_data import MarginSpotData
 from trading_bot.margin_rollback_guard import may_restore_pre_margin_code
+from trading_bot.outbox_relay import FuturesOutboxRelay
 from trading_bot.runtime_exchange import PaperExchange
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.unified_queue import UnifiedQueue
@@ -53,6 +54,20 @@ class WalletCommandTests(unittest.TestCase):
             self.shared._set('futures','quote',{'price':'100','time':now})
 
     def _process(self,**kwargs):process_wallet(self.q,self.shared,**kwargs)
+
+    def test_relay_does_not_label_margin_or_cross_as_isolated_futures(self):
+        with self.shared.transaction():
+            self.shared.db.execute('DELETE FROM futures_outbox')
+            for text in ('[Spot margin cross • PAPER] margin','[Futures cross • PAPER] cross','isolated'):
+                self.shared.db.execute('INSERT INTO futures_outbox(message) VALUES(?)',(text,))
+        sent=[]
+        transport=TelegramTransport('FAKE','1',lambda req:(sent.append(json.loads(req.data)['text']) or {'ok':True,'result':{}}))
+        relay=FuturesOutboxRelay(Path(self.tmp.name)/'shared.db')
+        try:transport.flush(relay)
+        finally:relay.close()
+        self.assertEqual(sent[0],'[Spot margin cross • PAPER] margin')
+        self.assertEqual(sent[1],'[Futures cross • PAPER] cross')
+        self.assertEqual(sent[2],'[Futures paper]\nisolated')
 
     def test_margin_report_counts_assets_and_debt_once_and_marks_due_interest(self):
         book=MarginPaperBook(self.shared.ledger)
