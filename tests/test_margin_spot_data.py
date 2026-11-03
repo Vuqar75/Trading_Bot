@@ -66,11 +66,37 @@ class PublicSpotDataTests(unittest.TestCase):
         reader=MarginSpotData(transport=transport,clock=lambda:server/1000)
         result=reader.snapshot('BTCUSDT');self.assertEqual(result['source'],'https://api.binance.com')
         self.assertEqual(result['time_ms'],server-1000);self.assertEqual(result['price_kind'],'last_public_trade')
+        self.assertEqual(result['candle_server_ms'],server)
         self.assertEqual(result['filters']['notional_price'],'99')
         self.assertEqual(len(result['candles']),40);self.assertEqual(result['filters']['min_notional'],'5')
         self.assertTrue(all(method=='GET' for method,_ in requests))
         with self.assertRaises(ObservationError):reader.get('/api/v3/order')
         with self.assertRaises(ObservationError):reader.snapshot('XRPUSDT')
+
+    def test_candle_snapshot_crossing_boundary_uses_pre_fetch_cutoff(self):
+        from trading_bot.cross_paper_strategy import CrossPaperStrategy
+        period=900000;start=40*period-100;end=40*period+100;calls=0
+        def transport(request):
+            nonlocal calls
+            path=urlsplit(request.full_url).path;params=parse_qs(urlsplit(request.full_url).query)
+            symbol=params.get('symbol',['BTCUSDT'])[0]
+            if path.endswith('/time'):
+                calls+=1;return {'serverTime':start if calls==1 else end}
+            if path.endswith('/exchangeInfo'):
+                return {'symbols':[{'symbol':symbol,'baseAsset':symbol[:-4],'quoteAsset':'USDT','status':'TRADING','orderTypes':['MARKET'],
+                  'filters':[{'filterType':'LOT_SIZE','minQty':'.001','maxQty':'1000','stepSize':'.001'},
+                             {'filterType':'MIN_NOTIONAL','minNotional':'5','avgPriceMins':5}]}]}
+            if path.endswith('/trades'):return [{'id':1,'time':start-100,'price':'100'}]
+            if path.endswith('/referencePrice'):return {'symbol':symbol,'timestamp':start-100,'referencePrice':'100'}
+            if path.endswith('/klines'):return [[i*period,0,0,0,'100',0,(i+1)*period-1] for i in range(40)]
+            raise AssertionError(path)
+        result=MarginSpotData(transport=transport,clock=lambda:end/1000).snapshot('BTCUSDT')
+        self.assertEqual(result['candle_server_ms'],start)
+        self.assertEqual(result['server_ms'],end)
+        self.assertEqual(result['candles'][-1][0],38*period)
+        CrossPaperStrategy._signal(result['candles'],'15m',result['candle_server_ms'])
+        with self.assertRaisesRegex(ValueError,'Stale or future'):
+            CrossPaperStrategy._signal(result['candles'],'15m',result['server_ms'])
 
     def test_stale_or_wrong_symbol_rejected(self):
         reader=MarginSpotData(transport=lambda req:{'serverTime':1},clock=lambda:1000)

@@ -63,7 +63,9 @@ class CrossPaperStrategy:
         if not settings:raise ValueError('Missing cross settings')
         try:
             if not isinstance(candles,dict):raise ValueError('Missing candle snapshot')
-            signals={s:self._signal(candles.get(s),settings['interval'],server_ms) for s in SYMBOLS}
+            # Each candle set was filtered at that symbol's exchange time.
+            # The other symbol may already have crossed a candle boundary.
+            signals={s:self._signal(candles.get(s),settings['interval'],min(quotes[s]['server_ms'],server_ms,int(now*1000))) for s in SYMBOLS}
         except (ValueError,TypeError,KeyError):
             self.book.set_paused(True);raise
         closed={a['symbol'] for a in actions if a['action'] in ('STOP','TAKE')}

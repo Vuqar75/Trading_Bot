@@ -118,4 +118,4 @@ class MarginSpotData:
         except (TypeError,ValueError,IndexError):raise ObservationError('Invalid Spot candles') from None
         if (len(closed)<31 or any(v<=0 for _,v in closed) or any(b[0]-a[0]!=seconds for a,b in zip(closed,closed[1:])) or
             not 0<=start-closed[-1][0]-seconds<=seconds):raise ObservationError('Stale or discontinuous Spot candles')
-        return {'symbol':symbol,'source':self.HOST,'price_kind':'last_public_trade','time_ms':trade_time,'price':str(price),'filters':filters,'candles':closed,'server_ms':end}
+        return {'symbol':symbol,'source':self.HOST,'price_kind':'last_public_trade','time_ms':trade_time,'price':str(price),'filters':filters,'candles':closed,'server_ms':end,'candle_server_ms':start}

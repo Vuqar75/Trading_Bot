@@ -817,6 +817,28 @@ with patch.object(app,'CrossPublicData',Fake):
         self.book.funding('crash-funding','BTCUSDT',btc['id'],28000000,0,'.001','100','fixture',now=28002)
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_funding').fetchone()[0],1)
 
+    def test_each_symbol_uses_its_own_pre_fetch_exchange_time(self):
+        strategy=CrossPaperStrategy(self.book);period=900000;boundary=32*period
+        before=boundary-100;after=boundary+100;now=after/1000
+        quotes={s:{**q,'time':now,'server_ms':stamp,'next_due_ms':56800000}
+                for (s,q),stamp in zip(self.quotes.items(),(before,after))}
+        candles={'BTCUSDT':[(i*period,'100') for i in range(31)],
+                 'ETHUSDT':[(i*period,'100') for i in range(1,32)]}
+        self.book.set_paused(True)
+        self.assertEqual(strategy.tick(quotes,candles,after,now=now),[])
+        self.assertEqual(strategy.last_protection_at,now)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_symbol_exchange_clock_ahead_does_not_accept_future_candle(self):
+        strategy=CrossPaperStrategy(self.book);period=900000;boundary=32*period
+        now=(boundary-100)/1000;future=boundary+100
+        quotes={s:{**q,'time':now,'server_ms':future,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        candles={s:[(i*period,'100') for i in range(1,32)] for s in quotes}
+        with self.assertRaisesRegex(ValueError,'Stale or future'):
+            strategy.tick(quotes,candles,future,now=now)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertEqual(len(self.book._positions()),0)
+
     def test_strategy_two_signals_duplicate_tick_and_protection_while_paused(self):
         strategy=CrossPaperStrategy(self.book);period=900000;server=31*period+1000
         now=server/1000;quotes={s:{**q,'time':now,'server_ms':server} for s,q in self.quotes.items()}

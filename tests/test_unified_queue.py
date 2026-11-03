@@ -19,6 +19,31 @@ class UnifiedQueueTests(unittest.TestCase):
         messages = [r[0].lower() for r in self.q.db.execute('SELECT message FROM unified_outbox')]
         self.assertTrue(all('isolated' in message for message in messages))
 
+    def test_command_routing_matrix_for_all_four_paper_markets(self):
+        markets=('spot','futures','futures_cross','margin_cross')
+        ident=1
+        for market in markets:
+            self.q.receive(ident,True,'/mode '+market,now=100);ident+=1
+            for command in ('/signal','/history','/report','/pause','/resume','/timeframe'):
+                self.q.receive(ident,True,command,now=100)
+                row=self.q.db.execute('SELECT market,command FROM unified_jobs WHERE update_id=?',(ident,)).fetchone()
+                self.assertEqual(tuple(row),(market,command));ident+=1
+            self.q.receive(ident,True,'/leverage',now=100)
+            rows=self.q.db.execute('SELECT market FROM unified_jobs WHERE update_id=?',(ident,)).fetchall()
+            self.assertEqual([r[0] for r in rows],[] if market=='spot' else [market]);ident+=1
+            snapshot={'id':market+'-position','quantity':'0.125'}
+            positions={market:({'BTCUSDT':snapshot} if market in ('futures_cross','margin_cross') else snapshot)}
+            self.q.receive(ident,True,'/close',positions=positions,now=100)
+            job=self.q.db.execute('SELECT market,payload FROM unified_jobs WHERE update_id=?',(ident,)).fetchone()
+            self.assertEqual(job['market'],market)
+            self.assertIn(market+'-position',job['payload']);ident+=1
+            self.q.receive(ident,True,'/status '+market,now=100)
+            row=self.q.db.execute('SELECT market,command FROM unified_jobs WHERE update_id=?',(ident,)).fetchone()
+            self.assertEqual(tuple(row),(market,'/status'));ident+=1
+        self.q.receive(ident,True,'/status',now=100)
+        rows=self.q.db.execute('SELECT market FROM unified_jobs WHERE update_id=?',(ident,)).fetchall()
+        self.assertEqual({r[0] for r in rows},set(markets))
+
     def test_market_frozen_at_accept_and_duplicate(self):
         self.q.receive(10, True, '/pause')
         self.q.receive(11, True, '/mode futures')

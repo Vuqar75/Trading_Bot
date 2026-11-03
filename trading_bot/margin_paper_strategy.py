@@ -62,9 +62,13 @@ class MarginPaperStrategy:
             if not isinstance(candles,dict):raise ValueError('Spot candles unavailable')
             for symbol in PAIRS:
                 q=quotes[symbol]
+                cutoff=q.get('candle_server_ms',q['server_ms'])
+                if (type(cutoff) is not int or not 0<=q['server_ms']-cutoff<=15000 or
+                    not -60000<=now_ms-cutoff<=60000):
+                    raise ValueError('Invalid candle reference time')
                 with localcontext() as ctx:
                     ctx.prec=120
-                    stamp,signal=CrossPaperStrategy._signal(candles.get(symbol),settings['interval'],min(q['server_ms'],now_ms))
+                    stamp,signal=CrossPaperStrategy._signal(candles.get(symbol),settings['interval'],min(cutoff,now_ms))
                 with self.ledger.transaction():
                     prior=self.db.execute('SELECT candle FROM margin_signals WHERE symbol=?',(symbol,)).fetchone()
                     if prior and stamp<=prior['candle']:

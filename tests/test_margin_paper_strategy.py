@@ -41,6 +41,29 @@ class MarginStrategyTests(unittest.TestCase):
             self.ledger._post('seed','FIXTURE',{},[('margin_cross:free','USDT',Decimal(50)),('external:fixture','USDT',Decimal(-50))])
             self.ledger.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'")
 
+    def test_candle_reference_before_boundary_survives_later_server_time(self):
+        boundary=32*PERIOD;now=boundary+100;cutoff=boundary-100
+        quotes=snapshots(now)
+        for q in quotes.values():
+            q['candle_server_ms']=cutoff
+            q['filters']={**q['filters'],'observed_ms':now}
+        with self.ledger.transaction():self.ledger.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
+        strategy=MarginPaperStrategy(self.book)
+        self.assertEqual(strategy.tick(quotes,candles(),now_ms=now),[])
+        self.assertEqual(strategy.last_protection_ms,now)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_invalid_or_stale_candle_reference_fails_closed(self):
+        strategy=MarginPaperStrategy(self.book)
+        for cutoff in (SERVER+1, SERVER-15001):
+            quotes=snapshots()
+            for q in quotes.values():q['candle_server_ms']=cutoff
+            with self.subTest(cutoff=cutoff):
+                with self.assertRaisesRegex(ValueError,'candle reference'):
+                    strategy.tick(quotes,candles(),now_ms=SERVER)
+        self.assertEqual(self.ledger.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
     def test_two_signals_only_once_and_protective_exit_on_pause(self):
         strategy=MarginPaperStrategy(self.book)
         first=strategy.tick(snapshots(),candles(),now_ms=SERVER)
