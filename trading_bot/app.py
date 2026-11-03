@@ -80,7 +80,10 @@ class TelegramTransport:
                         cross={}
                         if store.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_positions'").fetchone():
                             cross={r['symbol']:{'id':r['id'],'quantity':r['quantity']} for r in store.db.execute('SELECT symbol,id,quantity FROM cross_positions')}
-                        unified.receive(ident, authorized, text, fresh=fresh, positions={'spot':spot, 'futures':futures, 'futures_cross':cross})
+                        margin={}
+                        if store.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_positions'").fetchone():
+                            margin={r['symbol']:{'id':r['id'],'quantity':r['quantity']} for r in store.db.execute('SELECT symbol,id,quantity FROM margin_positions')}
+                        unified.receive(ident, authorized, text, fresh=fresh, positions={'spot':spot, 'futures':futures, 'futures_cross':cross,'margin_cross':margin})
                     finally:
                         store.db.rollback()
                 else:

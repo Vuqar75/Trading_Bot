@@ -29,15 +29,15 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
             elif cmd=='/cancel_transfer':
                 shared.cancel_transfer(payload['token']);result='Предложение перевода отменено.'
             elif cmd in ('/wallets','/wallet','/balance_report'):
-                if cmd=='/wallet' and parts[1] not in ('reserve','spot','futures_isolated','futures_cross'):
-                    raise ValueError('Доступны reserve, spot, futures_isolated и futures_cross')
+                if cmd=='/wallet' and parts[1] not in ('reserve','spot','futures_isolated','futures_cross','margin_cross'):
+                    raise ValueError('Доступны reserve, spot, futures_isolated, futures_cross и margin_cross')
                 period=parts[1] if cmd=='/balance_report' and len(parts)==2 else 'all'
                 data=live_report(shared,period=period)
                 if cmd=='/wallet':
                     w=parts[1]
                     if w not in data['wallets']:raise ValueError('Кошелёк пока недоступен. Доступны reserve, spot и futures_isolated.')
                     v=data['wallets'][w]
-                    label={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross'}[w]
+                    label={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross','margin_cross':'Spot margin cross'}[w]
                     available=data['available'].get(w)
                     result=f"{label}: свободно {_fmt(v['free'])} USDT; резерв ордеров {_fmt(v['reserved'])} USDT. "
                     result+=('Доступно к запросу перевода: '+_fmt(available)+' USDT.' if available is not None else 'Доступно для перевода: не подтверждено; проверьте паузу и состояние.')
@@ -47,6 +47,9 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                     if w=='futures_cross':
                         cross=data['cross']
                         result+=f" Общая маржа {_fmt(cross['margin'])} USDT; позиций {len(cross['positions'])}."
+                    if w=='margin_cross':
+                        for asset,values in data['margin_cross']['assets'].items():
+                            result+=f" {asset}: свободно {_fmt(values['free'],asset)}, резерв {_fmt(values['reserved'],asset)}, долг {_fmt(-values['principal'],asset)}, проценты {_fmt(-values['interest'],asset)}."
                 elif cmd=='/wallets':result=render_wallets(data)
                 else:result=render_live_report(data)
             elif cmd=='/transfers':

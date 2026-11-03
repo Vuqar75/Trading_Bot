@@ -1,5 +1,9 @@
 import tempfile
 import unittest
+import sqlite3
+import subprocess
+import sys
+import time
 from decimal import Decimal
 from pathlib import Path
 
@@ -52,6 +56,27 @@ class MarginTransferTests(unittest.TestCase):
         self.assertEqual(self.shared.ledger.balance('reserve:free'),1)
         self.assertEqual(len(self.book._positions()),1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_transfer_expires_while_waiting_for_real_sqlite_lock(self):
+        proposal=self.shared.propose_transfer('lock-expiry','futures_isolated','margin_cross','50',ttl=1)
+        path=Path(self.tmp.name)/'shared.db';blocker=sqlite3.connect(path,isolation_level=None,timeout=5)
+        self.addCleanup(blocker.close)
+        script='''import sys
+from trading_bot.paper_shared_store import SharedPaperStore
+s=SharedPaperStore(sys.argv[1]);print("ready",flush=True);sys.stdin.readline()
+try:s.confirm_transfer(sys.argv[2])
+except ValueError as e:
+ if 'expired' in str(e):sys.exit(0)
+ raise
+sys.exit(1)
+'''
+        child=subprocess.Popen([sys.executable,'-B','-c',script,str(path),proposal['id']],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.assertEqual(child.stdout.readline().strip(),b'ready')
+        blocker.execute('BEGIN IMMEDIATE');child.stdin.write(b'go\n');child.stdin.flush()
+        time.sleep(1.2);blocker.rollback()
+        _,err=child.communicate(timeout=20);self.assertEqual(child.returncode,0,err.decode())
+        self.assertEqual(self.shared.ledger.balance('margin_cross:free'),0)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='TRANSFER'").fetchone()[0],0)
 
 
 if __name__=='__main__':unittest.main()

@@ -21,26 +21,26 @@ class MarginPaperStrategy:
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_signals(symbol TEXT PRIMARY KEY,candle INTEGER NOT NULL,payload TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_exit_fences(symbol TEXT PRIMARY KEY,exit_ms INTEGER NOT NULL)')
 
-    def _exit(self,position,quotes,now_ms,reason):
+    def _exit(self,position,quotes,now_ms,reason,clock_ms=None):
         with self.ledger.transaction():
-            result=self.book.close('protect:'+position['id']+':'+reason,position['symbol'],position['id'],position['quantity'],quotes,now_ms=now_ms)
+            result=self.book.close('protect:'+position['id']+':'+reason,position['symbol'],position['id'],position['quantity'],quotes,now_ms=now_ms,clock_ms=clock_ms)
             self.db.execute('INSERT INTO margin_exit_fences VALUES(?,?) ON CONFLICT(symbol) DO UPDATE SET exit_ms=MAX(exit_ms,excluded.exit_ms)',(position['symbol'],now_ms))
             self.fault('after_exit_before_commit')
             return result
 
-    def tick(self,quotes,candles,*,now_ms):
+    def tick(self,quotes,candles,*,now_ms,clock_ms=None):
         if type(now_ms) is not int or now_ms<0:raise ValueError('Invalid strategy clock')
         try:
             for symbol in PAIRS:
                 q=quotes.get(symbol) if isinstance(quotes,dict) else None
                 if not isinstance(q,dict) or type(q.get('server_ms')) is not int or abs(q['server_ms']-now_ms)>60000:
                     raise ValueError('Spot exchange clock inconsistent')
-            self.book.record_quotes(quotes,now_ms=now_ms)
-            risk=self.book.risk(quotes,now_ms=now_ms);actions=[]
+            self.book.record_quotes(quotes,now_ms=now_ms,clock_ms=clock_ms)
+            risk=self.book.risk(quotes,now_ms=now_ms,clock_ms=clock_ms);actions=[]
             if risk['positions'] and risk['equity']<=risk['maintenance']:
                 positions=self.book._positions()
                 with self.ledger.transaction():
-                    result=self.book.liquidate('margin:liquidation:'+str(now_ms),quotes,now_ms=now_ms)
+                    result=self.book.liquidate('margin:liquidation:'+str(now_ms),quotes,now_ms=now_ms,clock_ms=clock_ms)
                     for p in positions:
                         self.db.execute('INSERT INTO margin_exit_fences VALUES(?,?) ON CONFLICT(symbol) DO UPDATE SET exit_ms=MAX(exit_ms,excluded.exit_ms)',(p['symbol'],now_ms))
                     self.fault('after_liquidation_before_commit')
@@ -53,7 +53,7 @@ class MarginPaperStrategy:
                     movement=(mark/entry-1)*(1 if p['direction']=='LONG' else -1)
                 reason='STOP' if movement<=Decimal('-.02') else 'TAKE' if movement>=Decimal('.04') else None
                 if reason:
-                    result=self._exit(p,quotes,now_ms,reason)
+                    result=self._exit(p,quotes,now_ms,reason,clock_ms=clock_ms)
                     actions.append({'action':reason,'symbol':p['symbol'],'result':result})
             self.last_protection_ms=now_ms
             settings=self.db.execute('SELECT leverage,interval FROM margin_settings WHERE id=1').fetchone()
@@ -86,7 +86,7 @@ class MarginPaperStrategy:
                         else:
                             ident='margin:signal:'+symbol+':'+str(stamp)
                             try:
-                                result=self.book.open(ident,ident,symbol,direction,encode(quantity),'5',settings['leverage'],quotes,now_ms=now_ms)
+                                result=self.book.open(ident,ident,symbol,direction,encode(quantity),'5',settings['leverage'],quotes,now_ms=now_ms,clock_ms=clock_ms)
                                 actions.append({'action':'OPEN','symbol':symbol,'result':result})
                             except ValueError as exc:
                                 if str(exc) not in ('Insufficient free collateral','Margin is paused','Margin position limit'):

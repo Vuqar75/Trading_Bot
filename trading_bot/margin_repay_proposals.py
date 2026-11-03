@@ -14,7 +14,7 @@ class MarginRepayProposals:
         with ledger.transaction():
             self.db.execute("CREATE TABLE IF NOT EXISTS margin_repay_proposals(id TEXT PRIMARY KEY,request_id TEXT NOT NULL UNIQUE,fingerprint TEXT NOT NULL,loan_id TEXT NOT NULL,asset TEXT NOT NULL,quantity TEXT NOT NULL,principal TEXT NOT NULL,interest TEXT NOT NULL,expires_ms INTEGER NOT NULL,status TEXT NOT NULL CHECK(status IN ('OPEN','DONE','CANCELED')),result TEXT)")
 
-    def propose(self,request_id,loan_id,quantity,*,now_ms,ttl_ms=120000):
+    def propose(self,request_id,loan_id,quantity,*,now_ms,ttl_ms=120000,clock_ms=None,request_expires_ms=None):
         now_ms=self.loans._time(now_ms);quantity=amount(quantity,positive=True)
         if not isinstance(request_id,str) or not request_id or not isinstance(loan_id,str) or not loan_id or type(ttl_ms) is not int or not 0<ttl_ms<=120000:
             raise ValueError('Invalid repayment request')
@@ -24,6 +24,10 @@ class MarginRepayProposals:
             if old:
                 if old['fingerprint']!=fingerprint:raise ValueError('Conflicting repayment request')
                 return dict(old)
+            if clock_ms is not None:now_ms=self.loans._time(clock_ms())
+            if request_expires_ms is not None:
+                if type(request_expires_ms) is not int or now_ms>=request_expires_ms:raise ValueError('Repayment request expired')
+                ttl_ms=min(ttl_ms,request_expires_ms-now_ms)
             self.loans._check();self.loans.accrue(loan_id,now_ms=now_ms)
             loan=self.db.execute('SELECT * FROM margin_loans WHERE id=?',(loan_id,)).fetchone()
             if not loan or loan['status']!='OPEN':raise ValueError('Loan is not open')

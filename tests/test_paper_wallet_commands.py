@@ -1,5 +1,8 @@
 import json
+import os
 import sqlite3
+import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -12,6 +15,13 @@ from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report,render_live_report,_fmt
 from trading_bot.paper_wallet_worker import process_wallet
+from trading_bot.margin_paper_book import MarginPaperBook
+from trading_bot.margin_command_receiver import MarginCommandReceiver
+from trading_bot.margin_worker import process_margin
+from trading_bot.margin_app import cycle
+from trading_bot.margin_paper_strategy import MarginPaperStrategy
+from trading_bot.margin_spot_data import MarginSpotData
+from trading_bot.margin_rollback_guard import may_restore_pre_margin_code
 from trading_bot.runtime_exchange import PaperExchange
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.unified_queue import UnifiedQueue
@@ -30,7 +40,9 @@ class WalletCommandTests(unittest.TestCase):
             with spot.transaction():spot.set('paused',True)
             with future.transaction():future.set('paused',True)
             for src,name in ((spot.db,'spot-copy.db'),(future.db,'future-copy.db')):
-                with sqlite3.connect(p/name) as db:src.backup(db)
+                db=sqlite3.connect(p/name)
+                try:src.backup(db)
+                finally:db.close()
         finally:spot.close();future.close()
         consolidate_snapshots(p/'spot-copy.db',p/'future-copy.db',p/'shared.db',captured_at=1)
         self.shared=SharedPaperStore(p/'shared.db');self.q=UnifiedQueue(p/'queue.db')
@@ -41,6 +53,153 @@ class WalletCommandTests(unittest.TestCase):
             self.shared._set('futures','quote',{'price':'100','time':now})
 
     def _process(self,**kwargs):process_wallet(self.q,self.shared,**kwargs)
+
+    def test_margin_report_counts_assets_and_debt_once_and_marks_due_interest(self):
+        book=MarginPaperBook(self.shared.ledger)
+        now=time.time();ms=int(now*1000)
+        filters={'lot_rules':[{'min':'0','max':'0','step':'.00000001'}],'min_notional':'0','max_notional':'0','observed_ms':ms}
+        quotes={s:{'price':price,'time_ms':ms,'server_ms':ms,'source':'fixture','price_kind':'last_public_trade','filters':filters} for s,price in [('BTCUSDT','100'),('ETHUSDT','200')]}
+        book.record_quotes(quotes,now_ms=ms)
+        before=live_report(self.shared,now=now)
+        proposal=self.shared.propose_transfer('margin-test','futures_isolated','margin_cross','50',now=now)
+        self.shared.confirm_transfer(proposal['id'],now=now)
+        transferred=live_report(self.shared,now=now)
+        self.assertEqual(before['total'],transferred['total']);self.assertTrue(transferred['valuation_ok'])
+        with self.shared.ledger.transaction():self.shared.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'")
+        book.open('entry','p','ETHUSDT','SHORT','.04','5',2,quotes,now_ms=ms)
+        report=live_report(self.shared,now=now)
+        self.assertTrue(report['valuation_ok']);self.assertLess(report['total'],transferred['total'])
+        self.assertEqual(report['margin_cross']['assets']['ETH']['principal'],Decimal('-.04'))
+        self.assertIn('Spot margin cross',render_live_report(report))
+        delayed=live_report(self.shared,now=now+3601)
+        self.assertIsNone(delayed['total']);self.assertTrue(any('процент' in item for item in delayed['incomplete']))
+
+    def test_margin_queue_close_replay_does_not_repeat_financial_action(self):
+        book=MarginPaperBook(self.shared.ledger);receiver=MarginCommandReceiver(book)
+        now=time.time();ms=int(now*1000);clock=lambda:now
+        f={'lot_rules':[{'min':'0','max':'0','step':'.00000001'}],'min_notional':'0','max_notional':'0','observed_ms':ms}
+        quotes={s:{'price':price,'time_ms':ms,'server_ms':ms,'source':'fixture','price_kind':'last_public_trade','filters':f} for s,price in [('BTCUSDT','100'),('ETHUSDT','200')]}
+        book.record_quotes(quotes,now_ms=ms)
+        proposal=self.shared.propose_transfer('margin-test','futures_isolated','margin_cross','50',now=now)
+        self.shared.confirm_transfer(proposal['id'],now=now)
+        receiver.protection_checked_ms=ms;receiver.apply(99,'/resume',{},clock_ms=lambda:ms)
+        book.open('entry','position','ETHUSDT','SHORT','.04','5',2,quotes,now_ms=ms)
+        self.q.receive(1,True,'/mode margin_cross',now=now)
+        self.q.receive(2,True,'/close ETHUSDT',now=now,positions={'margin_cross':{'ETHUSDT':{'id':'position','quantity':'0.04'}}})
+        process_margin(self.q,receiver,book,self.shared,clock=clock)
+        close_token=self.q.db.execute('SELECT id FROM unified_proposals').fetchone()[0]
+        self.q.receive(3,True,'/mode spot',now=now)
+        self.q.receive(4,True,'/confirm '+close_token,now=now)
+        def crash(where):
+            if where=='after_destination_commit':raise RuntimeError('simulated crash')
+        with self.assertRaises(RuntimeError):process_margin(self.q,receiver,book,self.shared,clock=clock,fault=crash)
+        self.assertFalse(book._positions())
+        process_margin(self.q,receiver,book,self.shared,clock=clock)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE id='margin:close:telegram:4'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+        self.q.receive(5,True,'/mode margin_cross',now=now);self.q.receive(6,True,'/report',now=now)
+        process_margin(self.q,receiver,book,self.shared,clock=clock)
+        report=self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id DESC').fetchone()[0]
+        self.assertIn('Сегодня по Баку',report);self.assertIn('За всё время',report);self.assertIn('закрытий 1',report)
+
+    def test_margin_repayment_confirmation_is_typed_and_idempotent(self):
+        book=MarginPaperBook(self.shared.ledger);receiver=MarginCommandReceiver(book)
+        now=time.time();ms=int(now*1000);clock=lambda:now
+        f={'lot_rules':[{'min':'0','max':'0','step':'.00000001'}],'min_notional':'0','max_notional':'0','observed_ms':ms}
+        quotes={s:{'price':price,'time_ms':ms,'server_ms':ms,'source':'fixture','price_kind':'last_public_trade','filters':f} for s,price in [('BTCUSDT','100'),('ETHUSDT','200')]}
+        book.record_quotes(quotes,now_ms=ms)
+        proposal=self.shared.propose_transfer('margin-test','futures_isolated','margin_cross','50',now=now)
+        self.shared.confirm_transfer(proposal['id'],now=now)
+        receiver.protection_checked_ms=ms;receiver.apply(99,'/resume',{},clock_ms=lambda:ms)
+        book.open('entry','position','BTCUSDT','LONG','.09','5',2,quotes,now_ms=ms)
+        self.q.receive(1,True,'/mode margin_cross',now=now);self.q.receive(2,True,'/repay position:loan 1',now=now)
+        process_margin(self.q,receiver,book,self.shared,clock=clock)
+        token=self.shared.db.execute('SELECT id FROM margin_repay_proposals').fetchone()[0]
+        self.q.receive(3,True,'/mode spot',now=now);self.q.receive(4,True,'/confirm '+token,now=now)
+        def crash(where):
+            if where=='after_destination_commit':raise RuntimeError('simulated crash')
+        with self.assertRaises(RuntimeError):process_margin(self.q,receiver,book,self.shared,clock=clock,fault=crash)
+        process_margin(self.q,receiver,book,self.shared,clock=clock)
+        self.q.receive(5,True,'/confirm '+token,now=now);process_margin(self.q,receiver,book,self.shared,clock=clock)
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM ledger_events WHERE kind='MARGIN_REPAY'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_margin_runtime_signal_to_interest_close_and_report_on_shared_copy(self):
+        book=MarginPaperBook(self.shared.ledger);receiver=MarginCommandReceiver(book);strategy=MarginPaperStrategy(book)
+        wall=[time.time()];clock=lambda:wall[0]
+        class Reader:
+            def snapshot(self,symbol,interval):
+                now_ms=int(wall[0]*1000);period=900000;end=(now_ms//period)*period
+                price='100' if symbol=='BTCUSDT' else '200'
+                closes=[(end-(31-i)*period,'100') for i in range(30)]+[(end-period,'101' if symbol=='BTCUSDT' else '99')]
+                filters={'lot_rules':[{'min':'0','max':'0','step':'.00000001'}],'min_notional':'0','max_notional':'0','observed_ms':now_ms,'notional_price':price,'notional_time_ms':now_ms}
+                return {'symbol':symbol,'price':price,'time_ms':now_ms,'server_ms':now_ms,'source':MarginSpotData.HOST,'price_kind':'last_public_trade','filters':filters,'candles':closes}
+        reader=Reader()
+        proposal=self.shared.propose_transfer('margin-cycle','futures_isolated','margin_cross','50',now=wall[0]);self.shared.confirm_transfer(proposal['id'],now=wall[0])
+        self.q.receive(1,True,'/mode margin_cross',now=wall[0])
+        cycle(self.shared,book,self.q,receiver,strategy,reader,started=0,clock=clock)
+        receiver.protection_checked_ms=strategy.last_protection_ms
+        self.q.receive(2,True,'/resume',now=wall[0]);wall[0]+=901
+        # Refresh protection at the new candle while paused before resuming.
+        cycle(self.shared,book,self.q,receiver,strategy,reader,started=0,clock=clock)
+        receiver.protection_checked_ms=strategy.last_protection_ms
+        self.q.receive(3,True,'/resume',now=wall[0]);process_margin(self.q,receiver,book,self.shared,clock=clock)
+        wall[0]+=901
+        actions=cycle(self.shared,book,self.q,receiver,strategy,reader,started=0,clock=clock)
+        self.assertEqual([a['action'] for a in actions],['OPEN','OPEN'])
+        self.assertEqual(self.shared.db.execute("SELECT count(*) FROM margin_loans WHERE status='OPEN'").fetchone()[0],2)
+        self.q.receive(4,True,'/pause',now=wall[0]);wall[0]+=3601
+        cycle(self.shared,book,self.q,receiver,strategy,reader,started=0,clock=clock)
+        self.assertGreaterEqual(self.shared.db.execute('SELECT count(*) FROM margin_interest_periods').fetchone()[0],4)
+        pos=self.shared.db.execute("SELECT id,quantity FROM margin_positions WHERE symbol='BTCUSDT'").fetchone()
+        self.q.receive(5,True,'/close BTCUSDT',now=wall[0],positions={'margin_cross':{'BTCUSDT':dict(pos)}})
+        process_margin(self.q,receiver,book,self.shared,clock=clock)
+        token=self.q.db.execute('SELECT id FROM unified_proposals').fetchone()[0]
+        self.q.receive(6,True,'/confirm '+token,now=wall[0]);process_margin(self.q,receiver,book,self.shared,clock=clock)
+        self.q.receive(7,True,'/report',now=wall[0]);process_margin(self.q,receiver,book,self.shared,clock=clock)
+        text=self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id DESC').fetchone()[0]
+        self.assertIn('закрытий 1',text);self.assertIn('За всё время',text)
+        self.assertEqual(self.shared.db.execute("SELECT status FROM margin_loans WHERE position_id=?",(pos['id'],)).fetchone()[0],'CLOSED')
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_margin_entrypoint_starts_paused_and_stays_paused_on_restart(self):
+        if os.name!='posix':self.skipTest('Linux process locks required')
+        path=Path(self.tmp.name);script='''import socket,sys,time
+from unittest.mock import patch
+import trading_bot.margin_app as app
+class Reader:
+ HOST='https://api.binance.com'
+ def snapshot(self,symbol,interval):
+  now=int(time.time()*1000);period=900000;end=(now//period)*period
+  price='100' if symbol=='BTCUSDT' else '200'
+  f={'lot_rules':[{'min':'0','max':'0','step':'.00000001'}],'min_notional':'0','max_notional':'0','observed_ms':now,'notional_price':price,'notional_time_ms':now}
+  return {'symbol':symbol,'price':price,'time_ms':now,'server_ms':now,'source':'https://api.binance.com','price_kind':'last_public_trade','filters':f,'candles':[(end-(31-i)*period,'100') for i in range(31)]}
+def deny(*args,**kwargs):raise AssertionError('network prohibited')
+with patch.object(socket,'socket',deny),patch.object(app,'MarginSpotData',Reader):
+ sys.argv=['margin-app','--db',sys.argv[1],'--queue',sys.argv[2],'--once'];app.main()
+'''
+        for attempt in range(2):
+            if attempt:
+                with self.shared.transaction():self.shared.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'")
+            result=subprocess.run([sys.executable,'-B','-c',script,str(path/'shared.db'),str(path/'queue.db')],capture_output=True,text=True,timeout=30)
+            self.assertEqual(result.returncode,0,result.stderr)
+            health=json.loads((path/'margin-health.json').read_text())
+            self.assertTrue(health['paused']);self.assertTrue(health['quotes_fresh']);self.assertTrue(health['protection_fresh']);self.assertIsNone(health['error'])
+            self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+
+    def test_margin_rollback_guard_refuses_new_journal_and_queue_events(self):
+        root=Path(self.tmp.name);financial=root/'baseline-financial.db';queue=root/'baseline-queue.db'
+        for source,target in ((self.shared.db,financial),(self.q.db,queue)):
+            db=sqlite3.connect(target)
+            try:source.backup(db)
+            finally:db.close()
+        guard=lambda:may_restore_pre_margin_code(financial,root/'shared.db',queue,root/'queue.db')
+        self.assertTrue(guard()['safe_for_old_code'])
+        self.q.receive(1,True,'/mode margin_cross')
+        self.assertIn('queue_changed',guard()['reasons'])
+        with self.shared.ledger.transaction():
+            self.shared.ledger._post('fixture:new-financial-event','FIXTURE',{},[('reserve:free','USDT',Decimal(1)),('external:fixture','USDT',Decimal(-1))])
+        self.assertIn('financial_history_changed',guard()['reasons'])
 
     def test_amount_display_preserves_sign_and_precision_only_for_rendering(self):
         cases={'0':'0','-0':'0','1.23456':'1.2346','-1.23456':'-1.2346',

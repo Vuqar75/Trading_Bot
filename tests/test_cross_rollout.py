@@ -124,7 +124,7 @@ class CrossRolloutTests(unittest.TestCase):
     def test_release_respects_pause_all_after_freeze(self):
         self.prepare_freeze();freeze_entries(self.shared,self.q,'cross:freeze:fixture',now=100);self.allocate()
         self.q.receive(9,True,'/pause_all',now=100)
-        for market in ('spot','futures','futures_cross'):
+        for market in ('spot','futures','futures_cross','margin_cross'):
             for job in self.q.pending(market):self.q.acknowledge(job['id'],'paused')
         with patch('trading_bot.paper_shared_store.time.time',return_value=100):
             result=release_entries_after_cutover(self.shared,self.q,'cross:release:fixture',now=100)

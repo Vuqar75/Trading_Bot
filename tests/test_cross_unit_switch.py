@@ -77,11 +77,11 @@ class CrossUnitSwitchTests(unittest.TestCase):
         code="import sys\nfrom trading_bot.app import process_lock\nwith process_lock(sys.argv[1]):\n print('acquired')\n"
         with hold_writer_locks(financial):
             self.switch()
-            for suffix in ('.spot.lock','.futures.lock','.cross.lock','.delivery.lock'):
+            for suffix in ('.spot.lock','.futures.lock','.cross.lock','.margin.lock','.delivery.lock'):
                 child=subprocess.run([sys.executable,'-c',code,str(financial)+suffix],capture_output=True,text=True)
                 self.assertNotEqual(child.returncode,0)
                 self.assertNotIn('acquired',child.stdout)
-        for suffix in ('.spot.lock','.futures.lock','.cross.lock','.delivery.lock'):
+        for suffix in ('.spot.lock','.futures.lock','.cross.lock','.margin.lock','.delivery.lock'):
             child=subprocess.run([sys.executable,'-c',code,str(financial)+suffix],capture_output=True,text=True)
             self.assertEqual(child.returncode,0)
 

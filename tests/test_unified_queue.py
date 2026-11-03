@@ -21,6 +21,19 @@ class UnifiedQueueTests(unittest.TestCase):
         self.assertEqual(self.q.state('mode'), 'futures')
         self.assertEqual(self.q.state('offset'), '12')
 
+    def test_margin_close_and_repay_confirmations_keep_their_types_and_market(self):
+        self.q.receive(1,True,'/mode margin_cross',now=10)
+        self.q.receive(2,True,'/close ETHUSDT',now=10,positions={'margin_cross':{'ETHUSDT':{'id':'p','quantity':'0.04'}}})
+        token=self.q.add_proposal(2,'margin_cross','p','0.04',now=10)
+        self.q.receive(3,True,'/mode spot',now=11)
+        self.q.receive(4,True,'/confirm '+token,now=11)
+        self.q.receive(5,True,'/confirm R-example',now=11)
+        jobs=self.q.pending('margin_cross')
+        self.assertEqual([j['command'] for j in jobs],['/confirmed_close','/confirm_repay'])
+        self.assertIn('ETHUSDT',jobs[0]['payload']);self.assertIn('0.04',jobs[0]['payload'])
+        self.q.receive(6,False,'/confirm R-example',now=11)
+        self.assertEqual(len(self.q.pending('margin_cross')),2)
+
     def test_report_bound_to_selected_market_balance_report_is_global(self):
         self.q.receive(1,True,'/mode futures_cross')
         self.q.receive(2,True,'/report')

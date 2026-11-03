@@ -185,7 +185,9 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         process_cross(q,receiver,self.book,now=100,clock=lambda:100)
         self.assertEqual(self.shared.db.execute('SELECT count(*) FROM cross_commands').fetchone()[0],1)
-        self.assertTrue(any('применены ко всем трём' in r[0] for r in q.db.execute('SELECT message FROM unified_outbox')))
+        self.assertFalse(any('применены ко всем четырём' in r[0] for r in q.db.execute('SELECT message FROM unified_outbox')))
+        q.acknowledge(q.pending('margin_cross')[0]['id'],'на паузе')
+        self.assertTrue(any('применены ко всем четырём' in r[0] for r in q.db.execute('SELECT message FROM unified_outbox')))
 
     def test_stale_or_incomplete_pair_and_pause_block_entry(self):
         self.book.set_paused(True)

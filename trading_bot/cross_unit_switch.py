@@ -16,7 +16,7 @@ from pathlib import Path
 
 @contextmanager
 def hold_writer_locks(financial):
-    """Hold the four existing process-lock inodes; callers must stop services first.
+    """Hold all paper worker and relay lock inodes; callers must stop services first.
 
     This fences cooperative paper workers and the relay on this host only. It
     cannot fence code that writes SQLite without using the process locks.
@@ -26,7 +26,7 @@ def hold_writer_locks(financial):
     if path.is_symlink() or not path.is_file():raise ValueError('Invalid financial database path')
     path=path.resolve(strict=True);owner=path.stat()
     with ExitStack() as stack:
-        for suffix in ('.spot.lock','.futures.lock','.cross.lock','.delivery.lock'):
+        for suffix in ('.spot.lock','.futures.lock','.cross.lock','.margin.lock','.delivery.lock'):
             lock=Path(str(path)+suffix);flags=os.O_RDWR|getattr(os,'O_NOFOLLOW',0)
             try:
                 fd=os.open(lock,flags|os.O_CREAT|os.O_EXCL,0o600);created=True

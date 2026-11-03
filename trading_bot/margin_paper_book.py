@@ -11,6 +11,7 @@ from decimal import Decimal, localcontext
 from .margin_interest_ledger import MarginInterestLedger
 from .margin_spot_filters import affordable_lot, sellable_lot, validate_lot
 from .paper_wallet_ledger import amount, encode
+from .display_amount import display_amount
 
 WALLET='margin_cross'
 PAIRS={'BTCUSDT':'BTC','ETHUSDT':'ETH'}
@@ -95,10 +96,12 @@ class MarginPaperBook:
     def _quote_identity(row):
         return {key:row.get(key) for key in ('price','time_ms','server_ms','source','price_kind','filters')}
 
-    def record_quotes(self,quotes,*,now_ms):
+    def record_quotes(self,quotes,*,now_ms,clock_ms=None):
         """Atomically publish both already-fetched prices; no network is done here."""
         self._marks(quotes,now_ms)
         with self.ledger.transaction():
+            now_ms=clock_ms() if clock_ms else now_ms
+            self._marks(quotes,now_ms)
             self._check()
             for symbol in PAIRS:
                 row=self._quote_identity(quotes[symbol])
@@ -151,6 +154,10 @@ class MarginPaperBook:
     def _remember(self,operation,fp,result):
         self.db.execute('INSERT INTO margin_trade_operations VALUES(?,?,?)',(operation,fp,json.dumps(result,sort_keys=True)))
 
+    def _notify(self,text):
+        if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='futures_outbox'").fetchone():
+            self.db.execute('INSERT INTO futures_outbox(message) VALUES(?)',('[Spot margin cross • PAPER] '+text,))
+
     def _risk(self,marks):
         equity=Decimal(0)
         for asset,mark in marks.items():
@@ -161,8 +168,9 @@ class MarginPaperBook:
         available=max(Decimal(0),min(self.ledger.balance(WALLET+':free'),equity-locked))
         return {'equity':equity,'locked':locked,'maintenance':maintenance,'available':available,'positions':len(positions)}
 
-    def risk(self,quotes,*,now_ms):
+    def risk(self,quotes,*,now_ms,clock_ms=None):
         with self.ledger.transaction():
+            now_ms=clock_ms() if clock_ms else now_ms
             self._check();marks=self._current_marks(quotes,now_ms)
             self._accrue_all(now_ms);self._check();return self._risk(marks)
 
@@ -186,7 +194,7 @@ class MarginPaperBook:
         if self.ledger.balance(WALLET+':free','USDT')<0 or self.ledger.balance(WALLET+':free',base)<0:raise ValueError('Insufficient margin asset')
         return price,fee
 
-    def open(self,operation,position_id,symbol,direction,quantity,own,leverage,quotes,*,now_ms):
+    def open(self,operation,position_id,symbol,direction,quantity,own,leverage,quotes,*,now_ms,clock_ms=None):
         quantity=amount(quantity,positive=True);own=amount(own,positive=True)
         if symbol not in PAIRS or direction not in ('LONG','SHORT') or not isinstance(position_id,str) or not position_id or own>5 or type(leverage) is not int or not 1<=leverage<=3:raise ValueError('Invalid margin entry')
         marks=self._marks(quotes,now_ms);mark=marks[PAIRS[symbol]]
@@ -196,6 +204,7 @@ class MarginPaperBook:
             ctx.prec=120
             fp,prior=self._prior(operation,parts)
             if prior is not None:return prior
+            now_ms=clock_ms() if clock_ms else now_ms
             self._check()
             marks=self._current_marks(quotes,now_ms);mark=marks[PAIRS[symbol]]
             filters=self._filters(quotes,symbol,now_ms);validate_lot(quantity,mark,filters)
@@ -221,6 +230,7 @@ class MarginPaperBook:
             result={'position_id':position_id,'symbol':symbol,'direction':direction,'quantity':encode(quantity),'fee':encode(fee),'loan_id':loan}
             self._remember(operation,fp,result);self._anchor('open:'+operation);self._check()
             if self._risk(marks)['equity']<=self._risk(marks)['maintenance']:raise ValueError('Margin maintenance exhausted')
+            self._notify('Открыта '+symbol+' '+direction+': '+display_amount(quantity,PAIRS[symbol])+' '+PAIRS[symbol]+'; комиссия '+display_amount(fee,'USDT')+' USDT.')
             return result
 
     def close(self,operation,symbol,position_id,expected_quantity,quotes,*,now_ms,expires_ms=None,clock_ms=None):
@@ -245,14 +255,19 @@ class MarginPaperBook:
             if loan_id:self.loans.accrue(loan_id,now_ms=now_ms)
             loan=self.db.execute('SELECT * FROM margin_loans WHERE id=?',(loan_id,)).fetchone() if loan_id else None
             debt=amount(loan['principal'])+amount(loan['interest']) if loan and loan['status']=='OPEN' else Decimal(0)
+            entry_results=[json.loads(row['result']) for row in self.db.execute('SELECT result FROM margin_trade_operations')]
+            entries=[r for r in entry_results if r.get('position_id')==position_id and 'direction' in r and 'fee' in r]
+            if len(entries)!=1:raise ValueError('Missing or ambiguous margin entry record')
+            entry_fee=amount(entries[0]['fee']);exit_fee=Decimal(0);exit_price=mark*(1+SLIPPAGE if p['direction']=='SHORT' else 1-SLIPPAGE)
+            interest_total=sum((amount(row['charge']) for row in self.db.execute('SELECT charge FROM margin_interest_periods WHERE loan_id=?',(loan_id,))),Decimal(0)) if loan_id else Decimal(0)
             if p['direction']=='LONG':
                 qty=sellable_lot(p['quantity'],mark,filters) if liquidation else validate_lot(p['quantity'],mark,filters)
-                if qty:self._trade('margin:close:'+operation,symbol,'SELL',qty,mark,filters,now_ms)
+                if qty:exit_price,exit_fee=self._trade('margin:close:'+operation,symbol,'SELL',qty,mark,filters,now_ms)
             elif debt:
                 already_owned=self.ledger.balance(WALLET+':free',PAIRS[symbol])
                 needed=max(Decimal(0),debt-already_owned)
                 qty=affordable_lot(needed,self.ledger.balance(WALLET+':free'),mark*(1+SLIPPAGE),FEE,mark,filters,allow_partial=liquidation)
-                if qty>0:self._trade('margin:close:'+operation,symbol,'BUY',qty,mark,filters,now_ms)
+                if qty>0:exit_price,exit_fee=self._trade('margin:close:'+operation,symbol,'BUY',qty,mark,filters,now_ms)
             paid=Decimal(0)
             if debt:
                 asset='USDT' if p['direction']=='LONG' else PAIRS[symbol]
@@ -262,14 +277,32 @@ class MarginPaperBook:
             self.db.execute('DELETE FROM margin_positions WHERE id=?',(position_id,))
             if remaining:self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
             result={'position_id':position_id,'debt_asset':('USDT' if p['direction']=='LONG' else PAIRS[symbol]),'repaid':encode(paid),'remaining_debt':encode(remaining),'liquidation':liquidation}
-            self._remember(operation,fp,result);self._anchor('close:'+operation);self._check();return result
+            # Crypto interest is valued at the close execution price for a
+            # transparent paper estimate, never used to mutate the ledger.
+            complete=not remaining and (p['direction']!='LONG' or qty==amount(p['quantity']))
+            with localcontext() as context:
+                context.prec=120
+                gross=(exit_price-amount(p['entry']))*amount(p['quantity'])*(1 if p['direction']=='LONG' else -1)
+                interest_value=interest_total*(exit_price if p['direction']=='SHORT' else Decimal(1))
+                net=gross-entry_fee-exit_fee-interest_value if complete else None
+            self.ledger._post('margin:position-close:'+operation,'FINANCIAL_METADATA',{
+                'position_id':position_id,'symbol':symbol,'direction':p['direction'],'at_ms':now_ms,
+                'gross':encode(gross) if complete else None,'entry_fee':encode(entry_fee),'exit_fee':encode(exit_fee),
+                'interest':encode(interest_total),'interest_asset':('USDT' if p['direction']=='LONG' else PAIRS[symbol]),
+                'interest_value':encode(interest_value) if complete else None,'net':encode(net) if net is not None else None,
+                'interest_valuation':'close_execution_price' if p['direction']=='SHORT' else 'USDT',
+                'complete':complete,'liquidation':liquidation},[],created=now_ms/1000)
+            self._remember(operation,fp,result);self._anchor('close:'+operation);self._check()
+            self._notify(('Модельная ликвидация ' if liquidation else 'Закрыта ')+symbol+' '+p['direction']+'; итог '+display_amount(net,'USDT')+' USDT; остаток долга '+display_amount(remaining,result['debt_asset'])+' '+result['debt_asset']+'.')
+            return result
 
-    def liquidate(self,operation,quotes,*,now_ms):
+    def liquidate(self,operation,quotes,*,now_ms,clock_ms=None):
         marks=self._marks(quotes,now_ms)
         parts=['liquidate',[(s,encode(marks[a])) for s,a in PAIRS.items()],now_ms]
         with self.ledger.transaction():
             fp,prior=self._prior(operation,parts)
             if prior is not None:return prior
+            now_ms=clock_ms() if clock_ms else now_ms
             self._check();marks=self._current_marks(quotes,now_ms);self._accrue_all(now_ms)
             risk=self._risk(marks)
             if not risk['positions'] or risk['equity']>risk['maintenance']:

@@ -10,6 +10,10 @@ from pathlib import Path
 from trading_bot.margin_paper_book import MarginPaperBook
 from trading_bot.margin_paper_strategy import MarginPaperStrategy
 from trading_bot.paper_wallet_ledger import PaperWalletLedger
+from trading_bot.margin_command_receiver import MarginCommandReceiver
+from trading_bot.margin_app import cycle
+from trading_bot.margin_spot_data import MarginSpotData
+from trading_bot.unified_queue import UnifiedQueue
 
 
 PERIOD=900000
@@ -48,6 +52,22 @@ class MarginStrategyTests(unittest.TestCase):
         self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],1)
         self.assertEqual(strategy.last_protection_ms,SERVER+2000)
         self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_runtime_cycle_trades_only_after_trusted_snapshot_and_rejects_fixture_source(self):
+        queue=UnifiedQueue(Path(self.tmp.name)/'commands.db');self.addCleanup(queue.close)
+        receiver=MarginCommandReceiver(self.book);strategy=MarginPaperStrategy(self.book)
+        class Reader:
+            source=MarginSpotData.HOST
+            def snapshot(self,symbol,interval):
+                q=snapshots()[symbol].copy();q['source']=self.source
+                q['filters']={**q['filters'],'notional_price':q['price'],'notional_time_ms':SERVER}
+                q['candles']=candles()[symbol];return q
+        reader=Reader()
+        actions=cycle(None,self.book,queue,receiver,strategy,reader,started=0,clock=lambda:SERVER/1000)
+        self.assertEqual([a['action'] for a in actions],['OPEN','OPEN'])
+        reader.source='fixture'
+        with self.assertRaisesRegex(ValueError,'Untrusted'):cycle(None,self.book,queue,receiver,strategy,reader,started=0,clock=lambda:SERVER/1000)
+        self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM ledger_events WHERE kind='MARGIN_TRADE'").fetchone()[0],2)
 
     def test_stale_data_blocks_entries_durably(self):
         strategy=MarginPaperStrategy(self.book)

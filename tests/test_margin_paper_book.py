@@ -89,6 +89,19 @@ class MarginPaperBookTests(unittest.TestCase):
         exit_slippage=Decimal('.09')*Decimal('.02')
         exit_fee=Decimal('.09')*Decimal('99.98')*Decimal('.001')
         self.assertEqual(before-after_close,entry_slippage+exit_slippage+entry_fee+exit_fee+interest)
+        event=self.ledger.db.execute("SELECT details FROM ledger_events WHERE id='margin:position-close:close'").fetchone()
+        import json
+        self.assertEqual(Decimal(json.loads(event[0])['net']),after_close-before)
+
+    def test_short_result_marks_crypto_interest_at_execution_price(self):
+        import json
+        before=self.book.risk(self.quotes,now_ms=1000)['equity']
+        self.book.open('short','position','ETHUSDT','SHORT','.04','5',2,self.quotes,now_ms=1000)
+        self.book.close('close-short','ETHUSDT','position','.04',self.quotes,now_ms=1000)
+        after=self.book.risk(self.quotes,now_ms=1000)['equity']
+        row=self.ledger.db.execute("SELECT details FROM ledger_events WHERE id='margin:position-close:close-short'").fetchone()
+        report=json.loads(row[0]);self.assertEqual(report['interest_valuation'],'close_execution_price')
+        self.assertEqual(Decimal(report['net']),after-before)
 
     def test_liquidation_preserves_deficit_and_other_wallet(self):
         with self.ledger.transaction():
@@ -230,6 +243,31 @@ sys.exit(1)
         _,err=job.communicate(timeout=20);self.assertEqual(job.returncode,0,err.decode())
         self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],1)
         self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM ledger_events WHERE id='margin:close:close'").fetchone()[0],0)
+
+    def test_entry_rechecks_quote_after_waiting_for_sqlite_write_lock(self):
+        blocker=sqlite3.connect(Path(self.tmp.name)/'ledger.db',isolation_level=None,timeout=5)
+        self.addCleanup(blocker.close)
+        script='''import sqlite3,sys,time
+from trading_bot.margin_paper_book import MarginPaperBook
+from trading_bot.paper_wallet_ledger import PaperWalletLedger
+db=sqlite3.connect(sys.argv[1],isolation_level=None,timeout=10);db.row_factory=sqlite3.Row
+db.execute("PRAGMA foreign_keys=ON");db.execute("PRAGMA synchronous=FULL")
+l=object.__new__(PaperWalletLedger);l.db=db;l.fault=lambda p:None
+b=MarginPaperBook(l);q=b.stored_quotes();print("ready",flush=True);sys.stdin.readline()
+start=time.monotonic()
+try:b.open("entry","p","BTCUSDT","LONG",".09","5",2,q,now_ms=1000,clock_ms=lambda:1000+int((time.monotonic()-start)*150000))
+except ValueError as e:
+ if "stale" in str(e):sys.exit(0)
+ raise
+sys.exit(1)
+'''
+        job=subprocess.Popen([sys.executable,'-B','-c',script,str(Path(self.tmp.name)/'ledger.db')],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        self.assertEqual(job.stdout.readline().strip(),b'ready')
+        blocker.execute('BEGIN IMMEDIATE');job.stdin.write(b'go\n');job.stdin.flush()
+        time.sleep(1.2);blocker.rollback()
+        _,err=job.communicate(timeout=20);self.assertEqual(job.returncode,0,err.decode())
+        self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],0)
+        self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM ledger_events WHERE kind='MARGIN_TRADE'").fetchone()[0],0)
 
 
 if __name__=='__main__':unittest.main()

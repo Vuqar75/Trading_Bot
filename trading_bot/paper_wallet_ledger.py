@@ -208,9 +208,9 @@ class PaperWalletLedger:
         quantity = amount(value, positive=True)
         if not request_id or ttl <= 0:
             raise ValueError('Invalid request')
-        now = time.time() if now is None else now
         fingerprint = hashlib.sha256(json.dumps([source,destination,encode(quantity)],separators=(',', ':')).encode()).hexdigest()
         with self.transaction():
+            now = time.time() if now is None else now
             old = self.db.execute('SELECT * FROM transfer_proposals WHERE request_id=?', (request_id,)).fetchone()
             if old:
                 if old['fingerprint'] != fingerprint:
@@ -230,8 +230,8 @@ class PaperWalletLedger:
                     'source_after':source_after,'destination_after':destination_after}
 
     def confirm_transfer(self, token, *, now=None):
-        now = time.time() if now is None else now
         with self.transaction():
+            now = time.time() if now is None else now
             row = self.db.execute('SELECT * FROM transfer_proposals WHERE id=?', (token,)).fetchone()
             if not row:
                 raise ValueError('Unknown transfer confirmation')
@@ -252,8 +252,8 @@ class PaperWalletLedger:
             return event
 
     def cancel_transfer(self, token, *, now=None):
-        now = time.time() if now is None else now
         with self.transaction():
+            now = time.time() if now is None else now
             row = self.db.execute('SELECT status,expires FROM transfer_proposals WHERE id=?', (token,)).fetchone()
             if row and row['status']=='CANCELED':
                 return

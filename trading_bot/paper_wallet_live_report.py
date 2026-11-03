@@ -92,7 +92,46 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 elif row['account']=='external:cross_fees':cross['fees']+=value
                 elif row['account']=='external:cross_funding':cross['funding_total']-=value
                 else:cross['adjustment']-=value
-        total=None if incomplete else sum((v['free']+v['reserved'] for v in balances.values()),Decimal(0)) + (btc*sp if btc else 0) + isolated + cross_value
+        margin_cross=None; margin_cross_value=Decimal(0)
+        if shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_positions'").fetchone():
+            from .margin_paper_book import MarginPaperBook
+            from .margin_interest_ledger import MarginInterestLedger, HOUR_MS
+            mb=object.__new__(MarginPaperBook);mb.ledger=shared.ledger;mb.db=shared.db
+            mb.loans=object.__new__(MarginInterestLedger);mb.loans.ledger=shared.ledger;mb.loans.db=shared.db
+            mb._check()
+            balances['margin_cross']={'free':shared.ledger.balance('margin_cross:free'),'reserved':shared.ledger.balance('margin_cross:reserved')}
+            assets={a:{k:shared.ledger.balance('margin_cross:'+k,a) for k in ('free','reserved','principal','interest')} for a in ('USDT','BTC','ETH')}
+            loans=[dict(r) for r in shared.db.execute("SELECT * FROM margin_loans WHERE status='OPEN' ORDER BY id")]
+            now_ms=int(now*1000);due=False
+            for loan in loans:
+                last=shared.db.execute('SELECT MAX(period) FROM margin_interest_periods WHERE loan_id=?',(loan['id'],)).fetchone()[0]
+                if now_ms<loan['opened_ms'] or last is None or last<(now_ms-loan['opened_ms'])//HOUR_MS:due=True
+            if due:incomplete.append('Margin cross: не начислены все причитающиеся периоды процентов')
+            marks=None
+            try:marks=mb._marks(mb.stored_quotes(),now_ms)
+            except ValueError:
+                if any(any(assets[a][k] for k in assets[a]) for a in ('BTC','ETH')):
+                    incomplete.append('Margin cross: цены отсутствуют или устарели')
+            margin_assets=Decimal(0);margin_debt=assets['USDT']['principal']+assets['USDT']['interest']
+            if marks:
+                for asset in ('BTC','ETH'):
+                    margin_assets+=(assets[asset]['free']+assets[asset]['reserved'])*marks[asset]
+                    margin_debt+=(assets[asset]['principal']+assets[asset]['interest'])*marks[asset]
+            elif any(any(assets[a][k] for k in assets[a]) for a in ('BTC','ETH')):
+                margin_assets=None;margin_debt=None
+            margin_cross_value=None if margin_assets is None or margin_debt is None else margin_assets+margin_debt
+            margin_positions=mb._positions()
+            margin_cross={'assets':assets,'loans':loans,'positions':margin_positions,'asset_value':margin_assets,'debt_value':margin_debt,'marks':marks,'due':due,
+                          'locked':sum((amount(pos['own']) for pos in margin_positions),Decimal(0)),
+                          'equity':None if due or margin_cross_value is None else balances['margin_cross']['free']+balances['margin_cross']['reserved']+margin_cross_value}
+            closes=[json.loads(r['details']) for r in shared.db.execute("SELECT created,details FROM ledger_events WHERE kind='FINANCIAL_METADATA' AND id LIKE 'margin:position-close:%'") if period=='all' or start<=r['created']<=now]
+            margin_cross['realized']=None if any(r['net'] is None for r in closes) else sum((amount(r['net']) for r in closes),Decimal(0))
+            margin_cross['fees']=Decimal(0);margin_cross['interest_total']={a:Decimal(0) for a in ('USDT','BTC','ETH')}
+            for row in shared.db.execute("SELECT e.created,p.account,p.asset,p.amount FROM ledger_events e JOIN ledger_postings p ON p.event_id=e.id WHERE p.account IN ('external:margin_fee','external:margin_interest')"):
+                if period=='today' and not start<=row['created']<=now:continue
+                if row['account']=='external:margin_fee':margin_cross['fees']+=amount(row['amount'])
+                else:margin_cross['interest_total'][row['asset']]+=amount(row['amount'])
+        total=None if incomplete else sum((v['free']+v['reserved'] for v in balances.values()),Decimal(0)) + (btc*sp if btc else 0) + isolated + cross_value + margin_cross_value
         # Separate terms preserve the existing valuation exactly. Entry fees
         # and estimated exit costs are not removed from the journal balances.
         cash=sum((v['free']+v['reserved'] for v in balances.values()),Decimal(0))
@@ -106,7 +145,9 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                'cross_funding':cross['funding'] if cross else Decimal(0),
                'cross_open':cross['gross'] if cross else Decimal(0),
                'cross_liability':cross['liability'] if cross else Decimal(0),
-               'cross_exit_cost':-cross['exit_cost'] if cross and cross['exit_cost'] is not None else (None if cross else Decimal(0))}
+               'cross_exit_cost':-cross['exit_cost'] if cross and cross['exit_cost'] is not None else (None if cross else Decimal(0)),
+               'margin_assets':margin_cross['asset_value'] if margin_cross else Decimal(0),
+               'margin_debt':margin_cross['debt_value'] if margin_cross else Decimal(0)}
         valuation_ok=None if total is None or any(v is None for v in terms.values()) else sum(terms.values(),Decimal(0))==total
         available={w:None for w in balances}
         if not shared.deployment_hold():
@@ -120,6 +161,11 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                     book._require_coverage(now)
                     available['futures_cross']=book._risk(book._marks(book.stored_quotes(),now))['available']
                 except ValueError:pass
+            if margin_cross and not margin_cross['due'] and margin_cross['marks'] and shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0]:
+                error=shared.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()
+                orphan=shared.db.execute("SELECT 1 FROM margin_loans l WHERE l.status='OPEN' AND NOT EXISTS (SELECT 1 FROM margin_positions p WHERE p.id=l.position_id)").fetchone()
+                if error and json.loads(error[0]) is None and not orphan:
+                    available['margin_cross']=mb._risk(margin_cross['marks'])['available']
         spot_closes=shared.db.execute('SELECT ts,pnl,known FROM runtime_closes').fetchall()
         future_closes=[(r['ts'],json.loads(r['payload'])) for r in shared.db.execute("SELECT ts,payload FROM futures_events WHERE event='CLOSE'")]
         selected_spot=[r for r in spot_closes if period=='all' or start<=r['ts']<=now]
@@ -170,17 +216,17 @@ def live_report(shared, *, now=None, period='all', max_age=120):
               'future_fees':future_fees,'funding_total':funding_total,'transfers':transfers,'total':total,
               'incomplete':incomplete,'spot_quote_time':(shared._get('spot','quote') or {}).get('time'),
               'futures_quote_time':(shared._get('futures','quote') or {}).get('time'),'period':period,'cross':cross,
-              'valuation_terms':terms,'valuation_ok':valuation_ok,'available':available}
+              'valuation_terms':terms,'valuation_ok':valuation_ok,'available':available,'margin_cross':margin_cross}
         return data
 
 
 def render_wallets(data):
-    labels={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross'}
+    labels={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross','margin_cross':'Spot margin cross'}
     lines=['PAPER: свободно | резерв ордеров | маржа позиций (USDT)']
     for wallet,values in data['wallets'].items():
-        margin=data['margin'] if wallet=='futures_isolated' else (data['cross']['margin'] if wallet=='futures_cross' and data.get('cross') else Decimal(0))
+        margin=data['margin'] if wallet=='futures_isolated' else (data['cross']['margin'] if wallet=='futures_cross' and data.get('cross') else (data['margin_cross']['locked'] if wallet=='margin_cross' and data.get('margin_cross') else Decimal(0)))
         lines.append(labels.get(wallet,wallet)+': '+_fmt(values['free'])+' | '+_fmt(values['reserved'])+' | '+_fmt(margin))
-    lines.append('Резерв ордеров не включает маржу позиций. /wallet ИМЯ — доступность перевода; /balance_report — оценка капитала.')
+    lines.append('Резерв ордеров не включает маржу позиций. Обеспечение margin cross включено в свободный остаток и повторно не прибавляется к капиталу. /wallet ИМЯ — доступность перевода; /balance_report — оценка капитала.')
     return '\n'.join(lines)
 
 
@@ -198,6 +244,7 @@ def render_live_report(data):
               '+ isolated: маржа '+_fmt(terms['isolated_margin'])+'; funding '+_fmt(terms['isolated_funding'])+'; открытый PnL '+_fmt(terms['isolated_open']),
               '− комиссия входа isolated: '+_fmt(terms['isolated_entry_fee'].copy_negate())+'; − оценочные издержки выхода: '+_fmt(terms['isolated_exit_cost'].copy_negate() if terms['isolated_exit_cost'] is not None else None)+'; корректировка ограничения нулём: '+_fmt(terms['isolated_floor']),
               '+ cross: маржа '+_fmt(terms['cross_margin'])+'; funding '+_fmt(terms['cross_funding'])+'; открытый PnL '+_fmt(terms['cross_open'])+'; обязательства '+_fmt(terms['cross_liability'])+'; − оценочные издержки выхода '+_fmt(terms['cross_exit_cost'].copy_negate() if terms['cross_exit_cost'] is not None else None),
+              '+ margin cross: стоимость криптоактивов '+_fmt(terms['margin_assets'])+'; обязательства '+_fmt(terms['margin_debt']),
               'Учтённые комиссии и реализованный PnL отражены в остатках или отдельных строках выше; повторно не вычитаются. Округлены только показанные числа; сумма строк может отличаться из-за округления.',
               'Проверка расчёта оценки: '+('пройдена' if data['valuation_ok'] is True else 'расхождение' if data['valuation_ok'] is False else 'неполные данные')+'.']
     lines += ['Spot актив: '+_fmt(data['btc'],'BTC')+' BTC; результат к себестоимости: '+_fmt(data['spot_open'])+' USDT',
@@ -208,14 +255,20 @@ def render_live_report(data):
               'Внешние движения: история не подтверждена; внутренних переводов: '+str(len(data['transfers'])),
               'Проверка проводок и остатков: пройдена. Цена Spot: '+(when(data['spot_quote_time']) if data['spot_quote_time'] else 'нет данных')+'; Futures isolated: '+(when(data['futures_quote_time']) if data['futures_quote_time'] else 'нет данных')]
     cross=data.get('cross')
-    if cross is None:lines.append('futures_cross и margin_cross: недоступны.')
+    if cross is None:lines.append('futures_cross: недоступен.')
     else:
         lines.append('Futures cross • PAPER: капитал '+_fmt(cross['equity'])+' USDT; маржа '+_fmt(cross['margin'])+' USDT; обязательства '+_fmt(-cross['liability'])+' USDT; запас риска '+_fmt(cross['buffer'])+' USDT; риск-лимит перевода '+_fmt(cross['available'])+' USDT (нужна пауза и проверка получателя).')
         lines.append('Cross результат открытых позиций: '+_fmt(cross['gross'])+'; реализованный до комиссий: '+_fmt(cross['realized'])+'; комиссии: '+_fmt(cross['fees'])+'; funding: '+_fmt(cross['funding_total'])+'; модельная корректировка: '+_fmt(cross['adjustment'])+' USDT.')
         lines.append('Оценка cross использует доступные данные funding; окончательность публикации источником не гарантирована.')
         for pos in cross['positions']:
             lines.append(pos['symbol']+' '+pos['direction']+' — '+_fmt(pos['quantity'],pos['symbol'][:-4])+' '+pos['symbol'][:-4]+'; вход '+_fmt(pos['entry'])+' USDT; маржа '+_fmt(pos['margin'])+' USDT.')
-        lines.append('margin_cross: недоступен.')
+    mc=data.get('margin_cross')
+    if mc is None:lines.append('margin_cross: недоступен.')
+    else:
+        lines.append('Spot margin cross • PAPER: капитал после обязательств '+_fmt(mc['equity'])+' USDT; обеспечение позиций '+_fmt(mc['locked'])+' USDT. Котировки — последняя публичная Spot-сделка; активы и обязательства:')
+        for asset,v in mc['assets'].items():
+            lines.append(asset+': свободно '+_fmt(v['free'],asset)+'; резерв '+_fmt(v['reserved'],asset)+'; основной долг '+_fmt(-v['principal'],asset)+'; проценты '+_fmt(-v['interest'],asset)+' '+asset+'.')
+        lines.append('Результат закрытых позиций (paper-оценка процентов по цене выхода): '+_fmt(mc['realized'])+' USDT; комиссии '+_fmt(mc['fees'])+' USDT; начисленные проценты: '+', '.join(_fmt(v,a)+' '+a for a,v in mc['interest_total'].items())+'. Повторно из капитала они не вычитаются.')
     if data['incomplete']:lines.append('Неполные данные: '+ '; '.join(data['incomplete']))
     if data['period']=='today':lines.append('Суточные Spot-комиссии не подтверждены временными метками старой истории.')
     return '\n'.join(lines)
