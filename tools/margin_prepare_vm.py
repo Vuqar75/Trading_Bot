@@ -6,10 +6,10 @@ are neither read nor copied. A later guarded switch is a separate operation.
 import hashlib,json,os,shutil,sqlite3,subprocess,sys,tempfile,time
 from pathlib import Path
 
-CANDIDATE='2b014e08f347ce774bcc7aaae31ff8ef7f4b7824'
+CANDIDATE='8a692e35032bafc33895de4812eb77c59781878c'
 INSTALLED='c05238e38c30018a538447f3607de3ec3dd26bb8'
 HOME=Path('/var/lib/tradingbot');OLD=Path('/opt/trading-bot-paper-c05238e')
-TARGET=Path('/opt/trading-bot-margin-2b014e0');ARCHIVE=HOME/'margin-cutovers/20261103a'
+TARGET=Path('/opt/trading-bot-margin-8a692e3');ARCHIVE=HOME/'margin-cutovers/20261103b'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
 UNITS=('tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service','tradingbot-monitor.service')
 
@@ -53,7 +53,7 @@ def main():
         subprocess.run(['git','-C',str(repo),'checkout','--quiet','--detach',CANDIDATE],check=True,timeout=30)
         if call('git','-C',str(repo),'rev-parse','HEAD')!=CANDIDATE or call('git','-C',str(repo),'status','--porcelain','--untracked-files=all'):
             raise ValueError('Candidate mismatch')
-        if call('git','-C',str(repo),'diff','--name-only','5f1717d986e3d64e2263585bc08a04d78904f849',CANDIDATE,'--','trading_bot').splitlines()!=['trading_bot/margin_rollout.py']:
+        if call('git','-C',str(repo),'diff','--name-only','5f1717d986e3d64e2263585bc08a04d78904f849',CANDIDATE,'--','trading_bot').splitlines()!=['trading_bot/app.py','trading_bot/margin_rollout.py','trading_bot/margin_valuation_verifier.py']:
             raise ValueError('Candidate trading code differs from tested version')
         os.chmod(repo,0o755);os.rename(repo,TARGET)
     ARCHIVE.mkdir(mode=0o700,parents=True)

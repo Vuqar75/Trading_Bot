@@ -22,6 +22,7 @@ with tempfile.TemporaryDirectory(prefix='margin-copy-rehearsal-') as temp:
     from trading_bot.margin_paper_book import MarginPaperBook
     from trading_bot.margin_rollback_guard import may_restore_pre_margin_code
     from trading_bot.margin_rollout import freeze_margin_cutover,allocate_margin_once,release_margin_cutover
+    from trading_bot.margin_valuation_verifier import verify_allocation_value
     from trading_bot.cross_unit_switch import hold_writer_locks,switch_unit_files,restore_unit_files
     from trading_bot.unified_queue import UnifiedQueue
     source=root/'source'
@@ -82,6 +83,8 @@ with tempfile.TemporaryDirectory(prefix='margin-copy-rehearsal-') as temp:
         capital=str(before_report['total'])
     finally:q.close();shared.close()
     after=root/'after-transfer';coordinated_backup(financial,queue,observer,after,timeout=8)
+    comparison=verify_allocation_value(before/'financial.db',after/'financial.db',allocation['token'],now=now)
+    if comparison['capital_before']!=comparison['capital_after']:raise RuntimeError('Fixed-price valuation proof failed')
     guard=may_restore_pre_margin_code(before/'financial.db',after/'financial.db',before/'queue.db',after/'queue.db')
     if guard['safe_for_old_code'] or 'financial_history_changed' not in guard['reasons']:raise RuntimeError('Rollback guard did not reject new event')
     with hold_writer_locks(financial):

@@ -80,10 +80,14 @@ class MarginSwitchVmTests(unittest.TestCase):
             names={'spot':'tradingbot-spot.service','futures':'tradingbot-futures.service','cross':'tradingbot-cross.service',
                    'margin':'tradingbot-margin.service','monitor':'tradingbot-monitor.service'}
             return {key:int(self.states[unit]=='active') for key,unit in names.items()}
+        def unit_property(unit,key):
+            return {'DropInPaths':str(self.unitdir/(unit+'.d')/'90-paper-cross-interlock.conf'),
+                    'FragmentPath':str(self.unitdir/unit),'NeedDaemonReload':'no'}[key]
         patches=[patch.object(switcher,'ARCHIVE',self.archive),patch.object(switcher,'TARGET',self.target),
                  patch.object(switcher,'FINANCIAL',self.financial),patch.object(switcher,'QUEUE',self.queue),
                  patch.object(switcher,'OBSERVER',self.observer),patch.object(switcher,'UNITDIR',self.unitdir),
                  patch.object(switcher,'MARKER',self.marker),patch.object(switcher,'active',side_effect=lambda u:self.states[u]),
+                 patch.object(switcher,'property_value',side_effect=unit_property),
                  patch.object(switcher,'process_counts',side_effect=counts),
                  patch.object(switcher,'command',side_effect=fake_command),patch('os.geteuid',return_value=0),
                  patch.object(switcher.subprocess,'check_output',side_effect=output),patch.object(switcher.signal,'signal'),

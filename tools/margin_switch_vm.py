@@ -8,19 +8,23 @@ import hashlib,json,os,shutil,signal,sqlite3,subprocess,sys,tempfile,time
 from contextlib import closing
 from pathlib import Path
 
-CANDIDATE='2b014e08f347ce774bcc7aaae31ff8ef7f4b7824'
-HOME=Path('/var/lib/tradingbot');TARGET=Path('/opt/trading-bot-margin-2b014e0');ARCHIVE=HOME/'margin-cutovers/20261103a'
+CANDIDATE='8a692e35032bafc33895de4812eb77c59781878c'
+HOME=Path('/var/lib/tradingbot');TARGET=Path('/opt/trading-bot-margin-8a692e3');ARCHIVE=HOME/'margin-cutovers/20261103b'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
 UNITDIR=Path('/etc/systemd/system');MARKER=HOME/'cross-cutovers/service-start-interlock'
 SERVICES=('tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service','tradingbot-monitor.service','tradingbot-margin.service')
 OLD=SERVICES[:-1];TIMER='tradingbot-paper-backup.timer';BACKUP='tradingbot-paper-backup.service'
-FREEZE='margin:freeze:live-20261103a';INTERLOCK='cross:freeze:margin-20261103a'
+FREEZE='margin:freeze:live-20261103b';INTERLOCK='cross:freeze:margin-20261103b'
 
 def command(*args,timeout=180):
     return subprocess.run(['systemctl',*args],capture_output=True,text=True,timeout=timeout,check=True).stdout.strip()
 
 def active(unit):
     r=subprocess.run(['systemctl','show',unit,'--property=ActiveState','--value'],capture_output=True,text=True,timeout=20)
+    return r.stdout.strip() if not r.returncode else None
+
+def property_value(unit,key):
+    r=subprocess.run(['systemctl','show',unit,'--property='+key,'--value'],capture_output=True,text=True,timeout=20)
     return r.stdout.strip() if not r.returncode else None
 
 def process_counts():
@@ -78,6 +82,13 @@ def main():
                 process_counts()=={'spot':0,'futures':0,'cross':0,'margin':0,'monitor':0} and paused())
     def unit_match():
         return all((UNITDIR/name).is_file() and not (UNITDIR/name).is_symlink() and (UNITDIR/name).read_bytes()==(stages/name).read_bytes() for name in SERVICES)
+    def units_loaded():
+        for name in SERVICES:
+            expected=str(UNITDIR/(name+'.d')/'90-paper-cross-interlock.conf')
+            paths=property_value(name,'DropInPaths')
+            if (property_value(name,'FragmentPath')!=str(UNITDIR/name) or property_value(name,'NeedDaemonReload')!='no' or
+                paths is None or expected not in paths.split()):return False
+        return True
     def restored():return all((UNITDIR/name).read_bytes()==original[name] for name in OLD) and not (UNITDIR/SERVICES[-1]).exists()
     def reload_units():
         try:command('daemon-reload');return True
@@ -116,8 +127,8 @@ def main():
             mark('stopped_backup_verified')
             switch_unit_files(UNITDIR,stages,unit_archive,SERVICES,new_units=(SERVICES[-1],),assert_safe=stopped)
             command('daemon-reload')
-            if not unit_match():raise ValueError('Candidate units do not match staged files')
-            release_interlock(UNITDIR,MARKER,SERVICES,INTERLOCK,verify_safe=lambda:stopped() and unit_match())
+            if not unit_match() or not units_loaded():raise ValueError('Candidate units or interlocks do not match staged files')
+            release_interlock(UNITDIR,MARKER,SERVICES,INTERLOCK,verify_safe=lambda:stopped() and unit_match() and units_loaded())
             armed=False;mark('candidate_units_switched')
         starting=True
         command('enable','tradingbot-margin.service')
