@@ -67,14 +67,16 @@ def wait(predicate,units,seconds=60):
 
 with tempfile.TemporaryDirectory(prefix='margin-four-systemd-',dir='/var/lib/tradingbot') as tmp:
     root=Path(tmp);financial=root/'shared.db';queue_path=root/'queue.db';observation=root/'observation.db'
-    spot=RuntimeStore(root/'spot.db',{'mode':'paper','interval':'15m'});future=FuturesStore(root/'futures.db')
+    identity={'schema':1,'mode':'paper','symbol':'BTCUSDT','interval':'15m','amount':'10','account':'paper'}
+    spot=RuntimeStore(root/'spot.db',identity);future=FuturesStore(root/'futures.db')
     now=time.time();stamp=int(now*1000)
     future.command(1,True,'/resume');future.open_position('SHORT',Decimal(100),stamp,'rehearsal');original=future.get('position')
-    with spot.transaction():spot.set('paused',False)
+    with spot.transaction():spot.set('paused',True)
     with future.transaction():future.set('paused',True)
     spot.close();future.close();consolidate_snapshots(root/'spot.db',root/'futures.db',financial,captured_at=now)
     shared=SharedPaperStore(financial);q=UnifiedQueue(queue_path)
     with shared.transaction():
+        shared._set('spot','paused',False)
         shared._set('spot','quote',{'price':'100','time':now});shared._set('futures','quote',{'price':'100','time':now,'server_ms':stamp})
     cross=CrossPaperBook(shared)
     quotes={s:{'mark':'100','time':now,'funding_complete':True,'server_ms':stamp,'next_due_ms':(stamp//28800000+1)*28800000,'interval_ms':28800000} for s in ('BTCUSDT','ETHUSDT')}
@@ -93,7 +95,7 @@ with tempfile.TemporaryDirectory(prefix='margin-four-systemd-',dir='/var/lib/tra
     units={name:'margin-rehearsal-'+str(os.getpid())+'-'+name+'.service' for name in scripts}
     try:
         for name,unit in units.items():
-            args=['systemd-run','--quiet','--unit='+unit,'--property=User=tradingbot','--property=Group=tradingbot',
+            args=['systemd-run','--quiet','--unit='+unit,'--setenv=PYTHONPATH='+str(repo),'--property=User=tradingbot','--property=Group=tradingbot',
                   '--property=WorkingDirectory='+str(repo),'--property=NoNewPrivileges=true','--property=PrivateTmp=true',
                   '/usr/bin/python3','-B',str(root/(name+'.py'))]
             args+=([name,str(financial),str(queue_path)] if name in ('spot','futures') else [str(financial),str(queue_path)])

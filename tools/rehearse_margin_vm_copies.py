@@ -21,6 +21,7 @@ with tempfile.TemporaryDirectory(prefix='margin-copy-rehearsal-') as temp:
     from trading_bot.paper_wallet_live_report import live_report
     from trading_bot.margin_paper_book import MarginPaperBook
     from trading_bot.margin_rollback_guard import may_restore_pre_margin_code
+    from trading_bot.margin_rollout import freeze_margin_cutover,allocate_margin_once,release_margin_cutover
     from trading_bot.cross_unit_switch import hold_writer_locks,switch_unit_files,restore_unit_files
     from trading_bot.unified_queue import UnifiedQueue
     source=root/'source'
@@ -28,12 +29,12 @@ with tempfile.TemporaryDirectory(prefix='margin-copy-rehearsal-') as temp:
         home/'Trading_Bot_paper_state/monitor/observation.db',source,timeout=8)
     active=root/'active';shutil.copytree(source,active)
     financial=active/'financial.db';queue=active/'queue.db';observer=active/'observation.db'
-    shared=SharedPaperStore(financial)
+    shared=SharedPaperStore(financial);q=UnifiedQueue(queue)
     try:
         before_positions={m:shared.snapshot(m)['position'] for m in ('spot','futures')}
-        with shared.transaction():shared._set('futures','paused',True)
+        frozen=freeze_margin_cutover(shared,q,'margin:freeze:vm-copy')
         MarginPaperBook(shared.ledger)
-    finally:shared.close()
+    finally:q.close();shared.close()
     service_user=pwd.getpwnam('tradingbot')
     for path in [root,*root.rglob('*')]:
         if not path.is_symlink():os.chown(path,service_user.pw_uid,service_user.pw_gid)
@@ -66,21 +67,20 @@ with tempfile.TemporaryDirectory(prefix='margin-copy-rehearsal-') as temp:
         else:raise RuntimeError('Switch interruption was not exercised')
         restore_unit_files(unit_dir,archive,names,assert_safe=lambda:True,verify_rollback=verified)
         switch_unit_files(unit_dir,candidate,archive,names,new_units=(names[-1],),assert_safe=lambda:True)
-    shared=SharedPaperStore(financial)
+    shared=SharedPaperStore(financial);q=UnifiedQueue(queue)
     try:
         now=time.time();before_report=live_report(shared,now=now)
         if before_report['total'] is None:raise RuntimeError('Copied capital valuation incomplete')
         prior=shared.ledger.balance('futures_isolated:free')
-        proposal=shared.propose_transfer('margin:initial:rehearsal','futures_isolated','margin_cross','50',now=now)
-        event=shared.confirm_transfer(proposal['id'],now=now)
-        if shared.confirm_transfer(proposal['id'],now=now)!=event:raise RuntimeError('Transfer replay mismatch')
+        allocation=allocate_margin_once(shared,q,'margin:initial:vm-copy',now=now)
+        if allocate_margin_once(shared,q,'margin:initial:vm-copy',now=now)['event']!=allocation['event']:raise RuntimeError('Transfer replay mismatch')
         after_report=live_report(shared,now=now)
         if after_report['total']!=before_report['total'] or not after_report['valuation_ok']:raise RuntimeError('Copied capital changed at fixed prices')
         if prior-shared.ledger.balance('futures_isolated:free')!=50 or shared.ledger.balance('margin_cross:free')!=50:raise RuntimeError('Copied transfer mismatch')
         if any(shared.snapshot(m)['position']!=before_positions[m] for m in before_positions):raise RuntimeError('Existing position changed')
         if not shared.ledger.reconcile()['balanced']:raise RuntimeError('Copied journal mismatch')
         capital=str(before_report['total'])
-    finally:shared.close()
+    finally:q.close();shared.close()
     after=root/'after-transfer';coordinated_backup(financial,queue,observer,after,timeout=8)
     guard=may_restore_pre_margin_code(before/'financial.db',after/'financial.db',before/'queue.db',after/'queue.db')
     if guard['safe_for_old_code'] or 'financial_history_changed' not in guard['reasons']:raise RuntimeError('Rollback guard did not reject new event')
@@ -88,7 +88,17 @@ with tempfile.TemporaryDirectory(prefix='margin-copy-rehearsal-') as temp:
         try:restore_unit_files(unit_dir,archive,names,assert_safe=lambda:True,verify_rollback=lambda:guard['safe_for_old_code'])
         except ValueError:pass
         else:raise RuntimeError('Unit rollback ignored new financial event')
+    shared=SharedPaperStore(financial);q=UnifiedQueue(queue)
+    try:
+        release=release_margin_cutover(shared,q,'margin:release:vm-copy',protection_checked_ms=health['protection_checked_at'])
+        expected={m for m in ('spot','futures') if not frozen['paused'][m]}|{'margin_cross'}
+        if set(release['enabled'])!=expected:raise RuntimeError('Original pause restoration mismatch')
+        if not shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]:raise RuntimeError('Cross pause changed')
+        with shared.transaction():shared.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
+        if not release_margin_cutover(shared,q,'margin:release:vm-copy',protection_checked_ms=health['protection_checked_at'])['replayed'] or not shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0]:raise RuntimeError('Release replay changed manual pause')
+    finally:q.close();shared.close()
     print(json.dumps({'candidate':expected,'source':'coordinated private copies','capital_fixed_price_usdt':capital,
         'copy_transfer_usdt':'50','transfer_replay':'same_event','old_positions_preserved':True,
         'systemd_copy_once':True,'margin_health_paused':True,'quotes_fresh':True,'protection_fresh':True,'journal_balanced':True,
-        'copied_unit_switch_interruption':'restored_and_replayed','rollback_after_new_event':'refused','production_changed':False},sort_keys=True))
+        'copied_unit_switch_interruption':'restored_and_replayed','rollback_after_new_event':'refused',
+        'original_pauses_restored':'yes','release_replay_preserved_later_pause':True,'production_changed':False},sort_keys=True))
