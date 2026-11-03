@@ -1,3 +1,16 @@
+> Проверка стоимости независимого мониторинга 3 ноября: scalar custom metric
+> раз в 5 минут при 30 днях — 8640 точек, 8 байт на точку = 69120 байт
+> (около 0,0659 MiB); без свободного лимита это около $0,017/месяц при
+> $0,258/MiB. Первые 150 MiB общие для billing account, остаток неизвестен.
+> Policy alerting по официальной странице тарифицируется не раньше сентября
+> 2027; запись метрик API не оплачивается. Это оценка только метрики, не всего
+> внешнего Telegram-канала: Pub/Sub, Cloud Run, Secret Manager, исходящий трафик,
+> логирование и фактические общие лимиты ещё нужно рассчитать для выбранной
+> реализации. Никаких таких сервисов не создано. Источники:
+> https://cloud.google.com/products/observability/pricing ;
+> https://cloud.google.com/run/pricing ; https://cloud.google.com/pubsub/pricing ;
+> https://cloud.google.com/secret-manager/pricing .
+
 > 3 ноября: bucket `tradingbot-paper-backup-101494113814-ew1` и uploader
 > service account созданы, Storage/Monitoring API включены. Bucket пуст, VM не
 > останавливалась, account не прикреплён. Ни внешняя копия, ни независимый
