@@ -60,6 +60,10 @@ class MarginPaperStrategy:
             if not settings or type(settings['leverage']) is not int or not 1<=settings['leverage']<=3 or settings['interval'] not in INTERVALS:
                 raise ValueError('Invalid margin settings')
             if not isinstance(candles,dict):raise ValueError('Spot candles unavailable')
+            # A snapshot spanning a boundary is safe for risk checks only.
+            period=INTERVALS[settings['interval']]*1000
+            same_interval=all(type(quotes[s].get('candle_server_ms',quotes[s]['server_ms'])) is int and
+                              quotes[s].get('candle_server_ms',quotes[s]['server_ms'])//period==now_ms//period for s in PAIRS)
             for symbol in PAIRS:
                 q=quotes[symbol]
                 cutoff=q.get('candle_server_ms',q['server_ms'])
@@ -78,7 +82,7 @@ class MarginPaperStrategy:
                     exited=bool(fence and stamp+INTERVALS[settings['interval']]*1000<=fence['exit_ms'])
                     paused=self.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0]
                     occupied=self.db.execute('SELECT 1 FROM margin_positions WHERE symbol=?',(symbol,)).fetchone()
-                    if not paused and not occupied and not exited and signal['action'] in ('BUY','SELL'):
+                    if same_interval and not paused and not occupied and not exited and signal['action'] in ('BUY','SELL'):
                         mark=amount(q['price'],positive=True);direction='LONG' if signal['action']=='BUY' else 'SHORT'
                         filters=self.book._filters(quotes,symbol,now_ms)
                         with localcontext() as ctx:

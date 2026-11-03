@@ -67,9 +67,9 @@ class WalletCommandTests(unittest.TestCase):
         finally:relay.close()
         self.assertEqual(sent[0],'[Spot margin cross • PAPER] margin')
         self.assertEqual(sent[1],'[Futures cross • PAPER] cross')
-        self.assertEqual(sent[2],'[Futures paper]\nisolated')
+        self.assertEqual(sent[2],'[Futures isolated • PAPER]\nisolated')
         self.assertTrue(sent[3].startswith('[Контроль системы] Уведомление предыдущей версии:'))
-        self.assertIn('время возникновения не подтверждено',sent[3]);self.assertNotIn('[Futures paper]',sent[3])
+        self.assertIn('время возникновения не подтверждено',sent[3]);self.assertNotIn('[Futures isolated • PAPER]',sent[3])
         self.assertEqual(sent[4],'[Контроль системы] предупреждение')
 
     def test_margin_report_counts_assets_and_debt_once_and_marks_due_interest(self):

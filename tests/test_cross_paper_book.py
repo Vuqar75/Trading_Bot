@@ -822,10 +822,10 @@ with patch.object(app,'CrossPublicData',Fake):
         before=boundary-100;after=boundary+100;now=after/1000
         quotes={s:{**q,'time':now,'server_ms':stamp,'next_due_ms':56800000}
                 for (s,q),stamp in zip(self.quotes.items(),(before,after))}
-        candles={'BTCUSDT':[(i*period,'100') for i in range(31)],
-                 'ETHUSDT':[(i*period,'100') for i in range(1,32)]}
-        self.book.set_paused(True)
+        candles={'BTCUSDT':[(i*period,'100') for i in range(30)]+[(30*period,'101')],
+                 'ETHUSDT':[(i*period,'100') for i in range(1,31)]+[(31*period,'99')]}
         self.assertEqual(strategy.tick(quotes,candles,after,now=now),[])
+        self.assertEqual(len(self.book._positions()),0)
         self.assertEqual(strategy.last_protection_at,now)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 

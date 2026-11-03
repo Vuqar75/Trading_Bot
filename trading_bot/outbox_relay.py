@@ -11,7 +11,7 @@ from .testnet_observer import ObservationError
 
 
 class FuturesOutboxRelay:
-    delivery_label = '[Futures paper]'
+    delivery_label = '[Futures isolated • PAPER]'
 
     def __init__(self, path):
         path = Path(path).resolve()

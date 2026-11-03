@@ -428,7 +428,7 @@ class PaperConsolidationTests(unittest.TestCase):
         with sqlite3.connect(self.target) as db:
             self.assertEqual(db.execute('select count(*) from runtime_outbox').fetchone()[0],spot_before)
             self.assertLess(db.execute('select count(*) from futures_outbox').fetchone()[0],futures_before)
-        self.assertTrue(all('[Futures paper]' in text for text in sent))
+        self.assertTrue(all('[Futures isolated • PAPER]' in text for text in sent))
 
     def test_spot_real_fill_process_death_before_and_after_commit(self):
         for point in ('before_commit','after_commit'):

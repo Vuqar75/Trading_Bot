@@ -68,6 +68,9 @@ class CrossPaperStrategy:
             signals={s:self._signal(candles.get(s),settings['interval'],min(quotes[s]['server_ms'],server_ms,int(now*1000))) for s in SYMBOLS}
         except (ValueError,TypeError,KeyError):
             self.book.set_paused(True);raise
+        # Never open from a signal snapshot spanning a candle boundary.
+        period=INTERVALS[settings['interval']]*1000
+        same_interval=all(min(quotes[s]['server_ms'],server_ms)//period==int(now*1000)//period for s in SYMBOLS)
         closed={a['symbol'] for a in actions if a['action'] in ('STOP','TAKE')}
         for symbol in SYMBOLS:
             stamp,signal=signals[symbol]
@@ -78,7 +81,7 @@ class CrossPaperStrategy:
             paused=self.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0]
             occupied=self.db.execute('SELECT 1 FROM cross_positions WHERE symbol=?',(symbol,)).fetchone()
             action=signal['action']
-            if not paused and not occupied and symbol not in closed and action in ('BUY','SELL'):
+            if same_interval and not paused and not occupied and symbol not in closed and action in ('BUY','SELL'):
                 try:
                     result=self.book.open('signal:'+symbol+':'+str(stamp),symbol,'LONG' if action=='BUY' else 'SHORT',
                                           '5',settings['leverage'],quotes,now=now,expected_interval=settings['interval'],clock=clock)

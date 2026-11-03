@@ -47,9 +47,9 @@ class MarginStrategyTests(unittest.TestCase):
         for q in quotes.values():
             q['candle_server_ms']=cutoff
             q['filters']={**q['filters'],'observed_ms':now}
-        with self.ledger.transaction():self.ledger.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
         strategy=MarginPaperStrategy(self.book)
         self.assertEqual(strategy.tick(quotes,candles(),now_ms=now),[])
+        self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM margin_positions").fetchone()[0],0)
         self.assertEqual(strategy.last_protection_ms,now)
         self.assertTrue(self.ledger.reconcile()['balanced'])
 
@@ -62,6 +62,19 @@ class MarginStrategyTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'candle reference'):
                     strategy.tick(quotes,candles(),now_ms=SERVER)
         self.assertEqual(self.ledger.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_boundary_snapshot_still_closes_position_for_protection(self):
+        strategy=MarginPaperStrategy(self.book)
+        self.assertEqual([x['action'] for x in strategy.tick(snapshots(),candles(),now_ms=SERVER)],['OPEN','OPEN'])
+        boundary=32*PERIOD;now=boundary+100;quotes=snapshots(now,btc='95')
+        for q in quotes.values():
+            q['candle_server_ms']=boundary-100
+            q['filters']={**q['filters'],'observed_ms':now}
+        actions=strategy.tick(quotes,candles(),now_ms=now)
+        self.assertEqual([x['action'] for x in actions],['STOP'])
+        self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],1)
+        self.assertEqual(strategy.last_protection_ms,now)
         self.assertTrue(self.ledger.reconcile()['balanced'])
 
     def test_two_signals_only_once_and_protective_exit_on_pause(self):
