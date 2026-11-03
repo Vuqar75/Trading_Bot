@@ -94,7 +94,12 @@ class MarginPaperStrategy:
                         else:
                             ident='margin:signal:'+symbol+':'+str(stamp)
                             try:
-                                result=self.book.open(ident,ident,symbol,direction,encode(quantity),'5',settings['leverage'],quotes,now_ms=now_ms,clock_ms=clock_ms)
+                                def entry_clock_ms():
+                                    current=clock_ms() if clock_ms else now_ms
+                                    if current//period!=now_ms//period:
+                                        raise ValueError('candle interval expired')
+                                    return current
+                                result=self.book.open(ident,ident,symbol,direction,encode(quantity),'5',settings['leverage'],quotes,now_ms=now_ms,clock_ms=entry_clock_ms)
                                 actions.append({'action':'OPEN','symbol':symbol,'result':result})
                             except ValueError as exc:
                                 if str(exc) not in ('Insufficient free collateral','Margin is paused','Margin position limit'):

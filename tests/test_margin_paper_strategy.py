@@ -77,6 +77,21 @@ class MarginStrategyTests(unittest.TestCase):
         self.assertEqual(strategy.last_protection_ms,now)
         self.assertTrue(self.ledger.reconcile()['balanced'])
 
+    def test_candle_interval_rechecked_after_wait_for_financial_transaction(self):
+        boundary=32*PERIOD;now=boundary-100;quotes=snapshots(now)
+        for q in quotes.values():
+            q['candle_server_ms']=now
+            q['filters']={**q['filters'],'observed_ms':now}
+        calls=[]
+        def clock_ms():
+            calls.append(1)
+            return now if len(calls)<=2 else boundary+100
+        strategy=MarginPaperStrategy(self.book)
+        with self.assertRaisesRegex(ValueError,'candle interval expired'):
+            strategy.tick(quotes,candles(),now_ms=now,clock_ms=clock_ms)
+        self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],0)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
     def test_two_signals_only_once_and_protective_exit_on_pause(self):
         strategy=MarginPaperStrategy(self.book)
         first=strategy.tick(snapshots(),candles(),now_ms=SERVER)

@@ -83,8 +83,13 @@ class CrossPaperStrategy:
             action=signal['action']
             if same_interval and not paused and not occupied and symbol not in closed and action in ('BUY','SELL'):
                 try:
+                    def entry_clock():
+                        current=clock() if clock else now
+                        if int(current*1000)//period!=int(now*1000)//period:
+                            raise ValueError('candle interval expired')
+                        return current
                     result=self.book.open('signal:'+symbol+':'+str(stamp),symbol,'LONG' if action=='BUY' else 'SHORT',
-                                          '5',settings['leverage'],quotes,now=now,expected_interval=settings['interval'],clock=clock)
+                                          '5',settings['leverage'],quotes,now=now,expected_interval=settings['interval'],clock=entry_clock)
                     self.fault('after_open_commit')
                     actions.append({'action':'OPEN','symbol':symbol,'result':result})
                 except ValueError as exc:

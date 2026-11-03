@@ -839,6 +839,18 @@ with patch.object(app,'CrossPublicData',Fake):
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertEqual(len(self.book._positions()),0)
 
+    def test_candle_interval_rechecked_after_wait_for_cross_transaction(self):
+        strategy=CrossPaperStrategy(self.book);period=900000;boundary=32*period
+        now=(boundary-100)/1000;server=boundary-100
+        with self.shared.transaction():self.shared.db.execute('DELETE FROM cross_quotes')
+        quotes={s:{**q,'time':now,'server_ms':server,'next_due_ms':56800000} for s,q in self.quotes.items()}
+        candles={s:[(i*period,'100') for i in range(30)]+[(30*period,last)]
+                 for s,last in [('BTCUSDT','101'),('ETHUSDT','99')]}
+        with self.assertRaisesRegex(ValueError,'candle interval expired'):
+            strategy.tick(quotes,candles,server,now=now,clock=lambda:(boundary+100)/1000)
+        self.assertEqual(len(self.book._positions()),0)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
     def test_strategy_two_signals_duplicate_tick_and_protection_while_paused(self):
         strategy=CrossPaperStrategy(self.book);period=900000;server=31*period+1000
         now=server/1000;quotes={s:{**q,'time':now,'server_ms':server} for s,q in self.quotes.items()}
