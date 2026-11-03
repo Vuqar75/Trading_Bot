@@ -1,5 +1,31 @@
 # Актуальное состояние после восстановления funding, 2 ноября 2026
 
+## 3 ноября: четыре paper-рынка на VM
+
+Все рабочие службы используют `/opt/trading-bot-margin-8a692e3`, код
+`8a692e35032bafc33895de4812eb77c59781878c`; подробная сверка и backup —
+в начале HANDOFF.md. Общая финансовая база:
+`/var/lib/tradingbot/paper-financial/shared-paper.db`. Не запускать прежние
+установщики, не повторять перевод 50 USDT и не восстанавливать старую базу
+поверх новых проводок. Futures cross оставлен на паузе.
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-monitor.service tradingbot-paper-backup.timer --no-pager
+sudo cat /var/lib/tradingbot/paper-financial/margin-health.json
+sudo cat /var/lib/tradingbot/paper-financial/cross-health.json
+sudo systemctl start tradingbot-paper-backup.service
+sudo journalctl -u tradingbot-paper-backup.service -n 20 --no-pager
+```
+
+Остановить только margin: `sudo systemctl stop tradingbot-margin.service`;
+запустить: `sudo systemctl start tradingbot-margin.service`. Пока процесс
+остановлен, защита его позиций не работает. После запуска новые входы остаются
+на паузе: проверьте свежие данные, защиту, отсутствие ошибки и сверку; затем в
+Telegram используйте `/mode margin_cross` и `/resume`, если входы разрешены.
+`/pause` останавливает новые входы выбранного режима, `/pause_all` — всех четырёх.
+Закрытие позиции требует подтверждения конкретного предложения. База и история
+наблюдения сохраняются; второй Telegram-поллер не запускать.
+
 ## 3 ноября: margin пока не установлен
 
 На VM по-прежнему действует код `c05238e38c30018a538447f3607de3ec3dd26bb8`.
