@@ -1,3 +1,7 @@
+> Установленный код `a41ac386e9ff9a654642bf9f3225afb6a6af453f`; watchdog
+> запущен локально. Внешние компоненты не подключены. Актуальная проверка
+> и ограничения Spot/isolated и пауз — в начале HANDOFF.md.
+
 # Margin, внешние копии и мониторинг — кандидат 3 ноября 2026
 
 Состояние и статус установки — в начале HANDOFF.md. Исторические ValueError
@@ -28,7 +32,10 @@ access prevention, uniform bucket-level access, без object versioning, без
 создание объекта с условием отсутствия и скачивание для сверки SHA-256;
 маркер успеха записывается только после проверки.
 
-На 3 ноября размер согласованной неупакованной копии: 1 597 809 байт.
+На 3 ноября размер согласованной неупакованной копии: 1 597 809 байт;
+архив на копии VM занял 309 394 байта. При неизменном сжатии и 237 объектах
+это около 0,0683 GiB × $0,02 = $0,00137 хранения и около $0,0054 в месяц
+вместе с 750 загрузками и read-back (до сетевых сборов и прочих оговорок).
 Если консервативно считать каждый архив такого размера, в обычном состоянии
 62 живых объекта (48 часовых + 14 суточных) занимают около 0,092 GiB; ещё до
 175 объектов soft delete (7×24 + 7 дневных) дают около 0,353 GiB суммарно.
@@ -75,12 +82,25 @@ gcloud compute instances set-service-account tradingbot-paper-test --project="$P
 # После безопасного запуска и проверки исходных пауз:
 python3 -B deploy/paper_external_backup.py --bucket "$BUCKET" --kind hourly
 python3 -B deploy/paper_external_backup.py --bucket "$BUCKET" --kind daily
+# Только после успешного read-back, восстановления и проверки прав:
+sudo install -d -m 0750 /etc/tradingbot
+printf 'BACKUP_BUCKET=%s\n' "$BUCKET" | sudo tee /etc/tradingbot/paper-backup.env >/dev/null
+sudo chmod 0600 /etc/tradingbot/paper-backup.env
+sudo install -m 0644 deploy/tradingbot-external-backup@.service /etc/systemd/system/
+sudo install -m 0644 deploy/tradingbot-external-hourly.timer deploy/tradingbot-external-daily.timer /etc/systemd/system/
+# Прописать фактический установленный checkout в WorkingDirectory unit-файла.
+sudo systemctl daemon-reload
+sudo systemctl enable --now tradingbot-external-hourly.timer tradingbot-external-daily.timer
 ```
 
 Прежде чем включать расписание, проверить реальные IAM права, отсутствие
 непредусмотренных ролей, read-back, независимое восстановление и мониторинг
-возраста внешней копии. Часовой и суточный таймеры для внешнего bucket в этом
-кандидате не включены. Новых ресурсов и ключей не создавалось.
+возраста внешней копии. Шаблоны `deploy/tradingbot-external-backup@.service`,
+`deploy/tradingbot-external-hourly.timer` и `deploy/tradingbot-external-daily.timer`
+подготовлены в следующем документальном коммите, но на VM не установлены и не
+включены. Перед установкой задать непубличное имя bucket через `BACKUP_BUCKET`
+в `/etc/tradingbot/paper-backup.env`, адаптировать WorkingDirectory, проверить
+systemd-unit и разрешения учётной записи. Новых ресурсов и ключей не создавалось.
 
 ## Мониторинг
 

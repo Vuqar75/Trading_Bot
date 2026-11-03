@@ -1,0 +1,10 @@
+[Unit]
+Description=TradingBot hourly external paper backup
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=tradingbot-external-backup@hourly.service
+
+[Install]
+WantedBy=timers.target

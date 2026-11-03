@@ -1,3 +1,22 @@
+# Актуализация 3 ноября: диагностика и локальный watchdog
+
+Торговые службы: `/opt/trading-bot-diagnostics-a41ac38`, код
+`a41ac386e9ff9a654642bf9f3225afb6a6af453f`. Актуальную паузу и здоровье
+проверять до любых действий. Margin и futures cross при последней проверке на
+паузе; Spot и isolated разрешены. Копии обновления —
+`/var/lib/tradingbot/diagnostics-updates/20261103a/` на том же диске VM.
+Не восстанавливать старую общую базу поверх новых финансовых событий.
+
+```bash
+sudo systemctl status tradingbot-watchdog.timer tradingbot-watchdog.service --no-pager
+sudo journalctl -u tradingbot-watchdog.service -n 30 --no-pager
+sudo systemctl list-timers tradingbot-watchdog.timer --no-pager
+```
+
+Локальный watchdog не обнаруживает выключение VM. Внешний backup/monitor ещё
+не созданы; не включать неподготовленные timers без bucket и прав. Историческую
+ошибку margin по типу исключения расшифровать нельзя. Подробности — HANDOFF.md.
+
 # Актуализация 3 ноября: отчёты margin
 
 Рабочий checkout `/opt/trading-bot-reports-ba5ad83`, код
