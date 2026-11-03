@@ -17,7 +17,8 @@ from trading_bot.paper_external_backup import prepare,inspect_restore,upload
 from trading_bot.paper_gcs_transport import upload_verified
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_watchdog import assess,transitions
-from trading_bot.paper_watchdog_runtime import publish
+from trading_bot.paper_watchdog_runtime import publish,collect
+from trading_bot.unified_queue import UnifiedQueue
 
 
 class ExternalBackupTests(unittest.TestCase):
@@ -70,11 +71,26 @@ class ExternalBackupTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'unavailable'):
             upload_verified(p['path'],p['sha256'],bucket='private-bucket-example',kind='hourly',captured_at=p['captured_at'],run=no_upload)
 
+    def test_collector_identifies_completed_manual_pause(self):
+        import shutil
+        home=self.f.root/'home';(home/'paper-financial').mkdir(parents=True);(home/'Trading_Bot_paper_state').mkdir()
+        shutil.copyfile(self.f.financial,home/'paper-financial/shared-paper.db');shutil.copyfile(self.f.queue,home/'Trading_Bot_paper_state/unified-commands.db')
+        for name in ('runtime-health.json','futures-health.json','cross-health.json','margin-health.json'):
+            (home/'paper-financial'/name).write_text(json.dumps({'time':10000,'paused':True,'error':None}))
+        q=UnifiedQueue(home/'Trading_Bot_paper_state/unified-commands.db')
+        try:
+            q.receive(101,True,'/mode futures',now=10000);q.receive(102,True,'/pause',now=10000)
+            q.acknowledge(q.pending('futures')[0]['id'],'paused')
+        finally:q.close()
+        result=collect(home,now=10000,service_status=lambda _: 'active')
+        self.assertEqual(result['health']['futures']['pause_source'],'manual')
+        self.assertEqual(result['health']['cross']['pause_source'],'unknown')
+
 
 class WatchdogTests(unittest.TestCase):
     def healthy(self):
         now=10000
-        h={'time':now,'error':None,'blocked':None,'paused':True,'pause_source':'manual','quote':{'time':now},'quotes_fresh':True,'protection_fresh':True,'protection_checked_at':now*1000}
+        h={'time':now,'error':None,'blocked':None,'paused':True,'pause_source':'manual','quote':{'time':now},'quotes_fresh':True,'protection_fresh':True,'protection_checked_at':now*1000,'data_at':now,'position_open':False}
         health={x:dict(h) for x in ('spot','futures','cross','margin')};health['cross']['protection_checked_at']=now
         return {'services':{x:'active' for x in ('spot','futures','cross','margin','monitor','backup_timer')},
                 'health':health,'queue':{'pending':0},
@@ -87,6 +103,8 @@ class WatchdogTests(unittest.TestCase):
         self.assertEqual({e['key'] for e in events},{'health:margin','backup:external'})
         state,events=transitions(assess(sample,10001),state,10001);self.assertEqual(events,[])
         state,events=transitions(assess(self.healthy(),10002),state,10002)
+        self.assertEqual(events,[])
+        state,events=transitions(assess(self.healthy(),10003),state,10003)
         self.assertEqual({e['kind'] for e in events},{'recovered'});self.assertEqual(state,{})
 
     def test_absent_protection_and_stuck_queue_are_not_healthy(self):
@@ -110,12 +128,13 @@ class WatchdogTests(unittest.TestCase):
             broken=self.healthy();broken['health']['margin']['time']=9000
             self.assertEqual(publish(path,broken,now=10000)['new_messages'],1)
             self.assertEqual(publish(path,broken,now=10001)['new_messages'],0)
-            self.assertEqual(publish(path,self.healthy(),now=10002)['new_messages'],1)
+            self.assertEqual(publish(path,self.healthy(),now=10002)['new_messages'],0)
+            self.assertEqual(publish(path,self.healthy(),now=10003)['new_messages'],1)
             with closing(sqlite3.connect(path)) as db:
                 messages=[r[0] for r in db.execute('SELECT message FROM futures_outbox ORDER BY id')]
                 self.assertEqual(len(messages),2);self.assertIn('ВОССТАНОВЛЕНО',messages[-1])
                 db.execute("CREATE TRIGGER reject_outbox BEFORE INSERT ON futures_outbox BEGIN SELECT RAISE(ABORT,'fail'); END");db.commit()
-            with self.assertRaises(sqlite3.IntegrityError):publish(path,broken,now=10003)
+            with self.assertRaises(sqlite3.IntegrityError):publish(path,broken,now=10004)
             with closing(sqlite3.connect(path)) as db:
                 self.assertEqual(json.loads(db.execute("SELECT value FROM paper_watchdog_state WHERE key='incidents'").fetchone()[0]),{})
 
@@ -130,3 +149,18 @@ class WatchdogTests(unittest.TestCase):
             with closing(sqlite3.connect(path)) as db:
                 messages=[r[0] for r in db.execute('SELECT message FROM futures_outbox')]
             self.assertEqual(len(messages),1);self.assertIn('растёт',messages[0])
+
+    def test_agreed_pause_survives_restart_but_not_later_resume(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'financial.db'
+            with closing(sqlite3.connect(path)) as db:db.execute('CREATE TABLE futures_outbox(id INTEGER PRIMARY KEY,message TEXT NOT NULL)');db.commit()
+            s=self.healthy();s['health']['cross']['pause_source']='unknown';s['health']['margin']['pause_source']='unknown'
+            s['queue']['actions']={'futures_cross':{'id':4,'command':'/pause'},'margin_cross':{'id':5,'command':'/pause'}}
+            publish(path,s,now=10000);publish(path,s,now=10001)
+            with closing(sqlite3.connect(path)) as db:
+                state=json.loads(db.execute("SELECT value FROM paper_watchdog_state WHERE key='incidents'").fetchone()[0]);self.assertNotIn('pause:cross',state)
+            s['queue']['actions']['futures_cross']={'id':8,'command':'/resume'}
+            publish(path,s,now=10002)
+            with closing(sqlite3.connect(path)) as db:
+                state=json.loads(db.execute("SELECT value FROM paper_watchdog_state WHERE key='incidents'").fetchone()[0]);self.assertIn('pause:cross',state)

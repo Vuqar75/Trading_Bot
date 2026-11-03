@@ -89,5 +89,14 @@ class ReportUpdateGuardTests(unittest.TestCase):
         self.assertFalse(self.shared.deployment_hold());self.assertFalse(self.shared.snapshot('spot')['paused'])
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],0)
 
+    def test_resilience_namespace_keeps_earlier_deployment_records(self):
+        self.shared.db.execute("INSERT INTO ledger_meta VALUES('diagnostics_update_freeze','{}')")
+        before=self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='diagnostics_update_freeze'").fetchone()[0]
+        freeze_report_update(self.shared,self.q,'resilience:freeze:test',now=100,namespace='resilience')
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            released=release_report_update(self.shared,self.q,'resilience:release:test',protection_checked_ms=100000,now=100,namespace='resilience')
+        self.assertEqual(released['enabled'],['spot'])
+        self.assertEqual(self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='diagnostics_update_freeze'").fetchone()[0],before)
+
 
 if __name__=='__main__':unittest.main()

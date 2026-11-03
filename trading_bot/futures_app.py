@@ -19,6 +19,8 @@ from .testnet_observer import ObservationError, number, write_report
 class FuturesApplication:
     def __init__(self, store, reader):
         self.store, self.reader = store, reader
+        self.last_protection_at = None
+        self.last_protection_position = None
         with store.transaction():
             store.set('paused', True)
 
@@ -51,6 +53,8 @@ class FuturesApplication:
             reason = ('MODEL_LIQUIDATION' if value['isolated'] <= value['maintenance'] else
                       'MANUAL' if request and request['target'] == pos['id'] else
                       'STOP' if movement <= -2 else 'TAKE' if movement >= 4 else None)
+            self.last_protection_at = time.time()
+            self.last_protection_position = pos['id']
             if reason:
                 candle = (server//(INTERVALS[s.get('interval')]*1000)-1)*INTERVALS[s.get('interval')]*1000
                 closed = s.close_position(mark, server, 'close:'+pos['id'], reason, pos['id'], candle=candle)
@@ -189,11 +193,14 @@ def main():
                         telegram.flush(store)
                     except Exception as exc:
                         logging.error('Telegram cycle failed: %s', type(exc).__name__)
+                current_position=store.get('position')
+                current_id=current_position.get('id') if isinstance(current_position,dict) else None
                 write_report(Path(db).parent/'futures-health.json', {
                     'time': time.time(), 'mode': 'futures-paper', 'paused': store.get('paused'),
                     'error': store.get('error'), 'quote': store.get('quote'), 'position': store.get('position'),
                     'cash': store.get('cash'), 'pnl': store.get('pnl'), 'equity': store.get('equity'),
-                    'max_drawdown': store.get('max_drawdown')})
+                    'max_drawdown': store.get('max_drawdown'),'position_open':bool(current_position),
+                    'protection_checked_at':app.last_protection_at if current_id and current_id==app.last_protection_position else None})
                 if args.once:
                     if store.get('error'):
                         raise SystemExit(1)

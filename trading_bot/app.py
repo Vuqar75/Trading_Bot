@@ -111,7 +111,10 @@ class TelegramTransport:
         for row in store.db.execute('SELECT id,message FROM '+table+' ORDER BY id LIMIT 5').fetchall():
             label = getattr(store, 'delivery_label', '')
             body = row['message']
-            if body.startswith(('[Futures cross • PAPER]','[Spot margin cross • PAPER]','[Контроль paper]')):
+            if body.startswith('[Контроль paper]'):
+                body = ('[Контроль системы] Уведомление предыдущей версии: время возникновения не подтверждено; '
+                        'оно может быть устаревшим и не подтверждает текущее состояние. ' + body)
+            if body.startswith(('[Futures cross • PAPER]','[Spot margin cross • PAPER]','[Контроль paper]','[Контроль системы]')):
                 label = ''
             cut = len(body)
             if cut > 3500:
@@ -135,6 +138,8 @@ class Application:
     def __init__(self, store, exchange, reader, *, interval='15m', amount='10', daily_loss='5', stop='2', take='4'):
         if store.get('identity')['mode'] != exchange.mode:
             raise ObservationError('Exchange and database mode disagree')
+        self.last_protection_at = None
+        self.last_protection_position = None
         self.store, self.exchange, self.reader = store, exchange, reader
         self.interval = interval
         self.amount, self.daily_loss, self.stop, self.take = map(number, (amount, daily_loss, stop, take))
@@ -212,6 +217,8 @@ class Application:
         movement = (price / (number(pos['cost']) / qty) - 1) * 100
         reason = ('MANUAL' if request and request['target'] == pos['id'] else
                   'STOP' if movement <= -self.stop else 'TAKE' if movement >= self.take else None)
+        self.last_protection_at = time.time()
+        self.last_protection_position = pos['id']
         if not reason:
             return False
         info = self.reader.get('/api/v3/exchangeInfo', {'symbol': 'BTCUSDT'})['symbols'][0]
@@ -434,9 +441,12 @@ def main():
                                 relay.close()
                                 relay = None
                             log.warning('Futures relay unavailable: %s', type(exc).__name__)
+                current_position=store.get('position') or {}
+                position_open=bool(number(current_position.get('quantity','0')));current_id=current_position.get('id') if position_open else None
                 write_report(Path(args.db).parent / 'runtime-health.json', {'time': time.time(), 'mode': args.mode,
                     'paused': store.get('paused'), 'pending': len(store.pending()), 'error': store.get('error'),
-                    'quote': store.get('quote'), 'blocked': store.get('blocked'), 'telegram_error': store.get('telegram_error')})
+                    'quote': store.get('quote'), 'blocked': store.get('blocked'), 'telegram_error': store.get('telegram_error'),
+                    'position_open':position_open,'protection_checked_at':app.last_protection_at if current_id and current_id==app.last_protection_position else None})
                 if args.once:
                     if store.get('error'):
                         raise SystemExit(1)

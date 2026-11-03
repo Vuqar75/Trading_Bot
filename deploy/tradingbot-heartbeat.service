@@ -1,0 +1,17 @@
+[Unit]
+Description=TradingBot paper VM heartbeat (liveness only)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot-paper
+Environment=HOME=/var/lib/tradingbot
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ExecStart=/usr/bin/python3 -B deploy/paper_heartbeat.py

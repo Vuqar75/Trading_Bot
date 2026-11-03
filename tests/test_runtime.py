@@ -228,6 +228,18 @@ s.command(2,True,'/pause')
         self.assertEqual(Decimal(self.store.get('position')['quantity']), 0)
         self.assertTrue(self.store.get('paused'))
 
+    def test_protection_marker_requires_checked_position_and_price(self):
+        pos=self.buy()
+        class Reader:
+            def get(self,path,params=None):return {'symbol':'BTCUSDT','price':'100'}
+        self.app.reader=Reader()
+        self.assertIsNone(self.app.last_protection_at)
+        self.assertFalse(self.app.protective_close())
+        self.assertEqual(self.app.last_protection_position,pos['id']);self.assertIsNotNone(self.app.last_protection_at)
+        before=self.app.last_protection_at
+        with self.store.transaction():self.store.set('blocked','fixture')
+        self.assertFalse(self.app.protective_close());self.assertEqual(self.app.last_protection_at,before)
+
     def test_backup_and_restore(self):
         from trading_bot.runtime_backup import backup
         self.buy()

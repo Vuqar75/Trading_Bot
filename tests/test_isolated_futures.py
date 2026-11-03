@@ -136,6 +136,22 @@ class IsolatedTests(unittest.TestCase):
         payload=json.loads(self.s.db.execute("SELECT payload FROM futures_events WHERE event='CLOSE'").fetchone()[0])
         self.assertEqual(payload['reason'],'MODEL_LIQUIDATION')
 
+    def test_protection_marker_requires_funding_and_matching_position(self):
+        pos=self.open('SHORT')
+        class Reader:
+            fail=True
+            def mark(self):return Decimal(100),3000
+            def funding(self,*args):
+                if self.fail:raise ObservationError('funding unavailable')
+                return []
+            def candles(self,*args):return [(i,Decimal(100)) for i in range(31)]
+        r=Reader();app=FuturesApplication(self.s,r)
+        with self.assertRaises(ObservationError):app.tick()
+        self.assertIsNone(app.last_protection_at)
+        r.fail=False
+        with patch('trading_bot.futures_app.signal_details',return_value={'action':'HOLD','fast':100,'slow':100,'old_fast':100,'old_slow':100,'count':31}):app.tick()
+        self.assertEqual(app.last_protection_position,pos['id']);self.assertIsNotNone(app.last_protection_at)
+
     def test_reversal_waits_for_next_candle(self):
         self.open('LONG')
         class Reader:
