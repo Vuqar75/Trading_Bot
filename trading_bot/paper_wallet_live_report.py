@@ -239,7 +239,7 @@ def render_wallets(data):
     for wallet,values in data['wallets'].items():
         margin=data['margin'] if wallet=='futures_isolated' else (data['cross']['margin'] if wallet=='futures_cross' and data.get('cross') else (data['margin_cross']['locked'] if wallet=='margin_cross' and data.get('margin_cross') else Decimal(0)))
         lines.append(labels.get(wallet,wallet)+': '+_fmt(values['free'])+' | '+_fmt(values['reserved'])+' | '+_fmt(margin))
-    lines.append('Резерв ордеров не включает маржу позиций. Обеспечение margin cross включено в свободный остаток и повторно не прибавляется к капиталу. /wallet ИМЯ — доступность перевода; /balance_report — оценка капитала.')
+    lines.append('Резерв ордеров не включает маржу позиций. Обеспечение margin cross отражено в свободном остатке для учёта капитала; обеспечение позиции нельзя переводить. Доступность остатка проверяется отдельно. /wallet ИМЯ — доступность перевода; /balance_report — оценка капитала.')
     return '\n'.join(lines)
 
 
@@ -250,7 +250,7 @@ def render_live_report(data):
     for wallet,values in data['wallets'].items():
         label={'reserve':'Общий резерв','spot':'Spot','futures_isolated':'Futures isolated','futures_cross':'Futures cross'}.get(wallet,wallet)
         lines.append(label+': свободно '+_fmt(values['free'])+' USDT; резерв ордеров '+_fmt(values['reserved'])+' USDT')
-    lines.append('Свободно — средства без резерва ордеров и маржи позиций. Доступность перевода проверяется с учётом паузы, риска и получателя: /wallet ИМЯ.')
+    lines.append('Свободно — средства без резерва ордеров; в margin cross сумма включает обеспечение позиции, которое нельзя переводить. Доступность перевода проверяется с учётом паузы, риска и получателя: /wallet ИМЯ.')
     lines += ['Расчёт оценки капитала (USDT; суммы без повторного учёта):',
               'Свободные средства + резервы ордеров: '+_fmt(terms['cash']),
               '+ рыночная стоимость Spot BTC: '+_fmt(terms['spot_asset']),

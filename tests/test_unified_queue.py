@@ -12,6 +12,13 @@ class UnifiedQueueTests(unittest.TestCase):
         self.q = UnifiedQueue(self.path)
         self.addCleanup(lambda: self.q.close())
 
+    def test_isolated_futures_responses_identify_market(self):
+        self.q.receive(1, True, '/mode futures')
+        self.q.receive(2, True, '/pause')
+        self.q.acknowledge(self.q.pending('futures')[0]['id'], 'Пауза')
+        messages = [r[0].lower() for r in self.q.db.execute('SELECT message FROM unified_outbox')]
+        self.assertTrue(all('isolated' in message for message in messages))
+
     def test_market_frozen_at_accept_and_duplicate(self):
         self.q.receive(10, True, '/pause')
         self.q.receive(11, True, '/mode futures')

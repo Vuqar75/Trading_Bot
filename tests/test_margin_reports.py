@@ -51,6 +51,7 @@ class MarginReportsTests(unittest.TestCase):
         for text in ('Собственный капитал','Свободно','Резерв ордеров','Позиции','Долг','Проценты','15m','2×','BTCUSDT','ETHUSDT','Ошибки'):
             self.assertIn(text,status)
         self.assertNotEqual(loans,interest);self.assertNotEqual(status,interest)
+        self.assertIn('обеспечение позиции нельзя переводить',status.lower())
         out=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox')]
         self.assertTrue(all(m.count('[Spot margin cross • PAPER]')<=1 for m in out))
 

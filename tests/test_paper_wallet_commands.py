@@ -259,6 +259,17 @@ with patch.object(socket,'socket',deny),patch.object(app,'MarginSpotData',Reader
         self.assertEqual(data['wallets']['spot']['free'],Decimal('1.23456789'))
         self.assertEqual(data['cross']['positions'][0]['quantity'],'0.00000001')
 
+    def test_wallet_reports_explain_margin_collateral_is_not_transferable(self):
+        data=live_report(self.shared,now=time.time())
+        with patch('trading_bot.paper_wallet_worker.live_report',return_value=data):
+            self.q.receive(1,True,'/wallets');self.q.receive(2,True,'/balance_report')
+            process_wallet(self.q,self.shared)
+        messages=[r[0].lower() for r in self.q.db.execute('select message from unified_outbox order by id')]
+        self.assertEqual(len(messages),2)
+        for message in messages:
+            self.assertIn('обеспечение',message)
+            self.assertIn('нельзя переводить',message)
+
     def test_mode_independent_transfer_and_retry_after_destination_commit(self):
         before=live_report(self.shared,now=time.time());future_pos=self.shared.snapshot('futures')['position']
         self.q.receive(1,True,'/mode futures');self.q.receive(2,True,'/transfer spot futures_isolated 50')

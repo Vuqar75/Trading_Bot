@@ -1,3 +1,24 @@
+# VM: актуальная точка на 4 ноября 2026
+
+Прочитайте также HANDOFF.md и FINAL_AUDIT.md: фактическое состояние необходимо перепроверять. При проверке 4 ноября четыре торговые службы и наблюдатель активны; Spot разрешён, isolated futures, futures cross и margin cross на паузе. Рабочий checkout `/opt/trading-bot-resilience-2204bd0`, код `2204bd0147cdd914196a320224b946b8ff8d31d7`; systemd backup дополнительно имеет PATH к SDK snap и соответствует более новой конфигурации из исследовательской ветки. Финансовая база — `/var/lib/tradingbot/paper-financial/shared-paper.db`. Изменения VM выполняются только по отдельному указанию владельца.
+
+Для проверки без остановки процессов:
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-monitor.service --no-pager
+sudo systemctl list-timers 'tradingbot-*' --no-pager
+sudo journalctl -u tradingbot-watchdog.service -n 30 --no-pager
+sudo stat /var/lib/tradingbot/paper-external-backups/hourly-success.json
+```
+
+Внешняя копия и изолированное восстановление описаны в EXTERNAL_BACKUP_EMAIL_RUNBOOK.md. Проверка heartbeat и писем уже проведена и подтверждена владельцем. Старая база поверх новых проводок не восстанавливается. При остановке работающего процесса его защита позиций не выполняется; для восстановления использовать процедуру и отдельное указание, сохранив фактические паузы и все новые события.
+
+---
+
+# Архив: предыдущие снимки и процедуры
+
+Приведённые ниже версии, пути и статусы исторические. Не запускать их без сверки с актуальными HANDOFF и состоянием VM.
+
 # Актуализация 3 ноября: диагностика и локальный watchdog
 
 Торговые службы: `/opt/trading-bot-diagnostics-a41ac38`, код

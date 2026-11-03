@@ -9,7 +9,7 @@ from contextlib import contextmanager
 
 
 def market_label(market):
-    return {'futures_cross':'Futures cross • PAPER','margin_cross':'Spot margin cross • PAPER'}.get(market,market.upper())
+    return {'futures':'Futures isolated • PAPER','futures_cross':'Futures cross • PAPER','margin_cross':'Spot margin cross • PAPER'}.get(market,market.upper())
 
 
 class UnifiedQueue:

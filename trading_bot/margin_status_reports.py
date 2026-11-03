@@ -45,7 +45,7 @@ def status_report(data,now):
            'Параметры: BTCUSDT и ETHUSDT; '+m['interval']+'; плечо '+str(m['leverage'])+'×; собственные средства до 5 USDT на позицию.',
            'Собственный капитал после долгов: '+fmt(m['equity'])+' USDT.',
            'Свободно: '+fmt(free)+' USDT; Резерв ордеров: '+fmt(reserved)+' USDT; обеспечение позиций: '+fmt(m['locked'])+' USDT.',
-           'Обеспечение входит в свободный остаток; доступность перевода проверяется отдельно через /wallet margin_cross.']
+           'Обеспечение отражено в свободном остатке для учёта капитала; обеспечение позиции нельзя переводить. Доступность перевода проверяется отдельно через /wallet margin_cross.']
     for asset in ('BTC','ETH'):
         lines.append(asset+': свободно '+fmt(assets[asset]['free'],asset)+'; резерв ордеров '+fmt(assets[asset]['reserved'],asset)+' '+asset+'.')
     if not m['positions']:lines.append('Позиции: нет.')
