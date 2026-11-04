@@ -108,11 +108,33 @@ class UnifiedQueueTests(unittest.TestCase):
         self.q.receive(1,True,'/help@TradingBot')
         help_pages=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id')]
         self.assertEqual(len(help_pages),3)
-        self.q.receive(2,True,'/start')
+        self.q.receive(2,True,'/start@TradingBot')
         start_pages=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id')][3:]
-        self.assertEqual(help_pages,start_pages)
+        self.assertEqual(len(start_pages),1)
+        self.assertIn('paper',start_pages[0].lower())
+        self.assertIn('/help',start_pages[0])
+        self.assertNotIn('[Справка',start_pages[0])
+        self.q.receive(2,True,'/start@TradingBot')
         self.q.receive(3,False,'/help')
-        self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_outbox').fetchone()[0],6)
+        self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_outbox').fetchone()[0],4)
+        self.assertEqual(self.q.state('mode'),'spot')
+        self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_jobs').fetchone()[0],0)
+
+    def test_short_start_preserves_selected_mode_and_creates_no_trade_jobs(self):
+        for index, market in enumerate(('spot','futures','futures_cross','margin_cross')):
+            ident=100+index*3
+            self.q.receive(ident,True,'/mode '+market)
+            before=self.q.db.execute('SELECT COALESCE(MAX(id),0) FROM unified_outbox').fetchone()[0]
+            self.q.receive(ident+1,True,'/start@TradingBot')
+            self.q.receive(ident+1,True,'/start@TradingBot')
+            messages=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox WHERE id>? ORDER BY id',(before,))]
+            self.assertEqual(len(messages),1)
+            self.assertIn('paper',messages[0].lower())
+            self.assertIn('/help',messages[0])
+            self.assertLess(len(messages[0].encode('utf-16-le'))//2,4096)
+            self.assertEqual(self.q.state('mode'),market)
+            self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_jobs').fetchone()[0],0)
+            self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_proposals').fetchone()[0],0)
 
     def test_foreign_sender_cannot_change_mode_or_enqueue(self):
         self.q.receive(1, False, '/mode futures')
