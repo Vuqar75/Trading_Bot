@@ -7,10 +7,13 @@ No automatic retry, tool calls, polling, alternative hosts or auto top-ups.
 import hashlib
 import json
 import os
+import socket
 import sqlite3
+import ssl
 import time
 from decimal import Decimal, ROUND_CEILING
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 from .market_research import ResearchError, canonical
 from .openai_research import analyze_with_transport, prepare_request
@@ -24,6 +27,25 @@ OUTPUT_USD_PER_MILLION = Decimal("0.50")
 TOTAL_EXPERIMENT_MICRO_USD = 250000  # $0.25 for this experiment, NOT per day/run.
 APP_ID = 0x41494F42
 
+SAFE_PROVIDER_CODES = {
+    "invalid_api_key", "insufficient_quota", "model_not_found", "permission_denied",
+    "rate_limit_exceeded", "invalid_request_error", "unsupported_parameter",
+    "unsupported_value", "invalid_value", "invalid_json_schema", "server_error",
+    "billing_hard_limit_reached", "access_terminated", "authentication_error",
+}
+
+
+class ResearchAPIError(ResearchError):
+    """Only allowlisted metadata may leave the HTTP boundary."""
+    def __init__(self, category, http_status=None, provider_code=None):
+        # All category values originate in code, not exception/source messages.
+        self.safe_details = {"category": category, "http_status": http_status,
+                             "provider_code": provider_code, "automatic_retry": False}
+        suffix = f"_http_{http_status}" if http_status is not None else ""
+        if provider_code:
+            suffix += "_" + provider_code
+        super().__init__("openai_" + category + suffix)
+
 
 class _NoRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
@@ -36,21 +58,66 @@ def _api_key():
     return os.environ.get("OPENAI_API_KEY") or os.environ.get("TRADING_BOT_AI")
 
 
+def _request_json(req):
+    try:
+        with build_opener(_NoRedirect()).open(req, timeout=45) as response:
+            body = response.read(1000001)
+        if len(body) > 1000000:
+            raise ResearchAPIError("response_too_large")
+        try:
+            return json.loads(body)
+        except (ValueError, UnicodeError):
+            raise ResearchAPIError("invalid_response_json") from None
+    except HTTPError as exc:
+        code = None
+        try:
+            error = json.loads(exc.read(8192)).get("error", {})
+            if isinstance(error, dict):
+                for field in ("code", "type"):
+                    candidate = error.get(field)
+                    if isinstance(candidate, str) and candidate in SAFE_PROVIDER_CODES:
+                        code = candidate
+                        break
+        except Exception:
+            pass
+        status = exc.code if type(exc.code) is int and 100 <= exc.code <= 599 else None
+        raise ResearchAPIError("http_error", status, code) from None
+    except (TimeoutError, socket.timeout):
+        raise ResearchAPIError("timeout") from None
+    except ssl.SSLError:
+        raise ResearchAPIError("tls_error") from None
+    except URLError as exc:
+        reason = exc.reason
+        category = "timeout" if isinstance(reason, (TimeoutError, socket.timeout)) else (
+            "tls_error" if isinstance(reason, ssl.SSLError) else "network_error")
+        raise ResearchAPIError(category) from None
+    except ResearchError:
+        raise
+    except Exception:
+        raise ResearchAPIError("transport_error") from None
+
+
 def _send(request):
     key = _api_key()
     if not key:
         raise ResearchError("openai_api_key_not_configured")
     req = Request("https://api.openai.com/v1/responses", data=canonical(request).encode(),
                   headers={"Authorization": "Bearer " + key, "Content-Type": "application/json"}, method="POST")
-    try:
-        with build_opener(_NoRedirect()).open(req, timeout=45) as response:
-            body = response.read(1000001)
-        if len(body) > 1000000:
-            raise ResearchError("api_response_too_large")
-        return json.loads(body)
-    except Exception:
-        # Do not include URLs, body, headers, key, provider error or request text.
-        raise ResearchError("openai_request_failed_reservation_retained") from None
+    return _request_json(req)
+
+
+def check_model_access():
+    """One read-only model metadata GET; no inference, budget write or retry."""
+    key = _api_key()
+    if not key:
+        raise ResearchError("openai_api_key_not_configured")
+    req = Request("https://api.openai.com/v1/models/" + MODEL,
+                  headers={"Authorization": "Bearer " + key}, method="GET")
+    response = _request_json(req)
+    if not isinstance(response, dict) or response.get("id") != MODEL:
+        raise ResearchAPIError("unexpected_model_metadata")
+    return {"requested_model": MODEL, "model_access_confirmed": True,
+            "responses_write_confirmed": False, "inference_requests": 0}
 
 
 def _connect(path):
@@ -65,6 +132,7 @@ def _connect(path):
             raise ResearchError("not_a_research_budget_database")
         db.execute(f"PRAGMA application_id={APP_ID}")
         db.execute("CREATE TABLE IF NOT EXISTS api_attempts (request_id TEXT PRIMARY KEY, reserved_micro_usd INTEGER NOT NULL, created_at REAL NOT NULL, result_json TEXT)")
+        db.execute("CREATE TABLE IF NOT EXISTS api_diagnostics (request_id TEXT PRIMARY KEY, details_json TEXT NOT NULL)")
         db.commit()
         return db
     except Exception:
@@ -113,6 +181,14 @@ def paid_analysis(snapshot, budget_path, *, enabled=False, transport=None):
         with db:
             db.execute("UPDATE api_attempts SET result_json=? WHERE request_id=?", (canonical(result), ident))
         return result
+    except ResearchAPIError as exc:
+        # Preserve the attempt and reservation. A separate table leaves the
+        # existing four-column attempt journal compatible with old tooling.
+        try:
+            db.execute("INSERT OR REPLACE INTO api_diagnostics VALUES (?,?)", (ident, canonical(exc.safe_details)))
+        except sqlite3.Error:
+            pass  # Do not obscure the original sanitized cause.
+        raise
     except ResearchError:
         raise
     except Exception:
