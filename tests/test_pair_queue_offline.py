@@ -78,6 +78,27 @@ class PairQueueOfflineTests(unittest.TestCase):
         self.assertFalse(any(t.is_alive() for t in threads));self.assertEqual(errors,[])
         self.assertEqual(len(self.q.pending('spot')),1)
 
+    def test_third_asset_close_preserves_market_position_and_quantity(self):
+        for offset,market in enumerate(('futures_cross','margin_cross')):
+            ident=10+offset*10
+            self.q.receive(ident,True,'/mode '+market,now=100)
+            self.q.receive(ident+1,True,'/close SOLUSDT',now=100,
+                           positions={market:{'SOLUSDT':{'id':'position-sol','quantity':'0.25'}}})
+            token=self.q.add_proposal(ident+1,market,'position-sol','0.25',now=101)
+            self.q.receive(ident+2,True,'/mode spot',now=102)
+            self.q.receive(ident+3,True,'/confirm '+token,now=103)
+            payload=json.loads(self.q.pending(market)[0]['payload'])
+            self.assertEqual((payload['symbol'],payload['position'],payload['quantity']),('SOLUSDT','position-sol','0.25'))
+            message=self.q.db.execute("SELECT message FROM unified_outbox WHERE message LIKE '%позицию position-sol%' ORDER BY id DESC").fetchone()[0]
+            self.assertIn('SOL',message)
+
+    def test_spot_close_displays_actual_asset(self):
+        self.q.receive(1,True,'/close',now=100,
+                       positions={'spot':{'id':'spot-sol','quantity':'0.25','symbol':'SOLUSDT'}})
+        self.q.add_proposal(1,'spot','spot-sol','0.25',now=101)
+        message=self.q.db.execute("SELECT message FROM unified_outbox WHERE message LIKE '%spot-sol%' ORDER BY id DESC").fetchone()[0]
+        self.assertIn('SOLUSDT',message);self.assertIn(' SOL',message)
+
     def test_process_death_before_and_after_confirmation_commit(self):
         self.q.receive(1,True,'/pair SOLUSDT',now=100,pairs=self.snap)
         token=self.proposal()['id']

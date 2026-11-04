@@ -15,6 +15,8 @@ from trading_bot.paper_pair_selection_offline import (select_spot_pair_offline, 
                                                       select_margin_pairs_offline)
 from trading_bot.margin_paper_book import MarginPaperBook
 from trading_bot.margin_paper_strategy import MarginPaperStrategy
+from trading_bot.margin_command_receiver import MarginCommandReceiver
+from trading_bot.margin_worker import process_margin
 from trading_bot.paper_pair_worker_offline import process_spot_pair, process_isolated_pair, process_margin_pair
 from trading_bot.paper_pair_runtime_offline import (restore_margin_book, ExperimentalMarginRunner,
                                                     restore_spot_store, restore_isolated_store,
@@ -348,6 +350,33 @@ class PairSelectionOfflineTests(unittest.TestCase):
         self.assertEqual(report['margin_cross']['assets']['SOL']['free'],Decimal('1'))
         self.assertEqual(report['margin_cross']['assets']['ETH']['free'],Decimal('.001'))
         self.assertIsNotNone(report['total']);self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_margin_loans_command_reports_experimental_sol_debt(self):
+        book=MarginPaperBook(self.shared.ledger,experimental_pairs={'SOLUSDT':'SOL'})
+        book.loans.borrow('fixture:borrow','sol-loan','fixture-pos','SOL','1',now_ms=1000)
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        try:
+            q.receive(1,True,'/mode margin_cross',now=1)
+            q.receive(2,True,'/loans',now=1)
+            process_margin(q,MarginCommandReceiver(book),book,self.shared,clock=lambda:1)
+            self.assertEqual(q.pending('margin_cross'),[])
+            messages=[row[0] for row in q.db.execute('SELECT message FROM unified_outbox')]
+            self.assertTrue(any('SOL' in message and 'sol-loan' in message for message in messages))
+            self.assertEqual(self.shared.ledger.balance('margin_cross:principal','SOL'),Decimal('-1'))
+            q.receive(3,True,'/repay sol-loan 0.1',now=1)
+            receiver=MarginCommandReceiver(book)
+            process_margin(q,receiver,book,self.shared,clock=lambda:1)
+            token=self.shared.db.execute('SELECT id FROM margin_repay_proposals').fetchone()[0]
+            q.receive(4,True,'/confirm '+token,now=1)
+            process_margin(q,receiver,book,self.shared,clock=lambda:1)
+            self.assertEqual(self.shared.ledger.balance('margin_cross:principal','SOL'),Decimal('-.90001'))
+            self.assertEqual(self.shared.ledger.balance('margin_cross:interest','SOL'),0)
+            self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+            q.receive(5,True,'/interest',now=1)
+            process_margin(q,receiver,book,self.shared,clock=lambda:1)
+            interest=q.db.execute('SELECT message FROM unified_outbox ORDER BY id DESC LIMIT 1').fetchone()[0]
+            self.assertIn('SOL:',interest);self.assertIn('SOL',interest)
+        finally:q.close()
 
     def test_margin_selection_rejects_unsettled_debt(self):
         book=MarginPaperBook(self.shared.ledger)

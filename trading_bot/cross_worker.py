@@ -19,7 +19,9 @@ def _status(shared, now):
            'Открытый результат '+fmt(cross['gross'])+'; funding '+fmt(cross['funding'])+'; запас риска '+fmt(cross['buffer'])+'.']
     if shared.db.execute("SELECT value FROM cross_runtime WHERE key='error'").fetchone()[0]!='null':lines.append('Последняя ошибка: требуется проверка данных или учёта.')
     for p in cross['positions']:lines.append(p['symbol']+' '+p['direction']+' '+fmt(p['quantity'],p['symbol'][:-4])+' '+p['symbol'][:-4]+'; вход '+fmt(p['entry'])+' USDT.')
-    for symbol in ('BTCUSDT','ETHUSDT'):
+    from .cross_paper_book import CrossPaperBook
+    book=object.__new__(CrossPaperBook);book.db=shared.db
+    for symbol in book._symbols():
         q=shared.db.execute('SELECT observed,funding_complete FROM cross_quotes WHERE symbol=?',(symbol,)).fetchone()
         lines.append(symbol+': '+(when(q['observed'])+(' — данные неполны или устарели' if not q['funding_complete'] or not 0<=now-q['observed']<=120 else '') if q else 'нет данных'))
     if report['incomplete']:lines.append('Неполные данные: '+'; '.join(report['incomplete']))
@@ -70,7 +72,7 @@ def process_cross(queue, receiver, book, *, started=0, now=None, clock=time.time
             queue.acknowledge(job['id'],'Виртуальная позиция '+payload['symbol']+' закрыта; учёт сохранён.');continue
         if command=='/brief_status':
             with book.shared.transaction():
-                quotes=book.stored_quotes();stamps=[quotes.get(s,{}).get('time') for s in ('BTCUSDT','ETHUSDT')]
+                quotes=book.stored_quotes();stamps=[quotes.get(s,{}).get('time') for s in book._symbols()]
                 stamp=min(stamps) if all(isinstance(x,(int,float)) for x in stamps) else None
                 problem=bool(book.runtime_error() or book.funding_conflict())
                 try:book._check();book._require_coverage(now);book._marks(quotes,now,book._symbols())

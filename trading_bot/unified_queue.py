@@ -61,6 +61,11 @@ class UnifiedQueue:
             text = '[Управление] ' + text
         self.db.execute('INSERT INTO unified_outbox(message) VALUES(?)', (text,))
 
+    def _close_symbol_valid(self,symbol):
+        if symbol in ('BTCUSDT','ETHUSDT'):return True
+        return bool(self.allow_pair_experiment and isinstance(symbol,str) and
+                    re.fullmatch(r'[A-Z0-9]{2,20}USDT',symbol) and symbol!='USDTUSDT')
+
     def seed_offset(self, offset):
         with self.transaction():
             if not self.db.execute('SELECT 1 FROM unified_updates LIMIT 1').fetchone():
@@ -136,8 +141,8 @@ class UnifiedQueue:
                         snapshots=(positions or {}).get(market) or {}
                         if not isinstance(snapshots,dict):snapshots={}
                         symbol=parts[1] if len(parts)==2 else (next(iter(snapshots)) if len(parts)==1 and len(snapshots)==1 else None)
-                        if symbol not in ('BTCUSDT','ETHUSDT') or symbol not in snapshots:
-                            self._notify('['+market_label(market)+'] Выберите позицию: /close BTCUSDT или /close ETHUSDT.')
+                        if not self._close_symbol_valid(symbol) or symbol not in snapshots:
+                            self._notify('['+market_label(market)+'] Выберите существующую позицию: /close СИМВОЛ.')
                         else:
                             pos=snapshots[symbol]
                             if not isinstance(pos,dict) or not pos.get('id') or not pos.get('quantity'):
@@ -152,7 +157,9 @@ class UnifiedQueue:
                     else:
                         if command == '/close':
                             pos = positions[market]
-                            payload = {'position': pos['id'], 'quantity': str(pos['quantity']), 'received_at': now, 'expires': now + 120}
+                            symbol=pos.get('symbol','BTCUSDT')
+                            if not self._close_symbol_valid(symbol):raise ValueError('Invalid position symbol')
+                            payload = {'position': pos['id'], 'quantity': str(pos['quantity']), 'symbol':symbol, 'received_at': now, 'expires': now + 120}
                         if command in ('/resume', '/timeframe', '/leverage'):
                             payload = {'received_at': now, 'expires': now + 120}
                         jobs = [(market, ' '.join([command] + parts[1:]))]
@@ -203,7 +210,7 @@ class UnifiedQueue:
                         payload = {'proposal': proposal['id'], 'position': proposal['position'], 'quantity': proposal['quantity'], 'expires': proposal['expires'], 'received_at': now}
                         if market in ('futures_cross','margin_cross'):
                             symbol=proposal['id'].split('-',1)[0]
-                            if symbol not in ('BTCUSDT','ETHUSDT'):raise ValueError('Invalid cross proposal identity')
+                            if not self._close_symbol_valid(symbol):raise ValueError('Invalid cross proposal identity')
                             payload['symbol']=symbol
                         self.db.execute("UPDATE unified_proposals SET status='CONFIRMED' WHERE id=?", (parts[1],))
                         jobs = [(market, '/confirmed_close')]
@@ -229,9 +236,9 @@ class UnifiedQueue:
                 raise ValueError('Close proposal does not match accepted position')
             ttl=min(ttl,payload.get('expires',0)-now)
             if ttl<=0:raise ValueError('Close request expired')
-            symbol=payload.get('symbol') if market in ('futures_cross','margin_cross') else None
-            if market in ('futures_cross','margin_cross') and symbol not in ('BTCUSDT','ETHUSDT'):raise ValueError('Invalid cross symbol')
-            ident = (symbol+'-' if symbol else '')+secrets.token_hex(6)
+            symbol=payload.get('symbol','BTCUSDT')
+            if not self._close_symbol_valid(symbol):raise ValueError('Invalid position symbol')
+            ident = (symbol+'-' if market in ('futures_cross','margin_cross') else '')+secrets.token_hex(6)
             self.db.execute('INSERT INTO unified_proposals VALUES(?,?,?,?,?,?)', (ident, market, position, quantity, now+ttl, 'OPEN'))
             self.db.execute("UPDATE unified_jobs SET status='DONE',result=? WHERE id=?", (ident, job['id']))
             asset=symbol[:-4] if symbol else 'BTC'

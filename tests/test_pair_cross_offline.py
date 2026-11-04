@@ -9,6 +9,7 @@ from tests.test_paper_pair_catalog import spot_info
 from trading_bot.cross_paper_book import CrossPaperBook
 from trading_bot.cross_data_sync import CrossDataSync
 from trading_bot.cross_paper_strategy import CrossPaperStrategy
+from trading_bot.cross_worker import _status
 from trading_bot.testnet_observer import ObservationError
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
@@ -56,6 +57,8 @@ class PairCrossOfflineTests(unittest.TestCase):
         self.assertTrue(self.choose()['replayed']);self.assertEqual(self.shared.ledger.balance('futures_cross:free'),before)
         quotes={'BTCUSDT':self.quote('100',102),'SOLUSDT':self.quote('100',102)}
         self.book.record_quotes(quotes,now=102);self.book.set_paused(False,now=102)
+        status=_status(self.shared,102)
+        self.assertIn('SOLUSDT:',status);self.assertNotIn('ETHUSDT:',status)
         pos=self.book.open('sol-open','SOLUSDT','LONG','5',1,quotes,now=102,metadata=self.info('SOL'),metadata_at=101)
         self.assertEqual(pos['symbol'],'SOLUSDT');self.assertEqual(Decimal(pos['quantity']),Decimal('.049'))
         risk=self.book.risk(quotes,now=102);report=live_report(self.shared,now=102)

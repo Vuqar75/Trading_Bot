@@ -9,8 +9,10 @@ from .paper_wallet_ledger import amount, encode
 
 
 class MarginRepayProposals:
-    def __init__(self,ledger):
-        self.ledger=ledger;self.db=ledger.db;self.loans=MarginInterestLedger(ledger)
+    def __init__(self,ledger,*,loans=None):
+        if loans is not None and (not isinstance(loans,MarginInterestLedger) or loans.ledger is not ledger):
+            raise ValueError('Margin loan ledger mismatch')
+        self.ledger=ledger;self.db=ledger.db;self.loans=loans or MarginInterestLedger(ledger)
         with ledger.transaction():
             self.db.execute("CREATE TABLE IF NOT EXISTS margin_repay_proposals(id TEXT PRIMARY KEY,request_id TEXT NOT NULL UNIQUE,fingerprint TEXT NOT NULL,loan_id TEXT NOT NULL,asset TEXT NOT NULL,quantity TEXT NOT NULL,principal TEXT NOT NULL,interest TEXT NOT NULL,expires_ms INTEGER NOT NULL,status TEXT NOT NULL CHECK(status IN ('OPEN','DONE','CANCELED')),result TEXT)")
 

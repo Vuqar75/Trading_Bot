@@ -78,9 +78,13 @@ class TelegramTransport:
                             from .paper_pair_snapshots import pair_snapshots
                             unified.receive(ident,authorized,text,fresh=fresh,pairs=pair_snapshots(store.shared))
                             continue
-                        spot = store.get('position')
+                        spot = dict(store.get('position') or {})
+                        spot['symbol']=store.get('identity').get('symbol','BTCUSDT')
                         row = store.db.execute("SELECT value FROM futures_meta WHERE key='position'").fetchone()
                         futures = json.loads(row[0]) if row else None
+                        if isinstance(futures,dict):
+                            row=store.db.execute("SELECT value FROM futures_meta WHERE key='identity'").fetchone()
+                            futures['symbol']=json.loads(row[0]).get('symbol','BTCUSDT') if row else 'BTCUSDT'
                         cross={}
                         if store.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_positions'").fetchone():
                             cross={r['symbol']:{'id':r['id'],'quantity':r['quantity']} for r in store.db.execute('SELECT symbol,id,quantity FROM cross_positions')}

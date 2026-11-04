@@ -145,8 +145,11 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             for asset in asset_names:
                 rate=shared.db.execute('SELECT rate FROM margin_loan_rates WHERE asset=? AND effective_ms<=? ORDER BY effective_ms DESC LIMIT 1',(asset,now_ms)).fetchone()
                 rates[asset]=amount(rate['rate']) if rate else None
+            from .paper_pair_snapshots import pair_snapshots
+            selected_symbols=pair_snapshots(shared)['margin_cross']['symbols']
             margin_cross={'assets':assets,'loans':loans,'positions':margin_positions,'asset_value':margin_assets,'debt_value':margin_debt,'marks':marks,'due':due,
                           'quotes':mb.stored_quotes(),'rates':rates,'paused':bool(state['paused']),'error':json.loads(error_row['value']),
+                          'selected_symbols':selected_symbols,'valuation_symbols':list(mb.pairs),
                           'leverage':settings['leverage'],'interval':settings['interval'],
                           'locked':sum((amount(pos['own']) for pos in margin_positions),Decimal(0)),
                           'equity':None if due or margin_cross_value is None else balances['margin_cross']['free']+balances['margin_cross']['reserved']+margin_cross_value}

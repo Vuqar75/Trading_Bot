@@ -13,7 +13,7 @@ from .status_summary import brief_status
 
 
 def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=lambda point:None):
-    proposals=MarginRepayProposals(book.ledger)
+    proposals=MarginRepayProposals(book.ledger,loans=book.loans)
     for job in queue.pending('margin_cross')[:20]:
         command=job['command'];payload=json.loads(job['payload']);uid=job['update_id'];now=clock()
         if (command in ('/resume','/confirmed_close','/confirm_repay') or command.startswith(('/timeframe ','/leverage ','/repay '))) and payload.get('received_at',0)<started:
@@ -66,7 +66,7 @@ def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=
             elif command=='/interest':result=interest_report(margin,now)
             elif command=='/status':result=status_report(data,now)
             else:
-                stamps=[margin['quotes'].get(s,{}).get('time_ms') for s in ('BTCUSDT','ETHUSDT')]
+                stamps=[margin['quotes'].get(s,{}).get('time_ms') for s in book.pairs]
                 stamp=min(stamps)/1000 if all(type(x) is int for x in stamps) else None
                 result=brief_status(paused=margin['paused'],positions=len(margin['positions']),stamp=stamp,now=now,
                                     problem=bool(margin['error'] or margin['due'] or margin['marks'] is None))
