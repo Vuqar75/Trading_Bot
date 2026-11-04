@@ -137,7 +137,8 @@ class UnifiedQueue:
                                all(re.fullmatch(r'[A-Z0-9]{2,20}USDT',s) and s!='USDTUSDT' for s in target))
                         if not valid:self._notify('['+market_label(market)+'] Некорректная пара или неизвестная версия.')
                         else:
-                            token='P-'+secrets.token_hex(8)
+                            token='P-'+format(ident,'x')
+                            if self.pair_proposal(token):raise ValueError('Pair proposal identity conflict')
                             self._save_pair_proposal({'id':token,'update_id':ident,'market':market,
                                 'previous':sorted(previous),'version':version,'target':target,'expires':now+120,'status':'OPEN'})
                             self._notify('['+market_label(market)+'] Сменить '+', '.join(sorted(previous))+' на '+', '.join(target)+'? /confirm '+token+' или /cancel '+token+'.')

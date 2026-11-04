@@ -22,7 +22,7 @@ class MarginSpotData:
     def __init__(self,transport=None,clock=time.time,*,experimental_pairs=None):
         from .paper_wallet_ledger import valid_asset
         extra=experimental_pairs or {}
-        if (not isinstance(extra,dict) or len(extra)>100 or
+        if (not isinstance(extra,dict) or
             any(not isinstance(s,str) or not isinstance(a,str) or s!=a+'USDT' or
                 not valid_asset(a) or a=='USDT' or s in self.SYMBOLS for s,a in extra.items())):
             raise ObservationError('Invalid experimental Spot pairs')

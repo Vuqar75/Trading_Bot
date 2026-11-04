@@ -12,7 +12,7 @@ class CrossPublicData(FuturesData):
     PATHS=FuturesData.PATHS | {'/fapi/v1/fundingInfo'}
     def __init__(self,transport=None,*,symbols=SYMBOLS,allow_pair_experiment=False):
         from .paper_wallet_ledger import valid_asset
-        if (not isinstance(symbols,(tuple,list)) or not symbols or len(symbols)>100 or
+        if (not isinstance(symbols,(tuple,list)) or not symbols or
                 any(not isinstance(s,str) or not s.endswith('USDT') or not valid_asset(s[:-4]) or s[:-4]=='USDT' for s in symbols)):
             raise ObservationError('Invalid cross symbol set')
         if set(symbols)!=set(SYMBOLS) and not allow_pair_experiment:

@@ -27,4 +27,12 @@ def financial_history_unchanged(baseline, current):
             sql='SELECT * FROM '+table+' ORDER BY '+order
             if any(a!=b for a,b in zip_longest(old.execute(sql),new.execute(sql))):
                 return False
+        # A pair selection may change identity without a financial posting.
+        # Restoring the old file would still erase committed command history.
+        for table in ('pair_spot_selection_events','pair_isolated_selection_events',
+                      'pair_cross_selection_events','pair_margin_selection_events'):
+            def rows(db):
+                exists=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone()
+                return db.execute('SELECT * FROM '+table+' ORDER BY version') if exists else iter(())
+            if any(a!=b for a,b in zip_longest(rows(old),rows(new))):return False
         return True

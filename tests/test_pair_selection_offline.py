@@ -1,4 +1,5 @@
 import concurrent.futures
+from contextlib import closing
 import subprocess
 import sqlite3
 import sys
@@ -17,6 +18,7 @@ from trading_bot.margin_paper_book import MarginPaperBook
 from trading_bot.margin_paper_strategy import MarginPaperStrategy
 from trading_bot.cross_paper_book import CrossPaperBook
 from trading_bot.paper_external_backup import prepare as prepare_backup, inspect_restore
+from trading_bot.cross_snapshot_guard import financial_history_unchanged
 from trading_bot.margin_command_receiver import MarginCommandReceiver
 from trading_bot.margin_worker import process_margin
 from trading_bot.paper_pair_worker_offline import process_spot_pair, process_isolated_pair, process_margin_pair
@@ -65,6 +67,13 @@ class PairSelectionOfflineTests(unittest.TestCase):
         self.assertTrue(self.choose()['replayed'])
         with self.assertRaisesRegex(ValueError,'Conflicting request'):
             self.choose(symbol='ETHUSDT',metadata=spot_info('ETH'))
+
+    def test_pair_selection_blocks_restoring_older_financial_snapshot(self):
+        before=self.queue.parent/'before.db';after=self.queue.parent/'after.db'
+        with closing(sqlite3.connect(before)) as target:self.shared.db.backup(target)
+        self.choose()
+        with closing(sqlite3.connect(after)) as target:self.shared.db.backup(target)
+        self.assertFalse(financial_history_unchanged(before,after))
 
     def confirmed_pair_job(self):
         q=UnifiedQueue(self.queue,allow_pair_experiment=True)
@@ -199,6 +208,23 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertEqual(self.shared.db.execute('SELECT count(*) FROM pair_spot_selection_events').fetchone()[0],1)
         finally:q.close()
 
+    def test_spot_pair_worker_process_death_after_commit_replays_once(self):
+        self.confirmed_pair_job();before=self.shared.snapshot('spot')['cash']
+        script='''import os,sys\nfrom tests.test_paper_pair_catalog import spot_info\nfrom trading_bot.paper_shared_store import SharedPaperStore\nfrom trading_bot.unified_queue import UnifiedQueue\nfrom trading_bot.paper_pair_worker_offline import process_spot_pair\ns=SharedPaperStore(sys.argv[1]);q=UnifiedQueue(sys.argv[2],allow_pair_experiment=True)\nclass Reader:\n def get(self,path,params):return {"symbols":[spot_info()]} if path.endswith("exchangeInfo") else {"symbol":"SOLUSDT","price":"100"}\ndef fault(stage):\n if stage=="after_financial_commit":os._exit(74)\nprocess_spot_pair(q,s,Reader(),clock=lambda:102,fault=fault)\n'''
+        child=subprocess.run([sys.executable,'-B','-c',script,str(self.financial),str(self.queue)],capture_output=True,timeout=20)
+        self.assertEqual(child.returncode,74,child.stderr.decode())
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        class Reader:
+            def get(inner,path,params):return {'symbols':[spot_info()]} if path.endswith('exchangeInfo') else {'symbol':'SOLUSDT','price':'100'}
+        try:
+            self.assertEqual(len(q.pending('spot')),1)
+            self.assertTrue(process_spot_pair(q,self.shared,Reader(),clock=lambda:103)['replayed'])
+            self.assertEqual(q.pending('spot'),[])
+            self.assertEqual(self.shared.snapshot('spot')['cash'],before)
+            self.assertTrue(self.shared.snapshot('spot')['paused'])
+            self.assertEqual(self.shared.db.execute('SELECT count(*) FROM pair_spot_selection_events').fetchone()[0],1)
+        finally:q.close()
+
     def test_expired_pair_job_rejected_without_blocking_following_pause(self):
         token,job=self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
         q.receive(3,True,'/pause',now=221)
@@ -248,6 +274,18 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertIsNone(process_spot_pair(q,self.shared,Reader(),clock=lambda:102))
             self.assertEqual(q.db.execute('SELECT status FROM unified_jobs WHERE id=?',(job,)).fetchone()[0],'FAILED')
             self.assertEqual([r['command'] for r in q.pending('spot')],['/pause'])
+        finally:q.close()
+
+    def test_pair_worker_unknown_symbol_is_final_without_trading_action(self):
+        token,job=self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(3,True,'/pause',now=102)
+        class Reader:
+            def get(inner,path,params):return {'symbols':[]}
+        try:
+            self.assertIsNone(process_spot_pair(q,self.shared,Reader(),clock=lambda:102))
+            self.assertEqual(q.db.execute('SELECT status FROM unified_jobs WHERE id=?',(job,)).fetchone()[0],'FAILED')
+            self.assertEqual([r['command'] for r in q.pending('spot')],['/pause'])
+            self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
         finally:q.close()
 
     def test_spot_runner_rebinds_after_financial_commit_before_ack(self):
@@ -332,7 +370,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
             q.receive(2,True,'/confirm '+token,now=now)
             job=q.pending('spot')[0]['id']
         finally:q.close()
-        with sqlite3.connect(self.financial,isolation_level=None) as lock:
+        with closing(sqlite3.connect(self.financial,isolation_level=None)) as lock:
             lock.execute('BEGIN IMMEDIATE')
             def worker():
                 shared=SharedPaperStore(self.financial)
@@ -454,6 +492,13 @@ class PairSelectionOfflineTests(unittest.TestCase):
         book.record_quotes(quotes,now_ms=102000)
         self.assertIsNotNone(book.risk(quotes,now_ms=102000)['equity'])
         self.assertIsNotNone(live_report(self.shared,now=102)['total'])
+
+    def test_many_historical_margin_assets_do_not_block_recovery(self):
+        extra={f'X{i}USDT':f'X{i}' for i in range(12)}
+        MarginPaperBook(self.shared.ledger,experimental_pairs=extra)
+        book=restore_margin_book(self.shared)
+        self.assertEqual(set(book.pairs),{'BTCUSDT','ETHUSDT'})
+        self.assertTrue(set(extra.values()).issubset(book.loans.assets))
 
     def test_margin_pair_process_death_before_after_commit_preserves_dust(self):
         MarginPaperBook(self.shared.ledger)
@@ -608,7 +653,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         try:q.receive(1,True,'/mode margin_cross',now=100);q.receive(2,True,'/loans',now=100)
         finally:q.close()
         observation=self.queue.parent/'observation.db'
-        with sqlite3.connect(observation) as db:db.execute('CREATE TABLE samples(ts REAL PRIMARY KEY)');db.execute('INSERT INTO samples VALUES(1)')
+        with closing(sqlite3.connect(observation)) as db:db.execute('CREATE TABLE samples(ts REAL PRIMARY KEY)');db.execute('INSERT INTO samples VALUES(1)');db.commit()
         stage=self.queue.parent/'archive-stage';stage.mkdir()
         prepared=prepare_backup(self.financial,self.queue,observation,stage,commit='a'*40)
         target=self.queue.parent/'restored';result=inspect_restore(prepared['path'],target,expected_sha256=prepared['sha256'])
@@ -636,7 +681,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertEqual(len(q.pending('spot')),1)
         finally:q.close()
         observation=self.queue.parent/'observation.db'
-        with sqlite3.connect(observation) as db:db.execute('CREATE TABLE samples(ts REAL PRIMARY KEY)');db.execute('INSERT INTO samples VALUES(1)')
+        with closing(sqlite3.connect(observation)) as db:db.execute('CREATE TABLE samples(ts REAL PRIMARY KEY)');db.execute('INSERT INTO samples VALUES(1)');db.commit()
         stage=self.queue.parent/'archive-stage';stage.mkdir()
         prepared=prepare_backup(self.financial,self.queue,observation,stage,commit='a'*40)
         target=self.queue.parent/'restored';inspect_restore(prepared['path'],target,expected_sha256=prepared['sha256'])
@@ -706,7 +751,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
 
     def test_after_waiting_on_real_database_lock_data_must_still_be_fresh(self):
         observed=time.time()
-        with sqlite3.connect(self.financial,isolation_level=None) as lock:
+        with closing(sqlite3.connect(self.financial,isolation_level=None)) as lock:
             lock.execute('BEGIN IMMEDIATE')
             def worker():
                 shared=SharedPaperStore(self.financial)

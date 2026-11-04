@@ -24,7 +24,7 @@ class MarginPaperBook:
     def __init__(self,ledger,*,experimental_pairs=None,selected_symbols=None,expected_pair_version=None):
         self.ledger=ledger;self.db=ledger.db
         extra=experimental_pairs or {}
-        if (not isinstance(extra,dict) or len(extra)>8 or
+        if (not isinstance(extra,dict) or
             any(not isinstance(s,str) or not isinstance(a,str) or s!=a+'USDT' or
                 not valid_asset(a) or a=='USDT' or s in PAIRS for s,a in extra.items()) or
             len(set(extra.values()))!=len(extra)):

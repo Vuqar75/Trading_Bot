@@ -28,6 +28,10 @@ def _select_or_expire(queue,job,select):
         return None
 
 
+def _unsupported(queue,job):
+    queue.acknowledge(job['id'],'Пара отсутствует в полученных рыночных данных.',applied=False)
+
+
 def _exposure_preflight(queue,shared,job,payload,market):
     """Reject risk-bearing selection before network; selection rechecks under lock."""
     tables={'spot':'pair_spot_selection_events','futures':'pair_isolated_selection_events',
@@ -70,6 +74,7 @@ def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
         if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
         info_response=reader.get('/api/v3/exchangeInfo',{'symbol':target})
         symbols=info_response.get('symbols') if isinstance(info_response,dict) else None
+        if isinstance(symbols,list) and not symbols:_unsupported(queue,job);continue
         if not isinstance(symbols,list) or len(symbols)!=1:raise ValueError('Pair metadata unavailable')
         quote=reader.get('/api/v3/ticker/price',{'symbol':target});observed=clock()
         if not isinstance(quote,dict) or quote.get('symbol')!=target:raise ValueError('Pair quote mismatch')
@@ -104,7 +109,10 @@ def process_isolated_pair(queue, shared, reader_factory, *, budget='10', clock=t
         reader=reader_factory(target)
         if reader.pair_symbol!=target:raise ValueError('Pair reader mismatch')
         response=reader.get('/fapi/v1/exchangeInfo');symbols=response.get('symbols') if isinstance(response,dict) else None
+        if isinstance(symbols,list) and any(not isinstance(r,dict) or not isinstance(r.get('symbol'),str) for r in symbols):
+            raise ValueError('Invalid pair metadata')
         matches=[item for item in symbols if isinstance(item,dict) and item.get('symbol')==target] if isinstance(symbols,list) else []
+        if isinstance(symbols,list) and not matches:_unsupported(queue,job);continue
         if len(matches)!=1:raise ValueError('Pair metadata unavailable')
         price,_=reader.mark();observed=clock();price=Decimal(str(price))
         if not price.is_finite() or price<=0:raise ValueError('Invalid pair price')
@@ -138,9 +146,11 @@ def process_cross_pair(queue, shared, reader_factory, *, budget='5', clock=time.
         reader=reader_factory(targets)
         response=reader.get('/fapi/v1/exchangeInfo');rows=response.get('symbols') if isinstance(response,dict) else None
         if not isinstance(rows,list):raise ValueError('Pair metadata unavailable')
-        metadata={};prices={};quantities={};observations=[]
+        if any(not isinstance(r,dict) or not isinstance(r.get('symbol'),str) for r in rows):raise ValueError('Invalid pair metadata')
+        metadata={};prices={};quantities={};observations=[];unsupported=False
         for symbol in targets:
             matches=[r for r in rows if isinstance(r,dict) and r.get('symbol')==symbol]
+            if not matches:unsupported=True;break
             if len(matches)!=1:raise ValueError('Pair metadata unavailable')
             schedule=reader.schedule(symbol);observations.append(clock())
             if schedule.get('symbol')!=symbol:raise ValueError('Pair quote mismatch')
@@ -149,6 +159,7 @@ def process_cross_pair(queue, shared, reader_factory, *, budget='5', clock=time.
             metadata[symbol]=matches[0];prices[symbol]=str(price)
             with localcontext() as ctx:
                 ctx.prec=120;quantities[symbol]=str(budget/price)
+        if unsupported:_unsupported(queue,job);continue
         result=_select_or_expire(queue,job,lambda:select_cross_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
             request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],
             expected_version=payload['version'],symbols=targets,metadata=metadata,prices=prices,
@@ -174,10 +185,11 @@ def process_margin_pair(queue, shared, reader_factory, *, budget='5', clock=time
         payload=json.loads(job['payload']);targets=payload['target']
         if _exposure_preflight(queue,shared,job,payload,'margin_cross'):continue
         if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
-        reader=reader_factory(targets);metadata={};prices={};quantities={};observations=[]
+        reader=reader_factory(targets);metadata={};prices={};quantities={};observations=[];unsupported=False
         for symbol in targets:
             response=reader.get('/api/v3/exchangeInfo',{'symbol':symbol})
             rows=response.get('symbols') if isinstance(response,dict) else None
+            if isinstance(rows,list) and not rows:unsupported=True;break
             if not isinstance(rows,list) or len(rows)!=1 or not isinstance(rows[0],dict) or rows[0].get('symbol')!=symbol:raise ValueError('Pair metadata unavailable')
             quote=reader.snapshot(symbol);observed=clock();observations.append(observed)
             if (not isinstance(quote,dict) or type(quote.get('time_ms')) is not int or
@@ -187,6 +199,7 @@ def process_margin_pair(queue, shared, reader_factory, *, budget='5', clock=time
             metadata[symbol]=rows[0];prices[symbol]=str(price)
             with localcontext() as ctx:
                 ctx.prec=120;quantities[symbol]=str(budget/price)
+        if unsupported:_unsupported(queue,job);continue
         result=_select_or_expire(queue,job,lambda:select_margin_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
             request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],
             expected_version=payload['version'],symbols=targets,metadata=metadata,prices=prices,
