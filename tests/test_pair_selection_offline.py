@@ -14,8 +14,9 @@ from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_pair_selection_offline import (select_spot_pair_offline, select_isolated_pair_offline,
                                                       select_margin_pairs_offline)
 from trading_bot.margin_paper_book import MarginPaperBook
+from trading_bot.margin_paper_strategy import MarginPaperStrategy
 from trading_bot.paper_pair_worker_offline import process_spot_pair, process_isolated_pair, process_margin_pair
-from trading_bot.paper_pair_runtime_offline import restore_margin_book
+from trading_bot.paper_pair_runtime_offline import restore_margin_book, ExperimentalMarginRunner
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.runtime_store import RuntimeStore
@@ -263,6 +264,58 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertEqual(self.shared.ledger.balance('margin_cross:free','SOL'),0)
             self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
         finally:q.close()
+
+    def test_margin_runner_rebinds_even_if_acknowledgement_crashes(self):
+        MarginPaperBook(self.shared.ledger);q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(1,True,'/mode margin_cross',now=100)
+        q.receive(2,True,'/pair BTCUSDT SOLUSDT',now=100,
+                  pairs={'margin_cross':{'symbols':['BTCUSDT','ETHUSDT'],'version':0}})
+        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        q.receive(3,True,'/confirm '+token,now=101)
+        class Reader:
+            def get(inner,path,params):return {'symbols':[spot_info(params['symbol'][:-4])]}
+            def snapshot(inner,symbol):return {'price':'100','time_ms':102000}
+        runner=ExperimentalMarginRunner(self.shared,q,lambda symbols:Reader());old=runner.book
+        def crash(stage):
+            if stage=='after_financial_commit':raise RuntimeError('simulated interruption')
+        try:
+            with self.assertRaisesRegex(RuntimeError,'interruption'):
+                runner.pair_step(clock=lambda:102,fault=crash)
+            with self.assertRaisesRegex(ValueError,'version superseded'):old._check()
+            self.assertEqual(runner.book.tradable,frozenset(('BTCUSDT','SOLUSDT')))
+            self.assertTrue(runner.pair_step(clock=lambda:103)['replayed'])
+            self.assertEqual(q.pending('margin_cross'),[])
+            self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+        finally:q.close()
+
+    def test_restored_margin_sol_position_protected_while_paused(self):
+        MarginPaperBook(self.shared.ledger)
+        select_margin_pairs_offline(self.shared,self.queue,request_id='margin:choose',
+            expected_symbols=['BTCUSDT','ETHUSDT'],expected_version=0,symbols=['BTCUSDT','SOLUSDT'],
+            metadata={'BTCUSDT':spot_info('BTC'),'SOLUSDT':spot_info('SOL')},
+            prices={'BTCUSDT':'200','SOLUSDT':'200'},quantities={'BTCUSDT':'.05','SOLUSDT':'.05'},
+            observed_at=100,clock=lambda:101)
+        book=restore_margin_book(self.shared)
+        with self.shared.transaction():
+            self.shared.ledger._post('fixture:margin-usdt','FIXTURE',{},[
+                ('margin_cross:free','USDT',Decimal(50)),('external:fixture','USDT',Decimal(-50))])
+            self.shared.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'")
+        def quotes(stamp,sol):
+            f={'lot_rules':[{'min':'0','max':'0','step':'.00000001'}],
+               'min_notional':'0','max_notional':'0','observed_ms':stamp}
+            return {s:{'price':sol if s=='SOLUSDT' else '200','time_ms':stamp,'server_ms':stamp,
+                       'source':'fixture','price_kind':'last_public_trade','filters':f} for s in book.pairs}
+        initial=quotes(1000,'200');book.record_quotes(initial,now_ms=1000)
+        book.open('sol-short','sol-position','SOLUSDT','SHORT','.04','5',2,initial,now_ms=1000)
+        with self.shared.transaction():self.shared.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
+        self.shared.close();self.shared=SharedPaperStore(self.financial);self.addCleanup(self.shared.close)
+        book=restore_margin_book(self.shared);now=31*900000+100
+        candles={s:[(i*900000,Decimal('200')) for i in range(31)] for s in book.tradable}
+        actions=MarginPaperStrategy(book).tick(quotes(now,'210'),candles,now_ms=now)
+        self.assertTrue(any(a['action']=='STOP' and a['symbol']=='SOLUSDT' for a in actions))
+        self.assertEqual(book._positions(),[])
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
     def test_stale_data_version_and_pending_command_fail_without_change(self):
         with self.assertRaisesRegex(ValueError,'stale or future'):

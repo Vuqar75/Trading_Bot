@@ -112,6 +112,11 @@ def process_margin_pair(queue, shared, reader_factory, *, budget='5', clock=time
     budget=Decimal(str(budget))
     if not budget.is_finite() or not 0<budget<=5:raise ValueError('Invalid paper margin')
     for job in queue.pending('margin_cross'):
+        if job['command']=='/pair_status':
+            from .paper_pair_runtime_offline import restore_margin_book
+            book=restore_margin_book(shared)
+            queue.acknowledge(job['id'],'[Spot margin cross] Пары: '+', '.join(sorted(book.tradable)))
+            continue
         if job['command']!='/confirmed_pair':continue
         payload=json.loads(job['payload']);targets=payload['target']
         if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')

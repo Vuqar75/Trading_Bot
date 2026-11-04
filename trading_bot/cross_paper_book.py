@@ -57,11 +57,19 @@ class CrossPaperBook:
             self._check()
             if self._symbols()!=SYMBOLS and not self._pair_experiment:
                 raise ValueError('Cross pair runtime not integrated')
+            if not self._pair_experiment:
+                self._pair_binding=0
+                self._symbols()
 
     def _positions(self):
         return [dict(r) for r in self.db.execute('SELECT * FROM cross_positions ORDER BY symbol')]
 
     def _symbols(self):
+        if hasattr(self,'_pair_binding'):
+            row=self.db.execute("SELECT value FROM cross_runtime WHERE key='pair_version'").fetchone()
+            current=json.loads(row[0]) if row else 0
+            if type(current) is not int or current!=self._pair_binding:
+                raise ValueError('Cross pair version superseded')
         row=self.db.execute("SELECT value FROM cross_runtime WHERE key='pair_symbols'").fetchone()
         if row is None:return SYMBOLS
         data=json.loads(row[0]);version=self.db.execute("SELECT value FROM cross_runtime WHERE key='pair_version'").fetchone()

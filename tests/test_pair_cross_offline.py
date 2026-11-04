@@ -14,6 +14,7 @@ from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_pair_selection_offline import select_cross_pairs_offline
 from trading_bot.paper_pair_worker_offline import process_cross_pair
+from trading_bot.paper_pair_runtime_offline import restore_cross_book
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.runtime_store import RuntimeStore
@@ -64,6 +65,17 @@ class PairCrossOfflineTests(unittest.TestCase):
         result=self.book.close('sol-close','SOLUSDT',pos['id'],pos['quantity'],quotes,now=103)
         self.assertEqual(self.book.close('sol-close','SOLUSDT',pos['id'],pos['quantity'],quotes,now=103),result)
         self.assertEqual(len(self.book._positions()),0);self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_cross_pair_version_fences_old_book_and_restores_selected_set(self):
+        legacy=CrossPaperBook(self.shared)
+        self.choose()
+        with self.assertRaisesRegex(ValueError,'version superseded'):legacy._symbols()
+        restored=restore_cross_book(self.shared)
+        self.assertEqual(restored._symbols(),('BTCUSDT','SOLUSDT'))
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        path=self.shared.db.execute('PRAGMA database_list').fetchone()[2]
+        self.shared.close();self.shared=SharedPaperStore(path);self.addCleanup(self.shared.close)
+        self.assertEqual(restore_cross_book(self.shared)._symbols(),('BTCUSDT','SOLUSDT'))
 
     def test_cross_pair_worker_replays_after_financial_commit(self):
         q=UnifiedQueue(self.queue,allow_pair_experiment=True)
