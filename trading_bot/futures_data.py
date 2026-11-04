@@ -20,7 +20,7 @@ def signed_number(value):
 
 class FuturesData:
     HOST = 'https://fapi.binance.com'
-    PATHS = {'/fapi/v1/time', '/fapi/v1/premiumIndex', '/fapi/v1/klines', '/fapi/v1/fundingRate'}
+    PATHS = {'/fapi/v1/time', '/fapi/v1/premiumIndex', '/fapi/v1/klines', '/fapi/v1/fundingRate', '/fapi/v1/exchangeInfo'}
 
     def __init__(self, transport=None, *, symbol='BTCUSDT'):
         from .paper_wallet_ledger import valid_asset

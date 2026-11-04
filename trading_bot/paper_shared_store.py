@@ -188,6 +188,10 @@ class SharedPaperStore:
         snapshot=self.snapshot(market)
         with localcontext() as c:
             c.prec=120
+            if market=='futures' and snapshot['position'] is not None:
+                identity=self._get('futures','identity') or {}
+                if snapshot['position'].get('symbol','BTCUSDT')!=identity.get('symbol','BTCUSDT'):
+                    raise ValueError('Journal/state mismatch: futures position symbol')
             if market=='spot':
                 # Until pair selection is integrated, no other position asset
                 # may be silently ignored by the BTC-only shadow projection.

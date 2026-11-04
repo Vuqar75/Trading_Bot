@@ -17,8 +17,9 @@ from .testnet_observer import ObservationError, number, write_report
 
 
 class FuturesApplication:
-    def __init__(self, store, reader):
-        if store.get('identity').get('symbol','BTCUSDT')!='BTCUSDT':
+    def __init__(self, store, reader, *, allow_pair_experiment=False):
+        self.symbol=store.get('identity').get('symbol','BTCUSDT')
+        if self.symbol!='BTCUSDT' and (not allow_pair_experiment or getattr(reader,'symbol',None)!=self.symbol):
             raise ObservationError('Selectable futures pairs are not integrated')
         self.store, self.reader = store, reader
         self.last_protection_at = None
@@ -29,21 +30,22 @@ class FuturesApplication:
     def tick(self):
         self._tick()
         quote = self.store.get('quote')
-        self.store.record_equity(Decimal(quote['price']), quote['server_ms'])
+        self.store.record_equity(Decimal(quote['price']), quote['server_ms'],quote_symbol=self.symbol,observed_at=quote['time'])
 
     def _tick(self):
         s = self.store
         mark, server = self.reader.mark()
+        observed_at=time.time()
         pos = s.get('position')
         with s.transaction():
-            s.set('quote', {'price': str(mark), 'time': time.time(), 'server_ms': server})
+            s.set('quote', {'price': str(mark), 'time': observed_at, 'server_ms': server, **({'symbol':self.symbol} if self.symbol!='BTCUSDT' else {})})
         if pos:
             # Fetch overlapping full position history: catch delayed publications
             # while still open. Closed positions are not retroactively corrected.
             events = self.reader.funding(pos['opened_ms']+1, server)
             s.apply_funding(pos['id'], events, server)
             pos = s.get('position')
-            value = s.valuation(mark)
+            value = s.valuation(mark,quote_symbol=self.symbol,observed_at=observed_at)
             movement = (mark/number(pos['entry'])-1)*100*(1 if pos['direction'] == 'LONG' else -1)
             request = s.get('close_request')
             if request and not s.manual_request_valid(request, pos):
@@ -59,12 +61,12 @@ class FuturesApplication:
             self.last_protection_position = pos['id']
             if reason:
                 candle = (server//(INTERVALS[s.get('interval')]*1000)-1)*INTERVALS[s.get('interval')]*1000
-                closed = s.close_position(mark, server, 'close:'+pos['id'], reason, pos['id'], candle=candle)
+                closed = s.close_position(mark, server, 'close:'+pos['id'], reason, pos['id'], candle=candle,quote_symbol=self.symbol,observed_at=observed_at)
                 if not closed and reason == 'MANUAL':
                     protective = ('MODEL_LIQUIDATION' if value['isolated'] <= value['maintenance'] else
                                   'STOP' if movement <= -2 else 'TAKE' if movement >= 4 else None)
                     if protective:
-                        closed = s.close_position(mark, server, 'close:'+pos['id'], protective, pos['id'], candle=candle)
+                        closed = s.close_position(mark, server, 'close:'+pos['id'], protective, pos['id'], candle=candle,quote_symbol=self.symbol,observed_at=observed_at)
                 if not closed:
                     return
                 with s.transaction():
@@ -80,7 +82,7 @@ class FuturesApplication:
         direction = 'LONG' if details['action'] == 'BUY' else 'SHORT' if details['action'] == 'SELL' else None
         pos = s.get('position')
         if fresh and pos and direction and direction != pos['direction']:
-            s.close_position(mark, server, 'close:'+pos['id'], 'REVERSAL', pos['id'], reverse={'direction': direction, 'candle': stamp}, candle=stamp)
+            s.close_position(mark, server, 'close:'+pos['id'], 'REVERSAL', pos['id'], reverse={'direction': direction, 'candle': stamp}, candle=stamp,quote_symbol=self.symbol,observed_at=observed_at)
             reason = 'Обратное пересечение: позиция закрыта. Противоположный вход возможен со следующей свечи.'
         elif fresh and not pos:
             reverse = s.get('reverse')
@@ -88,14 +90,20 @@ class FuturesApplication:
                 trend = 'LONG' if details['fast'] > details['slow'] else 'SHORT' if details['fast'] < details['slow'] else None
                 direction = reverse['direction'] if trend == reverse['direction'] else direction
             if direction:
-                opened = s.open_position(direction, mark, server, f'open:{stamp}:{direction}')
+                metadata=None
+                if self.symbol!='BTCUSDT':
+                    rows=self.reader.get('/fapi/v1/exchangeInfo').get('symbols',[])
+                    matches=[row for row in rows if isinstance(row,dict) and row.get('symbol')==self.symbol]
+                    if len(matches)!=1:raise ObservationError('Futures contract metadata ambiguous')
+                    metadata=matches[0]
+                opened = s.open_position(direction, mark, server, f'open:{stamp}:{direction}',metadata=metadata,quote_symbol=self.symbol,observed_at=observed_at)
                 reason = f'Виртуальный вход {direction}.' if opened else 'Вход пропущен: пауза, позиция, дневной лимит или недостаток маржи.'
             with s.transaction():
                 s.set('reverse', None)
         elif not fresh:
             reason = 'Свеча уже обработана. Повторного входа нет.'
         with s.transaction():
-            s.set('signal', {**details, 'candle': stamp, 'time': time.time(), 'reason': reason})
+            s.set('signal', {**details, 'candle': stamp, 'time': time.time(), 'reason': reason, **({'symbol':self.symbol} if self.symbol!='BTCUSDT' else {})})
             s.set('last_candle', stamp)
             s.set('error', None)
 

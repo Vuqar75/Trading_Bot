@@ -232,6 +232,17 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertEqual(store.get('position'),before)
         finally:store.close()
 
+    def test_relabelled_open_futures_position_blocks_reconciliation(self):
+        store=FuturesStore(self.financial,shared=True)
+        try:
+            store.command(1,True,'/resume');store.open_position('LONG',Decimal('100'),1000,'btc-open')
+            with self.shared.transaction():
+                identity=self.shared._get('futures','identity');identity['symbol']='SOLUSDT'
+                self.shared._set('futures','identity',identity)
+            with self.assertRaisesRegex(ValueError,'futures position symbol'):
+                self.shared._assert_consistent('futures')
+        finally:store.close()
+
     def test_isolated_sol_funding_recovers_across_commit_crashes(self):
         metadata=spot_info();metadata.update(contractType='PERPETUAL',marginAsset='USDT')
         select_isolated_pair_offline(self.shared,self.queue,request_id='isolated:crash',expected_symbol='BTCUSDT',

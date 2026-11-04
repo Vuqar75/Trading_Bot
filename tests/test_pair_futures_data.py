@@ -122,3 +122,29 @@ class PairFuturesDataTests(unittest.TestCase):
                     with self.assertRaisesRegex(ObservationError,'freshness'):future.result(timeout=5)
             with sqlite3.connect(path) as db:
                 self.assertEqual(db.execute("SELECT count(*) FROM futures_events WHERE event='OPEN'").fetchone()[0],0)
+
+    def test_experimental_isolated_application_sol_protects_while_paused(self):
+        class Reader:
+            symbol='SOLUSDT'
+            def __init__(self,metadata):self.metadata=metadata;self.price=Decimal('100');self.server=1000
+            def mark(self):return self.price,self.server
+            def candles(self,interval,server):return [(n*900000,Decimal('100')) for n in range(40)]
+            def funding(self,start,end):return []
+            def get(self,path):
+                if path!='/fapi/v1/exchangeInfo':raise AssertionError(path)
+                return {'symbols':[self.metadata]}
+        with tempfile.TemporaryDirectory() as tmp:
+            store=FuturesStore(Path(tmp)/'future.db',symbol='SOLUSDT',allow_pair_experiment=True)
+            reader=Reader(self.metadata())
+            try:
+                app=FuturesApplication(store,reader,allow_pair_experiment=True)
+                store.command(1,True,'/resume')
+                with patch('trading_bot.futures_app.signal_details',return_value={'action':'BUY'}):app.tick()
+                self.assertEqual(store.get('position')['symbol'],'SOLUSDT')
+                self.assertIn('SOLUSDT',store.status_text())
+                store.command(2,True,'/pause');reader.price=Decimal('95');reader.server=2000
+                app.tick()
+                self.assertIsNone(store.get('position'))
+                self.assertTrue(store.get('paused'))
+                self.assertEqual(store.db.execute("SELECT count(*) FROM futures_events WHERE event='CLOSE'").fetchone()[0],1)
+            finally:store.close()

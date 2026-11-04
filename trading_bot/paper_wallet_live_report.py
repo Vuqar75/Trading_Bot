@@ -32,6 +32,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             q=shared._get(market,'quote')
             if not isinstance(q,dict):return None
             if market=='spot' and q.get('symbol','BTCUSDT')!=spot_asset+'USDT':return None
+            if market=='futures' and q.get('symbol','BTCUSDT')!=(shared._get('futures','identity') or {}).get('symbol','BTCUSDT'):return None
             try:
                 age=now-float(q['time']); price=amount(q['price'],positive=True)
                 return price if 0<=age<=max_age else None
