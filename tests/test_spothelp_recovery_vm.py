@@ -56,4 +56,17 @@ class SpothelpRecoveryTests(unittest.TestCase):
             self.run_recovery()
         self.assertTrue(self.marker.exists());self.assertFalse(self.started)
 
+    def test_abrupt_process_death_during_unit_switch_is_recovered(self):
+        self.arm()
+        archive=self.archive/'unit-archive';archive.mkdir()
+        (self.archive/'stopped').mkdir();(self.archive/'stopped/financial.db').touch()
+        script='''import os,sys\nfrom trading_bot.cross_unit_switch import switch_unit_files\ndef fault(stage):\n if stage=="switched:tradingbot-spot.service": os._exit(74)\nswitch_unit_files(sys.argv[1],sys.argv[2],sys.argv[3],sys.argv[4:],assert_safe=lambda:True,fault=fault)\n'''
+        child=subprocess.run([sys.executable,'-B','-c',script,str(self.units),str(self.stages),str(archive),*recovery.ALL_UNITS],capture_output=True,timeout=20)
+        self.assertEqual(child.returncode,74,child.stderr.decode())
+        self.financial.write_bytes(b'new financial event')
+        self.run_recovery()
+        self.assertEqual(self.financial.read_bytes(),b'new financial event')
+        self.assertFalse(self.marker.exists())
+        self.assertEqual([x[1] for x in self.started if x[0]=='start'],['tradingbot-spot.service'])
+
 if __name__=='__main__':unittest.main()
