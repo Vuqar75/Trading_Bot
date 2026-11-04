@@ -48,16 +48,22 @@ class TestnetExchange(SpotTestnetReader):
         return result
 
 
-def market_snapshot(reader, interval):
+def market_snapshot(reader, interval, *, symbol='BTCUSDT'):
+    # Caller must obtain the symbol from a validated configuration. This only
+    # generalizes public paper data: it does not change order submission.
+    from .paper_wallet_ledger import valid_asset
+    if (not isinstance(symbol, str) or not symbol.endswith('USDT') or
+            not valid_asset(symbol[:-4]) or symbol[:-4] == 'USDT'):
+        raise ObservationError('Unsupported symbol')
     seconds = {'1m': 60, '5m': 300, '15m': 900, '1h': 3600}[interval]
     server = int(reader.get('/api/v3/time')['serverTime'])
-    quote = reader.get('/api/v3/ticker/price', {'symbol': 'BTCUSDT'})
-    if quote.get('symbol') != 'BTCUSDT':
+    quote = reader.get('/api/v3/ticker/price', {'symbol': symbol})
+    if quote.get('symbol') != symbol:
         raise ObservationError('Quote symbol mismatch')
     price = number(quote['price'])
     if not price:
         raise ObservationError('Zero quote')
-    rows = reader.get('/api/v3/klines', {'symbol': 'BTCUSDT', 'interval': interval, 'limit': 40})
+    rows = reader.get('/api/v3/klines', {'symbol': symbol, 'interval': interval, 'limit': 40})
     closed = [(int(r[0]), number(r[4])) for r in rows if int(r[6]) < server]
     if len(closed) < 31 or any(b[0] - a[0] != seconds * 1000 for a, b in zip(closed, closed[1:])):
         raise ObservationError('Insufficient or discontinuous candles')
