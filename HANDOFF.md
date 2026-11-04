@@ -1,5 +1,15 @@
 # Trading_Bot — контекст передачи работы
 
+## 4 ноября: /pair offline — символ в бумажном replay
+
+PaperExchange.inspect_saved сохраняет переданный symbol в ордере и исполнении;
+старые записи без symbol по-прежнему BTCUSDT. Проверены словарь и SQLite Row,
+повтор одного снимка, SOL и legacy BTC. 76/76 целевых тестов, включая старые
+Runtime и consolidation; были ResourceWarning тестовых соединений SQLite.
+Схема runtime_orders ещё не хранит symbol, полноценный устойчивый выбор пары,
+фиксация идентичности, данные, учёт, защита, миграция и Telegram не подключены.
+Никакая поддержка /pair на VM этим не подтверждена. Продолжать offline.
+
 ## 4 ноября: /pair offline — символ в рыночном срезе
 
 В paper_pair_selection обобщён `market_snapshot` для явно переданного

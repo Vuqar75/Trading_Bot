@@ -1,8 +1,9 @@
 """Offline tests for symbol-bound public data; no exchange calls are made."""
 import unittest
+import sqlite3
 from decimal import Decimal
 
-from trading_bot.runtime_exchange import market_snapshot
+from trading_bot.runtime_exchange import PaperExchange, market_snapshot
 from trading_bot.testnet_observer import ObservationError
 
 
@@ -53,3 +54,21 @@ class PairMarketSnapshotTests(unittest.TestCase):
         reader = FakeReader(returned_symbol='BTCUSDT')
         market_snapshot(reader, '15m')
         self.assertEqual(reader.calls[1][1]['symbol'], 'BTCUSDT')
+
+    def test_paper_replay_keeps_saved_symbol_and_legacy_defaults(self):
+        order={'client_id':'paper-order','side':'BUY','quantity':'0.25','price':'100','symbol':'SOLUSDT'}
+        result=PaperExchange.inspect_saved(order)
+        self.assertEqual(result['order']['symbol'],'SOLUSDT')
+        self.assertEqual(result['fills'][0]['symbol'],'SOLUSDT')
+        self.assertEqual(result,PaperExchange.inspect_saved(order))
+        del order['symbol']
+        legacy=PaperExchange.inspect_saved(order)
+        self.assertEqual(legacy['order']['symbol'],'BTCUSDT')
+        self.assertEqual(legacy['fills'][0]['symbol'],'BTCUSDT')
+        db=sqlite3.connect(':memory:')
+        db.row_factory=sqlite3.Row
+        try:
+            row=db.execute("SELECT 'old' AS client_id, 'BUY' AS side, '1' AS quantity, '100' AS price").fetchone()
+            self.assertEqual(PaperExchange.inspect_saved(row)['order']['symbol'],'BTCUSDT')
+        finally:
+            db.close()

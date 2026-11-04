@@ -117,12 +117,19 @@ class PaperExchange:
 
     @staticmethod
     def inspect_saved(order):
+        # Legacy orders predate symbol persistence and remain BTCUSDT. New
+        # paper-only fixtures may carry an immutable symbol with the order.
+        from .paper_wallet_ledger import valid_asset
+        symbol = order['symbol'] if 'symbol' in order.keys() else 'BTCUSDT'
+        if (not isinstance(symbol, str) or not symbol.endswith('USDT') or
+                not valid_asset(symbol[:-4]) or symbol[:-4] == 'USDT'):
+            raise ObservationError('Unsupported symbol')
         qty, price = number(order['quantity']), number(order['price'])
         quote = qty * price
-        return {'order': {'clientOrderId': order['client_id'], 'symbol': 'BTCUSDT',
+        return {'order': {'clientOrderId': order['client_id'], 'symbol': symbol,
                     'orderId': order['client_id'], 'side': order['side'], 'status': 'FILLED',
                     'origQty': str(qty), 'executedQty': str(qty), 'cummulativeQuoteQty': str(quote)},
                 'fills': [{'id': order['client_id'], 'orderId': order['client_id'],
-                    'symbol': 'BTCUSDT', 'isBuyer': order['side'] == 'BUY', 'qty': str(qty),
+                    'symbol': symbol, 'isBuyer': order['side'] == 'BUY', 'qty': str(qty),
                     'quoteQty': str(quote), 'commission': str(quote * Decimal('0.001')),
                     'commissionAsset': 'USDT'}]}
