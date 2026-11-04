@@ -5,11 +5,13 @@ import os
 import math
 import sqlite3
 import time
+import uuid
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_DOWN
 from pathlib import Path
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
+from .execution import PaperCosts
 
 
 def request(url, data=None, headers=None):
@@ -28,13 +30,23 @@ class Config:
     stop: float = 2
     take: float = 4
     db: str = "data/bot.db"
+    entry_fee_bps: float = 10.0
+    exit_fee_bps: float = 10.0
+    slippage_bps: float = 0.0
+
+    def paper_costs(self):
+        return PaperCosts(self.entry_fee_bps, self.exit_fee_bps, self.slippage_bps)
 
     @classmethod
     def load(cls):
         cfg = cls(os.getenv("BOT_MODE", "paper"), os.getenv("SYMBOL", "BTCUSDT"),
                   float(os.getenv("TRADE_USDT", "10")), float(os.getenv("MAX_DAILY_LOSS_USDT", "5")),
                   float(os.getenv("STOP_LOSS_PCT", "2")), float(os.getenv("TAKE_PROFIT_PCT", "4")),
-                  os.getenv("DB_PATH", "data/bot.db"))
+                  os.getenv("DB_PATH", "data/bot.db"),
+                  float(os.getenv("PAPER_ENTRY_FEE_BPS", "10")),
+                  float(os.getenv("PAPER_EXIT_FEE_BPS", "10")),
+                  float(os.getenv("PAPER_SLIPPAGE_BPS", "0")))
+        cfg.paper_costs()
         if cfg.mode not in {"paper", "testnet"}:
             raise ValueError("Поддерживаются только paper и testnet; реальная торговля отключена")
         if not all(math.isfinite(v) for v in (cfg.amount, cfg.daily_loss, cfg.stop, cfg.take)) or cfg.amount <= 0 or cfg.daily_loss <= 0 or not 0 < cfg.stop < 100 or cfg.take <= 0:
@@ -43,13 +55,25 @@ class Config:
 
 
 class Store:
-    def __init__(self, path):
+    def __init__(self, path, clock=None):
+        self.clock = clock or (lambda: time.time())
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         self.db = sqlite3.connect(path)
         self.db.execute("CREATE TABLE IF NOT EXISTS state (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
         self.db.execute("CREATE TABLE IF NOT EXISTS trades (ts REAL, symbol TEXT, side TEXT, quantity REAL, price REAL, pnl REAL, mode TEXT)")
         self.db.execute("CREATE TABLE IF NOT EXISTS notifications (id INTEGER PRIMARY KEY, text TEXT NOT NULL)")
         self.db.execute("CREATE TABLE IF NOT EXISTS futures_trades (ts REAL, symbol TEXT, direction TEXT, event TEXT, quantity REAL, price REAL, pnl REAL, leverage INTEGER, margin REAL, reason TEXT)")
+        self.db.execute("""CREATE TABLE IF NOT EXISTS execution_journal (
+            id INTEGER PRIMARY KEY, position_id TEXT NOT NULL, ts REAL NOT NULL,
+            symbol TEXT NOT NULL, market TEXT NOT NULL, direction TEXT NOT NULL,
+            event TEXT NOT NULL, quantity REAL NOT NULL, quote_price REAL NOT NULL,
+            fill_price REAL NOT NULL, entry_fee REAL NOT NULL, exit_fee REAL NOT NULL,
+            gross_pnl REAL NOT NULL, net_pnl REAL NOT NULL, slippage_cost REAL NOT NULL,
+            loss_cap_adjustment REAL NOT NULL, leverage INTEGER NOT NULL,
+            margin REAL NOT NULL, reason TEXT NOT NULL, candle INTEGER,
+            signal_json TEXT NOT NULL, costs_json TEXT NOT NULL, holding_seconds REAL,
+            legacy_position INTEGER NOT NULL DEFAULT 0,
+            strategy_json TEXT NOT NULL DEFAULT '{}')""")
         self.db.commit()
 
     def get(self, key, default=None):
@@ -61,7 +85,7 @@ class Store:
             self.db.execute("INSERT OR REPLACE INTO state VALUES (?,?)", (key, json.dumps(value)))
 
     def loss(self):
-        start = int(time.time() // 86400) * 86400
+        start = int(self.clock() // 86400) * 86400
         spot = self.db.execute("SELECT COALESCE(SUM(pnl),0) FROM trades WHERE ts>=?", (start,)).fetchone()[0]
         futures = self.db.execute("SELECT COALESCE(SUM(pnl),0) FROM futures_trades WHERE ts>=?", (start,)).fetchone()[0]
         return -(spot + futures)
@@ -78,7 +102,7 @@ class Store:
         # Do not persist exception bodies or URLs: they can contain API tokens.
         code = getattr(exc, "code", None)
         reason = type(exc).__name__ + (f" HTTP {code}" if isinstance(code, int) else "")
-        now = time.time()
+        now = self.clock()
         key = "error_notice_" + stage
         previous = self.get(key, {})
         message = f"Ошибка ({stage}): {reason}. Проверьте /status."
@@ -167,6 +191,8 @@ def ai_allows(symbol, prices, direction="BUY", market="spot"):
 class Engine:
     def __init__(self, cfg, store, exchange):
         self.cfg, self.store, self.exchange = cfg, store, exchange
+        self.clock = store.clock
+        cfg.paper_costs()
         identity = {"mode": cfg.mode, "amount": cfg.amount}
         previous = store.get("identity")
         if previous and previous != identity:
@@ -183,6 +209,12 @@ class Engine:
     def require_flat(self):
         if self.store.get("position") or self.store.get("pending"):
             raise ValueError("Сначала закройте позицию и разрешите незавершённый ордер")
+
+    def strategy_metadata(self):
+        return {"name": "sma-cross-baseline", "fast": 10, "slow": 30,
+                "interval": "1m", "stop_pct": self.cfg.stop,
+                "take_pct": self.cfg.take, "daily_loss_usdt": self.cfg.daily_loss,
+                "amount_usdt": self.cfg.amount}
 
     def change_market(self, market):
         self.require_flat()
@@ -210,6 +242,7 @@ class Engine:
         if self.store.get("pending"):
             raise ValueError("Требуется сверка незавершённого ордера")
         if self.market == "futures":
+            self._snapshot(reason, action="CLOSE", candle=candle)
             return self.futures_trade("CLOSE", price, candle, reason)
         return self.trade("SELL", price, candle)
 
@@ -222,28 +255,42 @@ class Engine:
             raise ValueError("Некорректное действие или цена")
         position = self.store.get("position")
         balance = self.store.get("futures_balance", 1000.0)
+        costs, quote, now = self.cfg.paper_costs(), price, self.clock()
+        gross, exit_fee, adjustment = 0.0, 0.0, 0.0
+        holding = None
         if action != "CLOSE":
             if position or self.store.get("paused", True) or self.store.loss() >= self.cfg.daily_loss:
                 return False
             margin = self.cfg.amount
             if balance < margin:
                 return False
+            price = costs.fill(quote, action, opening=True)
             quantity = margin * self.leverage / price
             position = {"market": "futures", "direction": action, "price": price,
                         "quantity": quantity, "cost": margin * self.leverage,
-                        "margin": margin, "leverage": self.leverage, "entry_fee": margin * self.leverage * 0.001}
+                        "margin": margin, "leverage": self.leverage,
+                        "entry_fee": margin * self.leverage * costs.entry_fee_bps / 10000,
+                        "position_id": uuid.uuid4().hex, "opened_at": now,
+                        "entry_quote": quote, "entry_slippage_cost": abs(price-quote)*quantity,
+                        "entry_costs": costs.as_dict()}
             balance -= margin
             pnl, event, new_position = 0, "OPEN", position
         else:
             if not position:
                 return False
             quantity, margin = position["quantity"], position["margin"]
+            price = costs.fill(quote, position["direction"], opening=False)
             sign = 1 if position["direction"] == "LONG" else -1
             gross = sign * (price - position["price"]) * quantity
-            returned = max(0, margin + gross - position["entry_fee"] - quantity * price * 0.001)
+            exit_fee = quantity * price * costs.exit_fee_bps / 10000
+            raw_return = margin + gross - position["entry_fee"] - exit_fee
+            returned = max(0, raw_return)
+            adjustment = returned - raw_return
             pnl = returned - margin
             balance += returned
             event, new_position = "CLOSE", None
+            if "opened_at" in position:
+                holding = now - position["opened_at"]
         notice = (f"Симуляция фьючерсов: {event} {position['direction']} {self.symbol}\n"
                   f"Изолированная маржа: {margin:.2f} USDT | {position['leverage']}×\n"
                   f"Количество: {quantity:.8f} | Цена: {price:.8f} USDT\n{reason}")
@@ -251,7 +298,21 @@ class Engine:
             notice += f"\nРезультат с модельной комиссией: {pnl:+.4f} USDT"
         with self.store.db:
             self.store.db.execute("INSERT INTO futures_trades VALUES (?,?,?,?,?,?,?,?,?,?)",
-                                  (time.time(), self.symbol, position["direction"], event, quantity, price, pnl, position["leverage"], margin, reason))
+                                  (now, self.symbol, position["direction"], event, quantity, price, pnl, position["leverage"], margin, reason))
+            snapshot = self.store.get("signal_snapshot") or {}
+            # Persist only strategy fields, never environment/account/Telegram data.
+            safe_signal = {k: snapshot[k] for k in ("source", "interval", "time", "candle", "action", "raw_action", "count", "old_fast", "old_slow", "fast", "slow") if k in snapshot}
+            self.store.db.execute("""INSERT INTO execution_journal
+                (position_id,ts,symbol,market,direction,event,quantity,quote_price,fill_price,
+                 entry_fee,exit_fee,gross_pnl,net_pnl,slippage_cost,loss_cap_adjustment,
+                 leverage,margin,reason,candle,signal_json,costs_json,holding_seconds,legacy_position,strategy_json)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                (position.get("position_id", "legacy-" + str(position["price"]) + "-" + str(quantity)),
+                 now,self.symbol,"futures",position["direction"],event,quantity,quote,price,
+                 position["entry_fee"],exit_fee,gross,pnl,abs(price-quote)*quantity,adjustment,
+                 position["leverage"],margin,reason,candle,json.dumps(safe_signal),
+                 json.dumps({"current": costs.as_dict(), "entry": position.get("entry_costs")}),
+                 holding,int("position_id" not in position),json.dumps(self.strategy_metadata())))
             for key, value in (("position", new_position), ("futures_balance", balance), ("candle", candle)):
                 self.store.db.execute("INSERT OR REPLACE INTO state VALUES (?,?)", (key, json.dumps(value)))
             self.store.db.execute("INSERT INTO notifications(text) VALUES (?)", (notice,))
@@ -302,7 +363,7 @@ class Engine:
         pnl = 0 if side == "BUY" else (fill - position["price"]) * quantity - cost * 0.001 - position["cost"] * 0.001
         new_position = {"quantity": quantity, "price": fill, "cost": cost} if side == "BUY" else None
         with self.store.db:
-            self.store.db.execute("INSERT INTO trades VALUES (?,?,?,?,?,?,?)", (time.time(), self.symbol, side, quantity, fill, pnl, self.cfg.mode))
+            self.store.db.execute("INSERT INTO trades VALUES (?,?,?,?,?,?,?)", (self.clock(), self.symbol, side, quantity, fill, pnl, self.cfg.mode))
             for key, value in (("position", new_position), ("pending", None), ("candle", candle)):
                 self.store.db.execute("INSERT OR REPLACE INTO state VALUES (?,?)", (key, json.dumps(value)))
             label = "Виртуальная сделка" if self.cfg.mode == "paper" else "Сделка Testnet"
@@ -318,15 +379,19 @@ class Engine:
         except Exception as exc:
             snapshot = self.store.get("signal_snapshot") or self._snapshot("Проверка ещё не завершена")
             snapshot["check_error"] = type(exc).__name__
-            snapshot["checked_at"] = time.time()
+            snapshot["checked_at"] = self.clock()
             self.store.set("signal_snapshot", snapshot)
             raise
 
     def _snapshot(self, reason, **details):
         snapshot = {"symbol": self.symbol, "source": "Binance Spot Testnet",
-                    "market": self.market, "interval": "1m", "time": time.time(), "reason": reason, **details}
+                    "market": self.market, "interval": "1m", "time": self.clock(), "reason": reason, **details}
         self.store.set("signal_snapshot", snapshot)
         return snapshot
+
+    def resolve_action(self, details, stamp, position):
+        """Default strategy unchanged; offline replay may override entry decisions."""
+        return details["action"]
 
     def _tick(self):
         if self.store.get("pending"):
@@ -335,17 +400,20 @@ class Engine:
         price = self.exchange.price(self.symbol)
         if not math.isfinite(price) or price <= 0:
             raise ValueError("Некорректная котировка")
-        self.store.set("quote", {"symbol": self.symbol, "price": price, "time": time.time()})
+        self.store.set("quote", {"symbol": self.symbol, "price": price, "time": self.clock()})
         position = self.store.get("position")
         if self.market == "futures" and position:
             sign = 1 if position["direction"] == "LONG" else -1
             movement = sign * (price / position["price"] - 1) * 100
             equity = position["margin"] - position["entry_fee"] + sign * (price-position["price"]) * position["quantity"]
-            maintenance = position["quantity"] * price * 0.006  # 0.5% maintenance + 0.1% exit fee, simplified.
+            costs = self.cfg.paper_costs()
+            liquidation_fill = costs.fill(price, position["direction"], opening=False)
+            maintenance = position["quantity"] * price * 0.005 + position["quantity"] * liquidation_fill * costs.exit_fee_bps / 10000 + abs(liquidation_fill-price)*position["quantity"]
             reason = ("Модельная ликвидация" if equity <= maintenance else
                       "Сработал стоп-лосс" if movement <= -self.cfg.stop else
                       "Сработал тейк-профит" if movement >= self.cfg.take else None)
             if reason:
+                self._snapshot(reason, action="CLOSE", candle=self.store.get("candle"))
                 self.futures_trade("CLOSE", price, self.store.get("candle"), reason)
                 self._snapshot(reason + "; позиция закрыта", action="CLOSE")
                 return
@@ -363,7 +431,7 @@ class Engine:
             snapshot = self.store.get("signal_snapshot")
             if snapshot:
                 snapshot.pop("check_error", None)
-                snapshot["checked_at"] = time.time()
+                snapshot["checked_at"] = self.clock()
                 self.store.set("signal_snapshot", snapshot)
             else:
                 self._snapshot("Свеча уже обработана ранее; повторного входа нет",
@@ -371,7 +439,9 @@ class Engine:
             return
         stamp, _ = candles[-1]
         details = signal_details([p for _, p in candles])
-        action = details["action"]
+        action = self.resolve_action(details, stamp, position)
+        if action != details["action"]:
+            details = {**details, "raw_action": details["action"], "action": action}
         reason = "Нового пересечения SMA 10/30 нет"
         if details["count"] < 31:
             reason = "Недостаточно закрытых свечей: нужно не менее 31"

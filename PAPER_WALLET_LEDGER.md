@@ -1,0 +1,61 @@
+# Единый paper-журнал — актуальный статус
+
+На проверке 4 ноября 2026 Spot, isolated futures, cross и margin использовали единую финансовую базу `/var/lib/tradingbot/paper-financial/shared-paper.db` на VM с кодом `2204bd0147cdd914196a320224b946b8ff8d31d7`. Координированная внешняя копия отдельно восстановлена и проверена. Текущее состояние, ограничения и незавершённая ревизия — HANDOFF.md, ROADMAP.md и FINAL_AUDIT.md. Исследовательский кандидат не установлен автоматически.
+
+## Архив: прежние этапы бумажного журнала
+
+Ниже оставлены исторические решения, проверки и промежуточные планы. Указания о двух независимых базах или отсутствии установки не описывают текущее состояние.
+
+# Актуальное состояние после установки 1 ноября 2026
+
+Единый paper-журнал установлен на существующей VM. Подтверждённая работающая
+версия `aeea6f591afcbd17f8d649d639652bf5b3cbcbe4`; финансовая база
+`/var/lib/tradingbot/paper-financial/shared-paper.db`. Подробная сверка, текущий
+статус, копии и команды эксплуатации — в начале HANDOFF.md. Ниже сохранена
+история разработки: её прежние формулировки о неустановленном состоянии и
+старых позициях исторические, а не актуальные инструкции. Используются только
+paper-режимы Spot и isolated futures. Старые финансовые базы сохранены root:0400;
+не использовать их как действующие и не восстанавливать поверх новых событий.
+
+# Paper wallets: offline checkpoints, not yet deployable
+
+This is unfinished and not installed. The current VM still uses separate Spot and futures databases. The continuation adds an experimental consolidated SQLite path, runtime adapters, wallet command routing and coordinated backup, but these have only been tested offline. Do not deploy until the remaining gates in HANDOFF.md have passed.
+
+## Continuation checkpoint
+
+Latest VM copy-only rehearsal used candidate `5ffa3319f27dd8b52ffb1e1f73e85b87c7f072e9` (331/331 tests), read locks for 0.033 seconds and did not stop or write the live workers. Source and consolidated equity matched at the historical quote time: `1999.9309962672435071938019706078154849161800000` virtual USDT. The same SHORT/funding survived a simulated transfer and isolated restore; rollback guard refused to discard the transfer. This is not a current valuation. The latest local code adds an experimental staged VM installer and mocked-systemd cutover/rollback tests; latest full WSL suite **337/337**. The installer has not run on VM or been validated for process death, power loss and all concurrent commands; **do not install yet**. Read HANDOFF for the exact remaining rehearsal and safe rollback requirements.
+
+Latest WSL suite passed 333/333, including a test that launches both actual paper entry points on a temporary consolidated database with network prohibited, checks hold, queue, coordinated backup, explicit resume and paused restart, and checks position/funding preservation. The isolated Python systemd backup launcher is also tested. This newer candidate has not yet run on the VM; the VM passed 331/331 on the preceding revision. Actual stop/install/rollback and current VM capital reconciliation remain to be rehearsed before installation.
+
+A subsequent VM rehearsal used fresh coordinated read-only snapshots of both live paper databases plus queue and observation: read locks lasted 0.121 seconds and no source was written or stopped. Candidate `6930690830abec84d756a1f48766b18a194cfc9a` passed 327 tests on the VM. At that historical quote snapshot the original and consolidated capital both equalled `1999.9362927057506737291609214587015162088600000` virtual USDT, unchanged by a simulated transfer; the open SHORT and funding were preserved. Hold/release and isolated backup restoration were tested. These are not current prices or a live installation. `paper_rollback_guard.py` subsequently added a read-only check that refuses old financial state when it sees later financial events or changed history/position; it is not itself a rollback. Latest WSL suite 331/331; the newer rollback guard was not run on the VM. Do not automatically overwrite later trades, funding or transfers with a historical snapshot.
+
+A later offline VM rehearsal using copies of historical pre-unified paused snapshots matched `1999.8981195940709734560250683748765833555200000` USDT before/after consolidation and an internal transfer, preserved the archived SHORT/funding, rejected duplicate migration and restored an isolated coordinated backup. This is not the current capital, not current source snapshots, and not a production rollback. VM candidate `4bc34cd0768b05be51fab81f0be8d4c8f322653c` passed 326 tests. Subsequent uninstalled deployment-hold changes passed 327 tests on WSL; they still need VM verification and fresh-snapshot rehearsal. See HANDOFF for exact safety gates.
+
+`paper_consolidation.py` creates one file from two coordinated paused snapshots and keeps separate outboxes; `paper_shared_store.py` journals projections and anchors current Spot/futures financial state to immutable events. Experimental `RuntimeStore(...,shared=True)`, `FuturesStore(...,shared=True)` and `--shared-paper` use this path; old separate mode is still available for compatibility and must be retired/archived during any actual cutover. Tests exercise real runtime methods and a fake Telegram transport; they do not involve the VM or live APIs. `paper_wallet_worker.py` handles wallet commands and `paper_wallet_live_report.py` renders a current shared-store report. `paper_coordinated_backup.py` creates a cross-file backup with finance-before-queue locking; uninstalled systemd templates live in `deploy/vm-shared-*`. The Spot monitor excludes internal transfer flows from sampled equity. Full WSL Linux suite: **326/326**.
+
+Remaining gates: independently audit monetary/fee/funding reporting, reserve and order recovery accounting; exercise restarts, crash recovery and contention under actual VM resource limits; prepare and rehearse migration plus a rollback that cannot resurrect a position or erase actions; preserve current q and observer history; block old independent writers. Snapshot tests so far are synthetic. Do not interpret the prototypes or suite as confirmation of real VM migration, reconciled capital or production readiness. When the user requests continuation, first read the latest HANDOFF, inspect actual state read-only, rehearse only on coordinated copies and proceed to the already-authorized installation only when all safety checks succeed.
+
+## Implemented and tested on temporary databases
+
+- A separate SQLite journal uses per-asset double-entry postings, immutable events/postings with sealed posting counts, deterministic fingerprints, decimal strings and `BEGIN IMMEDIATE`/FULL synchronous transactions. Reconciliation validates each event, asset totals, immutable fingerprints, foreign keys and nonnegative free/reserved balances.
+- One-time snapshot import requires paused standalone Spot and futures paper database copies, rejects WAL/journal sidecars, pending Spot orders, identity errors and recovery blocks, checks each copy's integrity and hashes, and records source hashes, time and position/PnL metadata. Caller must actually stop the writers and coordinate the two snapshots; checking `paused` and hashes alone cannot prove that. It never invents a 1000 USDT balance. `reserve` starts at zero; futures cash, margin, funding, entry fee and Spot BTC quantity are separate accounts. Unknown Spot fee valuation is preserved.
+- Offline virtual USDT transfers only among `reserve`, `spot`, `futures_isolated`: deterministic request identity, separate `T-` confirmation namespace, expiry/cancellation, paused trading wallets, preview balances, rechecking current free funds and reservations under a transaction, and idempotent confirmation. Concurrent reservation and transfer do not overspend in tested scenarios. No loans or cross/margin.
+- Snapshot-only report prototype explicitly marks itself incomplete, can estimate equity with fresh supplied prices and known fees, does not add already-accounted entry fee again, filters internal transfers by Baku day, leaves unsupported historical fees/flows and period PnL unknown. It is not a live `/balance_report`.
+- Tests use synthetic Spot/futures positions and archived synthetic databases. Full Linux suite ran **290/290** on WSL. The user reports that mode switching and `/status futures` worked on the deployed bot; this is a user observation, not an independent live integration test. Additional isolated test confirms changing futures position volume rejects a manual close and does not close the position.
+
+## Required before deployment
+
+1. Choose and implement one authoritative transactional storage architecture for **every** Spot fill, cost basis, position, fees, PnL, futures entry/exit, margin, funding, risk reserves, transfer and pause. Existing `RuntimeStore.apply`, `prepare`, `claim`, `FuturesStore.open_position`, `apply_funding` and `close_position` currently update only their separate databases; they must not continue as independent financial writers. If using SQLite `ATTACH`, explicitly enforce same-host supported journaling/synchronous modes, durable cross-file atomicity, concurrency, rollback and recovery; demonstrate the authoritative journal and shadow states agree after crashes. A single consolidated database is another approach. Do not assume transactions across WAL databases are crash-atomic.
+2. Define exact accounting postings for each trade/fill/fee/funding event, including third-asset unknown fee valuation and open-position valuation, and establish append-only event identity that makes repeated recovery idempotent. Record reservations and changes to balances/positions in the same transaction. Add drift detection and a fail-closed gate. Preserve old history in archived sources and do not double credit opening cash.
+3. Connect durable Telegram inbox to `/wallets`, `/wallet`, `/transfer`, `/confirm`, `/cancel`, `/transfers` and `/balance_report`, preserving the distinction between transfer and position-close confirmations, authorization, market independence, expiry, retries and one poller. Resolve cross-database source acknowledgement without duplicating financial actions. Track `/pause` in the same authoritative transaction as transfer checks; the prototype `wallet_state` is not linked to actual bots.
+4. Complete live reports: actual current positions/prices, realized and unrealized PnL, historical and current fees, funding, external movements, internal transfers, exact Baku-day attribution where source data supports it, incomplete/unknown values and reconciliation against actual state. `paper_wallet_report.py` is deliberately snapshot-only, and its default `complete=False` is intentional.
+5. Rehearse stop, backups, import and rollback on **copies** of the current VM databases; verify open SHORT, funding, cost, all balances and history, quote freshness, previous pause states, order recovery and four-file backup/restore. Add concurrency, lock, process kill before/after commit and restart tests of the integrated real runtime, including transfer vs reserve and duplicates. Run full Linux suite and inspect user-visible Telegram flows using a separate test position.
+6. Only after all checks succeed, use the already authorized VM procedure: record states, pause/stop safely, take coordinated backups, archive originals, deploy one writer architecture, reconcile all capital and state before enabling entries, restore only previously enabled entries without errors. Leave paused and follow a documented safe rollback if any mismatch. No VM resource/strategy/parameter change or real/Testnet order is authorized.
+
+Reproduction from repository root on Linux:
+
+```bash
+python3 -m unittest tests.test_unified_integration tests.test_unified_queue tests.test_unified_receiver -v
+python3 -m unittest tests.test_paper_wallet_ledger tests.test_paper_wallet_import tests.test_paper_wallet_report -v
+python3 -m unittest discover -s tests -q
+```

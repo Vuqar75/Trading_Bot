@@ -1,0 +1,11 @@
+[Unit]
+Description=TradingBot paper VM heartbeat every five minutes
+
+[Timer]
+OnBootSec=1min
+OnUnitActiveSec=5min
+AccuracySec=10s
+Unit=tradingbot-heartbeat.service
+
+[Install]
+WantedBy=timers.target

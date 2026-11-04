@@ -1,0 +1,10 @@
+[Unit]
+Description=Hourly Trading Bot backup
+
+[Timer]
+OnCalendar=hourly
+Persistent=true
+Unit=trading-bot-backup.service
+
+[Install]
+WantedBy=timers.target

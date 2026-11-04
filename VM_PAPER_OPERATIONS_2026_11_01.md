@@ -1,0 +1,284 @@
+# VM: актуальная точка на 4 ноября 2026
+
+> Актуальный checkout после установки 4 ноября: `/opt/trading-bot-finalaudit-29d1fc6`, commit `29d1fc6061902b00c49739b4b74c2f6285a15a3d`; состояние рынков и пауз проверяйте перед действиями.
+
+Прочитайте также HANDOFF.md и FINAL_AUDIT.md: фактическое состояние необходимо перепроверять. При проверке 4 ноября четыре торговые службы и наблюдатель активны; Spot разрешён, isolated futures, futures cross и margin cross на паузе. Рабочий checkout `/opt/trading-bot-finalaudit-29d1fc6`, код `29d1fc6061902b00c49739b4b74c2f6285a15a3d`. Финансовая база — `/var/lib/tradingbot/paper-financial/shared-paper.db`. Изменения VM выполняются в пределах действующего указания владельца.
+
+Для проверки без остановки процессов:
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-monitor.service --no-pager
+sudo systemctl list-timers 'tradingbot-*' --no-pager
+sudo journalctl -u tradingbot-watchdog.service -n 30 --no-pager
+sudo stat /var/lib/tradingbot/paper-external-backups/hourly-success.json
+```
+
+Внешняя копия и изолированное восстановление описаны в EXTERNAL_BACKUP_EMAIL_RUNBOOK.md. Проверка heartbeat и писем уже проведена и подтверждена владельцем. Старая база поверх новых проводок не восстанавливается. При остановке работающего процесса его защита позиций не выполняется; для восстановления использовать процедуру и отдельное указание, сохранив фактические паузы и все новые события.
+
+## Операции и восстановление
+
+Для разрешённого обслуживания сначала зафиксируйте позиции и паузы, поставьте входы на паузу и проверьте согласованную копию. Остановка процесса прерывает защитный цикл открытых позиций; выбирайте согласованное окно. Команда ниже останавливает только перечисленные службы, но **не закрывает позиции**:
+
+```bash
+sudo systemctl stop tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-monitor.service
+sudo systemctl start tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-spot.service tradingbot-monitor.service
+```
+
+После старта проверяйте свежие котировки и защитные циклы, ошибки, блокировки, журнал и единственность процессов. Входы после перезапуска остаются на паузе; возвращайте только ранее разрешённые рынки после здоровой проверки и при действующем разрешении. Ручная пауза не снимается проверкой backup.
+
+Проверка расписания и последней успешной внешней загрузки:
+
+```bash
+systemctl list-timers 'tradingbot-*' --no-pager
+sudo stat /var/lib/tradingbot/paper-external-backups/hourly-success.json /var/lib/tradingbot/paper-external-backups/daily-success.json
+sudo journalctl -u tradingbot-external-backup@hourly.service -n 20 --no-pager
+```
+
+Для изолированной проверки восстановления из последнего hourly-архива, без поллера и торговых процессов:
+
+```bash
+sudo -u tradingbot env HOME=/var/lib/tradingbot PATH=/snap/google-cloud-cli/current/bin:/usr/bin:/bin PYTHONPATH=/opt/trading-bot-finalaudit-29d1fc6 python3 - <<'PY'
+import json, os, subprocess, tempfile
+from pathlib import Path
+from trading_bot.paper_external_backup import inspect_restore
+
+os.umask(0o077)
+base = Path('/var/lib/tradingbot')
+marker = json.loads((base / 'paper-external-backups/hourly-success.json').read_text())
+review = Path(tempfile.mkdtemp(prefix='restore-review-', dir=base))
+archive = review / 'backup.tar.gz'
+subprocess.run(['gcloud', 'storage', 'cp', marker['object'], str(archive)],
+               check=True, stdout=subprocess.DEVNULL)
+result = inspect_restore(archive, review / 'restored', expected_sha256=marker['sha256'])
+print('Изолированная копия:', review / 'restored', 'Проверка:', result)
+PY
+```
+
+Проверяйте восстановленные позиции, обязательства, funding и очередь отдельно. Не запускайте торговлю из копии и не заменяйте текущую базу старой, если появились новые финансовые события или команды. При необходимости восстановления после таких событий требуется сохранить и согласовать новые проводки, а не выполнять простой откат файла. Секретная конфигурация в эти архивы не входит; доступ к ней восстанавливается отдельно защищённым способом.
+
+---
+
+# Архив: предыдущие снимки и процедуры
+
+Приведённые ниже версии, пути и статусы исторические. Не запускать их без сверки с актуальными HANDOFF и состоянием VM.
+
+# Актуализация 3 ноября: диагностика и локальный watchdog
+
+Торговые службы: `/opt/trading-bot-diagnostics-a41ac38`, код
+`a41ac386e9ff9a654642bf9f3225afb6a6af453f`. Актуальную паузу и здоровье
+проверять до любых действий. Margin и futures cross при последней проверке на
+паузе; Spot и isolated разрешены. Копии обновления —
+`/var/lib/tradingbot/diagnostics-updates/20261103a/` на том же диске VM.
+Не восстанавливать старую общую базу поверх новых финансовых событий.
+
+```bash
+sudo systemctl status tradingbot-watchdog.timer tradingbot-watchdog.service --no-pager
+sudo journalctl -u tradingbot-watchdog.service -n 30 --no-pager
+sudo systemctl list-timers tradingbot-watchdog.timer --no-pager
+```
+
+Локальный watchdog не обнаруживает выключение VM. Внешний backup/monitor ещё
+не созданы; не включать неподготовленные timers без bucket и прав. Историческую
+ошибку margin по типу исключения расшифровать нельзя. Подробности — HANDOFF.md.
+
+# Актуализация 3 ноября: отчёты margin
+
+Рабочий checkout `/opt/trading-bot-reports-ba5ad83`, код
+`ba5ad83ad947788b8aa8362bf488c2f284106665`. Резервные копии обновления в
+`/var/lib/tradingbot/report-updates/20261103a/`; это тот же диск VM. Проводки,
+позиции, параметры и состояния паузы сохранены. Перед любыми действиями
+проверяйте актуальное состояние, не повторяйте первоначальные переносы и
+переводы и не заменяйте текущий финансовый журнал старым снимком. Подробный
+статус и ограничения — в начале HANDOFF.md.
+
+# Актуальное состояние после восстановления funding, 2 ноября 2026
+
+## 3 ноября: четыре paper-рынка на VM
+
+Все рабочие службы используют `/opt/trading-bot-margin-8a692e3`, код
+`8a692e35032bafc33895de4812eb77c59781878c`; подробная сверка и backup —
+в начале HANDOFF.md. Общая финансовая база:
+`/var/lib/tradingbot/paper-financial/shared-paper.db`. Не запускать прежние
+установщики, не повторять перевод 50 USDT и не восстанавливать старую базу
+поверх новых проводок. Futures cross оставлен на паузе.
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-monitor.service tradingbot-paper-backup.timer --no-pager
+sudo cat /var/lib/tradingbot/paper-financial/margin-health.json
+sudo cat /var/lib/tradingbot/paper-financial/cross-health.json
+sudo systemctl start tradingbot-paper-backup.service
+sudo journalctl -u tradingbot-paper-backup.service -n 20 --no-pager
+```
+
+Остановить только margin: `sudo systemctl stop tradingbot-margin.service`;
+запустить: `sudo systemctl start tradingbot-margin.service`. Пока процесс
+остановлен, защита его позиций не работает. После запуска новые входы остаются
+на паузе: проверьте свежие данные, защиту, отсутствие ошибки и сверку; затем в
+Telegram используйте `/mode margin_cross` и `/resume`, если входы разрешены.
+`/pause` останавливает новые входы выбранного режима, `/pause_all` — всех четырёх.
+Закрытие позиции требует подтверждения конкретного предложения. База и история
+наблюдения сохраняются; второй Telegram-поллер не запускать.
+
+## 3 ноября: margin пока не установлен
+
+На VM по-прежнему действует код `c05238e38c30018a538447f3607de3ec3dd26bb8`.
+Кандидат `5f1717d986e3d64e2263585bc08a04d78904f849` прошёл 541 Linux-тест и
+одноразовую systemd-репетицию на закрытых согласованных копиях; рабочие
+службы и базы не переключались. Перевод 50 USDT выполнялся только на копии.
+Память замерена при работающих трёх рынках, но не при постоянно работающем
+четвёртом. До установки требуется проверенная процедура переключения всех
+служб и восстановления пауз, о которой подробно написано в начале HANDOFF.md.
+Фьючерсный cross остаётся на паузе; повторять прежние установщики и переводы
+нельзя. Существующие команды эксплуатации приведены ниже.
+
+## Фактическая установка 2 ноября, 21:20–21:24 по Баку
+
+Четыре рабочие службы используют `/opt/trading-bot-paper-c05238e`, код
+`c05238e38c30018a538447f3607de3ec3dd26bb8`. Spot и isolated после проверок
+вернулись к прежним разрешённым входам; cross остался на паузе с двумя
+позициями. Проверены три цикла на паузе и два после восстановления, сверка,
+relay, единственный поллер и свежий наблюдатель. Не считать следующую
+историческую запись о неустановленном кандидате актуальной. Подробный
+протокол, backup и ограничения — в начале HANDOFF.md.
+
+
+## Funding paper: кандидат с раздельными статусами (ещё не установлен)
+
+В исследовательской ветке `research/cross-funding-paper-status` health cross
+содержит `funding_pages`, `funding_paper_model`,
+`funding_publication_finality`, `quotes_fresh`, `protection_fresh` и время
+последней защиты. `loaded_available_pages` означает успешное получение
+доступных страниц заданного диапазона, а `matches_paper_assumption` —
+соответствие модели; `not_guaranteed_by_source` отдельно указывает, что
+финальность публикации не обещана. Она сама по себе не отключает защитный цикл.
+При противоречии принятого периода сохраняется запрет новых входов и
+предупреждение; не сбрасывать блокировку прямой правкой БД. При незнакомом
+или отсутствующем наблюдённом прошлом окне расчёт блокируется без начисления.
+
+Установленный cross `543dfa2f...` использует старый health `data_complete`;
+новый протокол не считать установленным до отдельного подтверждения. Около
+3 часов 38 минут нарушения защитных проверок 2 ноября нельзя включать в
+непрерывное штатное наблюдение. Подробности и результаты — HANDOFF.md.
+
+
+**Уточнение:** после нового требования пользователя установленный cross-код
+не доказывает окончательную полноту funding-истории и выбирает владельца по
+нормализованному сроку. `data_complete=true` в установленном health не является
+доказательством этих новых условий. Входы cross при последней проверке были на
+паузе; защитный цикл выполнялся. Не принимать решение о возобновлении только
+по этому флагу. Незавершённое offline-исследование — `CROSS_FUNDING_EVIDENCE.md`
+и начало HANDOFF.md; оно не установлено на VM.
+
+Spot, isolated и наблюдатель работают из `/opt/trading-bot-cross` на коммите
+`77e5ce13bf6b30bb080b53319129b13c6b4a808d`; только cross работает из
+`/opt/trading-bot-cross-funding` на `543dfa2f9dc5c54f6917ec3d4ac3f2bd19cfaa4b`.
+Единая финансовая база и очередь общие и не заменялись. Cross оставлен на паузе;
+последняя проверка показала две позиции и выполняющийся защитный цикл. Точное
+состояние, финансирование, backup и ограничения находятся в начале HANDOFF.md.
+Версии разных сервисов обновлять согласованно, не запуская вторых писателей.
+
+У cross-health есть `protection_checked_at`, `data_complete`, `error`, `paused`
+и `resume_held`. Свежая отметка означает, что цикл дошёл до проверки риска и
+защитных условий; проверять её вместе со свежестью времени, данными и паузой.
+При неизвестном funding или старых котировках входы запрещены, нельзя считать,
+что защитные действия прошли. На 2 ноября временный `--hold-resume` снят после
+проверки; обычный запуск всё равно оставляет cross на паузе. Не возобновлять
+без нужного указания и проверки здоровья.
+
+Архив `/var/lib/tradingbot/cross-funding-recovery-20261102` содержит unit и
+согласованные копии до установки. После новых проводок старую БД поверх текущей
+не восстанавливать: сохранить и согласовать все новые события. После установки
+создан backup `/var/lib/tradingbot/paper-coordinated-backups/paper-20261102T114033097924Z`.
+Ниже — история предыдущего состояния; его утверждения об единой версии устарели.
+
+# Историческое состояние после установки 2 ноября 2026
+# Актуальное состояние после установки 2 ноября 2026
+
+Рабочая версия трёх paper-рынков —
+`77e5ce13bf6b30bb080b53319129b13c6b4a808d`, каталог `/opt/trading-bot-cross`.
+Единая финансовая база и история всех рынков —
+`/var/lib/tradingbot/paper-financial/shared-paper.db`; отдельной старой базы
+cross нет. Команды и переключение `/mode futures_cross` проходят через единственный
+Spot Telegram-поллер и общую очередь. Состояние и фактические результаты — в
+начале HANDOFF.md; данные ниже до заголовка Paper bots являются историческими.
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-monitor.service tradingbot-paper-backup.timer --no-pager
+sudo cat /var/lib/tradingbot/paper-financial/runtime-health.json
+sudo cat /var/lib/tradingbot/paper-financial/futures-health.json
+sudo cat /var/lib/tradingbot/paper-financial/cross-health.json
+sudo systemctl start tradingbot-paper-backup.service
+sudo journalctl -u tradingbot-paper-backup.service -n 20 --no-pager
+```
+
+Остановка отдельного рынка: `sudo systemctl stop tradingbot-cross.service`
+(аналогично `tradingbot-spot.service`, `tradingbot-futures.service`). Запуск:
+`sudo systemctl start tradingbot-cross.service`. Перезапуск и reboot оставляют
+входы на паузе; защита открытой позиции не работает, пока её процесс остановлен.
+Для возобновления после проверки здоровья использовать Telegram `/mode spot`,
+`/mode futures` или `/mode futures_cross`, затем `/resume` в нужном контексте;
+`/pause_all` запрещает новые входы во всех рынках. Не закрывать позиции для
+проверки. Сохранять единственный polling и не запускать старые писатели.
+
+Согласованные копии financial/queue/observation создаются штатным сервисом в
+`/var/lib/tradingbot/paper-coordinated-backups/`. Это тот же диск. После новых
+сделок, переводов или funding старую копию нельзя просто восстановить поверх
+журнала: сначала сохранить и согласовать все новые события; при неопределённости
+оставить входы на паузе. Старые инструкции ниже — исторические.
+
+# Историческое состояние после установки 1 ноября 2026
+
+Единый paper-журнал установлен на существующей VM. Подтверждённая работающая
+версия `aeea6f591afcbd17f8d649d639652bf5b3cbcbe4`; финансовая база
+`/var/lib/tradingbot/paper-financial/shared-paper.db`. Подробная сверка, текущий
+статус, копии и команды эксплуатации — в начале HANDOFF.md. Ниже сохранена
+история разработки: её прежние формулировки о неустановленном состоянии и
+старых позициях исторические, а не актуальные инструкции. Используются только
+paper-режимы Spot и isolated futures. Старые финансовые базы сохранены root:0400;
+не использовать их как действующие и не восстанавливать поверх новых событий.
+
+# Paper bots on VM: migration and operations
+
+On 2026-11-01 the user authorized migration of the existing paper bots to `tradingbot-paper-test` (`europe-west1-b`), without changing parameters or starting live/Testnet orders. Cloud Shell entries paused 12:29:18 Baku; both processes stopped. Before VM startup three independent SQLite backups were created, integrity checked and transferred with matching SHA-256. Original DBs and snapshots remain on Cloud Shell. Existing checkout directories were renamed to `Trading_Bot_paper_observation_MIGRATED_DISABLED` and `Trading_Bot_futures_paper_MIGRATED_DISABLED`; marker-only directories replace old launch paths. Process scans found no old trading processes; cron inspection found no matching launcher and no matching user systemd service. This prevents accidental execution of old documented paths, not malicious/manual startup or distributed fencing.
+
+VM checkout `/opt/trading-bot-paper` is `44776b21aed04776f54d4652a653248f147e5c50`, with `deploy/paper_vm_backup.py` added separately for backup. Runtime user `tradingbot` owns private state under `/var/lib/tradingbot`. Databases:
+
+- Spot: `/var/lib/tradingbot/Trading_Bot_paper_state/runtime-paper.db`.
+- Futures: `/var/lib/tradingbot/Trading_Bot_futures_state/futures-paper.db`.
+- Observation: `/var/lib/tradingbot/Trading_Bot_paper_state/monitor/observation.db`.
+- Local backups: `/var/lib/tradingbot/paper-backups/{spot.db,futures.db,observation.db}`. Each is a separately consistent SQLite snapshot, not a simultaneous cross-database snapshot. Backups remain on the same disk and do not protect against its loss.
+
+Services: `tradingbot-spot.service`, `tradingbot-futures.service`, `tradingbot-monitor.service`, `tradingbot-paper-backup.timer` and its oneshot service. The corresponding templates in `deploy/vm-*.service` are installed under the names above; the separate paper backup service/timer are also in deploy. The monitor additionally maintains Spot backup and text/JSON reports in its state directory. Backups are hourly and shortly after boot. The protected Telegram configuration is private to the service account; never print it. Spot has the sole polling process and holds the futures delivery lock. Two distinctly labelled test messages were queued and removed on acknowledged Telegram sends; user reading them was not verified.
+
+Spot 15m, up to 10 virtual USDT; futures 15m, isolated 1x, margin 10 virtual USDT, 5 bps fee and 2 bps slippage. On the last recovery the same futures SHORT `0.0001290910503597050085467079348 BTC` remained open, funding `0.002006831540511705326085906338 USDT`, two funding events, no forced close. Position and funding may subsequently change through ordinary paper risk management. Spot was flat and had no pending orders. Both bots started on pause, fresh prices and no blocks/errors; after actual reboot they returned on pause with position/funding intact. User-authorized paper entries were resumed at 12:34:29 Baku. Initial observation/entry interruption was ~5m11s, including the reboot test. Paper risk management of an open position continues while paused.
+
+Full Linux suite 247/247 was run in the same code checkout during VM qualification; migration-specific checks verified DB hashes, integrity, relay, notification queues, services, reboot and backup. Under the short real three-database backup with both bots/monitor running, minimum sampled MemAvailable ~585 MiB; spot/futures/monitor RSS ~27.3/27.1/23.3 MiB. This was a short sample, not long-term peak or stress proof. No paid capacity was increased.
+
+## Operational commands, on the VM
+
+Connect through the pinned IAP SSH instructions in [VM_TEST_SETUP_2026_11_01.md](VM_TEST_SETUP_2026_11_01.md). Do not print configuration or process environments.
+
+```bash
+sudo systemctl status tradingbot-spot.service tradingbot-futures.service tradingbot-monitor.service tradingbot-paper-backup.timer --no-pager
+sudo cat /var/lib/tradingbot/Trading_Bot_paper_state/runtime-health.json
+sudo cat /var/lib/tradingbot/Trading_Bot_futures_state/futures-health.json
+sudo systemctl start tradingbot-paper-backup.service
+sudo journalctl -u tradingbot-paper-backup.service -n 20 --no-pager
+```
+
+Spot `/pause` and `/resume` operate through Telegram. To stop a paper bot safely (open paper positions are not force-closed), use `sudo systemctl stop tradingbot-spot.service` or `sudo systemctl stop tradingbot-futures.service`. Stop both with both unit names. `sudo systemctl start <unit>` starts it **paused**. A later VM reboot or service restart also starts paused. After explicit authorization, fresh health, no errors or recovery blocks, known position and no outstanding Spot orders, allow entries separately:
+
+```bash
+sudo systemctl kill --kill-who=main --signal=USR1 tradingbot-spot.service
+sudo systemctl kill --kill-who=main --signal=USR1 tradingbot-futures.service
+```
+
+Verify subsequent health shows `paused: false`; do not send signals merely because the systemd service is active. Stop/restart removes continuous risk monitoring during the outage. Never start the saved Cloud Shell copies while VM copies run. Network loss, VM shutdown, single-disk failure and lack of distributed fencing remain availability risks.
+
+## Unified Telegram paper control — deployed 2026-11-01
+
+In the new implementation `/mode` shows the selected market, `/mode spot` and `/mode futures` select it without stopping either worker. `/status` requests a short status from both with separate quote timestamps; `/status spot` and `/status futures` request detailed reports. `/signal`, `/history`, `/pause`, `/resume`, `/timeframe` apply to the selected market; `/leverage` applies only to futures. `/close` proposes the current position and size, and gives a short-lived `/confirm ID` and `/cancel ID`. Confirmation is bound to that market, position, quantity and expiry; it is rechecked at execution. `/pause_all` tracks each market separately. A temporarily unavailable worker may delay its reply while the other continues. These are paper-only controls, not real or Testnet trading.
+
+Both worker services require `UNIFIED_PAPER_QUEUE=/var/lib/tradingbot/Trading_Bot_paper_state/unified-commands.db`; only Spot polls Telegram. The backup service includes the queue. Backups of separate SQLite files are individually consistent, not a coordinated cross-database recovery point: do not restore one database in isolation and assume command acknowledgements match another. Plan coordinated restore and reconciliation. The queue must be retained with the trade databases; losing it loses routing/confirmation history.
+
+Installed checkout `/opt/trading-bot-unified` uses code commit `4e60b1cfd78f084cd085255434d4d321edda1198`; systemd working directories point there. Pre-update snapshots and prior systemd units are in `/var/lib/tradingbot/before-unified-20261101-130427`. During cutover 13:04:27–13:06:20 Baku both paper entries were paused. Position, funding and parameters survived; both previously enabled entries resumed after health checks. One Spot Telegram poller and the futures relay lock were checked, and an outgoing test message was acknowledged; live inbound user command delivery has not yet been independently confirmed. The systemd names and stop/start commands above remain valid. The 271-test Linux suite passed on WSL and the VM. After any worker restart, old queued dangerous commands are rejected and entries start paused.

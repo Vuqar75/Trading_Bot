@@ -1,0 +1,11 @@
+[Unit]
+Description=Check TradingBot paper services each minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=10s
+Unit=tradingbot-watchdog.service
+
+[Install]
+WantedBy=timers.target

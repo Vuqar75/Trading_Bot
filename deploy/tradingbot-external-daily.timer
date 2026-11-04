@@ -1,0 +1,10 @@
+[Unit]
+Description=TradingBot daily external paper backup
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+Unit=tradingbot-external-backup@daily.service
+
+[Install]
+WantedBy=timers.target

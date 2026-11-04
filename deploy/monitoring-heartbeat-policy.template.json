@@ -1,0 +1,24 @@
+{
+  "displayName": "TradingBot paper VM heartbeat absent",
+  "documentation": {
+    "content": "Paper VM heartbeat is missing. Check VM and last successful health checks. An auto-closed incident alone does not prove that the VM recovered.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [
+    {
+      "displayName": "No paper VM heartbeat for 15 minutes",
+      "conditionAbsent": {
+        "filter": "metric.type = \"custom.googleapis.com/tradingbot/paper_vm_heartbeat\" AND resource.type = \"global\" AND resource.label.project_id = \"gen-lang-client-0854183882\"",
+        "duration": "900s",
+        "trigger": {"count": 1}
+      }
+    }
+  ],
+  "combiner": "OR",
+  "notificationChannels": ["projects/gen-lang-client-0854183882/notificationChannels/REPLACE_WITH_OWNER_CHANNEL_ID"],
+  "alertStrategy": {
+    "autoClose": "604800s",
+    "notificationPrompts": ["OPENED", "CLOSED"]
+  },
+  "enabled": false
+}

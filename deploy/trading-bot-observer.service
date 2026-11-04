@@ -1,0 +1,26 @@
+[Unit]
+Description=Trading Bot Spot Testnet READ-ONLY observer
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Service]
+Type=simple
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot
+EnvironmentFile=-/etc/trading-bot/observer.env
+ExecStart=/usr/bin/python3 -B -m trading_bot.testnet_observer --report /var/lib/trading-bot-observer/status.json
+Restart=on-failure
+RestartSec=10
+StateDirectory=trading-bot-observer
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=multi-user.target

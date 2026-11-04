@@ -1,0 +1,27 @@
+[Unit]
+Description=Spot paper with shared financial journal
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot-cross
+Environment=HOME=/var/lib/tradingbot
+Environment=SHARED_PAPER_DB=/var/lib/tradingbot/paper-financial/shared-paper.db
+Environment=FUTURES_OUTBOX_DB=/var/lib/tradingbot/paper-financial/shared-paper.db
+Environment=UNIFIED_PAPER_QUEUE=/var/lib/tradingbot/Trading_Bot_paper_state/unified-commands.db
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/tradingbot
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=90
+ExecStart=/usr/bin/python3 -B deploy/cloud_paper_launch.py
+
+[Install]
+WantedBy=multi-user.target

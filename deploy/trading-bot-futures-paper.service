@@ -1,0 +1,23 @@
+[Unit]
+Description=Isolated Futures PAPER runtime (starts paused, public data only)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=tradingbot
+Group=tradingbot
+WorkingDirectory=/opt/trading-bot
+ExecStart=/usr/bin/python3 -B -m trading_bot.futures_app --db /var/lib/trading-bot-futures/futures-paper.db --allow-paper-signal
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=90
+StateDirectory=trading-bot-futures
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
