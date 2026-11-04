@@ -22,9 +22,8 @@ def _cross(shared,now):
 
 
 def _margin(shared,now):
-    book=object.__new__(MarginPaperBook);book.db=shared.db;book.ledger=shared.ledger
-    book.loans=object.__new__(MarginInterestLedger);book.loans.db=shared.db;book.loans.ledger=shared.ledger
-    book._check()
+    from .paper_pair_runtime_offline import margin_book_view
+    book=margin_book_view(shared.db,shared.ledger)
     error=shared.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()
     if not error or json.loads(error[0]) is not None:raise ValueError('Margin requires recovery')
     marks=book._current_marks(book.stored_quotes(),int(now*1000))

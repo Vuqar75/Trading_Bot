@@ -84,11 +84,9 @@ def inspect_restore(archive, destination, *, expected_sha256):
             if not shared.ledger.reconcile()['balanced']:raise ValueError('Backup ledger mismatch')
             for market in ('spot','futures'):shared._assert_consistent(market)
             from .cross_paper_book import CrossPaperBook
-            from .margin_paper_book import MarginPaperBook
-            from .margin_interest_ledger import MarginInterestLedger
+            from .paper_pair_runtime_offline import margin_book_view
             cross=object.__new__(CrossPaperBook);cross.shared=shared;cross.db=db;cross.ledger=shared.ledger;cross._check()
-            margin=object.__new__(MarginPaperBook);margin.db=db;margin.ledger=shared.ledger
-            margin.loans=object.__new__(MarginInterestLedger);margin.loans.db=db;margin.loans.ledger=shared.ledger;margin._check()
+            margin_book_view(db,shared.ledger)
         return {'commit':meta['commit'],'captured_at':meta['captured_at'],'balanced':True,'isolated':True}
     except BaseException:
         import shutil

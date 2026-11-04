@@ -28,6 +28,32 @@ def _select_or_expire(queue,job,select):
         return None
 
 
+def _exposure_preflight(queue,shared,job,payload,market):
+    """Reject risk-bearing selection before network; selection rechecks under lock."""
+    tables={'spot':'pair_spot_selection_events','futures':'pair_isolated_selection_events',
+            'futures_cross':'pair_cross_selection_events','margin_cross':'pair_margin_selection_events'}
+    with shared.transaction():
+        table=tables[market]
+        if (shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone() and
+            shared.db.execute('SELECT 1 FROM '+table+' WHERE request_id=?',('pair:'+payload['proposal'],)).fetchone()):
+            return False  # A previously committed selection must replay its acknowledgement.
+        if market=='spot':
+            position=shared._get('spot','position')
+            if not isinstance(position,dict):raise ValueError('Spot position unavailable')
+            blocked=Decimal(str(position['quantity']))!=0 or not position.get('fees_known')
+        elif market=='futures':blocked=shared._get('futures','position') is not None
+        else:
+            table='cross_positions' if market=='futures_cross' else 'margin_positions'
+            if not shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone():
+                raise ValueError('Market position state unavailable')
+            blocked=bool(shared.db.execute('SELECT 1 FROM '+table+' LIMIT 1').fetchone())
+            if market=='margin_cross':
+                blocked=blocked or bool(shared.db.execute("SELECT 1 FROM margin_loans WHERE status='OPEN' LIMIT 1").fetchone())
+    if blocked:
+        queue.acknowledge(job['id'],'Смена пары отклонена: открытая позиция или долг требуют контроля.',applied=False)
+    return blocked
+
+
 def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
                       fault=lambda stage:None):
     if not queue.allow_pair_experiment:raise ValueError('Offline pair queue required')
@@ -40,6 +66,7 @@ def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
             continue
         if job['command']!='/confirmed_pair':continue
         payload=json.loads(job['payload']);target=payload['target'][0]
+        if _exposure_preflight(queue,shared,job,payload,'spot'):continue
         if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
         info_response=reader.get('/api/v3/exchangeInfo',{'symbol':target})
         symbols=info_response.get('symbols') if isinstance(info_response,dict) else None
@@ -72,6 +99,7 @@ def process_isolated_pair(queue, shared, reader_factory, *, budget='10', clock=t
             continue
         if job['command']!='/confirmed_pair':continue
         payload=json.loads(job['payload']);target=payload['target'][0]
+        if _exposure_preflight(queue,shared,job,payload,'futures'):continue
         if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
         reader=reader_factory(target)
         if reader.pair_symbol!=target:raise ValueError('Pair reader mismatch')
@@ -105,6 +133,7 @@ def process_cross_pair(queue, shared, reader_factory, *, budget='5', clock=time.
             continue
         if job['command']!='/confirmed_pair':continue
         payload=json.loads(job['payload']);targets=payload['target']
+        if _exposure_preflight(queue,shared,job,payload,'futures_cross'):continue
         if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
         reader=reader_factory(targets)
         response=reader.get('/fapi/v1/exchangeInfo');rows=response.get('symbols') if isinstance(response,dict) else None
@@ -143,6 +172,7 @@ def process_margin_pair(queue, shared, reader_factory, *, budget='5', clock=time
             continue
         if job['command']!='/confirmed_pair':continue
         payload=json.loads(job['payload']);targets=payload['target']
+        if _exposure_preflight(queue,shared,job,payload,'margin_cross'):continue
         if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
         reader=reader_factory(targets);metadata={};prices={};quantities={};observations=[]
         for symbol in targets:

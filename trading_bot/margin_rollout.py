@@ -20,9 +20,8 @@ def _cross(shared):
 
 
 def _margin(shared):
-    book=object.__new__(MarginPaperBook);book.db=shared.db;book.ledger=shared.ledger
-    book.loans=object.__new__(MarginInterestLedger);book.loans.db=shared.db;book.loans.ledger=shared.ledger
-    return book
+    from .paper_pair_runtime_offline import margin_book_view
+    return margin_book_view(shared.db,shared.ledger)
 
 
 def _pending(q):

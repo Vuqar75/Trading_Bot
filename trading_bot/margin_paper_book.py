@@ -99,7 +99,17 @@ class MarginPaperBook:
 
     @property
     def pairs(self):
-        return getattr(self,'_pairs',PAIRS)
+        configured=getattr(self,'_pairs',PAIRS)
+        selected=getattr(self,'_tradable',None)
+        if selected is None:return configured
+        needed=set(selected)
+        if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_positions'").fetchone():
+            needed.update(row[0] for row in self.db.execute('SELECT symbol FROM margin_positions'))
+        for symbol,asset in configured.items():
+            if any(self.ledger.balance(WALLET+':'+account,asset)!=0 for account in ('free','reserved','principal','interest')):
+                needed.add(symbol)
+        if not needed.issubset(configured):raise ValueError('Untracked margin position symbol')
+        return {symbol:configured[symbol] for symbol in configured if symbol in needed}
 
     @property
     def tradable(self):

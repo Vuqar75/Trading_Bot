@@ -101,16 +101,10 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 else:cross['adjustment']-=value
         margin_cross=None; margin_cross_value=Decimal(0)
         if shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_positions'").fetchone():
-            from .margin_paper_book import MarginPaperBook, PAIRS
-            from .margin_interest_ledger import MarginInterestLedger, HOUR_MS
-            from .paper_wallet_ledger import valid_asset
-            mb=object.__new__(MarginPaperBook);mb.ledger=shared.ledger;mb.db=shared.db
-            mb.loans=object.__new__(MarginInterestLedger);mb.loans.ledger=shared.ledger;mb.loans.db=shared.db
-            asset_names=sorted({r[0] for r in shared.db.execute('SELECT DISTINCT asset FROM margin_loan_rates')}|{'USDT','BTC','ETH'})
-            if any(not valid_asset(a) for a in asset_names):raise ValueError('Invalid margin asset')
-            mb.loans.assets=tuple(asset_names)
-            mb._pairs={**PAIRS,**{a+'USDT':a for a in asset_names if a not in ('USDT','BTC','ETH')}}
-            mb._check()
+            from .margin_interest_ledger import HOUR_MS
+            from .paper_pair_runtime_offline import margin_book_view
+            mb=margin_book_view(shared.db,shared.ledger)
+            asset_names=list(mb.loans.assets);selected_symbols=sorted(mb.tradable)
             balances['margin_cross']={'free':shared.ledger.balance('margin_cross:free'),'reserved':shared.ledger.balance('margin_cross:reserved')}
             assets={a:{k:shared.ledger.balance('margin_cross:'+k,a) for k in ('free','reserved','principal','interest')} for a in asset_names}
             crypto_assets=[a for a in asset_names if a!='USDT']
@@ -131,6 +125,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             margin_assets=Decimal(0);margin_debt=assets['USDT']['principal']+assets['USDT']['interest']
             if marks:
                 for asset in crypto_assets:
+                    if not any(assets[asset].values()):continue
                     margin_assets+=(assets[asset]['free']+assets[asset]['reserved'])*marks[asset]
                     margin_debt+=(assets[asset]['principal']+assets[asset]['interest'])*marks[asset]
             elif any(any(assets[a][k] for k in assets[a]) for a in crypto_assets):
@@ -145,8 +140,6 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             for asset in asset_names:
                 rate=shared.db.execute('SELECT rate FROM margin_loan_rates WHERE asset=? AND effective_ms<=? ORDER BY effective_ms DESC LIMIT 1',(asset,now_ms)).fetchone()
                 rates[asset]=amount(rate['rate']) if rate else None
-            from .paper_pair_snapshots import pair_snapshots
-            selected_symbols=pair_snapshots(shared)['margin_cross']['symbols']
             margin_cross={'assets':assets,'loans':loans,'positions':margin_positions,'asset_value':margin_assets,'debt_value':margin_debt,'marks':marks,'due':due,
                           'quotes':mb.stored_quotes(),'rates':rates,'paused':bool(state['paused']),'error':json.loads(error_row['value']),
                           'selected_symbols':selected_symbols,'valuation_symbols':list(mb.pairs),

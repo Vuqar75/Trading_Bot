@@ -50,29 +50,41 @@ def restore_cross_book(shared):
         return book
 
 
+def margin_book_view(db,ledger):
+    from .margin_interest_ledger import MarginInterestLedger
+    from .paper_wallet_ledger import valid_asset
+    if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_runtime'").fetchone():
+        raise ValueError('Margin runtime unavailable')
+    row=db.execute("SELECT value FROM margin_runtime WHERE key='pair_symbols'").fetchone()
+    selected=json.loads(row[0]) if row else sorted(PAIRS)
+    row=db.execute("SELECT value FROM margin_runtime WHERE key='pair_version'").fetchone()
+    version=json.loads(row[0]) if row else 0
+    if (not isinstance(selected,list) or not 1<=len(selected)<=2 or
+        any(not isinstance(s,str) for s in selected) or len(set(selected))!=len(selected) or
+        selected!=sorted(selected) or type(version) is not int or version<0):
+        raise ValueError('Invalid margin pair identity')
+    table=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='pair_margin_selection_events'").fetchone()
+    latest=db.execute('SELECT version,result FROM pair_margin_selection_events ORDER BY version DESC LIMIT 1').fetchone() if table else None
+    if ((latest is None and (version!=0 or selected!=sorted(PAIRS))) or
+        (latest is not None and (latest['version']!=version or json.loads(latest['result']).get('symbols')!=selected))):
+        raise ValueError('Margin pair history conflicts with identity')
+    rates={r[0] for r in db.execute('SELECT DISTINCT asset FROM margin_loan_rates')}
+    if not {'USDT','BTC','ETH'}.issubset(rates) or any(not valid_asset(a) for a in rates):raise ValueError('Margin asset rate unavailable')
+    extra={asset+'USDT':asset for asset in rates if asset not in ('USDT','BTC','ETH')}
+    if any(symbol not in {**PAIRS,**extra} for symbol in selected):raise ValueError('Margin asset rate unavailable')
+    book=object.__new__(MarginPaperBook);book.db=db;book.ledger=ledger
+    book._pairs={**PAIRS,**extra};book._tradable=frozenset(selected);book._pair_version=version
+    book.loans=object.__new__(MarginInterestLedger);book.loans.db=db;book.loans.ledger=ledger;book.loans.assets=tuple(sorted(rates))
+    book._check()
+    return book
+
+
 def restore_margin_book(shared):
     if not isinstance(shared,SharedPaperStore):raise ValueError('Shared paper store required')
     with shared.transaction():
-        if not shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_runtime'").fetchone():
-            raise ValueError('Margin runtime unavailable')
-        row=shared.db.execute("SELECT value FROM margin_runtime WHERE key='pair_symbols'").fetchone()
-        selected=json.loads(row[0]) if row else sorted(PAIRS)
-        row=shared.db.execute("SELECT value FROM margin_runtime WHERE key='pair_version'").fetchone()
-        version=json.loads(row[0]) if row else 0
-        if (not isinstance(selected,list) or not 1<=len(selected)<=2 or
-            any(not isinstance(s,str) for s in selected) or len(set(selected))!=len(selected) or
-            selected!=sorted(selected) or type(version) is not int or version<0):
-            raise ValueError('Invalid margin pair identity')
-        table=shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='pair_margin_selection_events'").fetchone()
-        latest=shared.db.execute('SELECT version,result FROM pair_margin_selection_events ORDER BY version DESC LIMIT 1').fetchone() if table else None
-        if ((latest is None and (version!=0 or selected!=sorted(PAIRS))) or
-            (latest is not None and (latest['version']!=version or json.loads(latest['result']).get('symbols')!=selected))):
-            raise ValueError('Margin pair history conflicts with identity')
-        rates={r[0] for r in shared.db.execute('SELECT DISTINCT asset FROM margin_loan_rates')}
-        if not {'USDT','BTC','ETH'}.issubset(rates):raise ValueError('Margin asset rate unavailable')
-        extra={asset+'USDT':asset for asset in rates if asset not in ('USDT','BTC','ETH')}
-        if any(symbol not in {**PAIRS,**extra} for symbol in selected):raise ValueError('Margin asset rate unavailable')
-        book=MarginPaperBook(shared.ledger,experimental_pairs=extra,selected_symbols=selected,expected_pair_version=version)
+        view=margin_book_view(shared.db,shared.ledger)
+        extra={s:a for s,a in view._pairs.items() if s not in PAIRS}
+        book=MarginPaperBook(shared.ledger,experimental_pairs=extra,selected_symbols=sorted(view.tradable),expected_pair_version=view._pair_version)
         book._check()
         return book
 

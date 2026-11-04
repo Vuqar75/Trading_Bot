@@ -10,6 +10,8 @@ from trading_bot.cross_paper_book import CrossPaperBook
 from trading_bot.cross_data_sync import CrossDataSync
 from trading_bot.cross_paper_strategy import CrossPaperStrategy
 from trading_bot.cross_worker import _status
+from trading_bot.cross_worker import process_cross
+from trading_bot.cross_command_receiver import CrossCommandReceiver
 from trading_bot.testnet_observer import ObservationError
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
@@ -68,6 +70,29 @@ class PairCrossOfflineTests(unittest.TestCase):
         result=self.book.close('sol-close','SOLUSDT',pos['id'],pos['quantity'],quotes,now=103)
         self.assertEqual(self.book.close('sol-close','SOLUSDT',pos['id'],pos['quantity'],quotes,now=103),result)
         self.assertEqual(len(self.book._positions()),0);self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_confirmed_sol_cross_close_replays_after_financial_commit(self):
+        self.choose();quotes={'BTCUSDT':self.quote('100',102),'SOLUSDT':self.quote('100',102)}
+        self.book.record_quotes(quotes,now=102);self.book.set_paused(False,now=102)
+        pos=self.book.open('sol-close-test','SOLUSDT','LONG','5',1,quotes,now=102,metadata=self.info('SOL'),metadata_at=101)
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True);receiver=CrossCommandReceiver(self.book,hold_resume=False)
+        try:
+            q.receive(1,True,'/mode futures_cross',now=102)
+            q.receive(2,True,'/close SOLUSDT',now=102,positions={'futures_cross':{'SOLUSDT':{'id':pos['id'],'quantity':pos['quantity']}}})
+            process_cross(q,receiver,self.book,now=102,clock=lambda:102)
+            token=q.db.execute("SELECT result FROM unified_jobs WHERE update_id=2").fetchone()[0]
+            q.receive(3,True,'/confirm '+token,now=103)
+            def fault(stage):
+                if stage=='after_destination_commit':raise RuntimeError('fixture crash')
+            with self.assertRaisesRegex(RuntimeError,'fixture crash'):
+                process_cross(q,receiver,self.book,now=103,clock=lambda:103,fault=fault)
+            self.assertEqual(self.book._positions(),[])
+            before=self.shared.ledger.balance('futures_cross:free')
+            process_cross(q,receiver,self.book,now=103,clock=lambda:103)
+            self.assertEqual(q.pending('futures_cross'),[])
+            self.assertEqual(self.shared.ledger.balance('futures_cross:free'),before)
+            self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+        finally:q.close()
 
     def test_cross_pair_version_fences_old_book_and_restores_selected_set(self):
         legacy=CrossPaperBook(self.shared)

@@ -196,10 +196,8 @@ class PaperWalletLedger:
                 raise ValueError('Margin not activated')
             hold=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()
             if hold and hold[0]=='true':raise ValueError('Deployment hold is active')
-            from .margin_paper_book import MarginPaperBook
-            from .margin_interest_ledger import MarginInterestLedger
-            book=object.__new__(MarginPaperBook);book.db=self.db;book.ledger=self
-            book.loans=object.__new__(MarginInterestLedger);book.loans.db=self.db;book.loans.ledger=self
+            from .paper_pair_runtime_offline import margin_book_view
+            book=margin_book_view(self.db,self)
             current=time.time() if now is None else now
             book.validate_transfer(quantity,outgoing=source=='margin_cross',now_ms=int(current*1000))
         if self.balance(source+':free') < quantity:
