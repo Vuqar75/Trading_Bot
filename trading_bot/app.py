@@ -135,10 +135,11 @@ class TelegramTransport:
 
 
 class Application:
-    def __init__(self, store, exchange, reader, *, interval='15m', amount='10', daily_loss='5', stop='2', take='4'):
+    def __init__(self, store, exchange, reader, *, interval='15m', amount='10', daily_loss='5', stop='2', take='4', allow_pair_experiment=False):
         if store.get('identity')['mode'] != exchange.mode:
             raise ObservationError('Exchange and database mode disagree')
-        if store.get('identity').get('symbol','BTCUSDT') != 'BTCUSDT':
+        self.symbol=store.get('identity').get('symbol','BTCUSDT')
+        if self.symbol != 'BTCUSDT' and (not allow_pair_experiment or exchange.mode!='paper'):
             raise ObservationError('Selectable paper pairs are not integrated')
         self.last_protection_at = None
         self.last_protection_position = None
@@ -179,23 +180,29 @@ class Application:
                 raise ObservationError('Recovery or fee review required')
             self.store.set('paused', False)
 
-    def execute(self, side, quantity, price, key, reason, target=None):
+    def execute(self, side, quantity, price, key, reason, target=None, quote_at=None):
         if side == 'BUY' and number(quantity) * price > self.amount:
             raise ObservationError('Entry exceeds configured order budget')
-        client = self.store.prepare(side, quantity, price, key, reason, target=target, daily_limit=self.daily_loss)
+        client = self.store.prepare(side, quantity, price, key, reason, target=target, daily_limit=self.daily_loss, quote_at=quote_at)
         if client is None:
-            return
+            return False
         if self.store.claim(client) is None:  # Durable BEFORE the only submit attempt.
-            return
+            return False
         try:
             self.exchange.submit(client, side, quantity)
         except Exception:
             with self.store.transaction():
                 self.store.db.execute("UPDATE runtime_orders SET phase='UNKNOWN' WHERE client_id=?", (client,))
                 self.store.set('blocked', 'SUBMISSION_UNKNOWN')
-            return
+            return False
         # Do not trust submit response for settlement: query by saved client ID.
         self.recover()
+        return True
+
+    def _quantity(self, info, desired, price):
+        if self.symbol=='BTCUSDT':return order_quantity(info,desired,price)
+        from .paper_pair_catalog import spot_usdt_candidate
+        return spot_usdt_candidate(info,self.symbol,desired,price)['quantity']
 
     def protective_close(self):
         # Protection uses a fresh ticker even when candle loading is unavailable.
@@ -203,8 +210,9 @@ class Application:
         qty = number(pos['quantity'])
         if not qty or self.store.pending() or self.store.get('blocked'):
             return False
-        quote = self.reader.get('/api/v3/ticker/price', {'symbol': 'BTCUSDT'})
-        if quote.get('symbol') != 'BTCUSDT':
+        quote = self.reader.get('/api/v3/ticker/price', {'symbol': self.symbol})
+        quote_at=time.time()
+        if quote.get('symbol') != self.symbol:
             raise ObservationError('Quote symbol mismatch')
         price = number(quote['price'])
         if not price:
@@ -223,20 +231,21 @@ class Application:
         self.last_protection_position = pos['id']
         if not reason:
             return False
-        info = self.reader.get('/api/v3/exchangeInfo', {'symbol': 'BTCUSDT'})['symbols'][0]
+        info = self.reader.get('/api/v3/exchangeInfo', {'symbol': self.symbol})['symbols'][0]
         if self.exchange.mode == 'testnet':
             known = {r[0] for r in self.store.db.execute('SELECT client_id FROM runtime_orders')}
             if any(o['clientOrderId'] not in known for o in self.exchange.open_orders()):
                 raise ObservationError('External orders require review')
             if self.exchange.balances().get('BTC', Decimal(0)) < qty:
                 raise ObservationError('Insufficient owned BTC')
-        quantity = order_quantity(info, qty, price)
+        quantity = self._quantity(info, qty, price)
         # Bound retries to an explicit command or time bucket. An ambiguous submit
         # leaves a pending intent and can only be queried, never submitted again.
         suffix = str(request['update_id']) if reason == 'MANUAL' else str(int(time.time() // 60))
-        self.execute('SELL', quantity, price, 'risk:' + pos['id'] + ':' + suffix, reason, pos['id'])
+        executed=self.execute('SELL', quantity, price, 'risk:' + pos['id'] + ':' + suffix, reason, pos['id'], quote_at=quote_at)
+        if self.symbol!='BTCUSDT' and not executed:return True
         with self.store.transaction():
-            self.store.set('quote', {'price': str(price), 'time': time.time()})
+            self.store.set('quote', {'price': str(price), 'time': quote_at, **({'symbol':self.symbol} if self.symbol!='BTCUSDT' else {})})
             self.store.set('close_request', None)
             self.store.set('error', None)
         return True
@@ -246,8 +255,21 @@ class Application:
         self.recover()
         if self.protective_close():
             return
-        price, candles, server = market_snapshot(self.reader, self.interval)
-        info = self.reader.get('/api/v3/exchangeInfo', {'symbol': 'BTCUSDT'})['symbols'][0]
+        if self.symbol=='BTCUSDT':
+            price, candles, server = market_snapshot(self.reader, self.interval)
+            quote_at=time.time()
+        else:
+            class TimedReader:
+                def __init__(self,inner):self.inner=inner;self.quote_at=None
+                def get(self,path,params=None):
+                    result=self.inner.get(path,params) if params is not None else self.inner.get(path)
+                    if path=='/api/v3/ticker/price':self.quote_at=time.time()
+                    return result
+            timed=TimedReader(self.reader)
+            price, candles, server = market_snapshot(timed,self.interval,symbol=self.symbol)
+            quote_at=timed.quote_at
+            if quote_at is None:raise ObservationError('Pair quote time unavailable')
+        info = self.reader.get('/api/v3/exchangeInfo', {'symbol': self.symbol})['symbols'][0]
         if self.exchange.mode == 'testnet':
             # Unexpected open orders or insufficient holdings require review, never
             # silently adopt positions created outside this dedicated runtime.
@@ -264,8 +286,8 @@ class Application:
         stamp = candles[-1][0]
         details = signal_details([float(p) for _, p in candles])
         with self.store.transaction():
-            self.store.set('quote', {'price': str(price), 'time': time.time()})
-            self.store.set('signal', {**details, 'interval': self.interval, 'candle': stamp, 'time': time.time()})
+            self.store.set('quote', {'price': str(price), 'time': quote_at, **({'symbol':self.symbol} if self.symbol!='BTCUSDT' else {})})
+            self.store.set('signal', {**details, 'interval': self.interval, 'candle': stamp, 'time': time.time(), **({'symbol':self.symbol} if self.symbol!='BTCUSDT' else {})})
             self.store.set('error', None)
         if self.store.pending() or self.store.get('blocked'):
             return
@@ -286,14 +308,16 @@ class Application:
             movement = (price / entry - 1) * 100
             close_reason = close_reason or ('STOP' if movement <= -self.stop else 'TAKE' if movement >= self.take else 'SIGNAL' if fresh and details['action'] == 'SELL' else None)
         if close_reason:
-            q = order_quantity(info, quantity, price)
+            q = self._quantity(info, quantity, price)
             key = 'close:' + pos['id'] + ':' + (str(request['update_id']) if request and close_reason == 'MANUAL' else str(stamp))
-            self.execute('SELL', q, price, key, close_reason, pos['id'])
+            executed=self.execute('SELL', q, price, key, close_reason, pos['id'], quote_at=quote_at)
+            if self.symbol!='BTCUSDT' and not executed:return
         elif fresh and not quantity and details['action'] == 'BUY' and not self.store.get('paused'):
             if self.amount * Decimal('1.002') > available:
                 raise ObservationError('Insufficient exchange balance')
-            q = order_quantity(info, self.amount / price, price)
-            self.execute('BUY', q, price, 'entry:' + str(stamp), 'SIGNAL')
+            q = self._quantity(info, self.amount / price, price)
+            executed=self.execute('BUY', q, price, 'entry:' + str(stamp), 'SIGNAL', quote_at=quote_at)
+            if self.symbol!='BTCUSDT' and not executed:return
         with self.store.transaction():
             self.store.set('last_candle', stamp)
             if request:

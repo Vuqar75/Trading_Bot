@@ -1,3 +1,4 @@
+import time
 """Offline tests for symbol-bound public data; no exchange calls are made."""
 import unittest
 import sqlite3
@@ -9,6 +10,8 @@ from trading_bot.runtime_store import RuntimeStore
 from trading_bot.app import Application
 from trading_bot.paper_pair_migration import tag_legacy_spot_orders
 from trading_bot.telegram_reports import history, status
+from unittest.mock import patch
+from tests.test_paper_pair_catalog import spot_info
 
 
 class FakeReader:
@@ -30,6 +33,96 @@ class FakeReader:
 
 
 class PairMarketSnapshotTests(unittest.TestCase):
+    def test_experimental_sol_signal_then_protection_while_paused(self):
+        import tempfile
+        from pathlib import Path
+        class Reader(FakeReader):
+            def __init__(self):super().__init__();self.price='123.45'
+            def get(self,path,params=None):
+                if path=='/api/v3/exchangeInfo':
+                    self.calls.append((path,params));return {'symbols':[spot_info()]}
+                if path=='/api/v3/ticker/price':
+                    self.calls.append((path,params));return {'symbol':'SOLUSDT','price':self.price}
+                return super().get(path,params)
+        with tempfile.TemporaryDirectory() as tmp:
+            store=RuntimeStore(Path(tmp)/'spot.db',{'mode':'paper','symbol':'SOLUSDT'})
+            reader=Reader()
+            try:
+                app=Application(store,PaperExchange(),reader,allow_pair_experiment=True)
+                app.enable_paper_entries()
+                with patch('trading_bot.app.signal_details',return_value={'action':'BUY'}):app.tick()
+                self.assertGreater(Decimal(store.get('position')['quantity']),0)
+                self.assertEqual(store.get('position')['symbol'],'SOLUSDT')
+                with store.transaction():store.set('paused',True)
+                reader.price='110'
+                self.assertTrue(app.protective_close())
+                self.assertEqual(Decimal(store.get('position')['quantity']),0)
+                self.assertTrue(store.get('paused'))
+                self.assertEqual(store.db.execute('SELECT count(*) FROM runtime_fills').fetchone()[0],2)
+                self.assertTrue(all(p.get('symbol')=='SOLUSDT' for path,p in reader.calls if p and 'symbol' in p))
+            finally:store.close()
+
+    def test_experimental_pair_does_not_refresh_old_quote_after_slow_candles(self):
+        import tempfile
+        from pathlib import Path
+        phase={'after_candles':False}
+        class SlowReader(FakeReader):
+            def get(self,path,params=None):
+                if path=='/api/v3/exchangeInfo':return {'symbols':[spot_info()]}
+                result=super().get(path,params)
+                if path=='/api/v3/klines':phase['after_candles']=True
+                return result
+        with tempfile.TemporaryDirectory() as tmp:
+            store=RuntimeStore(Path(tmp)/'spot.db',{'mode':'paper','symbol':'SOLUSDT'})
+            try:
+                app=Application(store,PaperExchange(),SlowReader(),allow_pair_experiment=True)
+                app.enable_paper_entries()
+                with patch('time.time',side_effect=lambda:1121 if phase['after_candles'] else 1000), patch('trading_bot.app.signal_details',return_value={'action':'BUY'}):
+                    with self.assertRaisesRegex(ObservationError,'quote stale'):
+                        app.tick()
+                self.assertEqual(store.db.execute('SELECT count(*) FROM runtime_orders').fetchone()[0],0)
+                self.assertEqual(store.get('quote')['time'],1000)
+            finally:store.close()
+    def test_stale_pair_quote_is_never_claimed(self):
+        import tempfile
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            store=RuntimeStore(Path(tmp)/'spot.db',{'mode':'paper','symbol':'SOLUSDT'})
+            try:
+                with store.transaction():store.set('paused',False)
+                with patch('trading_bot.runtime_store.time.time',return_value=1000):
+                    with self.assertRaisesRegex(ObservationError,'stale'):
+                        store.prepare('BUY',Decimal('.1'),Decimal('100'),'stale','fixture',quote_at=800)
+                    client=store.prepare('BUY',Decimal('.1'),Decimal('100'),'fresh','fixture',quote_at=1000)
+                with patch('trading_bot.runtime_store.time.time',return_value=1121):
+                    self.assertIsNone(store.claim(client))
+                self.assertEqual(store.db.execute('SELECT phase,status FROM runtime_orders WHERE client_id=?',(client,)).fetchone()[:],('SETTLED','EXPIRED'))
+                self.assertEqual(store.db.execute('SELECT count(*) FROM runtime_fills').fetchone()[0],0)
+            finally:store.close()
+
+    def test_pair_quote_rechecked_after_actual_sqlite_wait(self):
+        import concurrent.futures
+        import tempfile
+        import threading
+        from pathlib import Path
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'spot.db';identity={'mode':'paper','symbol':'SOLUSDT'}
+            store=RuntimeStore(path,identity)
+            with store.transaction():store.set('paused',False)
+            store.close();after=threading.Event()
+            with sqlite3.connect(path,isolation_level=None) as lock:
+                lock.execute('BEGIN IMMEDIATE')
+                def worker():
+                    s=RuntimeStore(path,identity)
+                    try:return s.prepare('BUY',Decimal('.1'),Decimal('100'),'wait','fixture',quote_at=1000)
+                    finally:s.close()
+                with patch('time.time',side_effect=lambda:1121 if after.is_set() else 1000), concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future=pool.submit(worker);time.sleep(.15);self.assertFalse(future.done())
+                    after.set();lock.commit()
+                    with self.assertRaisesRegex(ObservationError,'quote stale'):
+                        future.result(timeout=5)
+            with sqlite3.connect(path) as db:
+                self.assertEqual(db.execute('SELECT count(*) FROM runtime_orders').fetchone()[0],0)
     def test_third_asset_uses_same_symbol_for_quote_and_candles(self):
         reader = FakeReader()
         price, candles, server = market_snapshot(reader, '15m', symbol='SOLUSDT')
@@ -87,7 +180,7 @@ class PairMarketSnapshotTests(unittest.TestCase):
                 with self.assertRaisesRegex(ObservationError,'not integrated'):
                     Application(store,PaperExchange(),FakeReader())
                 with store.transaction():store.set('paused',False)
-                client=store.prepare('BUY',Decimal('0.1'),Decimal('100'),'buy','fixture')
+                client=store.prepare('BUY',Decimal('0.1'),Decimal('100'),'buy','fixture',quote_at=time.time())
                 store.claim(client)
                 order=store.db.execute('SELECT * FROM runtime_orders WHERE client_id=?',(client,)).fetchone()
                 report=PaperExchange.inspect_saved({**dict(order),'symbol':'SOLUSDT'})
@@ -101,7 +194,7 @@ class PairMarketSnapshotTests(unittest.TestCase):
                 pos=store.get('position')
                 self.assertEqual(Decimal(pos['quantity']),Decimal('0.099'))
                 self.assertEqual(Decimal(pos['cost']),Decimal('10'))
-                sell=store.prepare('SELL',Decimal('0.099'),Decimal('110'),'sell','fixture',target=pos['id'])
+                sell=store.prepare('SELL',Decimal('0.099'),Decimal('110'),'sell','fixture',target=pos['id'],quote_at=time.time())
                 store.claim(sell)
                 row=store.db.execute('SELECT * FROM runtime_orders WHERE client_id=?',(sell,)).fetchone()
                 closing=PaperExchange.inspect_saved({**dict(row),'symbol':'SOLUSDT'})
@@ -123,11 +216,11 @@ class PairMarketSnapshotTests(unittest.TestCase):
             store=RuntimeStore(path,btc)
             def trade(current,symbol,key):
                 with current.transaction():current.set('paused',False)
-                buy=current.prepare('BUY',Decimal('.1'),Decimal('100'),key+':buy','fixture');current.claim(buy)
+                buy=current.prepare('BUY',Decimal('.1'),Decimal('100'),key+':buy','fixture',quote_at=time.time());current.claim(buy)
                 row=current.db.execute('SELECT * FROM runtime_orders WHERE client_id=?',(buy,)).fetchone()
                 current.apply(buy,PaperExchange.inspect_saved({**dict(row),'symbol':symbol}))
                 pos=current.get('position')
-                sell=current.prepare('SELL',Decimal('.1'),Decimal('110'),key+':sell','fixture',target=pos['id']);current.claim(sell)
+                sell=current.prepare('SELL',Decimal('.1'),Decimal('110'),key+':sell','fixture',target=pos['id'],quote_at=time.time());current.claim(sell)
                 row=current.db.execute('SELECT * FROM runtime_orders WHERE client_id=?',(sell,)).fetchone()
                 current.apply(sell,PaperExchange.inspect_saved({**dict(row),'symbol':symbol}))
                 with current.transaction():current.set('paused',True)

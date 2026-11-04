@@ -16,6 +16,8 @@ from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.runtime_exchange import PaperExchange
 from trading_bot.unified_queue import UnifiedQueue
+from trading_bot.app import Application
+from unittest.mock import patch
 
 
 class PairSelectionOfflineTests(unittest.TestCase):
@@ -63,6 +65,16 @@ class PairSelectionOfflineTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'command pending'):
             self.choose()
         self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
+
+    def test_missing_or_same_database_is_rejected_without_creating_files(self):
+        missing=self.queue.parent/'missing.db'
+        with self.assertRaisesRegex(ValueError,'Existing queue'):
+            select_spot_pair_offline(self.shared,missing,request_id='bad',expected_symbol='BTCUSDT',
+                expected_version=0,symbol='SOLUSDT',metadata=spot_info(),price='100',quantity='.1',observed_at=100,clock=lambda:101)
+        self.assertFalse(missing.exists())
+        with self.assertRaisesRegex(ValueError,'must be distinct'):
+            select_spot_pair_offline(self.shared,self.financial,request_id='bad',expected_symbol='BTCUSDT',
+                expected_version=0,symbol='SOLUSDT',metadata=spot_info(),price='100',quantity='.1',observed_at=100,clock=lambda:101)
 
     def test_after_waiting_on_real_database_lock_data_must_still_be_fresh(self):
         observed=time.time()
@@ -133,7 +145,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         store=RuntimeStore(self.financial,identity,shared=True)
         try:
             with store.transaction():store.set('paused',False)
-            client=store.prepare('BUY',Decimal('.1'),Decimal('100'),'sol-crash','fixture')
+            client=store.prepare('BUY',Decimal('.1'),Decimal('100'),'sol-crash','fixture',quote_at=time.time())
             store.claim(client)
         finally:store.close()
         script='''import os,sys\nfrom trading_bot.runtime_store import RuntimeStore\nfrom trading_bot.runtime_exchange import PaperExchange\ns=RuntimeStore(sys.argv[1],{"mode":"paper","symbol":"SOLUSDT"},shared=True)\nr=s.db.execute("SELECT * FROM runtime_orders WHERE client_id=?",(sys.argv[2],)).fetchone()\nreport=PaperExchange.inspect_saved({**dict(r),"symbol":"SOLUSDT"})\ndef fault(stage):\n if stage==sys.argv[3]:os._exit(74)\ns.fault=fault\ns.apply(sys.argv[2],report)\n'''
@@ -155,3 +167,26 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertEqual(check.db.execute('SELECT count(*) FROM runtime_fills').fetchone()[0],1)
             self.assertEqual(check.shared.ledger.balance('spot:position','SOL'),Decimal('.1'))
         finally:check.close()
+
+    def test_experimental_shared_sol_strategy_and_paused_protection(self):
+        from tests.test_pair_market_snapshot import FakeReader
+        self.choose()
+        class Reader(FakeReader):
+            def __init__(self):super().__init__();self.price='100'
+            def get(self,path,params=None):
+                if path=='/api/v3/exchangeInfo':return {'symbols':[spot_info()]}
+                if path=='/api/v3/ticker/price':return {'symbol':'SOLUSDT','price':self.price}
+                return super().get(path,params)
+        reader=Reader();store=RuntimeStore(self.financial,{'mode':'paper','symbol':'SOLUSDT'},shared=True)
+        try:
+            app=Application(store,PaperExchange(),reader,allow_pair_experiment=True)
+            app.enable_paper_entries()
+            with patch('trading_bot.app.signal_details',return_value={'action':'BUY'}):app.tick()
+            self.assertGreater(store.shared.ledger.balance('spot:position','SOL'),0)
+            with store.transaction():store.set('paused',True)
+            reader.price='95'
+            self.assertTrue(app.protective_close())
+            self.assertEqual(store.shared.ledger.balance('spot:position','SOL'),0)
+            self.assertTrue(store.get('paused'))
+            self.assertTrue(store.shared.ledger.reconcile()['balanced'])
+        finally:store.close()

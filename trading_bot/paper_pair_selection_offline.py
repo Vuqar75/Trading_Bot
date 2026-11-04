@@ -10,6 +10,7 @@ import sqlite3
 import time
 from contextlib import closing
 from decimal import Decimal
+from pathlib import Path
 
 from .paper_pair_catalog import spot_usdt_candidate
 from .paper_shared_store import SharedPaperStore
@@ -25,7 +26,14 @@ def select_spot_pair_offline(shared, queue_path, *, request_id, expected_symbol,
         raise ValueError('Invalid selection identity')
     fingerprint=hashlib.sha256(json.dumps([expected_symbol,expected_version,symbol],
         separators=(',',':')).encode()).hexdigest()
-    with closing(sqlite3.connect(queue_path,isolation_level=None,timeout=5)) as queue:
+    path=Path(queue_path)
+    if path.is_symlink() or not path.is_file():raise ValueError('Existing queue database required')
+    path=path.resolve(strict=True)
+    shared_file=Path(shared.db.execute('PRAGMA database_list').fetchone()[2]).resolve(strict=True)
+    if path==shared_file:raise ValueError('Financial and queue databases must be distinct')
+    with closing(sqlite3.connect(path.as_uri()+'?mode=rw',uri=True,isolation_level=None,timeout=5)) as queue:
+        if queue.execute('PRAGMA journal_mode').fetchone()[0].lower()!='delete':
+            raise ValueError('Rollback journal required for queue')
         try:
             with shared.transaction():
                 queue.execute('BEGIN IMMEDIATE')

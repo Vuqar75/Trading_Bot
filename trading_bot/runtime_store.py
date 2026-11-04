@@ -132,13 +132,18 @@ class RuntimeStore:
             raise ObservationError('Daily PnL contains unvalued fees')
         return -sum((Decimal(r['pnl']) for r in rows), Decimal(0))
 
-    def prepare(self, side, quantity, price, business_key, reason, *, target=None, daily_limit=Decimal('5')):
+    def prepare(self, side, quantity, price, business_key, reason, *, target=None, daily_limit=Decimal('5'), quote_at=None):
         with self.transaction():
             if self.db.execute('SELECT 1 FROM runtime_orders WHERE business_key=?', (business_key,)).fetchone():
                 return None
             if self.pending() or self.get('blocked'):
                 raise ObservationError('Recovery or review required')
             pos = self.get('position')
+            identity=self.get('identity')
+            if identity.get('symbol','BTCUSDT')!='BTCUSDT':
+                if (isinstance(quote_at,bool) or not isinstance(quote_at,(int,float)) or
+                        not 0<=time.time()-quote_at<=120):
+                    raise ObservationError('Pair quote stale after database wait')
             qty = number(quantity)
             if not qty:
                 raise ObservationError('Zero quantity')
@@ -161,6 +166,7 @@ class RuntimeStore:
             symbol=self.get('identity').get('symbol','BTCUSDT')
             self.set('pair_order_symbol:' + client, symbol)
             self._order_symbol(client)
+            if symbol!='BTCUSDT':self.set('pair_order_quote_at:'+client,quote_at)
             self.set('binding:' + client, pos['id'])
             if reason == 'MANUAL':
                 self.set('manual_binding:' + client, self.get('close_request'))
@@ -172,6 +178,13 @@ class RuntimeStore:
             if order is None or order['phase'] != 'PREPARED':
                 raise ObservationError('Order not eligible to send')
             self._order_symbol(client)
+            if self._order_symbol(client)!='BTCUSDT':
+                observed=self.get('pair_order_quote_at:'+client)
+                if (isinstance(observed,bool) or not isinstance(observed,(int,float)) or
+                        not 0<=time.time()-observed<=120):
+                    self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?",(client,))
+                    self.notify('Котировка пары устарела до отправки; намерение отменено.')
+                    return None
             pos = self.get('position')
             if self.get('blocked') or self.get('binding:' + client) != pos['id']:
                 raise ObservationError('Position changed or recovery required')

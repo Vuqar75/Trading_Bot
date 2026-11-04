@@ -1,3 +1,4 @@
+import time
 """Third-asset evidence must not be silently omitted from Spot accounting."""
 import tempfile
 import unittest
@@ -55,7 +56,7 @@ class PairSharedGuardTests(unittest.TestCase):
             store=RuntimeStore(root/'shared.db',{'mode':'paper','symbol':'SOLUSDT'},shared=True)
             try:
                 with store.transaction():store.set('paused',False)
-                client=store.prepare('BUY',Decimal('.1'),Decimal('100'),'sol-buy','fixture')
+                client=store.prepare('BUY',Decimal('.1'),Decimal('100'),'sol-buy','fixture',quote_at=time.time())
                 store.claim(client)
                 row=store.db.execute('SELECT * FROM runtime_orders WHERE client_id=?',(client,)).fetchone()
                 report=PaperExchange.inspect_saved({**dict(row),'symbol':'SOLUSDT'})
@@ -77,7 +78,7 @@ class PairSharedGuardTests(unittest.TestCase):
                 incomplete=live_report(store.shared,now=101)
                 self.assertIsNone(incomplete['total'])
                 self.assertIsNone(incomplete['spot_open'])
-                sell=store.prepare('SELL',Decimal('.099'),Decimal('110'),'sol-sell','fixture',target=pos['id'])
+                sell=store.prepare('SELL',Decimal('.099'),Decimal('110'),'sol-sell','fixture',target=pos['id'],quote_at=time.time())
                 store.claim(sell)
                 row=store.db.execute('SELECT * FROM runtime_orders WHERE client_id=?',(sell,)).fetchone()
                 closing=PaperExchange.inspect_saved({**dict(row),'symbol':'SOLUSDT'})
