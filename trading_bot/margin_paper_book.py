@@ -21,7 +21,7 @@ MAINTENANCE=Decimal('0.05')  # Explicit paper assumption; not Binance tiers.
 
 
 class MarginPaperBook:
-    def __init__(self,ledger,*,experimental_pairs=None,selected_symbols=None):
+    def __init__(self,ledger,*,experimental_pairs=None,selected_symbols=None,expected_pair_version=None):
         self.ledger=ledger;self.db=ledger.db
         extra=experimental_pairs or {}
         if (not isinstance(extra,dict) or len(extra)>8 or
@@ -35,6 +35,12 @@ class MarginPaperBook:
                 len(set(selected_symbols))!=len(selected_symbols) or any(s not in self._pairs for s in selected_symbols)):
                 raise ValueError('Invalid selected margin pairs')
             self._tradable=frozenset(selected_symbols)
+        if expected_pair_version is not None:
+            if type(expected_pair_version) is not int or expected_pair_version<0 or selected_symbols is None:
+                raise ValueError('Invalid margin pair version')
+            self._pair_version=expected_pair_version
+        elif selected_symbols is None and experimental_pairs is None:
+            self._pair_version=0
         self.loans=MarginInterestLedger(ledger,experimental_assets=tuple(extra.values()))
         with ledger.transaction():
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_positions(id TEXT PRIMARY KEY,symbol TEXT NOT NULL UNIQUE,direction TEXT NOT NULL,quantity TEXT NOT NULL,entry TEXT NOT NULL,own TEXT NOT NULL,leverage INTEGER NOT NULL,loan_id TEXT,opened_ms INTEGER NOT NULL)')
@@ -44,6 +50,9 @@ class MarginPaperBook:
             self.db.execute("INSERT OR IGNORE INTO margin_settings VALUES(1,2,'15m')")
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_runtime(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
             self.db.execute("INSERT OR IGNORE INTO margin_runtime VALUES('error','null')")
+            pair_version=self.db.execute("SELECT value FROM margin_runtime WHERE key='pair_version'").fetchone()
+            if pair_version and json.loads(pair_version[0])!=0 and selected_symbols is None:
+                raise ValueError('Margin pair runtime not integrated')
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_market_quotes(symbol TEXT PRIMARY KEY,payload TEXT NOT NULL)')
             self.db.execute("INSERT OR IGNORE INTO wallet_state(wallet,paused) VALUES('margin_cross',1)")
             if not self.db.execute('SELECT 1 FROM margin_position_anchor WHERE id=1').fetchone():
@@ -66,6 +75,13 @@ class MarginPaperBook:
         self.db.execute('INSERT OR REPLACE INTO margin_position_anchor VALUES(1,?)',(ident,))
 
     def _check(self):
+        if hasattr(self,'_pair_version'):
+            row=self.db.execute("SELECT value FROM margin_runtime WHERE key='pair_version'").fetchone()
+            actual=json.loads(row[0]) if row else 0
+            row=self.db.execute("SELECT value FROM margin_runtime WHERE key='pair_symbols'").fetchone()
+            symbols=json.loads(row[0]) if row else sorted(PAIRS)
+            if type(actual) is not int or actual!=self._pair_version or symbols!=sorted(self.tradable):
+                raise ValueError('Margin pair version superseded')
         self.loans._check()
         anchor=self.db.execute('SELECT e.details FROM margin_position_anchor a JOIN ledger_events e ON e.id=a.event_id WHERE a.id=1').fetchone()
         if not anchor or json.loads(anchor['details']).get('positions')!=self._positions():raise ValueError('Margin position journal mismatch')

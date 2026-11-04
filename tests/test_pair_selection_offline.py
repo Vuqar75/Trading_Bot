@@ -15,6 +15,7 @@ from trading_bot.paper_pair_selection_offline import (select_spot_pair_offline, 
                                                       select_margin_pairs_offline)
 from trading_bot.margin_paper_book import MarginPaperBook
 from trading_bot.paper_pair_worker_offline import process_spot_pair, process_isolated_pair, process_margin_pair
+from trading_bot.paper_pair_runtime_offline import restore_margin_book
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.runtime_store import RuntimeStore
@@ -171,6 +172,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
 
     def test_margin_selection_preserves_old_asset_and_replays(self):
         MarginPaperBook(self.shared.ledger)
+        stale=restore_margin_book(self.shared)
         with self.shared.transaction():
             self.shared.ledger._post('fixture:eth-dust','FIXTURE',{},
                 [('margin_cross:free','ETH',Decimal('.000001')),('external:fixture','ETH',Decimal('-.000001'))])
@@ -181,10 +183,19 @@ class PairSelectionOfflineTests(unittest.TestCase):
         before=self.shared.ledger.balance('margin_cross:free','ETH')
         result=select_margin_pairs_offline(self.shared,self.queue,**args)
         self.assertEqual(result['symbols'],['BTCUSDT','SOLUSDT'])
+        with self.assertRaisesRegex(ValueError,'version superseded'):stale._check()
         self.assertTrue(select_margin_pairs_offline(self.shared,self.queue,**args)['replayed'])
         self.assertEqual(self.shared.ledger.balance('margin_cross:free','ETH'),before)
         self.assertEqual(self.shared.ledger.balance('margin_cross:free','SOL'),0)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
+        self.shared.close();self.shared=SharedPaperStore(self.financial);self.addCleanup(self.shared.close)
+        book=restore_margin_book(self.shared)
+        self.assertEqual(book.tradable,frozenset(('BTCUSDT','SOLUSDT')))
+        self.assertIn('ETHUSDT',book.pairs)
+        self.assertEqual(self.shared.ledger.balance('margin_cross:free','ETH'),before)
+        with self.assertRaisesRegex(ValueError,'Invalid margin entry'):
+            book.open('old','old-pos','ETHUSDT','LONG','.1','5',2,{},now_ms=101000)
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],1)
 
     def test_margin_report_prices_third_asset_without_omitting_historical_dust(self):
@@ -214,6 +225,16 @@ class PairSelectionOfflineTests(unittest.TestCase):
                 prices={'BTCUSDT':'100','SOLUSDT':'100'},quantities={'BTCUSDT':'.1','SOLUSDT':'.1'},
                 observed_at=100,clock=lambda:101)
         self.assertEqual(self.shared.ledger.balance('margin_cross:principal','ETH'),Decimal('-1'))
+
+    def test_legacy_margin_runtime_rejects_changed_pair_set_even_without_new_asset(self):
+        legacy=MarginPaperBook(self.shared.ledger)
+        select_margin_pairs_offline(self.shared,self.queue,request_id='margin:btc-only',
+            expected_symbols=['BTCUSDT','ETHUSDT'],expected_version=0,symbols=['BTCUSDT'],
+            metadata={'BTCUSDT':spot_info('BTC')},prices={'BTCUSDT':'100'},quantities={'BTCUSDT':'.1'},
+            observed_at=100,clock=lambda:101)
+        with self.assertRaisesRegex(ValueError,'version superseded'):legacy._check()
+        with self.assertRaisesRegex(ValueError,'runtime not integrated'):MarginPaperBook(self.shared.ledger)
+        self.assertEqual(restore_margin_book(self.shared).tradable,frozenset(('BTCUSDT',)))
 
     def test_margin_pair_worker_preserves_dust_and_replays_after_commit(self):
         MarginPaperBook(self.shared.ledger)
