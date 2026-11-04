@@ -12,11 +12,12 @@ from tests.test_paper_pair_catalog import spot_info
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_pair_selection_offline import select_spot_pair_offline, select_isolated_pair_offline
+from trading_bot.paper_pair_worker_offline import process_spot_pair, process_isolated_pair
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.runtime_exchange import PaperExchange
 from trading_bot.unified_queue import UnifiedQueue
-from trading_bot.app import Application
+from trading_bot.app import Application, TelegramTransport
 from unittest.mock import patch
 
 
@@ -53,6 +54,117 @@ class PairSelectionOfflineTests(unittest.TestCase):
         self.assertTrue(self.choose()['replayed'])
         with self.assertRaisesRegex(ValueError,'Conflicting request'):
             self.choose(symbol='ETHUSDT',metadata=spot_info('ETH'))
+
+    def confirmed_pair_job(self):
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        try:
+            q.receive(1,True,'/pair SOLUSDT',now=100,pairs={'spot':{'symbols':['BTCUSDT'],'version':0}})
+            token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+            q.receive(2,True,'/confirm '+token,now=101)
+            return token,q.pending('spot')[0]['id']
+        finally:q.close()
+
+    def test_telegram_poll_captures_financial_snapshot_at_receipt(self):
+        now=time.time();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        store=RuntimeStore(self.financial,{'mode':'paper','symbol':'BTCUSDT'},shared=True)
+        try:
+            update={'update_id':1,'message':{'from':{'id':1},'chat':{'id':1,'type':'private'},
+                                             'date':int(now),'text':'/pair SOLUSDT'}}
+            telegram=TelegramTransport('FAKE','1',lambda req:{'ok':True,'result':[update]},started=now-1)
+            telegram.poll(store,q)
+            proposal=q.db.execute('SELECT * FROM unified_pair_proposals').fetchone()
+            self.assertEqual(proposal['market'],'spot')
+            self.assertEqual(proposal['version'],0)
+            self.assertEqual(proposal['previous'],'["BTCUSDT"]')
+            self.assertFalse(store.db.in_transaction)
+        finally:store.close();q.close()
+
+    def test_confirmed_pair_job_executes_once_and_preserves_capital(self):
+        token,job=self.confirmed_pair_job();before=self.shared.snapshot('spot')
+        result=self.choose(request_id='pair:'+token,confirm_job_id=job,clock=lambda:102)
+        self.assertEqual(result['symbol'],'SOLUSDT')
+        self.assertTrue(self.choose(request_id='pair:'+token,confirm_job_id=job,clock=lambda:300)['replayed'])
+        after=self.shared.snapshot('spot')
+        self.assertEqual((before['cash'],before['pnl'],before['position']),
+                         (after['cash'],after['pnl'],after['position']))
+        self.assertTrue(after['paused']);self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_telegram_to_spot_worker_crash_after_commit_replays_once(self):
+        token,job=self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        class Reader:
+            def get(inner,path,params):
+                self.assertFalse(self.shared.db.in_transaction);self.assertFalse(q.db.in_transaction)
+                if path.endswith('exchangeInfo'):return {'symbols':[spot_info()]}
+                return {'symbol':'SOLUSDT','price':'100'}
+        def crash(stage):
+            if stage=='after_financial_commit':raise RuntimeError('simulated interruption')
+        try:
+            before=self.shared.snapshot('spot')['cash']
+            with self.assertRaisesRegex(RuntimeError,'interruption'):
+                process_spot_pair(q,self.shared,Reader(),clock=lambda:102,fault=crash)
+            self.assertEqual(len(q.pending('spot')),1)
+            result=process_spot_pair(q,self.shared,Reader(),clock=lambda:103)
+            self.assertTrue(result['replayed']);self.assertEqual(q.pending('spot'),[])
+            self.assertEqual(self.shared.snapshot('spot')['cash'],before)
+            self.assertTrue(self.shared.snapshot('spot')['paused'])
+            self.assertEqual(self.shared.db.execute('SELECT count(*) FROM pair_spot_selection_events').fetchone()[0],1)
+        finally:q.close()
+
+    def test_isolated_pair_worker_replays_after_commit_without_capital_change(self):
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(1,True,'/mode futures',now=100)
+        q.receive(2,True,'/pair SOLUSDT',now=100,pairs={'futures':{'symbols':['BTCUSDT'],'version':0}})
+        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        q.receive(3,True,'/confirm '+token,now=101)
+        class Reader:
+            pair_symbol='SOLUSDT'
+            def get(inner,path):
+                self.assertFalse(self.shared.db.in_transaction);self.assertFalse(q.db.in_transaction)
+                info=spot_info();info.update(contractType='PERPETUAL',marginAsset='USDT')
+                return {'symbols':[info]}
+            def mark(inner):return Decimal('100'),102000
+        def crash(stage):
+            if stage=='after_financial_commit':raise RuntimeError('simulated interruption')
+        try:
+            before=self.shared.snapshot('futures')['cash']
+            with self.assertRaisesRegex(RuntimeError,'interruption'):
+                process_isolated_pair(q,self.shared,lambda symbol:Reader(),clock=lambda:102,fault=crash)
+            result=process_isolated_pair(q,self.shared,lambda symbol:Reader(),clock=lambda:103)
+            self.assertTrue(result['replayed']);self.assertEqual(q.pending('futures'),[])
+            self.assertEqual(self.shared.snapshot('futures')['cash'],before)
+            self.assertTrue(self.shared.snapshot('futures')['paused'])
+        finally:q.close()
+
+    def test_confirmed_pair_expiry_and_identity_are_rechecked_at_execution(self):
+        token,job=self.confirmed_pair_job()
+        with self.assertRaisesRegex(ValueError,'identity mismatch'):
+            self.choose(request_id='pair:other',confirm_job_id=job,clock=lambda:102)
+        with self.assertRaisesRegex(ValueError,'expired'):
+            self.choose(request_id='pair:'+token,confirm_job_id=job,observed_at=220,clock=lambda:220)
+        self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
+        self.assertTrue(self.shared.snapshot('spot')['paused'])
+
+    def test_confirmed_pair_expiry_after_waiting_for_sqlite_lock(self):
+        now=time.time();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        try:
+            q.receive(1,True,'/pair SOLUSDT',now=now-119.5,pairs={'spot':{'symbols':['BTCUSDT'],'version':0}})
+            token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+            q.receive(2,True,'/confirm '+token,now=now)
+            job=q.pending('spot')[0]['id']
+        finally:q.close()
+        with sqlite3.connect(self.financial,isolation_level=None) as lock:
+            lock.execute('BEGIN IMMEDIATE')
+            def worker():
+                shared=SharedPaperStore(self.financial)
+                try:
+                    return select_spot_pair_offline(shared,self.queue,request_id='pair:'+token,
+                        expected_symbol='BTCUSDT',expected_version=0,symbol='SOLUSDT',
+                        metadata=spot_info(),price='100',quantity='.1',observed_at=now,confirm_job_id=job)
+                finally:shared.close()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                future=pool.submit(worker);time.sleep(.8);self.assertFalse(future.done());lock.commit()
+                with self.assertRaisesRegex(ValueError,'expired'):future.result(timeout=5)
+        self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
 
     def test_stale_data_version_and_pending_command_fail_without_change(self):
         with self.assertRaisesRegex(ValueError,'stale or future'):

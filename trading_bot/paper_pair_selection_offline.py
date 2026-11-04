@@ -16,9 +16,28 @@ from .paper_pair_catalog import spot_usdt_candidate, usd_m_perpetual_candidate
 from .paper_shared_store import SharedPaperStore
 
 
+def _confirmed_job(queue, market, job_id, request_id, previous, version, target, now):
+    """Validate the immutable received command while both stores are locked."""
+    if job_id is None:return -1
+    if type(job_id) is not int or job_id<=0:raise ValueError('Invalid pair job')
+    row=queue.execute('SELECT command,payload,status FROM unified_jobs WHERE id=? AND market=?',(job_id,market)).fetchone()
+    if not row or row[0]!='/confirmed_pair' or row[2]!='PENDING':raise ValueError('Pair confirmation job unavailable')
+    payload=json.loads(row[1]);token=payload.get('proposal')
+    if not isinstance(token,str) or request_id!='pair:'+token:
+        raise ValueError('Pair confirmation identity mismatch')
+    proposal=queue.execute('SELECT market,previous,version,target,expires,status FROM unified_pair_proposals WHERE id=?',(token,)).fetchone()
+    if (not proposal or proposal[0]!=market or json.loads(proposal[1])!=sorted(previous) or
+        proposal[2]!=version or json.loads(proposal[3])!=sorted(target) or proposal[5]!='CONFIRMED' or
+        payload.get('previous')!=sorted(previous) or payload.get('version')!=version or
+        payload.get('target')!=sorted(target) or payload.get('expires')!=proposal[4]):
+        raise ValueError('Pair confirmation does not match selection')
+    if now>=proposal[4]:raise ValueError('Pair confirmation expired')
+    return job_id
+
+
 def select_spot_pair_offline(shared, queue_path, *, request_id, expected_symbol,
                              expected_version, symbol, metadata, price, quantity,
-                             observed_at, clock=time.time, max_age=120):
+                             observed_at, clock=time.time, max_age=120, confirm_job_id=None):
     if (not isinstance(shared,SharedPaperStore) or not isinstance(request_id,str) or
             not re.fullmatch(r'[A-Za-z0-9:_-]{1,100}',request_id) or
             type(expected_version) is not int or expected_version<0 or
@@ -45,6 +64,7 @@ def select_spot_pair_offline(shared, queue_path, *, request_id, expected_symbol,
                     if old['fingerprint']!=fingerprint:raise ValueError('Conflicting request identity')
                     return dict(json.loads(old['result']),replayed=True)
                 now=clock()
+                current_job=_confirmed_job(queue,'spot',confirm_job_id,request_id,[expected_symbol],expected_version,[symbol],now)
                 if (isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or
                         not 0<=now-observed_at<=max_age):
                     raise ValueError('Pair data stale or future dated')
@@ -60,7 +80,7 @@ def select_spot_pair_offline(shared, queue_path, *, request_id, expected_symbol,
                     raise ValueError('Spot requires recovery')
                 if shared.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone():
                     raise ValueError('Spot order unresolved')
-                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='spot' AND status='PENDING' LIMIT 1").fetchone():
+                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='spot' AND status='PENDING' AND id!=? LIMIT 1",(current_job,)).fetchone():
                     raise ValueError('Spot command pending')
                 if queue.execute("SELECT 1 FROM unified_proposals WHERE market='spot' AND status='OPEN' LIMIT 1").fetchone():
                     raise ValueError('Spot confirmation pending')
@@ -98,7 +118,7 @@ def select_spot_pair_offline(shared, queue_path, *, request_id, expected_symbol,
 
 def select_isolated_pair_offline(shared, queue_path, *, request_id, expected_symbol,
                                  expected_version, symbol, metadata, price, quantity,
-                                 observed_at, clock=time.time, max_age=120):
+                                 observed_at, clock=time.time, max_age=120, confirm_job_id=None):
     """Offline-only USD-M isolated selection on paused, flat shared copies."""
     if (not isinstance(shared,SharedPaperStore) or not isinstance(request_id,str) or
             not re.fullmatch(r'[A-Za-z0-9:_-]{1,100}',request_id) or
@@ -124,6 +144,7 @@ def select_isolated_pair_offline(shared, queue_path, *, request_id, expected_sym
                     if old['fingerprint']!=fingerprint:raise ValueError('Conflicting request identity')
                     return dict(json.loads(old['result']),replayed=True)
                 now=clock()
+                current_job=_confirmed_job(queue,'futures',confirm_job_id,request_id,[expected_symbol],expected_version,[symbol],now)
                 if isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=now-observed_at<=max_age:
                     raise ValueError('Pair data stale or future dated')
                 preview=usd_m_perpetual_candidate(metadata,symbol,quantity,price)
@@ -133,7 +154,7 @@ def select_isolated_pair_offline(shared, queue_path, *, request_id, expected_sym
                 if snapshot['paused'] is not True:raise ValueError('Isolated futures must be paused')
                 if snapshot['position'] is not None:raise ValueError('Existing futures position prevents selection')
                 if shared._get('futures','error') or shared._get('futures','blocked'):raise ValueError('Futures requires recovery')
-                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='futures' AND status='PENDING' LIMIT 1").fetchone():raise ValueError('Futures command pending')
+                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='futures' AND status='PENDING' AND id!=? LIMIT 1",(current_job,)).fetchone():raise ValueError('Futures command pending')
                 if queue.execute("SELECT 1 FROM unified_proposals WHERE market='futures' AND status='OPEN' LIMIT 1").fetchone():raise ValueError('Futures confirmation pending')
                 if shared.db.execute("SELECT 1 FROM transfer_proposals WHERE status='OPEN' AND (source='futures_isolated' OR destination='futures_isolated') LIMIT 1").fetchone():raise ValueError('Futures transfer pending')
                 identity=shared._get('futures','identity')
@@ -168,7 +189,7 @@ def select_isolated_pair_offline(shared, queue_path, *, request_id, expected_sym
 
 def select_cross_pairs_offline(shared, queue_path, *, request_id, expected_symbols,
                                expected_version, symbols, metadata, prices, quantities,
-                               observed_at, clock=time.time, max_age=120):
+                               observed_at, clock=time.time, max_age=120, confirm_job_id=None):
     """Offline-only cross set change; never remove protection for a position."""
     if (not isinstance(shared,SharedPaperStore) or not isinstance(request_id,str) or
             not re.fullmatch(r'[A-Za-z0-9:_-]{1,100}',request_id) or type(expected_version) is not int or expected_version<0 or
@@ -194,6 +215,7 @@ def select_cross_pairs_offline(shared, queue_path, *, request_id, expected_symbo
                     if old['fingerprint']!=fingerprint:raise ValueError('Conflicting request identity')
                     return dict(json.loads(old['result']),replayed=True)
                 now=clock()
+                current_job=_confirmed_job(queue,'futures_cross',confirm_job_id,request_id,expected,expected_version,selected,now)
                 if isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=now-observed_at<=max_age:raise ValueError('Pair data stale or future dated')
                 if not all(isinstance(v,dict) for v in (metadata,prices,quantities)) or any(s not in metadata or s not in prices or s not in quantities for s in selected):
                     raise ValueError('Cross metadata incomplete')
@@ -208,7 +230,7 @@ def select_cross_pairs_offline(shared, queue_path, *, request_id, expected_symbo
                 if book.runtime_error() or book.funding_conflict():raise ValueError('Cross requires recovery')
                 if shared.ledger.balance('futures_cross:reserved') or shared.ledger.balance('futures_cross:liability'):
                     raise ValueError('Cross reserve or liability prevents selection')
-                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='futures_cross' AND status='PENDING' LIMIT 1").fetchone():raise ValueError('Cross command pending')
+                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='futures_cross' AND status='PENDING' AND id!=? LIMIT 1",(current_job,)).fetchone():raise ValueError('Cross command pending')
                 if queue.execute("SELECT 1 FROM unified_proposals WHERE market='futures_cross' AND status='OPEN' LIMIT 1").fetchone():raise ValueError('Cross confirmation pending')
                 if shared.db.execute("SELECT 1 FROM transfer_proposals WHERE status='OPEN' AND (source='futures_cross' OR destination='futures_cross') LIMIT 1").fetchone():raise ValueError('Cross transfer pending')
                 current=sorted(book._symbols())

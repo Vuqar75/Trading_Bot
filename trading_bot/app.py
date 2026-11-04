@@ -69,11 +69,15 @@ class TelegramTransport:
                 stamp = msg.get('date', 0)
                 fresh = type(stamp) is int and stamp >= int(self.started) and 0 <= time.time()-stamp <= 120
                 command = text.split()[0].split('@')[0] if text.split() else ''
-                if authorized and command == '/close' and getattr(store, 'shared', None):
+                if authorized and command in ('/close','/pair') and getattr(store, 'shared', None) and (command=='/close' or unified.allow_pair_experiment):
                     # The financial read transaction spans queue commit. Rollback-journal
                     # mode prevents a position writer committing between snapshot and receipt.
                     store.db.execute('BEGIN')
                     try:
+                        if command=='/pair':
+                            from .paper_pair_snapshots import pair_snapshots
+                            unified.receive(ident,authorized,text,fresh=fresh,pairs=pair_snapshots(store.shared))
+                            continue
                         spot = store.get('position')
                         row = store.db.execute("SELECT value FROM futures_meta WHERE key='position'").fetchone()
                         futures = json.loads(row[0]) if row else None

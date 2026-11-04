@@ -1,6 +1,7 @@
 """Durable, market-bound Telegram command queue; transport independent."""
 import hashlib
 import json
+import re
 import secrets
 import sqlite3
 import time
@@ -15,7 +16,8 @@ def market_label(market):
 
 class UnifiedQueue:
     outbox_table = 'unified_outbox'
-    def __init__(self, path, fault=lambda point: None):
+    def __init__(self, path, fault=lambda point: None, *, allow_pair_experiment=False):
+        self.allow_pair_experiment=allow_pair_experiment
         self.db = sqlite3.connect(path, isolation_level=None, timeout=5)
         self.db.row_factory = sqlite3.Row
         self.fault = fault
@@ -24,13 +26,15 @@ class UnifiedQueue:
         with self.transaction():
             tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
             expected = {'unified_state', 'unified_updates', 'unified_jobs', 'unified_proposals', 'unified_outbox'}
-            if tables and tables != expected:
+            if tables and (not expected.issubset(tables) or tables-expected-{'unified_pair_proposals'}):
                 raise ValueError('Dedicated unified queue database required')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_state(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_updates(id INTEGER PRIMARY KEY,fingerprint TEXT NOT NULL,command TEXT NOT NULL,market TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_jobs(id INTEGER PRIMARY KEY,update_id INTEGER NOT NULL REFERENCES unified_updates(id),market TEXT NOT NULL,command TEXT NOT NULL,payload TEXT NOT NULL,status TEXT NOT NULL DEFAULT \'PENDING\',result TEXT,UNIQUE(update_id,market))')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_proposals(id TEXT PRIMARY KEY,market TEXT NOT NULL,position TEXT NOT NULL,quantity TEXT NOT NULL,expires REAL NOT NULL,status TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_outbox(id INTEGER PRIMARY KEY,message TEXT NOT NULL)')
+            if allow_pair_experiment:
+                self.db.execute('CREATE TABLE IF NOT EXISTS unified_pair_proposals(id TEXT PRIMARY KEY,update_id INTEGER NOT NULL UNIQUE,market TEXT NOT NULL,previous TEXT NOT NULL,version INTEGER NOT NULL,target TEXT NOT NULL,expires REAL NOT NULL,status TEXT NOT NULL)')
             self.db.execute("INSERT OR IGNORE INTO unified_state VALUES('mode','spot')")
             self.db.execute("INSERT OR IGNORE INTO unified_state VALUES('offset','0')")
 
@@ -62,7 +66,7 @@ class UnifiedQueue:
             if not self.db.execute('SELECT 1 FROM unified_updates LIMIT 1').fetchone():
                 self.db.execute("UPDATE unified_state SET value=? WHERE key='offset'", (str(max(int(self.state('offset')), int(offset))),))
 
-    def receive(self, ident, authorized, text, *, fresh=True, now=None, positions=None):
+    def receive(self, ident, authorized, text, *, fresh=True, now=None, positions=None, pairs=None):
         if type(ident) is not int or not 0 <= ident < 2**63-1 or type(authorized) is not bool:
             raise ValueError('Invalid update')
         text = text if authorized and isinstance(text, str) else ''
@@ -103,6 +107,26 @@ class UnifiedQueue:
                     jobs = [('spot', '/brief_status'), ('futures', '/brief_status'), ('futures_cross','/brief_status'),('margin_cross','/brief_status')]
                 elif command == '/status' and len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
                     market = parts[1]; jobs = [(market, '/status')]
+                elif command == '/pair' and self.allow_pair_experiment:
+                    snapshot=(pairs or {}).get(market)
+                    if len(parts)==1:
+                        jobs=[(market,'/pair_status')]
+                    elif not fresh or not isinstance(snapshot,dict):
+                        self._notify('['+market_label(market)+'] Выбор пары устарел или текущее состояние неизвестно.')
+                    else:
+                        target=sorted(parts[1:]);previous=snapshot.get('symbols');version=snapshot.get('version')
+                        limit=1 if market in ('spot','futures') else 2
+                        valid=(isinstance(previous,list) and 1<=len(previous)<=limit and
+                               all(isinstance(s,str) and re.fullmatch(r'[A-Z0-9]{2,20}USDT',s) for s in previous) and
+                               len(set(previous))==len(previous) and type(version) is int and version>=0 and
+                               1<=len(target)<=limit and len(set(target))==len(target) and
+                               all(re.fullmatch(r'[A-Z0-9]{2,20}USDT',s) and s!='USDTUSDT' for s in target))
+                        if not valid:self._notify('['+market_label(market)+'] Некорректная пара или неизвестная версия.')
+                        else:
+                            token='P-'+secrets.token_hex(8)
+                            self.db.execute('INSERT INTO unified_pair_proposals VALUES(?,?,?,?,?,?,?,?)',
+                                (token,ident,market,json.dumps(sorted(previous)),version,json.dumps(target),now+120,'OPEN'))
+                            self._notify('['+market_label(market)+'] Сменить '+', '.join(sorted(previous))+' на '+', '.join(target)+'? /confirm '+token+' или /cancel '+token+'.')
                 elif command in ('/signal', '/history', '/report', '/pause', '/resume', '/timeframe', '/leverage', '/close'):
                     if not fresh and command in ('/resume', '/close', '/timeframe', '/leverage'):
                         self._notify('['+market_label(market)+'] Команда устарела.')
@@ -147,6 +171,20 @@ class UnifiedQueue:
                     else:
                         market='wallet';payload={'received_at':now,'expires':now+120} if command=='/transfer' else {}
                         jobs=[('wallet',' '.join([command]+parts[1:]))]
+                elif command in ('/confirm','/cancel') and len(parts)==2 and parts[1].startswith('P-') and fresh and self.allow_pair_experiment:
+                    proposal=self.db.execute('SELECT * FROM unified_pair_proposals WHERE id=?',(parts[1],)).fetchone()
+                    if not proposal or proposal['status']!='OPEN' or proposal['expires']<=now:
+                        self._notify('Подтверждение пары не найдено или устарело.')
+                    elif command=='/cancel':
+                        self.db.execute("UPDATE unified_pair_proposals SET status='CANCELED' WHERE id=?",(parts[1],))
+                        self._notify('['+market_label(proposal['market'])+'] Смена пары отменена.')
+                    else:
+                        market=proposal['market']
+                        payload={'proposal':proposal['id'],'previous':json.loads(proposal['previous']),
+                                 'version':proposal['version'],'target':json.loads(proposal['target']),
+                                 'expires':proposal['expires'],'received_at':now}
+                        self.db.execute("UPDATE unified_pair_proposals SET status='CONFIRMED' WHERE id=?",(parts[1],))
+                        jobs=[(market,'/confirmed_pair')]
                 elif command in ('/confirm','/cancel') and len(parts)==2 and parts[1].startswith('T-') and fresh:
                     market='wallet';payload={'received_at':now,'token':parts[1]}
                     jobs=[('wallet','/confirm_transfer' if command=='/confirm' else '/cancel_transfer')]
