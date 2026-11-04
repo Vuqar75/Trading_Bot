@@ -13,7 +13,7 @@ MODULES={'tradingbot-spot.service':'deploy/cloud_paper_launch.py',
          'tradingbot-cross.service':'trading_bot.cross_app',
          'tradingbot-margin.service':'trading_bot.margin_app',
          'tradingbot-monitor.service':'trading_bot.paper_monitor',
-         'tradingbot-paper-backup.service':'deploy/paper_vm_backup.py',
+         'tradingbot-paper-backup.service':'deploy/shared_paper_backup.py',
          'tradingbot-external-backup@.service':'deploy/paper_external_backup.py',
          'tradingbot-watchdog.service':'deploy/paper_watchdog.py',
          'tradingbot-heartbeat.service':'deploy/paper_heartbeat.py'}

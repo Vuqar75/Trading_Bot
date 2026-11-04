@@ -64,13 +64,13 @@ class PairRolloutPlanTests(unittest.TestCase):
                'tradingbot-cross.service':'vm-cross-futures-paper.service',
                'tradingbot-margin.service':'vm-spot-margin-paper.service',
                'tradingbot-monitor.service':'vm-cross-paper-monitor.service',
-               'tradingbot-paper-backup.service':'tradingbot-paper-backup.service',
+               'tradingbot-paper-backup.service':'vm-shared-paper-backup.service',
                'tradingbot-external-backup@.service':'tradingbot-external-backup@.service',
                'tradingbot-watchdog.service':'tradingbot-watchdog.service',
                'tradingbot-heartbeat.service':'tradingbot-heartbeat.service'}
         for target,source in names.items():
             text=(deploy/source).read_text()
-            text=text.replace('/opt/trading-bot-cross',str(self.old)).replace('/opt/trading-bot-margin',str(self.old)).replace('/opt/trading-bot-paper',str(self.old))
+            text=text.replace('/opt/trading-bot-cross',str(self.old)).replace('/opt/trading-bot-margin',str(self.old)).replace('/opt/trading-bot-paper',str(self.old)).replace('/opt/trading-bot-wallet',str(self.old))
             (self.units/target).write_text(text)
         stage_units(self.units,self.stage,installed_root=self.old,candidate_root=self.new)
         self.assertIn('deploy/cloud_paper_launch.py --experimental-pair',(self.stage/'tradingbot-spot.service').read_text())
