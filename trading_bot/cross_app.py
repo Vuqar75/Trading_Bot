@@ -31,7 +31,7 @@ def cycle(book, queue, receiver, strategy, sync, reader, *, started, now=None, c
     quotes=sync.refresh(now=now)
     settings=book.db.execute('SELECT interval FROM cross_settings WHERE id=1').fetchone()
     if not settings:raise ValueError('Cross settings missing')
-    candles={symbol:reader.candles(symbol,settings['interval'],quotes[symbol]['server_ms']) for symbol in SYMBOLS}
+    candles={symbol:reader.candles(symbol,settings['interval'],quotes[symbol]['server_ms']) for symbol in book._symbols()}
     server=max(q['server_ms'] for q in quotes.values())
     finished=clock() if live_clock else now
     return strategy.tick(quotes,candles,server,now=finished,clock=live_clock)
@@ -61,7 +61,8 @@ def main():
             while not stop.is_set():
                 try:
                     cycle(book,queue,receiver,strategy,sync,reader,started=started)
-                    error='HistoricalFundingUnavailable' if sync.model_status=='historical_unconfirmed' else None
+                    error={'historical_unconfirmed':'HistoricalFundingUnavailable',
+                           'historical_contradiction':'FundingHistoryContradiction'}.get(sync.model_status)
                     book.set_runtime_error(error)
                 except Exception as exc:
                     # Do not print exception bodies, URLs or potentially sensitive data.

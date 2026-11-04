@@ -175,7 +175,7 @@ class PairCrossOfflineTests(unittest.TestCase):
         self.assertIsNone(self.book.runtime_error())
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
 
-    def test_changed_retired_funding_currently_blocks_current_protection(self):
+    def test_changed_retired_funding_preserves_current_protection(self):
         legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}
         self.book.record_quotes(legacy,now=100);self.book.set_paused(False,now=100)
         old=self.book.open('old-eth','ETHUSDT','LONG','5',1,legacy,now=100)
@@ -197,15 +197,38 @@ class PairCrossOfflineTests(unittest.TestCase):
         self.book.open('sol-risk','SOLUSDT','LONG','5',1,active,now=28002,metadata=self.info('SOL'),metadata_at=28002)
         before=[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')]
         reader.rate='.002';reader.server_ms=28003000
-        with self.assertRaisesRegex(ValueError,'funding event changed'):
-            CrossDataSync(self.book,reader).refresh(now=28003)
+        sync=CrossDataSync(self.book,reader);quotes=sync.refresh(now=28003)
+        self.assertEqual(sync.model_status,'historical_contradiction')
         self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')])
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
-        with self.assertRaises(ValueError):self.book.risk(self.book.stored_quotes(),now=28003)
+        self.assertIsNone(live_report(self.shared,now=28003)['total'])
+        self.book.risk(quotes,now=28003)
         path=self.shared.db.execute('PRAGMA database_list').fetchone()[2]
         self.shared.close();self.shared=SharedPaperStore(path);self.addCleanup(self.shared.close)
         self.book=CrossPaperBook(self.shared,allow_pair_experiment=True)
-        with self.assertRaisesRegex(ValueError,'explicit reconciliation'):
-            CrossDataSync(self.book,reader).refresh(now=28003)
+        sync=CrossDataSync(self.book,reader);quotes=sync.refresh(now=28003)
+        self.assertEqual(sync.model_status,'historical_contradiction')
         self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')])
         self.assertEqual(self.book._positions()[0]['symbol'],'SOLUSDT')
+        with self.assertRaisesRegex(ValueError,'requires recovery'):self.book.set_paused(False,now=28003)
+        candles={s:[(n*900000,Decimal('100')) for n in range(31)] for s in ('BTCUSDT','SOLUSDT')}
+        actions=CrossPaperStrategy(self.book).tick(quotes,candles,28003000,now=28003)
+        self.assertTrue(any(a['action']=='STOP' and a['symbol']=='SOLUSDT' for a in actions))
+        self.assertEqual(self.book._positions(),[])
+
+    def test_retired_funding_missing_changed_and_extra_are_detected(self):
+        legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}
+        self.book.record_quotes(legacy,now=100);self.book.set_paused(False,now=100)
+        self.book.open('old-eth','ETHUSDT','LONG','5',1,legacy,now=100)
+        event={'symbol':'ETHUSDT','time':28000001,'rate_type':'Regular','rate':'.001','mark':'100'}
+        class Reader:
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100','server_ms':28001000,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return [event] if symbol=='ETHUSDT' else []
+        sync=CrossDataSync(self.book,Reader());sync.refresh(now=28001)
+        before=[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')]
+        for name,events in [('missing',[]),('changed',[dict(event,rate='.002')]),
+                            ('additional',[event,dict(event,time=28000002)])]:
+            with self.subTest(name=name),self.assertRaises(ValueError):
+                sync._check_retired_history('ETHUSDT',events)
+            self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')])

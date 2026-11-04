@@ -27,15 +27,40 @@ class CrossDataSync:
         self.tracker=CrossFundingTracker(book)
         self.page_status='not_checked';self.model_status='not_checked'
 
+    def _check_retired_history(self, symbol, events):
+        """Detect contradictions before any new funding postings for a retired pair."""
+        windows=self.db.execute(
+            "SELECT DISTINCT r.due,r.next_due FROM cross_coverage_receipts r "
+            "JOIN cross_funding_cursor c ON c.position_id=r.position_id WHERE c.symbol=? "
+            "UNION SELECT DISTINCT r.due,r.next_due FROM cross_prior_interval_receipts r "
+            "JOIN cross_funding_cursor c ON c.position_id=r.position_id WHERE c.symbol=?",(symbol,symbol)).fetchall()
+        known=self.db.execute('SELECT funding_time,rate_type,rate,mark,source FROM cross_funding WHERE symbol=?',(symbol,)).fetchall()
+        def matches(row,event):
+            prefix='binance-usdm-public:fundingTime='
+            original=int(row['source'][len(prefix):]) if row['source'].startswith(prefix) else row['funding_time']
+            return (event.get('time')==original and event.get('symbol')==symbol and
+                    event.get('rate_type','Regular')==row['rate_type'] and
+                    amount(event['rate'])==amount(row['rate']) and amount(event['mark'])==amount(row['mark']))
+        for row in known:
+            if sum(bool(matches(row,event)) for event in events)!=1:
+                raise FundingHistoryContradiction('Accepted retired funding missing or changed')
+        for window in windows:
+            candidates=[e for e in events if window['due']<=e.get('time',-1)<window['next_due']]
+            if len(candidates)!=1:
+                raise FundingHistoryContradiction('Accepted retired funding interval ambiguous')
+
     def refresh(self, *, now=None):
         now=time.time() if now is None else now
         # Even if the process dies during I/O, previous quotes remain unusable.
         self.book.invalidate_all()
         self.page_status='not_checked';self.model_status='not_checked'
         try:
-            conflict=self.db.execute("SELECT value FROM cross_runtime WHERE key='funding_history_conflict'").fetchone()
-            if conflict:raise FundingHistoryContradiction('Funding history contradiction requires explicit reconciliation')
             selected=self.book._symbols()
+            conflict=self.db.execute("SELECT value FROM cross_runtime WHERE key='funding_history_conflict'").fetchone()
+            retired_row=self.db.execute("SELECT value FROM cross_runtime WHERE key='retired_funding_conflicts'").fetchone()
+            retired=set(json.loads(retired_row[0])) if retired_row else set()
+            if conflict and (not getattr(self.book,'_pair_experiment',False) or not retired or retired.intersection(selected)):
+                raise FundingHistoryContradiction('Funding history contradiction requires explicit reconciliation')
             schedules={symbol:self.reader.schedule(symbol) for symbol in selected}
             active={p['id']:p for p in self.book._positions()}
             history={}
@@ -54,6 +79,9 @@ class CrossDataSync:
                 history[ident]['closed_ms']=closed
             for ident,item in history.items():
                 if (ident in active)!=(item['closed_ms'] is None):raise ValueError('Position lifecycle mismatch')
+            if retired and (not conflict or any(not any(h['position']['symbol']==s for h in history.values()) or
+                any(h['position']['symbol']==s and h['closed_ms'] is None for h in history.values()) for s in retired)):
+                raise ValueError('Retired funding conflict state invalid')
             # Removed symbols still need funding history rechecked. Their last
             # closed position supplies the bounded lifecycle; only selected
             # symbols supply live risk quotes.
@@ -64,6 +92,7 @@ class CrossDataSync:
             loaded={}
             historical_unavailable=set()
             for symbol in history_symbols:
+                if symbol in retired:continue
                 relevant=[h for h in history.values() if h['position']['symbol']==symbol]
                 if relevant:
                     try:
@@ -74,10 +103,22 @@ class CrossDataSync:
                         historical_unavailable.add(symbol)
                         continue
                     loaded[symbol]=events
-            self.page_status='historical_unconfirmed' if historical_unavailable else 'loaded_available_pages'
+            # Preflight every retired source before applying any new funding.
+            # Preserve accepted history and pause permanently on contradiction.
+            for symbol in history_symbols:
+                if symbol in selected or symbol in retired or symbol in historical_unavailable or symbol not in loaded:continue
+                try:self._check_retired_history(symbol,loaded[symbol])
+                except FundingHistoryContradiction:
+                    retired.add(symbol)
+                    with self.shared.transaction():
+                        self.db.execute("INSERT OR REPLACE INTO cross_runtime(key,value) VALUES('retired_funding_conflicts',?)",(json.dumps(sorted(retired)),))
+                        self.db.execute("INSERT OR IGNORE INTO cross_runtime(key,value) VALUES('funding_history_conflict','true')")
+                        self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
+            self.page_status=('historical_contradiction' if retired else
+                              'historical_unconfirmed' if historical_unavailable else 'loaded_available_pages')
             events_by_symbol={}
             for symbol in history_symbols:
-                if symbol in historical_unavailable:continue
+                if symbol in historical_unavailable or symbol in retired:continue
                 relevant=[h for h in history.values() if h['position']['symbol']==symbol]
                 if not relevant:continue
                 schedule=schedules[symbol]
@@ -195,7 +236,10 @@ class CrossDataSync:
                             'next_due_ms':data['next_due_ms'],'interval_ms':data['interval_ms']}
                     for symbol,data in schedules.items() if symbol in selected}
             self.book.record_quotes(quotes,now=now)
-            if historical_unavailable:
+            if retired:
+                self.book.set_runtime_error('FundingHistoryContradiction')
+                self.model_status='historical_contradiction'
+            elif historical_unavailable:
                 self.book.set_runtime_error('HistoricalFundingUnavailable')
                 with self.shared.transaction():
                     self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")

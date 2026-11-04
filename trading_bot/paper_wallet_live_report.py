@@ -65,6 +65,8 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             book._check()
             if book.runtime_error()=='HistoricalFundingUnavailable':
                 incomplete.append('Futures cross: история funding закрытого инструмента недоступна')
+            if book.funding_conflict():
+                incomplete.append('Futures cross: противоречие истории funding требует сверки')
             positions_cross=book._positions()
             balances['futures_cross']={'free':shared.ledger.balance('futures_cross:free'),'reserved':shared.ledger.balance('futures_cross:reserved')}
             if positions_cross:
