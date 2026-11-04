@@ -43,7 +43,7 @@ def _pending(q):
 
 
 def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
-    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide') or not isinstance(operation,str) or not operation.startswith(namespace+':freeze:'):raise ValueError('Explicit operation required')
+    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide','spothelp') or not isinstance(operation,str) or not operation.startswith(namespace+':freeze:'):raise ValueError('Explicit operation required')
     freeze_key=namespace+'_update_freeze'
     q=queue.db
     try:
@@ -70,10 +70,12 @@ def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
                 row=shared.db.execute('SELECT paused FROM wallet_state WHERE wallet=?',(market,)).fetchone()
                 if not row or row[0] not in (0,1):raise ValueError('Unknown market pause')
                 paused[market]=bool(row[0])
-            if namespace in ('diagnostics','resilience','boundary','finalaudit','helpguide') and (not paused['futures_cross'] or not paused['margin_cross']):
+            if namespace in ('diagnostics','resilience','boundary','finalaudit','helpguide','spothelp') and (not paused['futures_cross'] or not paused['margin_cross']):
                 raise ValueError('Diagnostics require margin and cross paused')
-            if namespace in ('boundary','finalaudit','helpguide') and not paused['futures']:
+            if namespace in ('boundary','finalaudit','helpguide','spothelp') and not paused['futures']:
                 raise ValueError('Boundary update requires isolated futures paused')
+            if namespace == 'spothelp' and not paused['spot']:
+                raise ValueError('Spot must remain paused during help update')
             offset=int(q.execute("SELECT value FROM unified_state WHERE key='offset'").fetchone()[0])
             result={'operation':operation,'paused':paused,'queue_offset':offset,'queue_anchor':_queue_anchor(q,offset),'frozen_at':now}
             shared.db.execute('INSERT INTO ledger_meta VALUES(?,?)',(freeze_key,json.dumps(result,sort_keys=True)))
@@ -86,7 +88,7 @@ def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
 
 
 def release_report_update(shared,queue,operation,*,protection_checked_ms,now=None,namespace='reports'):
-    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide') or not isinstance(operation,str) or not operation.startswith(namespace+':release:') or type(protection_checked_ms) is not int:raise ValueError('Explicit release and protection time required')
+    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide','spothelp') or not isinstance(operation,str) or not operation.startswith(namespace+':release:') or type(protection_checked_ms) is not int:raise ValueError('Explicit release and protection time required')
     freeze_key=namespace+'_update_freeze';release_key=namespace+'_update_release'
     q=queue.db
     try:
@@ -100,6 +102,8 @@ def release_report_update(shared,queue,operation,*,protection_checked_ms,now=Non
             row=shared.db.execute('SELECT value FROM ledger_meta WHERE key=?',(freeze_key,)).fetchone()
             if not row or not shared.deployment_hold():raise ValueError('Report hold required')
             frozen=json.loads(row[0]);offset=frozen['queue_offset']
+            if namespace == 'spothelp' and frozen['paused'].get('spot') is not True:
+                raise ValueError('Spot pause snapshot invalid')
             cur=q.execute("SELECT value FROM unified_state WHERE key='offset'").fetchone()
             if not cur or int(cur[0])<offset or _queue_anchor(q,offset)!=frozen['queue_anchor']:raise ValueError('Queue history changed')
             _pending(q);shared._validate_hold_change(False);_cross(shared,now);_margin(shared,now)
