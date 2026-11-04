@@ -825,6 +825,7 @@ with patch.object(app,'CrossPublicData',Fake):
         candles={'BTCUSDT':[(i*period,'100') for i in range(30)]+[(30*period,'101')],
                  'ETHUSDT':[(i*period,'100') for i in range(1,31)]+[(31*period,'99')]}
         self.assertEqual(strategy.tick(quotes,candles,after,now=now),[])
+        self.assertEqual(CrossPaperStrategy(self.book).tick(quotes,candles,after,now=now),[])
         self.assertEqual(len(self.book._positions()),0)
         self.assertEqual(strategy.last_protection_at,now)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
@@ -848,6 +849,49 @@ with patch.object(app,'CrossPublicData',Fake):
                  for s,last in [('BTCUSDT','101'),('ETHUSDT','99')]}
         with self.assertRaisesRegex(ValueError,'candle interval expired'):
             strategy.tick(quotes,candles,server,now=now,clock=lambda:(boundary+100)/1000)
+        self.assertEqual(len(self.book._positions()),0)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_candle_close_boundary_before_at_and_after(self):
+        period=900000;boundary=32*period
+        candles=[(i*period,'100') for i in range(1,32)]
+        with self.assertRaisesRegex(ValueError,'Stale or future'):
+            CrossPaperStrategy._signal(candles,'15m',boundary-1)
+        for at in (boundary,boundary+1):
+            stamp,_=CrossPaperStrategy._signal(candles,'15m',at)
+            self.assertEqual(stamp,31*period)
+
+    def test_real_sqlite_lock_wait_crosses_candle_boundary_before_cross_entry(self):
+        import time
+        period=900000;boundary=32*period;now=boundary-100
+        with self.shared.transaction():self.shared.db.execute('DELETE FROM cross_quotes')
+        script=r"""import sys,time
+from trading_bot.cross_paper_book import CrossPaperBook
+from trading_bot.cross_paper_strategy import CrossPaperStrategy
+from trading_bot.paper_shared_store import SharedPaperStore
+now=int(sys.argv[2]);s=SharedPaperStore(sys.argv[1]);b=CrossPaperBook(s);strategy=CrossPaperStrategy(b)
+quotes={symbol:{'mark':mark,'time':now/1000,'server_ms':now,'next_due_ms':56800000,'interval_ms':28800000,'funding_complete':True} for symbol,mark in [('BTCUSDT','100'),('ETHUSDT','200')]}
+candles={symbol:[(i*900000,'100') for i in range(30)]+[(30*900000,last)] for symbol,last in [('BTCUSDT','101'),('ETHUSDT','99')]}
+print('ready',flush=True);sys.stdin.readline();start=time.monotonic()
+try:strategy.tick(quotes,candles,now,now=now/1000,clock=lambda:(now+int((time.monotonic()-start)*1000))/1000)
+except ValueError as e:
+ if str(e)!='candle interval expired':raise
+ print('expired',flush=True)
+else:raise AssertionError('entry was not blocked')
+s.close()
+"""
+        blocker=sqlite3.connect(self.path,isolation_level=None,timeout=5);self.addCleanup(blocker.close)
+        proc=subprocess.Popen([sys.executable,'-B','-c',script,str(self.path),str(now)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        try:
+            ready=proc.stdout.readline().strip()
+            if ready!=b'ready':
+                _,err=proc.communicate(timeout=20);self.fail('child did not start: '+err.decode())
+            blocker.execute('BEGIN IMMEDIATE')
+            proc.stdin.write(b'go\n');proc.stdin.flush();time.sleep(.6);blocker.rollback()
+            out,err=proc.communicate(timeout=20);self.assertEqual(proc.returncode,0,err.decode());self.assertIn(b'expired',out)
+        finally:
+            if blocker.in_transaction:blocker.rollback()
+            if proc.poll() is None:proc.kill();proc.wait()
         self.assertEqual(len(self.book._positions()),0)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 

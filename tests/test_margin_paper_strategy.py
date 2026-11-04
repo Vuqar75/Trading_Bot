@@ -92,6 +92,66 @@ class MarginStrategyTests(unittest.TestCase):
         self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],0)
         self.assertTrue(self.ledger.reconcile()['balanced'])
 
+    def test_boundary_repeat_and_restart_does_not_open_from_old_signal(self):
+        boundary=32*PERIOD;now=boundary+100;quotes=snapshots(now)
+        for q in quotes.values():
+            q['candle_server_ms']=boundary-100
+            q['filters']={**q['filters'],'observed_ms':now}
+        self.assertEqual(MarginPaperStrategy(self.book).tick(quotes,candles(),now_ms=now),[])
+        script=r"""import sqlite3,sys
+from trading_bot.margin_paper_book import MarginPaperBook
+from trading_bot.margin_paper_strategy import MarginPaperStrategy
+from trading_bot.paper_wallet_ledger import PaperWalletLedger
+from tests.test_margin_paper_strategy import snapshots,candles,PERIOD
+now=int(sys.argv[2]);db=sqlite3.connect(sys.argv[1],isolation_level=None,timeout=10);db.row_factory=sqlite3.Row;db.execute('PRAGMA foreign_keys=ON')
+ledger=object.__new__(PaperWalletLedger);ledger.db=db;ledger.fault=lambda p:None
+book=MarginPaperBook(ledger);quotes=snapshots(now)
+for q in quotes.values():q['candle_server_ms']=32*PERIOD-100;q['filters']={**q['filters'],'observed_ms':now}
+assert MarginPaperStrategy(book).tick(quotes,candles(),now_ms=now)==[]
+assert db.execute('SELECT count(*) FROM margin_positions').fetchone()[0]==0
+ledger.close()
+"""
+        child=subprocess.run([sys.executable,'-B','-c',script,str(self.path),str(now)],capture_output=True,timeout=20)
+        self.assertEqual(child.returncode,0,child.stderr.decode())
+        self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],0)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_real_sqlite_lock_wait_crosses_candle_boundary_before_entry(self):
+        import time
+        boundary=32*PERIOD;now=boundary-100
+        script=r"""import sqlite3,sys,time
+from trading_bot.margin_paper_book import MarginPaperBook
+from trading_bot.margin_paper_strategy import MarginPaperStrategy
+from trading_bot.paper_wallet_ledger import PaperWalletLedger
+from tests.test_margin_paper_strategy import snapshots,candles
+now=int(sys.argv[2]);db=sqlite3.connect(sys.argv[1],isolation_level=None,timeout=10);db.row_factory=sqlite3.Row;db.execute('PRAGMA foreign_keys=ON')
+ledger=object.__new__(PaperWalletLedger);ledger.db=db;ledger.fault=lambda p:None
+book=MarginPaperBook(ledger);strategy=MarginPaperStrategy(book)
+quotes=snapshots(now)
+for q in quotes.values():q['candle_server_ms']=now;q['filters']={**q['filters'],'observed_ms':now}
+print('ready',flush=True);sys.stdin.readline();start=time.monotonic()
+try:strategy.tick(quotes,candles(),now_ms=now,clock_ms=lambda:now+int((time.monotonic()-start)*1000))
+except ValueError as e:
+ if str(e)!='candle interval expired':raise
+ print('expired',flush=True)
+else:raise AssertionError('entry was not blocked')
+ledger.close()
+"""
+        blocker=sqlite3.connect(self.path,isolation_level=None,timeout=5);self.addCleanup(blocker.close)
+        proc=subprocess.Popen([sys.executable,'-B','-c',script,str(self.path),str(now)],stdin=subprocess.PIPE,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        try:
+            ready=proc.stdout.readline().strip()
+            if ready!=b'ready':
+                _,err=proc.communicate(timeout=20);self.fail('child did not start: '+err.decode())
+            blocker.execute('BEGIN IMMEDIATE')
+            proc.stdin.write(b'go\n');proc.stdin.flush();time.sleep(.6);blocker.rollback()
+            out,err=proc.communicate(timeout=20);self.assertEqual(proc.returncode,0,err.decode());self.assertIn(b'expired',out)
+        finally:
+            if blocker.in_transaction:blocker.rollback()
+            if proc.poll() is None:proc.kill();proc.wait()
+        self.assertEqual(self.ledger.db.execute('SELECT count(*) FROM margin_positions').fetchone()[0],0)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
     def test_two_signals_only_once_and_protective_exit_on_pause(self):
         strategy=MarginPaperStrategy(self.book)
         first=strategy.tick(snapshots(),candles(),now_ms=SERVER)

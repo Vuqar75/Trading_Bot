@@ -89,6 +89,21 @@ class ReportUpdateGuardTests(unittest.TestCase):
         self.assertFalse(self.shared.deployment_hold());self.assertFalse(self.shared.snapshot('spot')['paused'])
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],0)
 
+    def test_boundary_rollout_preserves_all_prior_checkpoints_and_pauses(self):
+        for namespace in ('reports','diagnostics','resilience'):
+            for state in ('freeze','release'):
+                self.shared.db.execute('INSERT INTO ledger_meta VALUES(?,?)',(namespace+'_update_'+state,'{}'))
+        before=[tuple(r) for r in self.shared.db.execute("SELECT key,value FROM ledger_meta WHERE key LIKE '%update_%' ORDER BY key")]
+        frozen=freeze_report_update(self.shared,self.q,'boundary:freeze:test',now=100,namespace='boundary')
+        self.assertEqual(frozen['paused'],{'spot':False,'futures':True,'futures_cross':True,'margin_cross':True})
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            result=release_report_update(self.shared,self.q,'boundary:release:test',protection_checked_ms=100000,now=100,namespace='boundary')
+        self.assertEqual(result['enabled'],['spot'])
+        after=[tuple(r) for r in self.shared.db.execute("SELECT key,value FROM ledger_meta WHERE key LIKE '%update_%' AND key NOT LIKE 'boundary_%' ORDER BY key")]
+        self.assertEqual(before,after)
+        self.assertEqual(self.shared.snapshot('futures')['position'],self.old_position)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
     def test_resilience_namespace_keeps_earlier_deployment_records(self):
         self.shared.db.execute("INSERT INTO ledger_meta VALUES('diagnostics_update_freeze','{}')")
         before=self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='diagnostics_update_freeze'").fetchone()[0]
