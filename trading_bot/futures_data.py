@@ -22,8 +22,13 @@ class FuturesData:
     HOST = 'https://fapi.binance.com'
     PATHS = {'/fapi/v1/time', '/fapi/v1/premiumIndex', '/fapi/v1/klines', '/fapi/v1/fundingRate'}
 
-    def __init__(self, transport=None):
+    def __init__(self, transport=None, *, symbol='BTCUSDT'):
+        from .paper_wallet_ledger import valid_asset
+        if (not isinstance(symbol,str) or not symbol.endswith('USDT') or
+                not valid_asset(symbol[:-4]) or symbol[:-4]=='USDT'):
+            raise ObservationError('Unsupported futures symbol')
         self.transport = transport or self._http
+        self.symbol = symbol
 
     @staticmethod
     def _http(request):
@@ -40,8 +45,8 @@ class FuturesData:
 
     def mark(self):
         server = self.get('/fapi/v1/time')['serverTime']
-        row = self.get('/fapi/v1/premiumIndex', {'symbol': 'BTCUSDT'})
-        if type(server) is not int or row.get('symbol') != 'BTCUSDT' or type(row.get('time')) is not int:
+        row = self.get('/fapi/v1/premiumIndex', {'symbol': self.symbol})
+        if type(server) is not int or row.get('symbol') != self.symbol or type(row.get('time')) is not int:
             raise ObservationError('Invalid mark identity/time')
         if not -5000 <= server - row['time'] <= 60000:
             raise ObservationError('Stale mark price')
@@ -52,7 +57,7 @@ class FuturesData:
 
     def candles(self, interval, server):
         seconds = INTERVALS[interval]
-        rows = self.get('/fapi/v1/klines', {'symbol': 'BTCUSDT', 'interval': interval, 'limit': 40})
+        rows = self.get('/fapi/v1/klines', {'symbol': self.symbol, 'interval': interval, 'limit': 40})
         closed = [(int(r[0]), number(r[4])) for r in rows if int(r[6]) < server]
         if len(closed) < 31 or any(p <= 0 for _, p in closed):
             raise ObservationError('Insufficient valid futures candles')
@@ -68,13 +73,13 @@ class FuturesData:
         found = []
         cursor = start
         for _ in range(100):
-            page = self.get('/fapi/v1/fundingRate', {'symbol': 'BTCUSDT', 'startTime': cursor, 'endTime': end, 'limit': 1000})
+            page = self.get('/fapi/v1/fundingRate', {'symbol': self.symbol, 'startTime': cursor, 'endTime': end, 'limit': 1000})
             if not isinstance(page, list) or len(page) > 1000:
                 raise ObservationError('Invalid funding page')
             previous = cursor - 1
             for row in page:
                 stamp = row.get('fundingTime')
-                if row.get('symbol') != 'BTCUSDT' or type(stamp) is not int or not previous < stamp <= end:
+                if row.get('symbol') != self.symbol or type(stamp) is not int or not previous < stamp <= end:
                     raise ObservationError('Funding page identity/order conflict')
                 rate, mark = signed_number(row['fundingRate']), number(row['markPrice'])
                 if not mark or abs(rate) >= 1:

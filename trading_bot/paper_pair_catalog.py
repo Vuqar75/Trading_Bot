@@ -89,3 +89,21 @@ def spot_usdt_candidate(info, expected_symbol, desired_quantity, reference_price
         raise PairMetadataError('required_filter_field_missing') from None
     return {'symbol': symbol, 'base_asset': base, 'quote_asset': 'USDT',
             'quantity': format(quantity, 'f'), 'reference_notional': format(notional, 'f')}
+
+
+def usd_m_perpetual_candidate(info, expected_symbol, desired_quantity, reference_price):
+    """Offline filter preview for a supplied USDT-margined perpetual contract."""
+    if (not isinstance(info,dict) or info.get('contractType')!='PERPETUAL' or
+            info.get('marginAsset')!='USDT'):
+        raise PairMetadataError('unsupported_futures_contract')
+    filters=info.get('filters')
+    if not isinstance(filters,list):raise PairMetadataError('invalid_filters')
+    adapted=[]
+    for item in filters:
+        if not isinstance(item,dict):raise PairMetadataError('invalid_filters')
+        row=dict(item)
+        if row.get('filterType')=='MIN_NOTIONAL' and 'minNotional' not in row and 'notional' in row:
+            row['minNotional']=row['notional']
+        adapted.append(row)
+    data=dict(info);data['filters']=adapted;data['isSpotTradingAllowed']=True
+    return spot_usdt_candidate(data,expected_symbol,desired_quantity,reference_price)
