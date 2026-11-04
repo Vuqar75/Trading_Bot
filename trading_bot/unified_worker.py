@@ -10,6 +10,8 @@ def process_market(queue, receiver, store, market, *, started=0, fault=lambda po
     for job in queue.pending(market)[:20]:
         action = job['command']
         payload = json.loads(job['payload'])
+        if action in ('/pair_status','/confirmed_pair'):
+            continue  # Pair worker owns the durable job and its acknowledgements.
         if action in ('/resume', '/confirmed_close') or action.startswith(('/timeframe ', '/leverage ')):
             if payload.get('received_at', 0) < started:
                 queue.acknowledge(job['id'], 'Команда принята до перезапуска; отправьте новую.', applied=False)

@@ -76,7 +76,7 @@ class TelegramTransport:
                     try:
                         if command=='/pair':
                             from .paper_pair_snapshots import pair_snapshots
-                            unified.receive(ident,authorized,text,fresh=fresh,pairs=pair_snapshots(store.shared))
+                            unified.receive(ident,authorized,text,fresh=fresh,pairs=pair_snapshots(store.shared,requested_market=unified.state('mode')))
                             continue
                         spot = dict(store.get('position') or {})
                         spot['symbol']=store.get('identity').get('symbol','BTCUSDT')
@@ -368,6 +368,7 @@ def main():
     parser.add_argument('--telegram', action='store_true')
     parser.add_argument('--futures-outbox-db', help='Deliver the separate futures paper outbox through this Telegram bot')
     parser.add_argument('--shared-paper', action='store_true', help='Use an offline consolidated paper database (experimental)')
+    parser.add_argument('--experimental-pair', action='store_true', help='Enable experimental shared paper pair selection')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--allow-paper-signal', action='store_true', help='Allow explicit SIGUSR1 activation of paper entries')
     args = parser.parse_args()
@@ -384,6 +385,8 @@ def main():
         parser.error('Testnet mode requires --enable-testnet-orders; still starts paused')
     if args.shared_paper and (args.mode != 'paper' or args.enable_testnet_orders):
         parser.error('Shared paper storage cannot use Testnet orders')
+    if args.experimental_pair and (not args.shared_paper or args.mode!='paper' or args.enable_testnet_orders):
+        parser.error('Pair experiment requires shared paper mode')
     if args.shared_paper and args.futures_outbox_db and Path(args.futures_outbox_db).resolve() != Path(args.db).resolve():
         parser.error('Shared paper relay must use the shared database')
     os.umask(0o077)
@@ -409,7 +412,13 @@ def main():
     if args.allow_paper_signal:
         signal.signal(signal.SIGUSR1, activate_paper)
     with process_lock(args.db + ('.spot.lock' if args.shared_paper else '.lock')):
-        store = RuntimeStore(args.db, identity, shared=args.shared_paper)
+        if args.experimental_pair:
+            from .paper_pair_runtime_offline import restore_spot_store
+            store=restore_spot_store(args.db)
+            saved=store.get('identity')
+            if any(saved.get(k)!=identity.get(k) for k in ('schema','mode','interval','amount','account')):
+                store.close();raise ObservationError('Spot paper parameters changed')
+        else:store = RuntimeStore(args.db, identity, shared=args.shared_paper)
         relay = None
         unified = None
         receiver = None
@@ -421,7 +430,7 @@ def main():
                     raise ObservationError('Unified control requires paper mode, Telegram and futures relay')
                 from .unified_queue import UnifiedQueue
                 from .unified_receiver import MarketReceiver
-                unified = UnifiedQueue(unified_path)
+                unified = UnifiedQueue(unified_path,allow_pair_experiment=args.experimental_pair)
                 unified.seed_offset(store.get('offset'))
                 receiver = MarketReceiver(args.db, 'spot')
                 store.delivery_label = '[Spot paper]'
@@ -433,7 +442,13 @@ def main():
                     if not unified:
                         raise
                     log.warning('Futures relay unavailable; Spot remains active')
-            app = Application(store, exchange, reader, interval=args.interval, amount=args.amount)
+            pair_runner=None
+            if args.experimental_pair:
+                if not unified:raise ObservationError('Pair experiment requires unified queue')
+                from .paper_pair_runtime_offline import ExperimentalSpotRunner
+                pair_runner=ExperimentalSpotRunner(store,unified,reader,amount=args.amount,interval=args.interval)
+                app=pair_runner.app
+            else:app = Application(store, exchange, reader, interval=args.interval, amount=args.amount)
             while running:
                 if activate:
                     activate = False
@@ -451,6 +466,10 @@ def main():
                         store.set('error', {'stage': 'trading', 'type': type(exc).__name__, 'time': time.time(), 'reason': str(exc) if isinstance(exc, ObservationError) else 'Internal failure'})
                     log.error('Trading cycle failed: %s', type(exc).__name__)
                 if unified:
+                    if pair_runner:
+                        try:pair_runner.pair_step(clock=time.time)
+                        except Exception as exc:log.error('Spot pair selection failed: %s',type(exc).__name__)
+                        finally:app=pair_runner.app
                     try:
                         from .unified_worker import process_market
                         process_market(unified, receiver, store, 'spot', started=worker_started)

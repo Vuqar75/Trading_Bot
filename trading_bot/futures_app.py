@@ -139,12 +139,15 @@ def main():
     parser.add_argument('--maintenance-bps', default='50')
     parser.add_argument('--allow-paper-signal', action='store_true')
     parser.add_argument('--shared-paper', action='store_true', help='Use an offline consolidated paper database (experimental)')
+    parser.add_argument('--experimental-pair',action='store_true',help='Enable experimental shared paper pair selection')
     args = parser.parse_args()
     if args.demo:
         demo()
         return
     if args.poll_seconds < 5 or (args.once and args.allow_paper_signal):
         parser.error('poll-seconds >=5; signal activation requires continuous mode')
+    if args.experimental_pair and (not args.shared_paper or args.telegram):
+        parser.error('Pair experiment requires shared paper without a second Telegram poller')
     os.umask(0o077)
     db = str(Path(args.db).resolve())
     telegram = TelegramTransport(os.getenv('FUTURES_TELEGRAM_BOT_TOKEN'), os.getenv('FUTURES_TELEGRAM_OWNER_ID')) if args.telegram else None
@@ -164,8 +167,16 @@ def main():
         locks.enter_context(process_lock(db+('.futures.lock' if args.shared_paper else '.lock')))
         if telegram:
             locks.enter_context(process_lock(db+'.delivery.lock'))
-        store = FuturesStore(db, margin=args.margin, fee_bps=args.fee_bps,
-                             slippage_bps=args.slippage_bps, maintenance_bps=args.maintenance_bps, shared=args.shared_paper)
+        if args.experimental_pair:
+            from .paper_pair_runtime_offline import restore_isolated_store
+            store=restore_isolated_store(db)
+            saved=store.get('identity')
+            if any(Decimal(str(saved[k]))!=Decimal(str(v)) for k,v in
+                   (('margin',args.margin),('fee_bps',args.fee_bps),('slippage_bps',args.slippage_bps),('maintenance_bps',args.maintenance_bps))):
+                store.close();raise ObservationError('Futures paper parameters changed')
+        else:
+            store = FuturesStore(db, margin=args.margin, fee_bps=args.fee_bps,
+                                 slippage_bps=args.slippage_bps, maintenance_bps=args.maintenance_bps, shared=args.shared_paper)
         unified = None
         receiver = None
         worker_started = time.time()
@@ -176,9 +187,15 @@ def main():
                     raise ObservationError('Unified futures must not poll Telegram')
                 from .unified_queue import UnifiedQueue
                 from .unified_receiver import MarketReceiver
-                unified = UnifiedQueue(unified_path)
+                unified = UnifiedQueue(unified_path,allow_pair_experiment=args.experimental_pair)
                 receiver = MarketReceiver(db, 'futures')
-            app = FuturesApplication(store, FuturesData())
+            pair_runner=None
+            if args.experimental_pair:
+                if not unified:raise ObservationError('Pair experiment requires unified queue')
+                from .paper_pair_runtime_offline import ExperimentalIsolatedRunner
+                pair_runner=ExperimentalIsolatedRunner(store,unified,lambda symbol:FuturesData(symbol=symbol))
+                store=pair_runner.store;app=pair_runner.app
+            else:app = FuturesApplication(store, FuturesData())
             while running:
                 try:
                     app.tick()
@@ -188,6 +205,10 @@ def main():
                         store.set('error', {'type': type(exc).__name__, 'reason': str(exc) if isinstance(exc, ObservationError) else 'Internal failure', 'time': time.time()})
                     logging.error('Futures cycle failed: %s', type(exc).__name__)
                 if unified:
+                    if pair_runner:
+                        try:pair_runner.pair_step(clock=time.time)
+                        except Exception as exc:logging.error('Futures pair selection failed: %s',type(exc).__name__)
+                        finally:store=pair_runner.store;app=pair_runner.app
                     try:
                         from .unified_worker import process_market
                         process_market(unified, receiver, store, 'futures', started=worker_started)

@@ -85,7 +85,7 @@ class PairCrossOfflineTests(unittest.TestCase):
         q.receive(1,True,'/mode futures_cross',now=100)
         q.receive(2,True,'/pair BTCUSDT SOLUSDT',now=100,
                   pairs={'futures_cross':{'symbols':['BTCUSDT','ETHUSDT'],'version':0}})
-        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        token=q.pair_proposals()[0]['id']
         q.receive(3,True,'/confirm '+token,now=101)
         class Reader:
             def get(inner,path):
@@ -112,7 +112,7 @@ class PairCrossOfflineTests(unittest.TestCase):
         q.receive(1,True,'/mode futures_cross',now=100)
         q.receive(2,True,'/pair BTCUSDT SOLUSDT',now=100,
                   pairs={'futures_cross':{'symbols':['BTCUSDT','ETHUSDT'],'version':0}})
-        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        token=q.pair_proposals()[0]['id']
         q.receive(3,True,'/confirm '+token,now=101)
         class Reader:
             def get(inner,path):return {'symbols':[self.info('BTC'),self.info('SOL')]}

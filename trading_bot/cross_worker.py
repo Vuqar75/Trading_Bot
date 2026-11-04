@@ -32,6 +32,7 @@ def process_cross(queue, receiver, book, *, started=0, now=None, clock=time.time
     now=clock() if now is None else now
     for job in queue.pending('futures_cross')[:20]:
         command=job['command'];payload=json.loads(job['payload']);uid=job['update_id']
+        if command in ('/pair_status','/confirmed_pair'):continue
         if receiver.hold_resume and command in ('/close','/confirmed_close'):
             queue.acknowledge(job['id'],'Ручное закрытие недоступно во время проверки восстановления.',applied=False)
             continue

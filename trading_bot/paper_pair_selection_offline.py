@@ -5,6 +5,7 @@ No network operation occurs while the financial and command DBs are locked.
 """
 import hashlib
 import json
+import math
 import re
 import sqlite3
 import time
@@ -25,13 +26,15 @@ def _confirmed_job(queue, market, job_id, request_id, previous, version, target,
     payload=json.loads(row[1]);token=payload.get('proposal')
     if not isinstance(token,str) or request_id!='pair:'+token:
         raise ValueError('Pair confirmation identity mismatch')
-    proposal=queue.execute('SELECT market,previous,version,target,expires,status FROM unified_pair_proposals WHERE id=?',(token,)).fetchone()
-    if (not proposal or proposal[0]!=market or json.loads(proposal[1])!=sorted(previous) or
-        proposal[2]!=version or json.loads(proposal[3])!=sorted(target) or proposal[5]!='CONFIRMED' or
+    row=queue.execute('SELECT value FROM unified_state WHERE key=?',('pair-proposal:'+token,)).fetchone()
+    proposal=json.loads(row[0]) if row else None
+    if (not isinstance(proposal,dict) or proposal.get('id')!=token or proposal.get('market')!=market or proposal.get('previous')!=sorted(previous) or
+        type(proposal.get('version')) is not int or proposal.get('version')!=version or proposal.get('target')!=sorted(target) or proposal.get('status')!='CONFIRMED' or
+        isinstance(proposal.get('expires'),bool) or not isinstance(proposal.get('expires'),(int,float)) or not math.isfinite(proposal['expires']) or
         payload.get('previous')!=sorted(previous) or payload.get('version')!=version or
-        payload.get('target')!=sorted(target) or payload.get('expires')!=proposal[4]):
+        payload.get('target')!=sorted(target) or payload.get('expires')!=proposal.get('expires')):
         raise ValueError('Pair confirmation does not match selection')
-    if now>=proposal[4]:raise ValueError('Pair confirmation expired')
+    if now>=proposal['expires']:raise ValueError('Pair confirmation expired')
     return job_id
 
 

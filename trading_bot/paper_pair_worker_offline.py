@@ -14,8 +14,17 @@ def _select_or_expire(queue,job,select):
         queue.acknowledge(job['id'],'Пара не проходит проверку рыночных фильтров.',applied=False)
         return None
     except ValueError as exc:
-        if str(exc)!='Pair confirmation expired':raise
-        queue.acknowledge(job['id'],'Подтверждение смены пары истекло; отправьте новую команду.',applied=False)
+        final={'Pair confirmation expired','Stale pair selection','Stale cross pair selection',
+               'Stale margin pair selection','Spot must be paused','Isolated futures must be paused',
+               'Cross must be paused','Margin must be paused','Existing futures position prevents selection',
+               'Spot position or unknown fees prevent selection','Existing cross positions prevent selection',
+               'Margin position or debt prevents selection','Spot order unresolved',
+               'Spot command pending','Futures command pending','Cross command pending','Margin command pending',
+               'Spot confirmation pending','Futures confirmation pending','Cross confirmation pending','Margin confirmation pending',
+               'Spot transfer pending','Futures transfer pending','Cross transfer pending','Margin transfer pending',
+               'Cross reserve or liability prevents selection','Margin reserve prevents selection'}
+        if str(exc) not in final:raise
+        queue.acknowledge(job['id'],'Смена пары отклонена: условия изменились или подтверждение истекло. Проверьте состояние и отправьте новую команду.',applied=False)
         return None
 
 

@@ -2,11 +2,12 @@
 import json
 
 
-def pair_snapshots(shared):
+def pair_snapshots(shared, *, requested_market=None):
     if not shared.db.in_transaction:
         raise ValueError('Pair snapshot requires a financial read transaction')
     result={}
     for market,mode in (('spot','paper'),('futures','futures-paper')):
+        if requested_market is not None and market!=requested_market:continue
         identity=shared._get(market,'identity')
         version=shared._get(market,'pair_selection_version',0)
         if not isinstance(identity,dict) or identity.get('mode')!=mode or type(version) is not int or version<0:
@@ -14,7 +15,7 @@ def pair_snapshots(shared):
         symbol=identity.get('symbol','BTCUSDT')
         if not isinstance(symbol,str):raise ValueError('Pair symbol unavailable')
         result[market]={'symbols':[symbol],'version':version}
-    if shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_runtime'").fetchone():
+    if requested_market in (None,'futures_cross') and shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_runtime'").fetchone():
         from .cross_paper_book import CrossPaperBook
         book=object.__new__(CrossPaperBook);book.db=shared.db;book.shared=shared;book.ledger=shared.ledger
         symbols=book._symbols()
@@ -22,7 +23,7 @@ def pair_snapshots(shared):
         version=json.loads(row[0]) if row else 0
         if type(version) is not int or version<0:raise ValueError('Cross pair version unavailable')
         result['futures_cross']={'symbols':list(symbols),'version':version}
-    if shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_runtime'").fetchone():
+    if requested_market in (None,'margin_cross') and shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_runtime'").fetchone():
         from .margin_paper_book import PAIRS
         row=shared.db.execute("SELECT value FROM margin_runtime WHERE key='pair_symbols'").fetchone()
         symbols=json.loads(row[0]) if row else sorted(PAIRS)

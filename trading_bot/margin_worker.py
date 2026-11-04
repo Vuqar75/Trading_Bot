@@ -16,6 +16,7 @@ def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=
     proposals=MarginRepayProposals(book.ledger,loans=book.loans)
     for job in queue.pending('margin_cross')[:20]:
         command=job['command'];payload=json.loads(job['payload']);uid=job['update_id'];now=clock()
+        if command in ('/pair_status','/confirmed_pair'):continue
         if (command in ('/resume','/confirmed_close','/confirm_repay') or command.startswith(('/timeframe ','/leverage ','/repay '))) and payload.get('received_at',0)<started:
             prior=(command=='/confirmed_close' and book.db.execute('SELECT 1 FROM margin_trade_operations WHERE id=?',('telegram:'+str(uid),)).fetchone())
             if command=='/confirm_repay':prior=book.db.execute("SELECT 1 FROM margin_repay_proposals WHERE id=? AND status='DONE'",(payload.get('token'),)).fetchone()

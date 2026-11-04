@@ -26,15 +26,13 @@ class UnifiedQueue:
         with self.transaction():
             tables = {r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
             expected = {'unified_state', 'unified_updates', 'unified_jobs', 'unified_proposals', 'unified_outbox'}
-            if tables and (not expected.issubset(tables) or tables-expected-{'unified_pair_proposals'}):
+            if tables and tables != expected:
                 raise ValueError('Dedicated unified queue database required')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_state(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_updates(id INTEGER PRIMARY KEY,fingerprint TEXT NOT NULL,command TEXT NOT NULL,market TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_jobs(id INTEGER PRIMARY KEY,update_id INTEGER NOT NULL REFERENCES unified_updates(id),market TEXT NOT NULL,command TEXT NOT NULL,payload TEXT NOT NULL,status TEXT NOT NULL DEFAULT \'PENDING\',result TEXT,UNIQUE(update_id,market))')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_proposals(id TEXT PRIMARY KEY,market TEXT NOT NULL,position TEXT NOT NULL,quantity TEXT NOT NULL,expires REAL NOT NULL,status TEXT NOT NULL)')
             self.db.execute('CREATE TABLE IF NOT EXISTS unified_outbox(id INTEGER PRIMARY KEY,message TEXT NOT NULL)')
-            if allow_pair_experiment:
-                self.db.execute('CREATE TABLE IF NOT EXISTS unified_pair_proposals(id TEXT PRIMARY KEY,update_id INTEGER NOT NULL UNIQUE,market TEXT NOT NULL,previous TEXT NOT NULL,version INTEGER NOT NULL,target TEXT NOT NULL,expires REAL NOT NULL,status TEXT NOT NULL)')
             self.db.execute("INSERT OR IGNORE INTO unified_state VALUES('mode','spot')")
             self.db.execute("INSERT OR IGNORE INTO unified_state VALUES('offset','0')")
 
@@ -55,6 +53,17 @@ class UnifiedQueue:
 
     def state(self, key):
         return self.db.execute('SELECT value FROM unified_state WHERE key=?', (key,)).fetchone()[0]
+
+    def pair_proposal(self,token):
+        row=self.db.execute('SELECT value FROM unified_state WHERE key=?',('pair-proposal:'+token,)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def pair_proposals(self):
+        return [json.loads(row[0]) for row in self.db.execute("SELECT value FROM unified_state WHERE key LIKE 'pair-proposal:%' ORDER BY key")]
+
+    def _save_pair_proposal(self,proposal):
+        self.db.execute('INSERT OR REPLACE INTO unified_state VALUES(?,?)',
+                        ('pair-proposal:'+proposal['id'],json.dumps(proposal,sort_keys=True)))
 
     def _notify(self, text):
         if not text.startswith('['):
@@ -96,7 +105,7 @@ class UnifiedQueue:
                 if command == '/start' and len(parts) == 1:
                     self._notify(unified_start_message())
                 elif command == '/help' and len(parts) == 1:
-                    for message in unified_help_messages(market_label(mode)):
+                    for message in unified_help_messages(market_label(mode),experimental_pair=self.allow_pair_experiment):
                         self._notify(message)
                 elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
@@ -129,8 +138,8 @@ class UnifiedQueue:
                         if not valid:self._notify('['+market_label(market)+'] Некорректная пара или неизвестная версия.')
                         else:
                             token='P-'+secrets.token_hex(8)
-                            self.db.execute('INSERT INTO unified_pair_proposals VALUES(?,?,?,?,?,?,?,?)',
-                                (token,ident,market,json.dumps(sorted(previous)),version,json.dumps(target),now+120,'OPEN'))
+                            self._save_pair_proposal({'id':token,'update_id':ident,'market':market,
+                                'previous':sorted(previous),'version':version,'target':target,'expires':now+120,'status':'OPEN'})
                             self._notify('['+market_label(market)+'] Сменить '+', '.join(sorted(previous))+' на '+', '.join(target)+'? /confirm '+token+' или /cancel '+token+'.')
                 elif command in ('/signal', '/history', '/report', '/pause', '/resume', '/timeframe', '/leverage', '/close'):
                     if not fresh and command in ('/resume', '/close', '/timeframe', '/leverage'):
@@ -179,18 +188,18 @@ class UnifiedQueue:
                         market='wallet';payload={'received_at':now,'expires':now+120} if command=='/transfer' else {}
                         jobs=[('wallet',' '.join([command]+parts[1:]))]
                 elif command in ('/confirm','/cancel') and len(parts)==2 and parts[1].startswith('P-') and fresh and self.allow_pair_experiment:
-                    proposal=self.db.execute('SELECT * FROM unified_pair_proposals WHERE id=?',(parts[1],)).fetchone()
+                    proposal=self.pair_proposal(parts[1])
                     if not proposal or proposal['status']!='OPEN' or proposal['expires']<=now:
                         self._notify('Подтверждение пары не найдено или устарело.')
                     elif command=='/cancel':
-                        self.db.execute("UPDATE unified_pair_proposals SET status='CANCELED' WHERE id=?",(parts[1],))
+                        proposal['status']='CANCELED';self._save_pair_proposal(proposal)
                         self._notify('['+market_label(proposal['market'])+'] Смена пары отменена.')
                     else:
                         market=proposal['market']
-                        payload={'proposal':proposal['id'],'previous':json.loads(proposal['previous']),
-                                 'version':proposal['version'],'target':json.loads(proposal['target']),
+                        payload={'proposal':proposal['id'],'previous':proposal['previous'],
+                                 'version':proposal['version'],'target':proposal['target'],
                                  'expires':proposal['expires'],'received_at':now}
-                        self.db.execute("UPDATE unified_pair_proposals SET status='CONFIRMED' WHERE id=?",(parts[1],))
+                        proposal['status']='CONFIRMED';self._save_pair_proposal(proposal)
                         jobs=[(market,'/confirmed_pair')]
                 elif command in ('/confirm','/cancel') and len(parts)==2 and parts[1].startswith('T-') and fresh:
                     market='wallet';payload={'received_at':now,'token':parts[1]}

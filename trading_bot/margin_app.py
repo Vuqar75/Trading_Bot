@@ -61,6 +61,7 @@ def main():
     parser.add_argument('--db',required=True);parser.add_argument('--queue',required=True)
     parser.add_argument('--poll-seconds',type=int,default=10);parser.add_argument('--once',action='store_true')
     parser.add_argument('--hold-resume',action='store_true')
+    parser.add_argument('--experimental-pair',action='store_true',help='Enable experimental paper pair selection')
     args=parser.parse_args()
     if not 5<=args.poll_seconds<=300:raise SystemExit('Invalid polling interval')
     path=Path(args.db).resolve(strict=True);queue_path=Path(args.queue).resolve(strict=True)
@@ -72,12 +73,24 @@ def main():
     with process_lock(str(path)+'.margin.lock'):
         shared=SharedPaperStore(path);queue=None
         try:
-            queue=UnifiedQueue(queue_path);book=MarginPaperBook(shared.ledger)
+            queue=UnifiedQueue(queue_path,allow_pair_experiment=args.experimental_pair)
+            pair_runner=None
+            if args.experimental_pair:
+                from .paper_pair_runtime_offline import ExperimentalMarginRunner
+                pair_runner=ExperimentalMarginRunner(shared,queue,lambda symbols:MarginSpotData(experimental_pairs={s:s[:-4] for s in symbols if s not in PAIRS}))
+                book=pair_runner.book;receiver=pair_runner.receiver;strategy=pair_runner.strategy;reader=pair_runner.reader
+            else:
+                book=MarginPaperBook(shared.ledger)
+                receiver=MarginCommandReceiver(book,hold_resume=True);strategy=MarginPaperStrategy(book);reader=MarginSpotData()
             with book.ledger.transaction():book.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='margin_cross'")
-            receiver=MarginCommandReceiver(book,hold_resume=True);strategy=MarginPaperStrategy(book);reader=MarginSpotData()
             started=time.time();error=None
             while not stop.is_set():
                 try:
+                    if pair_runner:
+                        try:pair_runner.pair_step(clock=time.time)
+                        except Exception as exc:log.error('Margin pair selection failed: %s',type(exc).__name__)
+                        finally:
+                            book=pair_runner.book;receiver=pair_runner.receiver;strategy=pair_runner.strategy;reader=pair_runner.reader
                     cycle(shared,book,queue,receiver,strategy,reader,started=started)
                     with book.ledger.transaction():
                         book._check();book.db.execute("UPDATE margin_runtime SET value='null' WHERE key='error'")

@@ -68,7 +68,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         q=UnifiedQueue(self.queue,allow_pair_experiment=True)
         try:
             q.receive(1,True,'/pair SOLUSDT',now=100,pairs={'spot':{'symbols':['BTCUSDT'],'version':0}})
-            token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+            token=q.pair_proposals()[0]['id']
             q.receive(2,True,'/confirm '+token,now=101)
             return token,q.pending('spot')[0]['id']
         finally:q.close()
@@ -81,11 +81,22 @@ class PairSelectionOfflineTests(unittest.TestCase):
                                              'date':int(now),'text':'/pair SOLUSDT'}}
             telegram=TelegramTransport('FAKE','1',lambda req:{'ok':True,'result':[update]},started=now-1)
             telegram.poll(store,q)
-            proposal=q.db.execute('SELECT * FROM unified_pair_proposals').fetchone()
+            proposal=q.pair_proposals()[0]
             self.assertEqual(proposal['market'],'spot')
             self.assertEqual(proposal['version'],0)
-            self.assertEqual(proposal['previous'],'["BTCUSDT"]')
+            self.assertEqual(proposal['previous'],['BTCUSDT'])
             self.assertFalse(store.db.in_transaction)
+        finally:store.close();q.close()
+
+    def test_pair_receipt_for_spot_does_not_require_other_market_identity(self):
+        now=time.time();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        store=RuntimeStore(self.financial,{'mode':'paper','symbol':'BTCUSDT'},shared=True)
+        try:
+            with self.shared.transaction():self.shared._set('futures','identity',None)
+            update={'update_id':1,'message':{'from':{'id':1},'chat':{'id':1,'type':'private'},
+                                             'date':int(now),'text':'/pair SOLUSDT'}}
+            TelegramTransport('FAKE','1',lambda req:{'ok':True,'result':[update]},started=now-1).poll(store,q)
+            self.assertEqual(q.pair_proposals()[0]['market'],'spot')
         finally:store.close();q.close()
 
     def test_confirmed_pair_job_executes_once_and_preserves_capital(self):
@@ -231,7 +242,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         q=UnifiedQueue(self.queue,allow_pair_experiment=True)
         q.receive(1,True,'/mode futures',now=100)
         q.receive(2,True,'/pair SOLUSDT',now=100,pairs={'futures':{'symbols':['BTCUSDT'],'version':0}})
-        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        token=q.pair_proposals()[0]['id']
         q.receive(3,True,'/confirm '+token,now=101)
         store=FuturesStore(self.financial,shared=True)
         class Reader:
@@ -254,7 +265,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         q=UnifiedQueue(self.queue,allow_pair_experiment=True)
         q.receive(1,True,'/mode futures',now=100)
         q.receive(2,True,'/pair SOLUSDT',now=100,pairs={'futures':{'symbols':['BTCUSDT'],'version':0}})
-        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        token=q.pair_proposals()[0]['id']
         q.receive(3,True,'/confirm '+token,now=101)
         class Reader:
             pair_symbol='SOLUSDT'
@@ -288,7 +299,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         now=time.time();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
         try:
             q.receive(1,True,'/pair SOLUSDT',now=now-119.5,pairs={'spot':{'symbols':['BTCUSDT'],'version':0}})
-            token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+            token=q.pair_proposals()[0]['id']
             q.receive(2,True,'/confirm '+token,now=now)
             job=q.pending('spot')[0]['id']
         finally:q.close()
@@ -408,7 +419,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         q.receive(1,True,'/mode margin_cross',now=100)
         q.receive(2,True,'/pair BTCUSDT SOLUSDT',now=100,
                   pairs={'margin_cross':{'symbols':['BTCUSDT','ETHUSDT'],'version':0}})
-        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        token=q.pair_proposals()[0]['id']
         q.receive(3,True,'/confirm '+token,now=101)
         class Reader:
             def get(inner,path,params):
@@ -432,7 +443,7 @@ class PairSelectionOfflineTests(unittest.TestCase):
         q.receive(1,True,'/mode margin_cross',now=100)
         q.receive(2,True,'/pair BTCUSDT SOLUSDT',now=100,
                   pairs={'margin_cross':{'symbols':['BTCUSDT','ETHUSDT'],'version':0}})
-        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        token=q.pair_proposals()[0]['id']
         q.receive(3,True,'/confirm '+token,now=101)
         class Reader:
             def get(inner,path,params):return {'symbols':[spot_info(params['symbol'][:-4])]}

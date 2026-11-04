@@ -19,7 +19,7 @@ class PairQueueOfflineTests(unittest.TestCase):
                    'futures':{'symbols':['BTCUSDT'],'version':4}}
 
     def proposal(self):
-        return self.q.db.execute('SELECT * FROM unified_pair_proposals').fetchone()
+        return next(iter(self.q.pair_proposals()),None)
 
     def test_bound_market_version_and_one_confirmation_after_mode_change(self):
         self.q.receive(1,True,'/pair SOLUSDT',now=100,pairs=self.snap)
@@ -53,6 +53,14 @@ class PairQueueOfflineTests(unittest.TestCase):
         self.q.receive(2,True,'/confirm '+token,now=102)
         payload=json.loads(self.q.pending('spot')[0]['payload'])
         self.assertEqual((payload['previous'],payload['version']),(['BTCUSDT'],3))
+
+    def test_pair_state_keeps_legacy_queue_table_layout(self):
+        self.q.receive(1,True,'/pair SOLUSDT',now=100,pairs=self.snap)
+        tables={row[0] for row in self.q.db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
+        self.assertEqual(tables,{'unified_state','unified_updates','unified_jobs','unified_proposals','unified_outbox'})
+        legacy=UnifiedQueue(self.path)
+        try:self.assertEqual(legacy.state('offset'),'2')
+        finally:legacy.close()
 
     def test_unknown_snapshot_invalid_symbol_or_stale_never_proposes(self):
         self.q.receive(1,True,'/pair SOLUSDT',now=100,pairs={})
@@ -98,6 +106,16 @@ class PairQueueOfflineTests(unittest.TestCase):
         self.q.add_proposal(1,'spot','spot-sol','0.25',now=101)
         message=self.q.db.execute("SELECT message FROM unified_outbox WHERE message LIKE '%spot-sol%' ORDER BY id DESC").fetchone()[0]
         self.assertIn('SOLUSDT',message);self.assertIn(' SOL',message)
+
+    def test_experimental_help_lists_pair_and_start_stays_short(self):
+        self.q.receive(1,True,'/help',now=100)
+        messages=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id')]
+        self.assertEqual(len(messages),3);self.assertIn('/pair SOLUSDT',messages[0])
+        self.assertNotIn('пока не поддерживается',messages[0])
+        self.q.receive(2,True,'/start',now=101)
+        last=self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id DESC').fetchone()[0]
+        self.assertIn('/help',last);self.assertNotIn('[Справка',last)
+        self.assertEqual(self.q.db.execute('SELECT count(*) FROM unified_jobs').fetchone()[0],0)
 
     def test_process_death_before_and_after_confirmation_commit(self):
         self.q.receive(1,True,'/pair SOLUSDT',now=100,pairs=self.snap)

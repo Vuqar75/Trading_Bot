@@ -10,8 +10,8 @@ def unified_start_message():
             'виртуальными сделками в paper-режиме. Подробные команды: /help.')
 
 
-def unified_help_messages(selected_market):
-    return (
+def unified_help_messages(selected_market, *, experimental_pair=False):
+    pages=(
         f'''[Справка 1/3] Выбор рынка и торговля
 Выбранный рынок: {selected_market}
 Все торговые операции сейчас PAPER: виртуальные средства.
@@ -90,3 +90,14 @@ Spot и isolated: BTCUSDT. Cross и margin: BTCUSDT и ETHUSDT.
 /start — короткое приветствие.
 Неизвестные данные не означают ноль. Займы, проценты, funding и ликвидации — paper-модели; прибыльность стратегии не доказана.''',
     )
+    if experimental_pair:
+        pages=list(pages)
+        pages[0]=pages[0].replace(
+            'ПАРЫ: ТЕКУЩЕЕ ОГРАНИЧЕНИЕ\nSpot и isolated: BTCUSDT. Cross и margin: BTCUSDT и ETHUSDT.\n/pair из старого приложения в едином интерфейсе пока не поддерживается. Выбор других пар требует восстановления; /mode пару не меняет.',
+            'ВЫБОР ПАРЫ — ЭКСПЕРИМЕНТ PAPER\n/pair — показать пары выбранного рынка.\n/pair SOLUSDT — предложить пару Spot или isolated.\n/pair BTCUSDT SOLUSDT — предложить набор cross или margin.\nСмена требует паузы, проверки состояния и /confirm ID; входы остаются на паузе.')
+        pages[1]=pages[1].replace('/close ETHUSDT — выбрать ETH-позицию в cross или margin.',
+                                   '/close SOLUSDT — пример выбора SOL-позиции в cross или margin.')
+        pages[2]=pages[2].replace('Количество задаётся в активе займа: BTC, ETH или USDT, из свободного остатка.',
+                                   'Количество задаётся в активе конкретного займа из свободного остатка.')
+        return tuple(pages)
+    return pages
