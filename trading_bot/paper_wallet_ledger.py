@@ -188,7 +188,7 @@ class PaperWalletLedger:
             if source=='futures_cross':
                 current=time.time() if now is None else now
                 book._require_coverage(current)
-                marks=book._marks(book.stored_quotes(),current)
+                marks=book._marks(book.stored_quotes(),current,book._symbols())
                 if book._risk(marks)['available'] < quantity:raise ValueError('Insufficient cross collateral')
         if 'margin_cross' in (source,destination):
             required=('margin_position_anchor','margin_positions','margin_loans','margin_runtime','margin_market_quotes')

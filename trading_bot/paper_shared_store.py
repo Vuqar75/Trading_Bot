@@ -235,7 +235,7 @@ class SharedPaperStore:
                 cross._check()
                 current=time.time() if now is None else now
                 cross._require_coverage(current)
-                marks=cross._marks(cross.stored_quotes(),current)
+                marks=cross._marks(cross.stored_quotes(),current,cross._symbols())
                 if quantity is None or cross._risk(marks)['available'] < amount(quantity,positive=True):
                     raise ValueError('Insufficient cross collateral')
 

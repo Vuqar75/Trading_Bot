@@ -68,7 +68,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             if positions_cross:
                 try:
                     book._require_coverage(now)
-                    marks=book._marks(book.stored_quotes(),now)
+                    marks=book._marks(book.stored_quotes(),now,book._symbols())
                     cross=book._risk(marks)
                     cross_value=cross['margin']+cross['funding']+cross['gross']+cross['liability']-cross['exit_cost']
                 except ValueError:
@@ -175,7 +175,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             if cross and shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0] and not book.runtime_error():
                 try:
                     book._require_coverage(now)
-                    available['futures_cross']=book._risk(book._marks(book.stored_quotes(),now))['available']
+                    available['futures_cross']=book._risk(book._marks(book.stored_quotes(),now,book._symbols()))['available']
                 except ValueError:pass
             if margin_cross and not margin_cross['due'] and margin_cross['marks'] and shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0]:
                 error=shared.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()

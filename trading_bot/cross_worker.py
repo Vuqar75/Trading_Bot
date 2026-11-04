@@ -73,7 +73,7 @@ def process_cross(queue, receiver, book, *, started=0, now=None, clock=time.time
                 quotes=book.stored_quotes();stamps=[quotes.get(s,{}).get('time') for s in ('BTCUSDT','ETHUSDT')]
                 stamp=min(stamps) if all(isinstance(x,(int,float)) for x in stamps) else None
                 problem=bool(book.runtime_error() or book.funding_conflict())
-                try:book._check();book._require_coverage(now);book._marks(quotes,now)
+                try:book._check();book._require_coverage(now);book._marks(quotes,now,book._symbols())
                 except ValueError:problem=True
                 paused=bool(book.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0])
                 count=len(book._positions())

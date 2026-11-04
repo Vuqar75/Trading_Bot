@@ -19,7 +19,8 @@ from .testnet_observer import ObservationError, number, write_report
 class FuturesApplication:
     def __init__(self, store, reader, *, allow_pair_experiment=False):
         self.symbol=store.get('identity').get('symbol','BTCUSDT')
-        if self.symbol!='BTCUSDT' and (not allow_pair_experiment or getattr(reader,'symbol',None)!=self.symbol):
+        reader_symbol=getattr(reader,'pair_symbol',getattr(reader,'symbol',None))
+        if self.symbol!='BTCUSDT' and (not allow_pair_experiment or reader_symbol!=self.symbol):
             raise ObservationError('Selectable futures pairs are not integrated')
         self.store, self.reader = store, reader
         self.last_protection_at = None

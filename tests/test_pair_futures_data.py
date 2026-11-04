@@ -17,6 +17,7 @@ from trading_bot.paper_pair_catalog import PairMetadataError, usd_m_perpetual_ca
 from trading_bot.testnet_observer import ObservationError
 from trading_bot.futures_store import FuturesStore
 from trading_bot.futures_app import FuturesApplication
+from trading_bot.cross_public_data import CrossPublicData
 
 
 class PairFuturesDataTests(unittest.TestCase):
@@ -59,6 +60,10 @@ class PairFuturesDataTests(unittest.TestCase):
         with self.assertRaisesRegex(ObservationError,'identity'):reader.mark()
         wrong=FuturesData(lambda request:[{'symbol':'BTCUSDT','fundingTime':1000,'fundingRate':'0.001','markPrice':'100'}],symbol='SOLUSDT')
         with self.assertRaisesRegex(ObservationError,'identity'):wrong.funding(0,2000)
+
+    def test_cross_reader_symbol_validator_remains_callable(self):
+        reader=CrossPublicData(lambda request:{})
+        self.assertEqual(reader.symbol('BTCUSDT'),'BTCUSDT')
 
     def test_isolated_fixture_sol_long_short_funding_and_restart(self):
         with tempfile.TemporaryDirectory() as tmp:

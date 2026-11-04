@@ -9,7 +9,7 @@ import time
 import uuid
 from decimal import Decimal, localcontext
 
-from .paper_wallet_ledger import amount, encode
+from .paper_wallet_ledger import amount, encode, valid_asset
 from .display_amount import display_amount as fmt
 
 SYMBOLS = ('BTCUSDT', 'ETHUSDT')
@@ -20,8 +20,9 @@ MAINTENANCE_BPS = Decimal('50')  # Explicit paper assumption, not Binance tiers.
 
 
 class CrossPaperBook:
-    def __init__(self, shared):
+    def __init__(self, shared, *, allow_pair_experiment=False):
         self.shared, self.db, self.ledger = shared, shared.db, shared.ledger
+        self._pair_experiment=allow_pair_experiment
         with shared.transaction():
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_positions(symbol TEXT PRIMARY KEY, id TEXT NOT NULL UNIQUE, direction TEXT NOT NULL, quantity TEXT NOT NULL, entry TEXT NOT NULL, margin TEXT NOT NULL, leverage INTEGER NOT NULL, funding TEXT NOT NULL, opened_ms INTEGER NOT NULL)')
             if 'opened_ms' not in {row[1] for row in self.db.execute('PRAGMA table_info(cross_positions)')}:
@@ -54,9 +55,27 @@ class CrossPaperBook:
                     raise ValueError('Missing cross anchor')
                 self._anchor('initial')
             self._check()
+            if self._symbols()!=SYMBOLS and not self._pair_experiment:
+                raise ValueError('Cross pair runtime not integrated')
 
     def _positions(self):
         return [dict(r) for r in self.db.execute('SELECT * FROM cross_positions ORDER BY symbol')]
+
+    def _symbols(self):
+        row=self.db.execute("SELECT value FROM cross_runtime WHERE key='pair_symbols'").fetchone()
+        if row is None:return SYMBOLS
+        data=json.loads(row[0]);version=self.db.execute("SELECT value FROM cross_runtime WHERE key='pair_version'").fetchone()
+        if not isinstance(data,list) or not 1<=len(data)<=2 or len(set(data))!=len(data) or not version:
+            raise ValueError('Invalid cross pair set')
+        for symbol in data:
+            if not isinstance(symbol,str) or not symbol.endswith('USDT') or not valid_asset(symbol[:-4]) or symbol[:-4]=='USDT':
+                raise ValueError('Invalid cross pair symbol')
+        if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='pair_cross_selection_events'").fetchone():
+            raise ValueError('Cross pair history missing')
+        latest=self.db.execute('SELECT version,result FROM pair_cross_selection_events ORDER BY version DESC LIMIT 1').fetchone()
+        if not latest or latest['version']!=json.loads(version[0]) or json.loads(latest['result']).get('symbols')!=data:
+            raise ValueError('Cross pair history conflicts with settings')
+        return tuple(data)
 
     def _notify(self, text):
         self.db.execute('INSERT INTO futures_outbox(message) VALUES(?)',('[Futures cross • PAPER] '+text,))
@@ -96,6 +115,8 @@ class CrossPaperBook:
         if not self.ledger.reconcile()['balanced']:
             raise ValueError('Journal integrity mismatch')
         positions = self._positions()
+        symbols=self._symbols()
+        if any(p['symbol'] not in symbols for p in positions):raise ValueError('Cross position symbol not protected')
         row=self.db.execute('SELECT e.details FROM cross_anchor a JOIN ledger_events e ON e.id=a.event_id WHERE a.id=1').fetchone()
         if not row or json.loads(row[0]).get('after') != positions:
             raise ValueError('Cross position journal mismatch')
@@ -125,7 +146,7 @@ class CrossPaperBook:
                 if self.ledger.balance(WALLET+':liability')<0:raise ValueError('Cross liability requires settlement')
                 current=time.time() if now is None else now
                 self._require_coverage(current)
-                marks=self._marks(self.stored_quotes(),current)
+                marks=self._marks(self.stored_quotes(),current,self._symbols())
                 if self._risk(marks)['buffer'] <= 0:raise ValueError('Cross margin buffer exhausted')
             self.db.execute("UPDATE wallet_state SET paused=? WHERE wallet='futures_cross'", (int(paused),))
 
@@ -149,7 +170,7 @@ class CrossPaperBook:
 
     def _record_quotes(self, quotes, *, now=None):
         now = time.time() if now is None else now
-        marks = self._marks(quotes, now)
+        marks = self._marks(quotes, now,self._symbols())
         with self.shared.transaction():
             self._check()
             pending=self.db.execute("SELECT f.position_id,f.funding_time,f.rate_type,f.revision FROM cross_funding f WHERE f.revision>0 OR EXISTS (SELECT 1 FROM cross_coverage_receipts r WHERE r.position_id=f.position_id AND r.due=f.funding_time)").fetchall() if self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='cross_coverage_receipts'").fetchone() else self.db.execute('SELECT position_id,funding_time,rate_type,revision FROM cross_funding WHERE revision>0').fetchall()
@@ -159,7 +180,7 @@ class CrossPaperBook:
                 for item in pending:
                     if not self.db.execute('SELECT 1 FROM cross_correction_receipts WHERE position_id=? AND due=? AND rate_type=? AND revision=?',tuple(item)).fetchone():
                         raise ValueError('Cross funding correction requires reconciliation')
-            for symbol in SYMBOLS:
+            for symbol in self._symbols():
                 seen = float(quotes[symbol]['time'])
                 server,due,interval=(quotes[symbol][k] for k in ('server_ms','next_due_ms','interval_ms'))
                 if any(type(x) is not int or x<=0 for x in (server,due,interval)) or not server<due<=server+interval or abs(seen*1000-server)>60000:
@@ -192,7 +213,7 @@ class CrossPaperBook:
                 for r in self.db.execute('SELECT * FROM cross_quotes')}
 
     def invalidate_data(self, symbol):
-        if symbol not in SYMBOLS:
+        if symbol not in self._symbols():
             raise ValueError('Invalid cross symbol')
         with self.shared.transaction():
             self.db.execute('UPDATE cross_quotes SET funding_complete=0 WHERE symbol=?',(symbol,))
@@ -208,10 +229,10 @@ class CrossPaperBook:
 
     def _current_marks(self, quotes, now):
         self._require_coverage(now)
-        supplied=self._marks(quotes,now)
+        supplied=self._marks(quotes,now,self._symbols())
         stored=self.stored_quotes()
-        actual=self._marks(stored,now)
-        for symbol in SYMBOLS:
+        actual=self._marks(stored,now,self._symbols())
+        for symbol in self._symbols():
             if supplied[symbol]!=actual[symbol] or float(quotes[symbol]['time'])!=float(stored[symbol]['time']):
                 raise ValueError('Cross quote snapshot superseded')
         return actual
@@ -225,9 +246,9 @@ class CrossPaperBook:
                 raise ValueError('Cross funding coverage requires reconciliation')
 
     @staticmethod
-    def _marks(quotes, now):
+    def _marks(quotes, now, symbols=SYMBOLS):
         marks = {}
-        for symbol in SYMBOLS:
+        for symbol in symbols:
             q = quotes.get(symbol) if isinstance(quotes, dict) else None
             if not isinstance(q, dict) or q.get('funding_complete') is not True:
                 raise ValueError('Incomplete cross data: '+symbol)
@@ -284,10 +305,11 @@ class CrossPaperBook:
     def _remember(self, operation, fingerprint, result):
         self.db.execute('INSERT INTO cross_operations VALUES(?,?,?)', (operation, fingerprint, json.dumps(result, sort_keys=True)))
 
-    def open(self, operation, symbol, direction, margin, leverage, quotes, *, now=None, expected_interval=None, clock=None):
+    def open(self, operation, symbol, direction, margin, leverage, quotes, *, now=None, expected_interval=None, clock=None, metadata=None, metadata_at=None):
         now = time.time() if now is None else now
-        if symbol not in SYMBOLS or direction not in ('LONG','SHORT') or type(leverage) is not int or not 1 <= leverage <= 10:
+        if symbol not in self._symbols() or direction not in ('LONG','SHORT') or type(leverage) is not int or not 1 <= leverage <= 10:
             raise ValueError('Invalid cross position')
+        if symbol not in SYMBOLS and not getattr(self,'_pair_experiment',False):raise ValueError('Cross pair experiment not enabled')
         margin = amount(margin, positive=True)
         if margin > 5:
             raise ValueError('Cross margin exceeds paper limit')
@@ -318,6 +340,12 @@ class CrossPaperBook:
             with localcontext() as quantity_context:
                 quantity_context.prec = 40
                 quantity = margin*leverage/fill
+            if symbol not in SYMBOLS:
+                if isinstance(metadata_at,bool) or not isinstance(metadata_at,(int,float)) or not 0<=current-metadata_at<=120:
+                    raise ValueError('Cross filters stale')
+                from .paper_pair_catalog import usd_m_perpetual_candidate
+                quantity=amount(usd_m_perpetual_candidate(metadata,symbol,quantity,fill)['quantity'],positive=True)
+                margin=quantity*fill/leverage
             fee = quantity*fill*FEE_BPS/10000
             pos = {'symbol':symbol,'id':uuid.uuid4().hex,'direction':direction,'quantity':encode(quantity),
                    'entry':encode(fill),'margin':encode(margin),'leverage':leverage,'funding':'0','opened_ms':int(current*1000)}
@@ -346,7 +374,7 @@ class CrossPaperBook:
 
     def _funding(self, operation, symbol, position_id, stamp, revision, rate, mark, source, *, now=None, rate_type='Regular'):
         now = time.time() if now is None else now
-        if symbol not in SYMBOLS or rate_type not in ('Regular','Special') or type(stamp) is not int or stamp < 0 or type(revision) is not int or revision < 0 or not source:
+        if symbol not in self._symbols() or rate_type not in ('Regular','Special') or type(stamp) is not int or stamp < 0 or type(revision) is not int or revision < 0 or not source:
             raise ValueError('Invalid funding identity')
         rate, mark = amount(rate), amount(mark, positive=True)
         if abs(rate) >= 1:
@@ -404,7 +432,7 @@ class CrossPaperBook:
 
     def _late_funding(self, operation, symbol, position_id, stamp, revision, rate, mark, source, *, now=None, rate_type='Regular'):
         now=time.time() if now is None else now
-        if symbol not in SYMBOLS or rate_type not in ('Regular','Special') or type(stamp) is not int or stamp<0 or type(revision) is not int or revision<0 or not source:
+        if symbol not in self._symbols() or rate_type not in ('Regular','Special') or type(stamp) is not int or stamp<0 or type(revision) is not int or revision<0 or not source:
             raise ValueError('Invalid funding identity')
         rate,mark=amount(rate),amount(mark,positive=True)
         if abs(rate)>=1:raise ValueError('Invalid funding rate')
@@ -480,7 +508,7 @@ class CrossPaperBook:
 
     def close(self, operation, symbol, position_id, quantity, quotes, *, now=None, liquidate=False, confirm_expires=None, clock=None, reason='MANUAL'):
         now = time.time() if now is None else now
-        if symbol not in SYMBOLS or type(liquidate) is not bool:raise ValueError('Invalid cross close')
+        if symbol not in self._symbols() or type(liquidate) is not bool:raise ValueError('Invalid cross close')
         if liquidate:reason='MODEL_LIQUIDATION'
         if reason not in ('MANUAL','STOP','TAKE','MODEL_LIQUIDATION') or (reason=='MODEL_LIQUIDATION')!=liquidate:
             raise ValueError('Invalid cross close reason')

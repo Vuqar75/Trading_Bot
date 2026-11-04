@@ -164,3 +164,65 @@ def select_isolated_pair_offline(shared, queue_path, *, request_id, expected_sym
                 return dict(result,replayed=False)
         finally:
             if queue.in_transaction:queue.rollback()
+
+
+def select_cross_pairs_offline(shared, queue_path, *, request_id, expected_symbols,
+                               expected_version, symbols, metadata, prices, quantities,
+                               observed_at, clock=time.time, max_age=120):
+    """Offline-only cross set change; never remove protection for a position."""
+    if (not isinstance(shared,SharedPaperStore) or not isinstance(request_id,str) or
+            not re.fullmatch(r'[A-Za-z0-9:_-]{1,100}',request_id) or type(expected_version) is not int or expected_version<0 or
+            not isinstance(expected_symbols,(tuple,list)) or not isinstance(symbols,(tuple,list)) or
+            not 1<=len(symbols)<=2 or any(not isinstance(s,str) for s in (*expected_symbols,*symbols)) or len(set(symbols))!=len(symbols)):
+        raise ValueError('Invalid cross selection identity')
+    expected=sorted(expected_symbols);selected=sorted(symbols)
+    fingerprint=hashlib.sha256(json.dumps([expected,expected_version,selected],separators=(',',':')).encode()).hexdigest()
+    path=Path(queue_path)
+    if path.is_symlink() or not path.is_file():raise ValueError('Existing queue database required')
+    path=path.resolve(strict=True)
+    if path==Path(shared.db.execute('PRAGMA database_list').fetchone()[2]).resolve(strict=True):raise ValueError('Financial and queue databases must be distinct')
+    with closing(sqlite3.connect(path.as_uri()+'?mode=rw',uri=True,isolation_level=None,timeout=5)) as queue:
+        if queue.execute('PRAGMA journal_mode').fetchone()[0].lower()!='delete':raise ValueError('Rollback journal required for queue')
+        try:
+            with shared.transaction():
+                queue.execute('BEGIN IMMEDIATE')
+                shared.db.execute('CREATE TABLE IF NOT EXISTS pair_cross_selection_events(request_id TEXT PRIMARY KEY,version INTEGER NOT NULL UNIQUE,fingerprint TEXT NOT NULL,result TEXT NOT NULL)')
+                for verb in ('UPDATE','DELETE'):
+                    shared.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_pair_cross_events_{verb.lower()} BEFORE {verb} ON pair_cross_selection_events BEGIN SELECT RAISE(ABORT,'immutable pair selection'); END")
+                old=shared.db.execute('SELECT fingerprint,result FROM pair_cross_selection_events WHERE request_id=?',(request_id,)).fetchone()
+                if old is not None:
+                    if old['fingerprint']!=fingerprint:raise ValueError('Conflicting request identity')
+                    return dict(json.loads(old['result']),replayed=True)
+                now=clock()
+                if isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=now-observed_at<=max_age:raise ValueError('Pair data stale or future dated')
+                if not all(isinstance(v,dict) for v in (metadata,prices,quantities)) or any(s not in metadata or s not in prices or s not in quantities for s in selected):
+                    raise ValueError('Cross metadata incomplete')
+                for item in selected:usd_m_perpetual_candidate(metadata[item],item,quantities[item],prices[item])
+                from .cross_paper_book import CrossPaperBook
+                book=object.__new__(CrossPaperBook);book.shared=shared;book.db=shared.db;book.ledger=shared.ledger
+                if shared.deployment_hold():raise ValueError('Deployment hold active')
+                book._check()
+                state=shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()
+                if not state or state[0]!=1:raise ValueError('Cross must be paused')
+                if book._positions():raise ValueError('Existing cross positions prevent selection')
+                if book.runtime_error() or book.funding_conflict():raise ValueError('Cross requires recovery')
+                if shared.ledger.balance('futures_cross:reserved') or shared.ledger.balance('futures_cross:liability'):
+                    raise ValueError('Cross reserve or liability prevents selection')
+                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='futures_cross' AND status='PENDING' LIMIT 1").fetchone():raise ValueError('Cross command pending')
+                if queue.execute("SELECT 1 FROM unified_proposals WHERE market='futures_cross' AND status='OPEN' LIMIT 1").fetchone():raise ValueError('Cross confirmation pending')
+                if shared.db.execute("SELECT 1 FROM transfer_proposals WHERE status='OPEN' AND (source='futures_cross' OR destination='futures_cross') LIMIT 1").fetchone():raise ValueError('Cross transfer pending')
+                current=sorted(book._symbols())
+                row=shared.db.execute("SELECT value FROM cross_runtime WHERE key='pair_version'").fetchone()
+                version=json.loads(row[0]) if row else 0
+                if current!=expected or version!=expected_version:raise ValueError('Stale cross pair selection')
+                free=shared.ledger.balance('futures_cross:free')
+                result={'fingerprint':fingerprint,'from':current,'symbols':selected,'version':version+1,'observed_at':observed_at}
+                shared.db.execute('INSERT INTO pair_cross_selection_events VALUES(?,?,?,?)',(request_id,version+1,fingerprint,json.dumps(result,sort_keys=True)))
+                shared.db.execute("INSERT OR REPLACE INTO cross_runtime VALUES('pair_symbols',?)",(json.dumps(selected),))
+                shared.db.execute("INSERT OR REPLACE INTO cross_runtime VALUES('pair_version',?)",(json.dumps(version+1),))
+                shared.db.execute('UPDATE cross_quotes SET funding_complete=0')
+                book._check()
+                if shared.ledger.balance('futures_cross:free')!=free:raise ValueError('Cross selection changed funds')
+                return dict(result,replayed=False)
+        finally:
+            if queue.in_transaction:queue.rollback()

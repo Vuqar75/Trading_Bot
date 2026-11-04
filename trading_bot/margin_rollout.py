@@ -46,7 +46,7 @@ def _cross_paused(shared,now):
     book=_cross(shared);book._check()
     row=shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()
     if not row or row[0]!=1 or book.runtime_error() or book.funding_conflict():raise ValueError('Cross must be paused and healthy')
-    book._require_coverage(now);book._marks(book.stored_quotes(),now)
+    book._require_coverage(now);book._marks(book.stored_quotes(),now,book._symbols())
 
 
 def freeze_margin_cutover(shared,queue,request_id,*,now=None):

@@ -33,7 +33,7 @@ class CrossCommandReceiver:
                     if self.hold_resume or self.book.shared.deployment_hold() or self.book.runtime_error() or self.book.funding_conflict() or self.book.ledger.balance('futures_cross:liability')<0:
                         raise ValueError('Cross is blocked')
                     self.book._require_coverage(now)
-                    marks=self.book._marks(self.book.stored_quotes(),now)
+                    marks=self.book._marks(self.book.stored_quotes(),now,self.book._symbols())
                     if self.book._risk(marks)['buffer']<=0:raise ValueError('Insufficient buffer')
                 except ValueError:
                     self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")

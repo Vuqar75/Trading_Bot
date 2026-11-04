@@ -179,7 +179,7 @@ def release_entries_after_cutover(shared, queue, request_id, *, now=None):
             if not state or state[0]!=1 or cross.runtime_error() or shared.ledger.balance('futures_cross:liability')<0:
                 raise ValueError('Cross requires paused healthy state')
             if live_clock:now=time.time()
-            cross._require_coverage(now);marks=cross._marks(cross.stored_quotes(),now)
+            cross._require_coverage(now);marks=cross._marks(cross.stored_quotes(),now,cross._symbols())
             if cross._risk(marks)['buffer']<=0:raise ValueError('Cross margin buffer exhausted')
             pauses=q.execute("SELECT command,market FROM unified_updates WHERE id>=? AND command IN ('/pause','/pause_all')",(freeze['queue_offset'],)).fetchall()
             manual={m for command,market in pauses for m in (('spot','futures','futures_cross') if command=='/pause_all' else (market,))}
