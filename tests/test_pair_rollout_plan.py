@@ -43,6 +43,20 @@ class PairRolloutPlanTests(unittest.TestCase):
         self.assertFalse(self.stage.exists())
         with self.assertRaises(ValueError):stage_units(self.units,self.units/'inside',installed_root=self.old,candidate_root=self.new)
 
+    def test_distinct_backup_root_requires_verified_per_unit_mapping(self):
+        name='tradingbot-paper-backup.service';path=self.units/name
+        path.write_text(path.read_text().replace(str(self.old),'/opt/fixture-backup'))
+        with self.assertRaisesRegex(ValueError,'structure'):
+            stage_units(self.units,self.stage,installed_root=self.old,candidate_root=self.new)
+        self.assertFalse(self.stage.exists())
+        for invalid in ({'unknown.service':'/opt/fixture-backup'},{name:'relative'},{name:str(self.new)}):
+            with self.assertRaisesRegex(ValueError,'roots'):
+                stage_units(self.units,self.stage,installed_root=self.old,candidate_root=self.new,installed_roots=invalid)
+        stage_units(self.units,self.stage,installed_root=self.old,candidate_root=self.new,
+                    installed_roots={name:'/opt/fixture-backup'})
+        self.assertIn('WorkingDirectory='+str(self.new),(self.stage/name).read_text())
+        self.assertIn('WorkingDirectory=/opt/fixture-backup',path.read_text())
+
     def test_staging_accepts_repository_service_templates(self):
         deploy=Path(__file__).resolve().parents[1]/'deploy'
         names={'tradingbot-spot.service':'vm-cross-spot-paper.service',

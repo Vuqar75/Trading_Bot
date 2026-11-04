@@ -3670,3 +3670,19 @@ User requested restoring missing paper processes and explicitly authorized paper
 ## VM research, read-only — 2026-11-01
 
 User reports neither billing account displays promo credits and requests research only, no cloud/billing changes or VM creation. [VM_PAPER_RESEARCH_2026_11_01.md](VM_PAPER_RESEARCH_2026_11_01.md) records official Binance/API limitations, provisional non-US candidates Belgium and Netherlands (neither API accessibility nor user's eligibility proven), regional Catalog SKU calculations, permissions and cutover plan. A recommendation is a regular e2-small 2 GiB in `europe-west1`, 20 GiB standard PD and IPv4, approximately $18.02/month for 730h including conservative 1 GiB chargeable egress, before tax/external backups; e2-micro 1 GiB ~$11.30. Cloud Shell snapshot showed Spot/futures/monitor RSS ~77.49 MiB combined but did not measure backup peaks or OS overhead. Both bot sessions and backup/monitor sessions were running at read-only check; futures SHORT 1x, margin10 remained open at 11:51 Baku. Availability and Binance eligibility for selected locations are unknown; do not treat as confirmed or bypass any restriction. Target project has billing enabled, Compute API disabled, no region quotas verified; permissions tested without enabling it. Migration and paid VM require separate approval; no resource, bot, billing or config changes performed.
+# Pair offline checkpoint — 2026-11-05
+
+All four markets have experimental offline pair selection with durable proposals,
+transactional guard rechecks, preserved asset history, third-asset accounting and
+fail-closed historical cross funding validation. Isolated restore and process crash
+tests cover lending, funding and replay; four offline processes run with one fake
+poller. Source commit `5e1da920eab68971eaac76ce44aca0567f38e240` passed
+829/829 unique Linux tests. The later unit-planner change handles per-service
+working directories; its final full test run must be recorded separately.
+
+VM deployment remains separately unauthorized. A read-only SSH attempt requested
+verification of the VM host key; it was not accepted. Actual unit roots, current
+pauses and health therefore remain unverified through a trusted connection. Do not
+install or assert live status until verified. See `PAIR_SELECTION_OFFLINE.md` for
+the backup, guarded cutover and no-stale-financial-restore plan. No working service,
+database, AI budget or lock was changed.

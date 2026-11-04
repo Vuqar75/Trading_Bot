@@ -20,7 +20,7 @@ MODULES={'tradingbot-spot.service':'deploy/cloud_paper_launch.py',
 TRADING={'tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service','tradingbot-margin.service'}
 
 
-def stage_units(source,destination,*,installed_root,candidate_root):
+def stage_units(source,destination,*,installed_root,candidate_root,installed_roots=None):
     source=Path(source);destination=Path(destination)
     old=Path(installed_root);new=Path(candidate_root)
     if (not source.is_absolute() or source.is_symlink() or not source.is_dir() or
@@ -29,8 +29,14 @@ def stage_units(source,destination,*,installed_root,candidate_root):
         not old.is_absolute() or not new.is_absolute() or old==new or
         source.resolve() in destination.parent.resolve().parents or source.resolve()==destination.parent.resolve()):
         raise ValueError('Distinct absolute unit paths and a new staging directory required')
+    if installed_roots is None: installed_roots={}
+    if (not isinstance(installed_roots,dict) or any(
+        name not in MODULES or not isinstance(root,str) or not Path(root).is_absolute() or Path(root)==new
+        for name,root in installed_roots.items())):
+        raise ValueError('Invalid per-unit installed roots')
     entries={}
     for name,module in MODULES.items():
+        unit_old=Path(installed_roots.get(name,str(old)))
         path=source/name
         if path.is_symlink() or not path.is_file():raise ValueError('Missing regular unit file')
         data=path.read_bytes()
@@ -39,8 +45,8 @@ def stage_units(source,destination,*,installed_root,candidate_root):
         lines=text.splitlines(keepends=True)
         work=[i for i,line in enumerate(lines) if line.startswith('WorkingDirectory=')]
         starts=[i for i,line in enumerate(lines) if line.startswith('ExecStart=')]
-        if (len(work)!=1 or lines[work[0]].strip()!='WorkingDirectory='+str(old) or len(starts)!=1 or
-            text.count(str(old))!=1 or str(new) in text):
+        if (len(work)!=1 or lines[work[0]].strip()!='WorkingDirectory='+str(unit_old) or len(starts)!=1 or
+            text.count(str(unit_old))!=1 or str(new) in text):
             raise ValueError('Unexpected unit structure')
         start=lines[starts[0]]
         if module not in start or '--experimental-pair' in start or '\\' in start:
@@ -76,8 +82,14 @@ def main():
     parser=argparse.ArgumentParser(description='Stage unit files only; does not start or stop services')
     parser.add_argument('--source',required=True);parser.add_argument('--destination',required=True)
     parser.add_argument('--installed-root',required=True);parser.add_argument('--candidate-root',required=True)
+    parser.add_argument('--installed-roots-json',help='JSON object mapping unit names to their verified current working directories')
     args=parser.parse_args()
-    print(json.dumps(stage_units(args.source,args.destination,installed_root=args.installed_root,candidate_root=args.candidate_root),sort_keys=True))
+    roots=None
+    if args.installed_roots_json:
+        path=Path(args.installed_roots_json)
+        if path.is_symlink() or not path.is_file(): raise ValueError('Expected a regular roots file')
+        roots=json.loads(path.read_text(encoding='utf-8'))
+    print(json.dumps(stage_units(args.source,args.destination,installed_root=args.installed_root,candidate_root=args.candidate_root,installed_roots=roots),sort_keys=True))
 
 
 if __name__=='__main__':main()
