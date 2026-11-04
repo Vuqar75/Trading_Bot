@@ -88,3 +88,14 @@ class PairMigrationTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError,'paused'):
                     future.result(timeout=3)
         self.assertEqual(self.read("SELECT 1 FROM runtime_meta WHERE key='pair_legacy_btc_migration'"),[])
+
+    def test_missing_binding_after_migration_fails_closed(self):
+        from trading_bot.testnet_observer import ObservationError
+        tag_legacy_spot_orders(self.path)
+        store=RuntimeStore(self.path,{'mode':'paper','symbol':'BTCUSDT'})
+        try:
+            with store.transaction():
+                store.db.execute("DELETE FROM runtime_meta WHERE key='pair_order_symbol:old'")
+            with self.assertRaisesRegex(ObservationError,'symbol is missing'):
+                store._order_symbol('old')
+        finally:store.close()

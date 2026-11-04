@@ -98,7 +98,11 @@ class RuntimeStore:
     def _order_symbol(self, client):
         # Unannotated orders come from the legacy BTC-only implementation.
         # New pairs remain disabled until accounting and protection are wired.
-        symbol=self.get('pair_order_symbol:'+client, 'BTCUSDT')
+        symbol=self.get('pair_order_symbol:'+client)
+        if symbol is None:
+            if self.get('pair_legacy_btc_migration') is not None:
+                raise ObservationError('Migrated order symbol is missing')
+            symbol='BTCUSDT'
         if symbol!='BTCUSDT':
             raise ObservationError('Order symbol requires unsupported pair recovery')
         return symbol
