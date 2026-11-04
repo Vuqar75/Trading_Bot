@@ -112,6 +112,24 @@ class ReportUpdateGuardTests(unittest.TestCase):
         self.assertEqual(self.shared.snapshot('futures')['position'],self.old_position)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
+    def test_finalaudit_keeps_prior_checkpoints_and_isolated_paused(self):
+        for namespace in ('reports','diagnostics','resilience','boundary'):
+            for state in ('freeze','release'):
+                self.shared.db.execute('INSERT INTO ledger_meta VALUES(?,?)',(namespace+'_update_'+state,'{}'))
+        before=[tuple(r) for r in self.shared.db.execute("SELECT key,value FROM ledger_meta WHERE key LIKE '%update_%' ORDER BY key")]
+        frozen=freeze_report_update(self.shared,self.q,'finalaudit:freeze:test',now=100,namespace='finalaudit')
+        self.assertEqual(frozen['paused'],{'spot':False,'futures':True,'futures_cross':True,'margin_cross':True})
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            result=release_report_update(self.shared,self.q,'finalaudit:release:test',protection_checked_ms=100000,now=100,namespace='finalaudit')
+        self.assertEqual(result['enabled'],['spot'])
+        self.assertEqual(before,[tuple(r) for r in self.shared.db.execute("SELECT key,value FROM ledger_meta WHERE key LIKE '%update_%' AND key NOT LIKE 'finalaudit_update_%' ORDER BY key")])
+
+    def test_finalaudit_refuses_unpaused_isolated(self):
+        with self.shared.transaction():self.shared._set('futures','paused',False)
+        with self.assertRaisesRegex(ValueError,'isolated futures paused'):
+            freeze_report_update(self.shared,self.q,'finalaudit:freeze:test',now=100,namespace='finalaudit')
+        self.assertFalse(self.shared.deployment_hold())
+
     def test_resilience_namespace_keeps_earlier_deployment_records(self):
         self.shared.db.execute("INSERT INTO ledger_meta VALUES('diagnostics_update_freeze','{}')")
         before=self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='diagnostics_update_freeze'").fetchone()[0]
