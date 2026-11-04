@@ -3678,7 +3678,9 @@ fail-closed historical cross funding validation. Isolated restore and process cr
 tests cover lending, funding and replay; four offline processes run with one fake
 poller. Source commit `5e1da920eab68971eaac76ce44aca0567f38e240` passed
 829/829 unique Linux tests. The later unit-planner change handles per-service
-working directories; its final full test run must be recorded separately.
+working directories. Its exact code candidate `bb01585` passed 830/830 unique
+Linux tests (156.180 s). Some older test fixtures emit ResourceWarning about
+unclosed SQLite connections; the suite exited successfully.
 
 VM deployment remains separately unauthorized. A read-only SSH attempt requested
 verification of the VM host key; it was not accepted. Actual unit roots, current
