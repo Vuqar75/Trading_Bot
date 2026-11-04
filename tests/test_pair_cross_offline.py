@@ -202,3 +202,10 @@ class PairCrossOfflineTests(unittest.TestCase):
         self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')])
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         with self.assertRaises(ValueError):self.book.risk(self.book.stored_quotes(),now=28003)
+        path=self.shared.db.execute('PRAGMA database_list').fetchone()[2]
+        self.shared.close();self.shared=SharedPaperStore(path);self.addCleanup(self.shared.close)
+        self.book=CrossPaperBook(self.shared,allow_pair_experiment=True)
+        with self.assertRaisesRegex(ValueError,'explicit reconciliation'):
+            CrossDataSync(self.book,reader).refresh(now=28003)
+        self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')])
+        self.assertEqual(self.book._positions()[0]['symbol'],'SOLUSDT')
