@@ -45,6 +45,29 @@ class MarginInterestLedgerTests(unittest.TestCase):
         self.assertEqual(self.book.repay('r1','l1','100.001',now_ms=100),paid)
         self.assertTrue(self.ledger.reconcile()['balanced'])
 
+    def test_experimental_third_asset_debt_interest_replay_and_old_runtime_guard(self):
+        book=MarginInterestLedger(self.ledger,experimental_assets=('SOL',))
+        borrowed=book.borrow('sol-borrow','sol-loan','sol-position','SOL','1.5',now_ms=100)
+        self.assertEqual(book.borrow('sol-borrow','sol-loan','sol-position','SOL','1.5',now_ms=100),borrowed)
+        self.assertEqual(self.ledger.balance('margin_cross:principal','SOL'),Decimal('-1.5'))
+        self.assertEqual(self.ledger.balance('margin_cross:interest','SOL'),Decimal('-.000015'))
+        book.accrue('sol-loan',now_ms=100+HOUR_MS)
+        self.assertEqual(book.accrue('sol-loan',now_ms=100+HOUR_MS),[])
+        self.assertEqual(self.ledger.balance('margin_cross:interest','SOL'),Decimal('-.000030'))
+        with self.assertRaisesRegex(ValueError,'runtime not integrated'):
+            MarginInterestLedger(self.ledger)
+        self.seed('SOL','.00003')
+        result=book.repay('sol-repay','sol-loan','1.50003',now_ms=100+HOUR_MS)
+        self.assertEqual(Decimal(result['remaining_principal']),0)
+        self.assertEqual(Decimal(result['remaining_interest']),0)
+        self.assertEqual(book.repay('sol-repay','sol-loan','1.50003',now_ms=100+HOUR_MS),result)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_unknown_third_asset_does_not_disappear_from_margin_checks(self):
+        self.seed('SOL','1')
+        with self.assertRaisesRegex(ValueError,'Untracked margin asset'):
+            self.book._check()
+
     def test_period_boundaries_rates_and_partial_principal(self):
         self.book.borrow('b','l','p','BTC','1',now_ms=10)
         self.assertEqual(self.book.accrue('l',now_ms=HOUR_MS+9),[])

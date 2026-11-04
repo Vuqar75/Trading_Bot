@@ -8,7 +8,7 @@ import hashlib
 import json
 from decimal import Decimal
 
-from .paper_wallet_ledger import amount, encode
+from .paper_wallet_ledger import amount, encode, valid_asset
 
 ASSETS = ('USDT', 'BTC', 'ETH')
 HOUR_MS = 3_600_000
@@ -17,9 +17,14 @@ WALLET = 'margin_cross'
 
 
 class MarginInterestLedger:
-    def __init__(self, ledger):
+    def __init__(self, ledger, *, experimental_assets=()):
         self.ledger = ledger
         self.db = ledger.db
+        if (not isinstance(experimental_assets,(tuple,list)) or
+            any(not isinstance(a,str) or not valid_asset(a) or a in ASSETS for a in experimental_assets) or
+            len(set(experimental_assets))!=len(experimental_assets)):
+            raise ValueError('Invalid experimental margin assets')
+        self.assets=tuple(ASSETS)+tuple(experimental_assets)
         with ledger.transaction():
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_loan_rates(asset TEXT NOT NULL, effective_ms INTEGER NOT NULL, rate TEXT NOT NULL, PRIMARY KEY(asset,effective_ms))')
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_loans(id TEXT PRIMARY KEY, position_id TEXT NOT NULL, asset TEXT NOT NULL, original TEXT NOT NULL, principal TEXT NOT NULL, interest TEXT NOT NULL, opened_ms INTEGER NOT NULL, status TEXT NOT NULL)')
@@ -28,7 +33,9 @@ class MarginInterestLedger:
             for table in ('margin_interest_periods', 'margin_loan_rates'):
                 for verb in ('UPDATE','DELETE'):
                     self.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_{table}_{verb.lower()} BEFORE {verb} ON {table} BEGIN SELECT RAISE(ABORT,'immutable margin history'); END")
-            for asset in ASSETS:
+            known={row[0] for row in self.db.execute('SELECT DISTINCT asset FROM margin_loan_rates')}
+            if not known.issubset(self.assets):raise ValueError('Margin asset runtime not integrated')
+            for asset in self.assets:
                 self.db.execute('INSERT OR IGNORE INTO margin_loan_rates VALUES(?,?,?)',(asset,0,encode(DEFAULT_RATE)))
 
     @staticmethod
@@ -61,7 +68,13 @@ class MarginInterestLedger:
     def _check(self):
         if not self.ledger.reconcile()['balanced']:
             raise ValueError('Paper ledger is inconsistent')
-        for asset in ASSETS:
+        supported=getattr(self,'assets',ASSETS)
+        if not {row[0] for row in self.db.execute('SELECT DISTINCT asset FROM margin_loan_rates')}.issubset(supported):
+            raise ValueError('Margin asset runtime not integrated')
+        assets={row[0] for row in self.db.execute("SELECT DISTINCT asset FROM ledger_postings WHERE account IN ('margin_cross:free','margin_cross:reserved','margin_cross:principal','margin_cross:interest')")}
+        assets.update(row[0] for row in self.db.execute('SELECT DISTINCT asset FROM margin_loans'))
+        if not assets.issubset(supported):raise ValueError('Untracked margin asset')
+        for asset in supported:
             rows=self.db.execute('SELECT principal,interest,status FROM margin_loans WHERE asset=?',(asset,)).fetchall()
             principal=sum((amount(row['principal']) for row in rows),Decimal(0))
             interest=sum((amount(row['interest']) for row in rows),Decimal(0))
@@ -76,7 +89,7 @@ class MarginInterestLedger:
         """Append a prospective paper rate without rewriting past periods."""
         effective_ms=self._time(effective_ms)
         rate=amount(rate)
-        if asset not in ASSETS or not 0 <= rate < 1:raise ValueError('Invalid paper rate')
+        if asset not in self.assets or not 0 <= rate < 1:raise ValueError('Invalid paper rate')
         with self.ledger.transaction():
             self._check()
             old=self.db.execute('SELECT rate FROM margin_loan_rates WHERE asset=? AND effective_ms=?',(asset,effective_ms)).fetchone()
@@ -114,7 +127,7 @@ class MarginInterestLedger:
 
     def borrow(self, operation, loan_id, position_id, asset, quantity, *, now_ms):
         now_ms=self._time(now_ms);quantity=amount(quantity,positive=True)
-        if asset not in ASSETS or not isinstance(loan_id,str) or not loan_id or not isinstance(position_id,str) or not position_id:raise ValueError('Invalid loan')
+        if asset not in self.assets or not isinstance(loan_id,str) or not loan_id or not isinstance(position_id,str) or not position_id:raise ValueError('Invalid loan')
         parts=['borrow',loan_id,position_id,asset,encode(quantity),now_ms]
         with self.ledger.transaction():
             self._check()

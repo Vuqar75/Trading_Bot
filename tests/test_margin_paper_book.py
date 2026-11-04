@@ -42,6 +42,48 @@ class MarginPaperBookTests(unittest.TestCase):
         self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM margin_loans WHERE status='OPEN'").fetchone()[0],0)
         self.assertTrue(self.ledger.reconcile()['balanced'])
 
+    def test_experimental_sol_long_short_interest_and_dust(self):
+        book=MarginPaperBook(self.ledger,experimental_pairs={'SOLUSDT':'SOL'})
+        quotes={**self.quotes,'SOLUSDT':{**self.quotes['ETHUSDT']}}
+        book.record_quotes(quotes,now_ms=1000)
+        long=book.open('sol-long','sol-long-pos','SOLUSDT','LONG','.04','5',2,quotes,now_ms=1000)
+        self.assertEqual(long['symbol'],'SOLUSDT')
+        self.assertGreater(self.ledger.balance('margin_cross:free','SOL'),0)
+        result=book.close('sol-long-close','SOLUSDT','sol-long-pos','.04',quotes,now_ms=1000)
+        self.assertEqual(Decimal(result['remaining_debt']),0)
+        short=book.open('sol-short','sol-short-pos','SOLUSDT','SHORT','.04','5',2,quotes,now_ms=1000)
+        self.assertEqual(short['symbol'],'SOLUSDT')
+        self.assertEqual(self.ledger.balance('margin_cross:principal','SOL'),Decimal('-.04'))
+        self.assertEqual(self.ledger.balance('margin_cross:interest','SOL'),Decimal('-.0000004'))
+        result=book.close('sol-short-close','SOLUSDT','sol-short-pos','.04',quotes,now_ms=1000)
+        self.assertEqual(Decimal(result['remaining_debt']),0)
+        self.assertGreaterEqual(self.ledger.balance('margin_cross:free','SOL'),0)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
+    def test_experimental_sol_open_debt_survives_restart_without_duplicate_interest(self):
+        book=MarginPaperBook(self.ledger,experimental_pairs={'SOLUSDT':'SOL'})
+        quotes={**self.quotes,'SOLUSDT':{**self.quotes['ETHUSDT']}}
+        book.record_quotes(quotes,now_ms=1000)
+        book.open('sol-short','sol-position','SOLUSDT','SHORT','.04','5',2,quotes,now_ms=1000)
+        path=self.ledger.db.execute('PRAGMA database_list').fetchone()[2]
+        self.ledger.close()
+        db=sqlite3.connect(path,isolation_level=None);db.row_factory=sqlite3.Row
+        db.execute('PRAGMA foreign_keys=ON');db.execute('PRAGMA synchronous=FULL')
+        self.ledger=object.__new__(PaperWalletLedger);self.ledger.db=db;self.ledger.fault=lambda stage:None
+        self.addCleanup(self.ledger.close)
+        with self.assertRaisesRegex(ValueError,'runtime not integrated'):MarginPaperBook(self.ledger)
+        book=MarginPaperBook(self.ledger,experimental_pairs={'SOLUSDT':'SOL'})
+        later=3601000
+        current={s:{**q,'time_ms':later,'server_ms':later,'filters':{**q['filters'],'observed_ms':later}}
+                 for s,q in quotes.items()}
+        book.record_quotes(current,now_ms=later)
+        book.risk(current,now_ms=later);book.risk(current,now_ms=later)
+        self.assertEqual(self.ledger.balance('margin_cross:interest','SOL'),Decimal('-.0000008'))
+        self.assertEqual(self.ledger.db.execute("SELECT count(*) FROM margin_interest_periods WHERE loan_id='sol-position:loan'").fetchone()[0],2)
+        result=book.close('sol-close','SOLUSDT','sol-position','.04',current,now_ms=later)
+        self.assertEqual(Decimal(result['remaining_debt']),0)
+        self.assertTrue(self.ledger.reconcile()['balanced'])
+
     def test_stale_quotes_and_leverage_budget_block_entry(self):
         with self.assertRaisesRegex(ValueError,'stale'):
             self.book.open('a','p','BTCUSDT','LONG','.09','5',2,self.quotes,now_ms=200000)

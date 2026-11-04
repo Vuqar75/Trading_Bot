@@ -13,6 +13,7 @@ from trading_bot.testnet_observer import ObservationError
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_pair_selection_offline import select_cross_pairs_offline
+from trading_bot.paper_pair_worker_offline import process_cross_pair
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.runtime_store import RuntimeStore
@@ -63,6 +64,33 @@ class PairCrossOfflineTests(unittest.TestCase):
         result=self.book.close('sol-close','SOLUSDT',pos['id'],pos['quantity'],quotes,now=103)
         self.assertEqual(self.book.close('sol-close','SOLUSDT',pos['id'],pos['quantity'],quotes,now=103),result)
         self.assertEqual(len(self.book._positions()),0);self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_cross_pair_worker_replays_after_financial_commit(self):
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(1,True,'/mode futures_cross',now=100)
+        q.receive(2,True,'/pair BTCUSDT SOLUSDT',now=100,
+                  pairs={'futures_cross':{'symbols':['BTCUSDT','ETHUSDT'],'version':0}})
+        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        q.receive(3,True,'/confirm '+token,now=101)
+        class Reader:
+            def get(inner,path):
+                self.assertFalse(self.shared.db.in_transaction);self.assertFalse(q.db.in_transaction)
+                return {'symbols':[self.info('BTC'),self.info('SOL')]}
+            def schedule(inner,symbol):
+                self.assertFalse(self.shared.db.in_transaction)
+                return {'symbol':symbol,'mark':'100'}
+        def crash(stage):
+            if stage=='after_financial_commit':raise RuntimeError('simulated interruption')
+        try:
+            before=self.shared.ledger.balance('futures_cross:free')
+            with self.assertRaisesRegex(RuntimeError,'interruption'):
+                process_cross_pair(q,self.shared,lambda symbols:Reader(),clock=lambda:102,fault=crash)
+            result=process_cross_pair(q,self.shared,lambda symbols:Reader(),clock=lambda:103)
+            self.assertTrue(result['replayed']);self.assertEqual(q.pending('futures_cross'),[])
+            self.assertEqual(self.book._symbols(),('BTCUSDT','SOLUSDT'))
+            self.assertEqual(self.shared.ledger.balance('futures_cross:free'),before)
+            self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        finally:q.close()
 
     def test_existing_position_or_unexpected_quote_blocks_change(self):
         legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}

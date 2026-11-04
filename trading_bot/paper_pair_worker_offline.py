@@ -3,7 +3,8 @@ import json
 import time
 from decimal import Decimal, localcontext
 
-from .paper_pair_selection_offline import select_spot_pair_offline, select_isolated_pair_offline
+from .paper_pair_selection_offline import (select_spot_pair_offline, select_isolated_pair_offline,
+                                           select_cross_pairs_offline)
 
 
 def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
@@ -65,4 +66,41 @@ def process_isolated_pair(queue, shared, reader_factory, *, budget='10', clock=t
                 quantity=str(budget/price),observed_at=observed,clock=clock,confirm_job_id=job['id'])
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[Futures isolated] Пара '+result['symbol']+' сохранена; входы остаются на паузе.')
+        return result
+
+
+def process_cross_pair(queue, shared, reader_factory, *, budget='5', clock=time.time,
+                       fault=lambda stage:None):
+    if not queue.allow_pair_experiment:raise ValueError('Offline pair queue required')
+    budget=Decimal(str(budget))
+    if not budget.is_finite() or not 0<budget<=5:raise ValueError('Invalid paper margin')
+    for job in queue.pending('futures_cross'):
+        if job['command']=='/pair_status':
+            from .cross_paper_book import CrossPaperBook
+            book=object.__new__(CrossPaperBook);book.db=shared.db;book.shared=shared;book.ledger=shared.ledger
+            queue.acknowledge(job['id'],'[Futures cross] Пары: '+', '.join(book._symbols()))
+            continue
+        if job['command']!='/confirmed_pair':continue
+        payload=json.loads(job['payload']);targets=payload['target']
+        if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
+        reader=reader_factory(targets)
+        response=reader.get('/fapi/v1/exchangeInfo');rows=response.get('symbols') if isinstance(response,dict) else None
+        if not isinstance(rows,list):raise ValueError('Pair metadata unavailable')
+        metadata={};prices={};quantities={};observations=[]
+        for symbol in targets:
+            matches=[r for r in rows if isinstance(r,dict) and r.get('symbol')==symbol]
+            if len(matches)!=1:raise ValueError('Pair metadata unavailable')
+            schedule=reader.schedule(symbol);observations.append(clock())
+            if schedule.get('symbol')!=symbol:raise ValueError('Pair quote mismatch')
+            price=Decimal(str(schedule['mark']))
+            if not price.is_finite() or price<=0:raise ValueError('Invalid pair price')
+            metadata[symbol]=matches[0];prices[symbol]=str(price)
+            with localcontext() as ctx:
+                ctx.prec=120;quantities[symbol]=str(budget/price)
+        result=select_cross_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
+            request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],
+            expected_version=payload['version'],symbols=targets,metadata=metadata,prices=prices,
+            quantities=quantities,observed_at=min(observations),clock=clock,confirm_job_id=job['id'])
+        fault('after_financial_commit')
+        queue.acknowledge(job['id'],'[Futures cross] Пары '+', '.join(result['symbols'])+' сохранены; входы остаются на паузе.')
         return result
