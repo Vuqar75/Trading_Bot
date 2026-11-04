@@ -16,7 +16,8 @@ def _decimal(value):
         if isinstance(value, bool):
             raise ValueError
         result = Decimal(str(value))
-        if not result.is_finite() or result < 0 or result > Decimal('1e20'):
+        if (not result.is_finite() or result < 0 or result > Decimal('1e20')
+                or (result and result < Decimal('1e-30'))):
             raise ValueError
         return result
     except (InvalidOperation, TypeError, ValueError):

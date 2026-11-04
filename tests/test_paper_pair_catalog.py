@@ -43,7 +43,7 @@ class PaperPairCatalogTests(unittest.TestCase):
 
     def test_reject_lot_notional_and_malformed_values(self):
         info=spot_info()
-        for qty,price in (('0.0001','200'),('0.01','200'),('501','200'),('1','NaN'),('-1','200'),('1','0')):
+        for qty,price in (('0.0001','200'),('0.01','200'),('501','200'),('1','NaN'),('-1','200'),('1','0'),('1e-1000000','200')):
             with self.subTest(qty=qty,price=price):
                 with self.assertRaises(PairMetadataError):spot_usdt_candidate(info,'SOLUSDT',qty,price)
 
