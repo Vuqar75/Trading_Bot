@@ -16,7 +16,8 @@ from trading_bot.paper_pair_selection_offline import (select_spot_pair_offline, 
 from trading_bot.margin_paper_book import MarginPaperBook
 from trading_bot.margin_paper_strategy import MarginPaperStrategy
 from trading_bot.paper_pair_worker_offline import process_spot_pair, process_isolated_pair, process_margin_pair
-from trading_bot.paper_pair_runtime_offline import restore_margin_book, ExperimentalMarginRunner
+from trading_bot.paper_pair_runtime_offline import (restore_margin_book, ExperimentalMarginRunner,
+                                                    restore_spot_store, restore_isolated_store)
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.runtime_store import RuntimeStore
@@ -93,6 +94,60 @@ class PairSelectionOfflineTests(unittest.TestCase):
         self.assertEqual((before['cash'],before['pnl'],before['position']),
                          (after['cash'],after['pnl'],after['position']))
         self.assertTrue(after['paused']);self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_old_spot_application_cannot_submit_after_pair_change(self):
+        store=RuntimeStore(self.financial,{'mode':'paper','symbol':'BTCUSDT'},shared=True)
+        try:
+            app=Application(store,PaperExchange(),None)
+            self.choose()
+            with self.assertRaisesRegex(Exception,'pair version superseded'):
+                app.execute('BUY',Decimal('.05'),Decimal('100'),'stale:buy','SIGNAL',quote_at=time.time())
+            self.assertEqual(store.db.execute('SELECT count(*) FROM runtime_orders').fetchone()[0],0)
+            with self.assertRaisesRegex(Exception,'pair version superseded'):app.tick()
+        finally:store.close()
+
+    def test_old_isolated_store_cannot_write_after_pair_change(self):
+        old=FuturesStore(self.financial,shared=True)
+        info=spot_info();info.update(contractType='PERPETUAL',marginAsset='USDT')
+        try:
+            select_isolated_pair_offline(self.shared,self.queue,request_id='isolated:choose',
+                expected_symbol='BTCUSDT',expected_version=0,symbol='SOLUSDT',metadata=info,
+                price='100',quantity='.1',observed_at=100,clock=lambda:101)
+            with self.assertRaisesRegex(Exception,'pair version superseded'):
+                old.open_position('LONG',Decimal('100'),100000,'stale:entry')
+            self.assertIsNone(self.shared._get('futures','position'))
+        finally:old.close()
+
+    def test_spot_and_isolated_pair_identity_restored_without_new_capital(self):
+        before_spot=self.shared.snapshot('spot')['cash'];before_future=self.shared.snapshot('futures')['cash']
+        self.choose()
+        info=spot_info();info.update(contractType='PERPETUAL',marginAsset='USDT')
+        select_isolated_pair_offline(self.shared,self.queue,request_id='isolated:choose',
+            expected_symbol='BTCUSDT',expected_version=0,symbol='SOLUSDT',metadata=info,
+            price='100',quantity='.1',observed_at=100,clock=lambda:101)
+        spot=restore_spot_store(self.financial);future=restore_isolated_store(self.financial)
+        try:
+            self.assertEqual(spot.get('identity')['symbol'],'SOLUSDT')
+            self.assertEqual(future.get('identity')['symbol'],'SOLUSDT')
+            self.assertEqual(spot.get('cash'),before_spot);self.assertEqual(future.get('cash'),before_future)
+            self.assertTrue(spot.get('paused'));self.assertTrue(future.get('paused'))
+        finally:spot.close();future.close()
+
+    def test_same_symbol_new_generation_fences_old_spot_and_isolated_writers(self):
+        spot=RuntimeStore(self.financial,{'mode':'paper','symbol':'BTCUSDT'},shared=True)
+        future=FuturesStore(self.financial,shared=True)
+        try:
+            app=Application(spot,PaperExchange(),None)
+            self.choose(symbol='BTCUSDT',metadata=spot_info('BTC'))
+            info=spot_info('BTC');info.update(contractType='PERPETUAL',marginAsset='USDT')
+            select_isolated_pair_offline(self.shared,self.queue,request_id='same:future',
+                expected_symbol='BTCUSDT',expected_version=0,symbol='BTCUSDT',metadata=info,
+                price='100',quantity='.1',observed_at=100,clock=lambda:101)
+            with self.assertRaisesRegex(Exception,'pair version superseded'):
+                app.execute('BUY',Decimal('.05'),Decimal('100'),'same:spot','SIGNAL',quote_at=time.time())
+            with self.assertRaisesRegex(Exception,'pair version superseded'):
+                future.open_position('LONG',Decimal('100'),100000,'same:future')
+        finally:spot.close();future.close()
 
     def test_telegram_to_spot_worker_crash_after_commit_replays_once(self):
         token,job=self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)

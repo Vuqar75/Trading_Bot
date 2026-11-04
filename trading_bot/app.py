@@ -143,6 +143,8 @@ class Application:
         if store.get('identity')['mode'] != exchange.mode:
             raise ObservationError('Exchange and database mode disagree')
         self.symbol=store.get('identity').get('symbol','BTCUSDT')
+        self.pair_version=store.get('pair_selection_version',0)
+        if type(self.pair_version) is not int or self.pair_version<0:raise ObservationError('Invalid Spot pair version')
         if self.symbol != 'BTCUSDT' and (not allow_pair_experiment or exchange.mode!='paper'):
             raise ObservationError('Selectable paper pairs are not integrated')
         self.last_protection_at = None
@@ -178,6 +180,8 @@ class Application:
         if self.exchange.mode != 'paper':
             raise ObservationError('Local entry activation is paper only')
         with self.store.transaction():
+            if self.store.get('identity').get('symbol','BTCUSDT')!=self.symbol or self.store.get('pair_selection_version',0)!=self.pair_version:
+                raise ObservationError('Spot pair version superseded')
             if self.store.shared and self.store.shared.deployment_hold():
                 raise ObservationError('Paper deployment hold active')
             if self.store.pending() or self.store.get('blocked') or not self.store.get('position')['fees_known']:
@@ -187,10 +191,10 @@ class Application:
     def execute(self, side, quantity, price, key, reason, target=None, quote_at=None):
         if side == 'BUY' and number(quantity) * price > self.amount:
             raise ObservationError('Entry exceeds configured order budget')
-        client = self.store.prepare(side, quantity, price, key, reason, target=target, daily_limit=self.daily_loss, quote_at=quote_at)
+        client = self.store.prepare(side, quantity, price, key, reason, target=target, daily_limit=self.daily_loss, quote_at=quote_at,expected_symbol=self.symbol,expected_pair_version=self.pair_version)
         if client is None:
             return False
-        if self.store.claim(client) is None:  # Durable BEFORE the only submit attempt.
+        if self.store.claim(client,expected_symbol=self.symbol,expected_pair_version=self.pair_version) is None:  # Durable BEFORE the only submit attempt.
             return False
         try:
             self.exchange.submit(client, side, quantity)
@@ -255,6 +259,8 @@ class Application:
         return True
 
     def tick(self):
+        if self.store.get('identity').get('symbol','BTCUSDT')!=self.symbol or self.store.get('pair_selection_version',0)!=self.pair_version:
+            raise ObservationError('Spot pair version superseded')
         self.interval = self.store.get('selected_interval', self.interval)
         self.recover()
         if self.protective_close():

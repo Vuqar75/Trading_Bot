@@ -5,6 +5,38 @@ from .margin_paper_book import MarginPaperBook, PAIRS
 from .paper_shared_store import SharedPaperStore
 
 
+def _restored_identity(shared,market,mode,table):
+    with shared.transaction():
+        identity=shared._get(market,'identity');version=shared._get(market,'pair_selection_version',0)
+        if (not isinstance(identity,dict) or identity.get('mode')!=mode or
+            not isinstance(identity.get('symbol'),str) or type(version) is not int or version<0):
+            raise ValueError('Pair identity unavailable')
+        exists=shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?",(table,)).fetchone()
+        latest=shared.db.execute('SELECT version,result FROM '+table+' ORDER BY version DESC LIMIT 1').fetchone() if exists else None
+        if ((latest is None and (version!=0 or identity['symbol']!='BTCUSDT')) or
+            (latest is not None and (latest['version']!=version or json.loads(latest['result']).get('symbol')!=identity['symbol']))):
+            raise ValueError('Pair identity conflicts with history')
+        return dict(identity)
+
+
+def restore_spot_store(path):
+    from .runtime_store import RuntimeStore
+    shared=SharedPaperStore(path)
+    try:identity=_restored_identity(shared,'spot','paper','pair_spot_selection_events')
+    finally:shared.close()
+    return RuntimeStore(path,identity,shared=True)
+
+
+def restore_isolated_store(path):
+    from .futures_store import FuturesStore
+    shared=SharedPaperStore(path)
+    try:identity=_restored_identity(shared,'futures','futures-paper','pair_isolated_selection_events')
+    finally:shared.close()
+    return FuturesStore(path,shared=True,symbol=identity['symbol'],allow_pair_experiment=True,
+        margin=identity['margin'],fee_bps=identity['fee_bps'],slippage_bps=identity['slippage_bps'],
+        maintenance_bps=identity['maintenance_bps'])
+
+
 def restore_cross_book(shared):
     from .cross_paper_book import CrossPaperBook
     if not isinstance(shared,SharedPaperStore):raise ValueError('Shared paper store required')

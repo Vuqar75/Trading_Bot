@@ -132,7 +132,7 @@ class RuntimeStore:
             raise ObservationError('Daily PnL contains unvalued fees')
         return -sum((Decimal(r['pnl']) for r in rows), Decimal(0))
 
-    def prepare(self, side, quantity, price, business_key, reason, *, target=None, daily_limit=Decimal('5'), quote_at=None):
+    def prepare(self, side, quantity, price, business_key, reason, *, target=None, daily_limit=Decimal('5'), quote_at=None, expected_symbol=None, expected_pair_version=None):
         with self.transaction():
             if self.db.execute('SELECT 1 FROM runtime_orders WHERE business_key=?', (business_key,)).fetchone():
                 return None
@@ -140,6 +140,10 @@ class RuntimeStore:
                 raise ObservationError('Recovery or review required')
             pos = self.get('position')
             identity=self.get('identity')
+            if expected_symbol is not None and identity.get('symbol','BTCUSDT')!=expected_symbol:
+                raise ObservationError('Spot pair version superseded')
+            if expected_pair_version is not None and self.get('pair_selection_version',0)!=expected_pair_version:
+                raise ObservationError('Spot pair version superseded')
             if identity.get('symbol','BTCUSDT')!='BTCUSDT':
                 if (isinstance(quote_at,bool) or not isinstance(quote_at,(int,float)) or
                         not 0<=time.time()-quote_at<=120):
@@ -172,12 +176,16 @@ class RuntimeStore:
                 self.set('manual_binding:' + client, self.get('close_request'))
             return client
 
-    def claim(self, client):
+    def claim(self, client, *, expected_symbol=None, expected_pair_version=None):
         with self.transaction():
             order = self.db.execute('SELECT * FROM runtime_orders WHERE client_id=?', (client,)).fetchone()
             if order is None or order['phase'] != 'PREPARED':
                 raise ObservationError('Order not eligible to send')
             self._order_symbol(client)
+            if expected_symbol is not None and self._order_symbol(client)!=expected_symbol:
+                raise ObservationError('Spot pair version superseded')
+            if expected_pair_version is not None and self.get('pair_selection_version',0)!=expected_pair_version:
+                raise ObservationError('Spot pair version superseded')
             if self._order_symbol(client)!='BTCUSDT':
                 observed=self.get('pair_order_quote_at:'+client)
                 if (isinstance(observed,bool) or not isinstance(observed,(int,float)) or

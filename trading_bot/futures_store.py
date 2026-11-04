@@ -54,6 +54,8 @@ class FuturesStore:
                 for key, default in [('cash', '1000'), ('paused', True), ('leverage', 1), ('interval', '15m'), ('offset', 0), ('pnl', '0')]:
                     if self.get(key) is None:
                         self.set(key, default)
+            self.pair_version=self.get('pair_selection_version',0)
+            if type(self.pair_version) is not int or self.pair_version<0:raise ObservationError('Invalid futures pair version')
         except BaseException:
             self.close()
             raise
@@ -67,10 +69,12 @@ class FuturesStore:
         if self.shared:
             self.shared.fault=self.fault
             with self.shared.market_transaction('futures'):
+                self._require_bound_symbol()
                 yield
             return
         self.db.execute('BEGIN IMMEDIATE')
         try:
+            self._require_bound_symbol()
             yield
             self.fault('before_commit')
             self.db.commit()
@@ -78,6 +82,14 @@ class FuturesStore:
         except BaseException:
             self.db.rollback()
             raise
+
+    def _require_bound_symbol(self):
+        if not self.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='futures_meta'").fetchone():return
+        identity=self.get('identity')
+        if identity is not None and identity.get('symbol','BTCUSDT')!=self.symbol:
+            raise ObservationError('Futures pair version superseded')
+        if hasattr(self,'pair_version') and self.get('pair_selection_version',0)!=self.pair_version:
+            raise ObservationError('Futures pair version superseded')
 
     def get(self, key, default=None):
         row = self.db.execute('SELECT value FROM futures_meta WHERE key=?', (key,)).fetchone()
