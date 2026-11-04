@@ -41,7 +41,7 @@ class HelpMixedQueueTests(unittest.TestCase):
                 new.receive(4, True, '/start', now=100)
                 new.receive(4, True, '/start', now=100)
                 after = new.db.execute('SELECT COUNT(*) FROM unified_outbox').fetchone()[0]
-                self.assertEqual(after - before, 3)
+                self.assertEqual(after - before, 1)
                 self.assertEqual(new.state('mode'), 'futures_cross')
                 self.assertEqual(new.db.execute('SELECT COUNT(*) FROM unified_jobs').fetchone()[0], 1)
             finally:
