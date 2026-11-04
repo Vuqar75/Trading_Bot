@@ -1,4 +1,7 @@
 import os
+import json
+import subprocess
+import sys
 import tempfile
 import time
 import unittest
@@ -34,6 +37,20 @@ class PairServiceWiringTests(unittest.TestCase):
             token=q.pair_proposals()[0]['id']
             q.receive(3,True,'/confirm '+token,now=now)
         finally:q.close()
+
+    def test_protected_launcher_passes_only_explicit_pair_flag_in_shared_paper(self):
+        home=self.root/'fixture-home';config=home/'.config/trading-bot';config.mkdir(parents=True)
+        (home/'Trading_Bot/data').mkdir(parents=True)
+        login=config/'telegram.json';login.write_text(json.dumps({'token':'FAKE','owner':'1'}));login.chmod(0o600)
+        output=self.root/'exec-args.json';launcher=Path(__file__).resolve().parents[1]/'deploy/cloud_paper_launch.py'
+        script='''import json,os,runpy,sys\nlauncher,output=sys.argv[1:3]\nsys.argv=[launcher,"--experimental-pair"]\ndef fake_exec(executable,args):\n open(output,"w").write(json.dumps(args))\nos.execv=fake_exec\nrunpy.run_path(launcher,run_name="__main__")\n'''
+        env=dict(os.environ,HOME=str(home),SHARED_PAPER_DB=str(self.financial));env.pop('FUTURES_OUTBOX_DB',None)
+        child=subprocess.run([sys.executable,'-B','-c',script,str(launcher),str(output)],env=env,capture_output=True,timeout=10)
+        self.assertEqual(child.returncode,0,child.stderr.decode())
+        args=json.loads(output.read_text());self.assertIn('--shared-paper',args);self.assertIn('--experimental-pair',args)
+        output.unlink();env.pop('SHARED_PAPER_DB')
+        child=subprocess.run([sys.executable,'-B','-c',script,str(launcher),str(output)],env=env,capture_output=True,timeout=10)
+        self.assertNotEqual(child.returncode,0);self.assertFalse(output.exists())
 
     def confirmed_set(self,market):
         now=time.time();q=UnifiedQueue(self.queue,allow_pair_experiment=True)

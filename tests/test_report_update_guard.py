@@ -130,6 +130,18 @@ class ReportUpdateGuardTests(unittest.TestCase):
             freeze_report_update(self.shared,self.q,'finalaudit:freeze:test',now=100,namespace='finalaudit')
         self.assertFalse(self.shared.deployment_hold())
 
+    def test_pair_namespace_requires_and_preserves_all_pauses(self):
+        with self.assertRaisesRegex(ValueError,'Spot must remain paused'):
+            freeze_report_update(self.shared,self.q,'pair:freeze:test',now=100,namespace='pair')
+        self.assertFalse(self.shared.deployment_hold())
+        with self.shared.transaction():self.shared._set('spot','paused',True)
+        frozen=freeze_report_update(self.shared,self.q,'pair:freeze:test',now=100,namespace='pair')
+        self.assertTrue(all(frozen['paused'].values()))
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            result=release_report_update(self.shared,self.q,'pair:release:test',protection_checked_ms=100000,now=100,namespace='pair')
+        self.assertEqual(result['enabled'],[])
+        self.assertTrue(self.shared.snapshot('spot')['paused']);self.assertTrue(self.shared.snapshot('futures')['paused'])
+
     def test_resilience_namespace_keeps_earlier_deployment_records(self):
         self.shared.db.execute("INSERT INTO ledger_meta VALUES('diagnostics_update_freeze','{}')")
         before=self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='diagnostics_update_freeze'").fetchone()[0]

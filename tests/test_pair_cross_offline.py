@@ -12,6 +12,7 @@ from trading_bot.cross_paper_strategy import CrossPaperStrategy
 from trading_bot.cross_worker import _status
 from trading_bot.cross_worker import process_cross
 from trading_bot.cross_command_receiver import CrossCommandReceiver
+from trading_bot.cross_app import cycle as cross_cycle
 from trading_bot.testnet_observer import ObservationError
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
@@ -264,6 +265,50 @@ class PairCrossOfflineTests(unittest.TestCase):
         reader.available=True;sync.refresh(now=27999)
         self.assertIsNone(self.book.runtime_error())
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+
+    def test_cross_metadata_failure_does_not_skip_sol_protection(self):
+        self.choose();initial={'BTCUSDT':self.quote('100',102),'SOLUSDT':self.quote('100',102)}
+        self.book.record_quotes(initial,now=102);self.book.set_paused(False,now=102)
+        self.book.open('sol-risk-metadata','SOLUSDT','LONG','5',1,initial,now=102,metadata=self.info('SOL'),metadata_at=101)
+        self.book.set_paused(True,now=102)
+        class Reader:
+            def schedule(inner,symbol):
+                return {'symbol':symbol,'mark':'90' if symbol=='SOLUSDT' else '100','server_ms':27999000,
+                        'next_due_ms':28000000,'interval_ms':28800000}
+            def funding(inner,symbol,start,end):return []
+            def candles(inner,symbol,interval,server):return [(i*900000,Decimal('100')) for i in range(31)]
+            def get(inner,path):raise OSError('fixture metadata unavailable')
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True);reader=Reader()
+        try:
+            actions=cross_cycle(self.book,q,CrossCommandReceiver(self.book,hold_resume=True),
+                CrossPaperStrategy(self.book),CrossDataSync(self.book,reader),reader,
+                started=0,now=27999,experimental_pair=True)
+            self.assertTrue(any(a['action']=='STOP' and a['symbol']=='SOLUSDT' for a in actions))
+            self.assertEqual(self.book._positions(),[])
+            self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        finally:q.close()
+
+    def test_malformed_retired_funding_does_not_skip_current_protection(self):
+        legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}
+        self.book.record_quotes(legacy,now=100);self.book.set_paused(False,now=100)
+        old=self.book.open('old-eth-malformed','ETHUSDT','LONG','5',1,legacy,now=100)
+        self.book.close('old-close-malformed','ETHUSDT',old['id'],old['quantity'],legacy,now=101)
+        self.book.set_paused(True,now=101);self.choose()
+        quotes={'BTCUSDT':self.quote('100',102),'SOLUSDT':self.quote('100',102)}
+        self.book.record_quotes(quotes,now=102);self.book.set_paused(False,now=102)
+        self.book.open('sol-malformed','SOLUSDT','LONG','5',1,quotes,now=102,metadata=self.info('SOL'),metadata_at=101)
+        class Reader:
+            def schedule(inner,symbol):
+                return {'symbol':symbol,'mark':'90' if symbol=='SOLUSDT' else '100','server_ms':27999000,
+                        'next_due_ms':28000000,'interval_ms':28800000}
+            def funding(inner,symbol,start,end):
+                return [{'symbol':symbol,'time':101000}] if symbol=='ETHUSDT' else []
+        sync=CrossDataSync(self.book,Reader());new=sync.refresh(now=27999)
+        self.assertEqual(sync.model_status,'historical_unconfirmed')
+        self.assertIsNone(live_report(self.shared,now=27999)['total'])
+        candles={s:[(i*900000,Decimal('100')) for i in range(31)] for s in ('BTCUSDT','SOLUSDT')}
+        actions=CrossPaperStrategy(self.book).tick(new,candles,27999000,now=27999)
+        self.assertTrue(any(a['action']=='STOP' and a['symbol']=='SOLUSDT' for a in actions))
 
     def _exercise_retired_funding_conflict(self, mode):
         legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}

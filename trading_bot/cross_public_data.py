@@ -83,12 +83,14 @@ class CrossPublicData(FuturesData):
             if not isinstance(page,list) or len(page)>1000:raise ObservationError('Invalid funding page')
             previous=cursor-1;page_keys=set()
             for row in page:
+                if not isinstance(row,dict):raise ObservationError('Invalid funding event')
                 stamp=row.get('fundingTime')
                 rate_type=row.get('rateType','Regular')
                 key=(stamp,rate_type)
                 if row.get('symbol')!=symbol or type(stamp) is not int or not previous<=stamp<=end or rate_type not in ('Regular','Special') or key in page_keys:
                     raise ObservationError('Funding page identity/order conflict')
-                rate,mark=signed_number(row['fundingRate']),number(row['markPrice'])
+                try:rate,mark=signed_number(row['fundingRate']),number(row['markPrice'])
+                except (KeyError,TypeError,ValueError):raise ObservationError('Invalid funding value') from None
                 if mark<=0 or abs(rate)>=1:raise ObservationError('Invalid funding value')
                 event={'time':stamp,'rate':str(rate),'mark':str(mark),'symbol':symbol,'rate_type':rate_type}
                 if key in found and found[key]!=event:raise ObservationError('Conflicting funding page')

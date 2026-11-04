@@ -98,6 +98,12 @@ class CrossDataSync:
                     try:
                         events=self.reader.funding(symbol,min(h['position']['opened_ms'] for h in relevant),schedules[symbol]['server_ms'])
                         if not isinstance(events,list):raise ValueError('Funding history unavailable')
+                        for event in events:
+                            if (not isinstance(event,dict) or event.get('symbol')!=symbol or type(event.get('time')) is not int or
+                                event.get('rate_type','Regular') not in ('Regular','Special')):
+                                raise ObservationError('Invalid funding history')
+                            try:amount(event['rate']);amount(event['mark'],positive=True)
+                            except (KeyError,TypeError,ValueError):raise ObservationError('Invalid funding history') from None
                     except (ObservationError,OSError,TimeoutError,ValueError):
                         if symbol in selected or any(h['closed_ms'] is None for h in relevant):raise
                         historical_unavailable.add(symbol)

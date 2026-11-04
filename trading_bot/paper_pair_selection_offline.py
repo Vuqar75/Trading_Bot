@@ -98,9 +98,25 @@ def select_spot_pair_offline(shared, queue_path, *, request_id, expected_symbol,
                         (latest is not None and (latest['version']!=version or json.loads(latest['result'])['symbol']!=current))):
                     raise ValueError('Pair selection history conflicts with identity')
                 if current!=expected_symbol or version!=expected_version:raise ValueError('Stale pair selection')
-                for row in shared.db.execute('SELECT client_id FROM runtime_orders'):
-                    if shared._get('spot','pair_order_symbol:'+row['client_id']) is None:
-                        raise ValueError('Historical order symbol migration required')
+                orders=shared.db.execute('SELECT client_id FROM runtime_orders').fetchall()
+                missing=[row['client_id'] for row in orders if shared._get('spot','pair_order_symbol:'+row['client_id']) is None]
+                migrated=shared._get('spot','pair_legacy_btc_migration')
+                if migrated is not None and migrated!={'schema':1,'symbol':'BTCUSDT'}:
+                    raise ValueError('Legacy order migration identity conflicts')
+                if migrated is None and version!=0:
+                    raise ValueError('Historical order symbol migration required')
+                if migrated is None and any(shared._get('spot','pair_order_symbol:'+row['client_id']) not in (None,'BTCUSDT') for row in orders):
+                    raise ValueError('Legacy order symbol conflicts')
+                if missing and (current!='BTCUSDT' or migrated is not None):
+                    raise ValueError('Historical order symbol migration required')
+                if migrated is None:
+                    for row in shared.db.execute('SELECT payload FROM runtime_fills'):
+                        fill=json.loads(row['payload'])
+                        if not isinstance(fill,dict) or fill.get('symbol')!='BTCUSDT':
+                            raise ValueError('Legacy fill symbol conflicts')
+                    for client in missing:shared._set('spot','pair_order_symbol:'+client,'BTCUSDT')
+                if current=='BTCUSDT' and migrated is None:
+                    shared._set('spot','pair_legacy_btc_migration',{'schema':1,'symbol':'BTCUSDT'})
                 previous_cash=snapshot['cash'];previous_pnl=snapshot['pnl']
                 updated=dict(identity);updated['symbol']=symbol
                 shared._set('spot','identity',updated)

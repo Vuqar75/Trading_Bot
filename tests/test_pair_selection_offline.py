@@ -1,5 +1,6 @@
 import concurrent.futures
 from contextlib import closing
+import json
 import subprocess
 import sqlite3
 import sys
@@ -67,6 +68,26 @@ class PairSelectionOfflineTests(unittest.TestCase):
         self.assertTrue(self.choose()['replayed'])
         with self.assertRaisesRegex(ValueError,'Conflicting request'):
             self.choose(symbol='ETHUSDT',metadata=spot_info('ETH'))
+
+    def test_selection_atomically_tags_legacy_orders_without_relabeling(self):
+        with self.shared.transaction():
+            self.shared.db.execute("INSERT INTO runtime_orders VALUES('legacy','legacy-key','BUY','0.1','100','SETTLED','FILLED','fixture',1)")
+            self.shared.db.execute('INSERT INTO runtime_fills VALUES(?,?,?)',('trade','legacy',json.dumps({'symbol':'BTCUSDT','qty':'0.1'})))
+        before=self.shared.snapshot('spot')['cash'];self.choose()
+        self.assertEqual(self.shared._get('spot','pair_order_symbol:legacy'),'BTCUSDT')
+        self.assertEqual(self.shared._get('spot','identity')['symbol'],'SOLUSDT')
+        self.assertEqual(self.shared.snapshot('spot')['cash'],before)
+        self.assertEqual(self.shared._get('spot','pair_legacy_btc_migration'),{'schema':1,'symbol':'BTCUSDT'})
+        self.assertTrue(self.choose()['replayed'])
+
+    def test_conflicting_legacy_fill_blocks_selection_without_partial_tags(self):
+        with self.shared.transaction():
+            self.shared.db.execute("INSERT INTO runtime_orders VALUES('legacy','legacy-key','BUY','0.1','100','SETTLED','FILLED','fixture',1)")
+            self.shared.db.execute('INSERT INTO runtime_fills VALUES(?,?,?)',('trade','legacy',json.dumps({'symbol':'ETHUSDT','qty':'0.1'})))
+        with self.assertRaisesRegex(ValueError,'Legacy fill symbol conflicts'):self.choose()
+        self.assertIsNone(self.shared._get('spot','pair_order_symbol:legacy'))
+        self.assertIsNone(self.shared._get('spot','pair_legacy_btc_migration'))
+        self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
 
     def test_pair_selection_blocks_restoring_older_financial_snapshot(self):
         before=self.queue.parent/'before.db';after=self.queue.parent/'after.db'
