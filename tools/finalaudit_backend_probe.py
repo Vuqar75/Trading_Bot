@@ -54,5 +54,58 @@ try:
   assert not q.db.execute('select 1 from unified_jobs where update_id=? and status=?',(uid,'PENDING')).fetchone()
   assert any('применены ко всем четырём' in x[0] for x in q.db.execute('select message from unified_outbox'))
   print('authorization and partial/final pause_all backend effects verified on synthetic fixture')
+
+  # Seed paper-only test collateral and quotes. These are isolated temporary
+  # databases, not real transfers or changes to the VM's financial journal.
+  from decimal import Decimal
+  now=time.time();stamp=int(now*1000);period=28800000
+  with s.transaction():
+   for market in ('futures_cross','margin_cross'):
+    s.ledger._post('probe-seed:'+market,'FIXTURE',{},[(market+':free','USDT',Decimal(50)),('external:fixture','USDT',Decimal(-50))])
+  cq={symbol:{'mark':price,'time':now,'funding_complete':True,'server_ms':stamp,'next_due_ms':(stamp//period+1)*period,'interval_ms':period} for symbol,price in (('BTCUSDT','100'),('ETHUSDT','200'))}
+  cross.record_quotes(cq,now=now)
+  filters={'lot_rules':[{'min':'0','max':'0','step':'.00000001'}],'min_notional':'0','max_notional':'0','observed_ms':stamp}
+  mq={symbol:{'price':price,'time_ms':stamp,'server_ms':stamp,'source':'fixture','price_kind':'last_public_trade','filters':filters} for symbol,price in (('BTCUSDT','100'),('ETHUSDT','200'))}
+  margin.record_quotes(mq,now_ms=stamp);mr.protection_checked_ms=stamp
+  for market in ('spot','futures','futures_cross','margin_cross'):
+   ident+=1;q.receive(ident,True,'/mode '+market)
+   ident+=1;uid=ident;q.receive(uid,True,'/resume')
+   def crash(point):
+    if point=='after_destination_commit':raise RuntimeError('synthetic crash before queue acknowledgement')
+   try:
+    if market=='spot':process_market(q,sr,spot,'spot',fault=crash)
+    elif market=='futures':process_market(q,fr,future,'futures',fault=crash)
+    elif market=='futures_cross':process_cross(q,cr,cross,fault=crash)
+    else:process_margin(q,mr,margin,s,fault=crash)
+    raise AssertionError('fault was not reached')
+   except RuntimeError as exc:
+    assert 'synthetic crash' in str(exc)
+   run(market)
+   row=q.db.execute('SELECT status FROM unified_jobs WHERE update_id=?',(uid,)).fetchone();assert row['status']=='DONE'
+   paused=(spot.get('paused') if market=='spot' else future.get('paused') if market=='futures' else
+           bool(s.db.execute('SELECT paused FROM wallet_state WHERE wallet=?',(market,)).fetchone()[0]))
+   assert not paused,(market,'resume not applied')
+   q.receive(uid,True,'/resume');run(market)
+   assert q.db.execute('SELECT count(*) FROM unified_jobs WHERE update_id=?',(uid,)).fetchone()[0]==1
+   print(market,'resume applied once across crash and duplicate')
+
+  # Spot and isolated manually-confirmed close is a request for the trading
+  # process, not an immediate synthetic fill. Verify the bound request and
+  # stable replay after switching mode without executing a protective exit.
+  for market,store,table in (('spot',spot,'runtime_fills'),('futures',future,'futures_events')):
+   ident+=1;q.receive(ident,True,'/mode '+market)
+   pos=store.get('position');assert pos and Decimal(str(pos['quantity']))>0
+   ident+=1;q.receive(ident,True,'/close',positions={market:pos});run(market)
+   proposal=q.db.execute('SELECT id FROM unified_proposals WHERE market=? ORDER BY rowid DESC LIMIT 1',(market,)).fetchone()
+   assert proposal,(market,'proposal missing')
+   ident+=1;q.receive(ident,True,'/mode '+('futures' if market=='spot' else 'spot'))
+   ident+=1;uid=ident;q.receive(uid,True,'/confirm '+proposal['id'])
+   before=s.db.execute('SELECT count(*) FROM '+table).fetchone()[0]
+   run(market);req=store.get('close_request')
+   assert req and req['target']==pos['id'] and Decimal(req['quantity'])==Decimal(str(pos['quantity']))
+   q.receive(uid,True,'/confirm '+proposal['id']);run(market)
+   assert s.db.execute('SELECT count(*) FROM '+table).fetchone()[0]==before
+   assert q.db.execute('SELECT count(*) FROM unified_jobs WHERE update_id=?',(uid,)).fetchone()[0]==1
+   print(market,'close confirmation bound to original position across mode switch and duplicate; no fill')
  finally:sr.close();fr.close();spot.close();future.close()
 finally:case.doCleanups()

@@ -2,9 +2,7 @@
 
 > Актуальный checkout после установки 4 ноября: `/opt/trading-bot-finalaudit-29d1fc6`, commit `29d1fc6061902b00c49739b4b74c2f6285a15a3d`; состояние рынков и пауз проверяйте перед действиями.
 
-> Снимок 4 ноября: установлен `/opt/trading-bot-boundary-88358b5`, commit `88358b5ede648542d100aa717d2b17ce0278d5f6`. Фактическую паузу, позиции и здоровье проверяйте перед действиями. Исторические пути ниже не считать путями текущей установки; подробности и ограничения в HANDOFF.md.
-
-Прочитайте также HANDOFF.md и FINAL_AUDIT.md: фактическое состояние необходимо перепроверять. При проверке 4 ноября четыре торговые службы и наблюдатель активны; Spot разрешён, isolated futures, futures cross и margin cross на паузе. Рабочий checkout `/opt/trading-bot-resilience-2204bd0`, код `2204bd0147cdd914196a320224b946b8ff8d31d7`; systemd backup дополнительно имеет PATH к SDK snap и соответствует более новой конфигурации из исследовательской ветки. Финансовая база — `/var/lib/tradingbot/paper-financial/shared-paper.db`. Изменения VM выполняются только по отдельному указанию владельца.
+Прочитайте также HANDOFF.md и FINAL_AUDIT.md: фактическое состояние необходимо перепроверять. При проверке 4 ноября четыре торговые службы и наблюдатель активны; Spot разрешён, isolated futures, futures cross и margin cross на паузе. Рабочий checkout `/opt/trading-bot-finalaudit-29d1fc6`, код `29d1fc6061902b00c49739b4b74c2f6285a15a3d`. Финансовая база — `/var/lib/tradingbot/paper-financial/shared-paper.db`. Изменения VM выполняются в пределах действующего указания владельца.
 
 Для проверки без остановки процессов:
 
@@ -16,6 +14,47 @@ sudo stat /var/lib/tradingbot/paper-external-backups/hourly-success.json
 ```
 
 Внешняя копия и изолированное восстановление описаны в EXTERNAL_BACKUP_EMAIL_RUNBOOK.md. Проверка heartbeat и писем уже проведена и подтверждена владельцем. Старая база поверх новых проводок не восстанавливается. При остановке работающего процесса его защита позиций не выполняется; для восстановления использовать процедуру и отдельное указание, сохранив фактические паузы и все новые события.
+
+## Операции и восстановление
+
+Для разрешённого обслуживания сначала зафиксируйте позиции и паузы, поставьте входы на паузу и проверьте согласованную копию. Остановка процесса прерывает защитный цикл открытых позиций; выбирайте согласованное окно. Команда ниже останавливает только перечисленные службы, но **не закрывает позиции**:
+
+```bash
+sudo systemctl stop tradingbot-spot.service tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-monitor.service
+sudo systemctl start tradingbot-futures.service tradingbot-cross.service tradingbot-margin.service tradingbot-spot.service tradingbot-monitor.service
+```
+
+После старта проверяйте свежие котировки и защитные циклы, ошибки, блокировки, журнал и единственность процессов. Входы после перезапуска остаются на паузе; возвращайте только ранее разрешённые рынки после здоровой проверки и при действующем разрешении. Ручная пауза не снимается проверкой backup.
+
+Проверка расписания и последней успешной внешней загрузки:
+
+```bash
+systemctl list-timers 'tradingbot-*' --no-pager
+sudo stat /var/lib/tradingbot/paper-external-backups/hourly-success.json /var/lib/tradingbot/paper-external-backups/daily-success.json
+sudo journalctl -u tradingbot-external-backup@hourly.service -n 20 --no-pager
+```
+
+Для изолированной проверки восстановления из последнего hourly-архива, без поллера и торговых процессов:
+
+```bash
+sudo -u tradingbot env HOME=/var/lib/tradingbot PATH=/snap/google-cloud-cli/current/bin:/usr/bin:/bin PYTHONPATH=/opt/trading-bot-finalaudit-29d1fc6 python3 - <<'PY'
+import json, os, subprocess, tempfile
+from pathlib import Path
+from trading_bot.paper_external_backup import inspect_restore
+
+os.umask(0o077)
+base = Path('/var/lib/tradingbot')
+marker = json.loads((base / 'paper-external-backups/hourly-success.json').read_text())
+review = Path(tempfile.mkdtemp(prefix='restore-review-', dir=base))
+archive = review / 'backup.tar.gz'
+subprocess.run(['gcloud', 'storage', 'cp', marker['object'], str(archive)],
+               check=True, stdout=subprocess.DEVNULL)
+result = inspect_restore(archive, review / 'restored', expected_sha256=marker['sha256'])
+print('Изолированная копия:', review / 'restored', 'Проверка:', result)
+PY
+```
+
+Проверяйте восстановленные позиции, обязательства, funding и очередь отдельно. Не запускайте торговлю из копии и не заменяйте текущую базу старой, если появились новые финансовые события или команды. При необходимости восстановления после таких событий требуется сохранить и согласовать новые проводки, а не выполнять простой откат файла. Секретная конфигурация в эти архивы не входит; доступ к ней восстанавливается отдельно защищённым способом.
 
 ---
 
