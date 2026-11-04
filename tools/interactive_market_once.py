@@ -49,6 +49,8 @@ def run(home=None):
     os.environ['TRADING_BOT_AI'] = secret
     del secret
     try:
+        if not os.environ.get('TRADING_BOT_AI'):
+            raise ResearchError('openai_api_key_not_configured')
         print('TRADING_BOT_AI: задана для этого процесса; получаю свежий публичный срез.', flush=True)
         raw = capture_public(interval='15m')
         snapshot = build_snapshot(raw)
