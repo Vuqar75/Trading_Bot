@@ -12,7 +12,7 @@ from contextlib import closing
 from decimal import Decimal
 from pathlib import Path
 
-from .paper_pair_catalog import spot_usdt_candidate
+from .paper_pair_catalog import spot_usdt_candidate, usd_m_perpetual_candidate
 from .paper_shared_store import SharedPaperStore
 
 
@@ -90,6 +90,76 @@ def select_spot_pair_offline(shared, queue_path, *, request_id, expected_symbol,
                                   (request_id,version+1,fingerprint,json.dumps(result,sort_keys=True)))
                 after=shared._assert_consistent('spot')
                 if after['cash']!=previous_cash or after['pnl']!=previous_pnl or after['paused'] is not True:
+                    raise ValueError('Selection changed financial state')
+                return dict(result,replayed=False)
+        finally:
+            if queue.in_transaction:queue.rollback()
+
+
+def select_isolated_pair_offline(shared, queue_path, *, request_id, expected_symbol,
+                                 expected_version, symbol, metadata, price, quantity,
+                                 observed_at, clock=time.time, max_age=120):
+    """Offline-only USD-M isolated selection on paused, flat shared copies."""
+    if (not isinstance(shared,SharedPaperStore) or not isinstance(request_id,str) or
+            not re.fullmatch(r'[A-Za-z0-9:_-]{1,100}',request_id) or
+            type(expected_version) is not int or expected_version<0 or
+            not isinstance(expected_symbol,str) or not isinstance(symbol,str)):
+        raise ValueError('Invalid selection identity')
+    fingerprint=hashlib.sha256(json.dumps([expected_symbol,expected_version,symbol],separators=(',',':')).encode()).hexdigest()
+    path=Path(queue_path)
+    if path.is_symlink() or not path.is_file():raise ValueError('Existing queue database required')
+    path=path.resolve(strict=True)
+    if path==Path(shared.db.execute('PRAGMA database_list').fetchone()[2]).resolve(strict=True):
+        raise ValueError('Financial and queue databases must be distinct')
+    with closing(sqlite3.connect(path.as_uri()+'?mode=rw',uri=True,isolation_level=None,timeout=5)) as queue:
+        if queue.execute('PRAGMA journal_mode').fetchone()[0].lower()!='delete':raise ValueError('Rollback journal required for queue')
+        try:
+            with shared.transaction():
+                queue.execute('BEGIN IMMEDIATE')
+                shared.db.execute('CREATE TABLE IF NOT EXISTS pair_isolated_selection_events(request_id TEXT PRIMARY KEY,version INTEGER NOT NULL UNIQUE,fingerprint TEXT NOT NULL,result TEXT NOT NULL)')
+                for verb in ('UPDATE','DELETE'):
+                    shared.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_pair_isolated_events_{verb.lower()} BEFORE {verb} ON pair_isolated_selection_events BEGIN SELECT RAISE(ABORT,'immutable pair selection'); END")
+                old=shared.db.execute('SELECT fingerprint,result FROM pair_isolated_selection_events WHERE request_id=?',(request_id,)).fetchone()
+                if old is not None:
+                    if old['fingerprint']!=fingerprint:raise ValueError('Conflicting request identity')
+                    return dict(json.loads(old['result']),replayed=True)
+                now=clock()
+                if isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=now-observed_at<=max_age:
+                    raise ValueError('Pair data stale or future dated')
+                preview=usd_m_perpetual_candidate(metadata,symbol,quantity,price)
+                if shared.deployment_hold():raise ValueError('Deployment hold active')
+                if not shared.ledger.reconcile()['balanced']:raise ValueError('Journal mismatch')
+                snapshot=shared._assert_consistent('futures')
+                if snapshot['paused'] is not True:raise ValueError('Isolated futures must be paused')
+                if snapshot['position'] is not None:raise ValueError('Existing futures position prevents selection')
+                if shared._get('futures','error') or shared._get('futures','blocked'):raise ValueError('Futures requires recovery')
+                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='futures' AND status='PENDING' LIMIT 1").fetchone():raise ValueError('Futures command pending')
+                if queue.execute("SELECT 1 FROM unified_proposals WHERE market='futures' AND status='OPEN' LIMIT 1").fetchone():raise ValueError('Futures confirmation pending')
+                if shared.db.execute("SELECT 1 FROM transfer_proposals WHERE status='OPEN' AND (source='futures_isolated' OR destination='futures_isolated') LIMIT 1").fetchone():raise ValueError('Futures transfer pending')
+                identity=shared._get('futures','identity')
+                if not isinstance(identity,dict) or identity.get('mode')!='futures-paper':raise ValueError('Futures paper identity required')
+                current=identity.get('symbol','BTCUSDT');version=shared._get('futures','pair_selection_version',0)
+                latest=shared.db.execute('SELECT version,result FROM pair_isolated_selection_events ORDER BY version DESC LIMIT 1').fetchone()
+                if ((latest is None and version!=0) or (latest is not None and (latest['version']!=version or json.loads(latest['result'])['symbol']!=current))):
+                    raise ValueError('Pair selection history conflicts with identity')
+                if current!=expected_symbol or version!=expected_version:raise ValueError('Stale pair selection')
+                # Pre-selection events are legacy BTC only; never rewrite them.
+                if latest is None and current!='BTCUSDT':raise ValueError('Legacy futures identity requires review')
+                if latest is None:
+                    for row in shared.db.execute("SELECT payload FROM futures_events WHERE event IN ('OPEN','CLOSE')"):
+                        payload=json.loads(row['payload'])
+                        if payload.get('symbol','BTCUSDT')!='BTCUSDT':raise ValueError('Legacy futures event symbol conflicts')
+                before_cash=snapshot['cash'];before_pnl=snapshot['pnl']
+                updated=dict(identity);updated['symbol']=symbol
+                shared._set('futures','identity',updated);shared._set('futures','pair_selection_version',version+1)
+                for name in ('signal','quote','last_candle','reverse'):
+                    shared._set('futures',name,None)
+                result={'fingerprint':fingerprint,'from':current,'symbol':symbol,'version':version+1,
+                        'base_asset':preview['base_asset'],'observed_at':observed_at}
+                shared.db.execute('INSERT INTO pair_isolated_selection_events VALUES(?,?,?,?)',
+                                  (request_id,version+1,fingerprint,json.dumps(result,sort_keys=True)))
+                after=shared._assert_consistent('futures')
+                if after['cash']!=before_cash or after['pnl']!=before_pnl or after['paused'] is not True:
                     raise ValueError('Selection changed financial state')
                 return dict(result,replayed=False)
         finally:

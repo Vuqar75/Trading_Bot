@@ -11,7 +11,7 @@ from pathlib import Path
 from tests.test_paper_pair_catalog import spot_info
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
-from trading_bot.paper_pair_selection_offline import select_spot_pair_offline
+from trading_bot.paper_pair_selection_offline import select_spot_pair_offline, select_isolated_pair_offline
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.runtime_exchange import PaperExchange
@@ -65,6 +65,12 @@ class PairSelectionOfflineTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'command pending'):
             self.choose()
         self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
+
+    def test_tampered_identity_does_not_silently_relabel_selection_history(self):
+        self.choose()
+        with self.shared.transaction():self.shared._set('spot','identity',{'mode':'paper','symbol':'BTCUSDT'})
+        with self.assertRaisesRegex(ValueError,'history conflicts'):
+            self.choose(request_id='next',expected_version=1,expected_symbol='BTCUSDT',symbol='ETHUSDT',metadata=spot_info('ETH'))
 
     def test_missing_or_same_database_is_rejected_without_creating_files(self):
         missing=self.queue.parent/'missing.db'
@@ -190,3 +196,64 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertTrue(store.get('paused'))
             self.assertTrue(store.shared.ledger.reconcile()['balanced'])
         finally:store.close()
+
+    def test_isolated_selection_sol_shared_funding_and_replay(self):
+        metadata=spot_info();metadata.update(contractType='PERPETUAL',marginAsset='USDT')
+        args=dict(request_id='isolated:1',expected_symbol='BTCUSDT',expected_version=0,
+                  symbol='SOLUSDT',metadata=metadata,price='100',quantity='.1',observed_at=100,clock=lambda:101)
+        before=self.shared.snapshot('futures')
+        result=select_isolated_pair_offline(self.shared,self.queue,**args)
+        self.assertFalse(result['replayed'])
+        self.assertTrue(select_isolated_pair_offline(self.shared,self.queue,**args)['replayed'])
+        after=self.shared.snapshot('futures')
+        self.assertEqual((before['cash'],before['pnl'],before['position']),(after['cash'],after['pnl'],after['position']))
+        store=FuturesStore(self.financial,symbol='SOLUSDT',allow_pair_experiment=True,shared=True)
+        try:
+            store.command(1,True,'/resume')
+            self.assertTrue(store.open_position('LONG',Decimal('100'),1000,'sol-open',metadata=metadata,quote_symbol='SOLUSDT',observed_at=time.time()))
+            pos=store.get('position');self.assertEqual(pos['symbol'],'SOLUSDT')
+            funding={'symbol':'SOLUSDT','time':2000,'rate':'.001','mark':'100'}
+            store.apply_funding(pos['id'],[funding],2000);store.apply_funding(pos['id'],[funding],2000)
+            self.assertTrue(store.close_position(Decimal('105'),2000,'sol-close','fixture',pos['id'],quote_symbol='SOLUSDT',observed_at=time.time()))
+            self.assertFalse(store.close_position(Decimal('105'),2000,'sol-close','fixture',pos['id'],quote_symbol='SOLUSDT',observed_at=time.time()))
+            self.assertEqual(store.db.execute('SELECT count(*) FROM futures_funding').fetchone()[0],1)
+            self.assertTrue(store.shared.ledger.reconcile()['balanced'])
+        finally:store.close()
+
+    def test_isolated_selection_preserves_existing_btc_position(self):
+        store=FuturesStore(self.financial,shared=True)
+        try:
+            store.command(1,True,'/resume');store.open_position('SHORT',Decimal('100'),1000,'btc-open')
+            store.command(2,True,'/pause');before=store.get('position')
+            metadata=spot_info();metadata.update(contractType='PERPETUAL',marginAsset='USDT')
+            with self.assertRaisesRegex(ValueError,'Existing futures position'):
+                select_isolated_pair_offline(self.shared,self.queue,request_id='isolated:blocked',expected_symbol='BTCUSDT',
+                    expected_version=0,symbol='SOLUSDT',metadata=metadata,price='100',quantity='.1',observed_at=100,clock=lambda:101)
+            self.assertEqual(store.get('position'),before)
+        finally:store.close()
+
+    def test_isolated_sol_funding_recovers_across_commit_crashes(self):
+        metadata=spot_info();metadata.update(contractType='PERPETUAL',marginAsset='USDT')
+        select_isolated_pair_offline(self.shared,self.queue,request_id='isolated:crash',expected_symbol='BTCUSDT',
+            expected_version=0,symbol='SOLUSDT',metadata=metadata,price='100',quantity='.1',observed_at=100,clock=lambda:101)
+        store=FuturesStore(self.financial,symbol='SOLUSDT',allow_pair_experiment=True,shared=True)
+        try:
+            store.command(1,True,'/resume')
+            store.open_position('SHORT',Decimal('100'),1000,'open-crash',metadata=metadata,quote_symbol='SOLUSDT',observed_at=time.time())
+            ident=store.get('position')['id']
+        finally:store.close()
+        script='''import os,sys\nfrom trading_bot.futures_store import FuturesStore\ns=FuturesStore(sys.argv[1],symbol="SOLUSDT",allow_pair_experiment=True,shared=True)\ndef fault(stage):\n if stage==sys.argv[3]:os._exit(74)\ns.fault=fault\ns.apply_funding(sys.argv[2],[{"symbol":"SOLUSDT","time":2000,"rate":".001","mark":"100"}],2000)\n'''
+        for stage in ('before_commit','after_commit'):
+            child=subprocess.run([sys.executable,'-B','-c',script,str(self.financial),ident,stage],capture_output=True,timeout=20)
+            self.assertEqual(child.returncode,74,child.stderr.decode())
+            check=FuturesStore(self.financial,symbol='SOLUSDT',allow_pair_experiment=True,shared=True)
+            try:
+                self.assertEqual(check.db.execute('SELECT count(*) FROM futures_funding').fetchone()[0],int(stage=='after_commit'))
+                self.assertTrue(check.shared.ledger.reconcile()['balanced'])
+            finally:check.close()
+        check=FuturesStore(self.financial,symbol='SOLUSDT',allow_pair_experiment=True,shared=True)
+        try:
+            event={'symbol':'SOLUSDT','time':2000,'rate':'.001','mark':'100'}
+            check.apply_funding(ident,[event],2000)
+            self.assertEqual(check.db.execute('SELECT count(*) FROM futures_funding').fetchone()[0],1)
+        finally:check.close()
