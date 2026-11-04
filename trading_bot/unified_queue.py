@@ -5,7 +5,7 @@ import secrets
 import sqlite3
 import time
 from .display_amount import display_amount
-from .telegram_help import unified_help_messages
+from .telegram_help import unified_help_messages, unified_start_message
 from contextlib import contextmanager
 
 
@@ -84,7 +84,9 @@ class UnifiedQueue:
             payload = {}
             jobs = []
             if authorized:
-                if command in ('/help', '/start') and len(parts) == 1:
+                if command == '/start' and len(parts) == 1:
+                    self._notify(unified_start_message())
+                elif command == '/help' and len(parts) == 1:
                     for message in unified_help_messages(market_label(mode)):
                         self._notify(message)
                 elif command == '/mode' and len(parts) <= 2:

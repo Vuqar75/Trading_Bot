@@ -5,6 +5,11 @@ There is no Markdown parse mode in the sender; command syntax stays literal.
 """
 
 
+def unified_start_message():
+    return ('Здравствуйте! Этот бот помогает наблюдать за крипторынком и управлять '
+            'виртуальными сделками в paper-режиме. Подробные команды: /help.')
+
+
 def unified_help_messages(selected_market):
     return (
         f'''[Справка 1/3] Выбор рынка и торговля
@@ -82,6 +87,6 @@ Spot и isolated: BTCUSDT. Cross и margin: BTCUSDT и ETHUSDT.
 
 СПРАВКА
 /help — полная справка в трёх сообщениях.
-/start — та же справка.
+/start — короткое приветствие.
 Неизвестные данные не означают ноль. Займы, проценты, funding и ликвидации — paper-модели; прибыльность стратегии не доказана.''',
     )
