@@ -174,3 +174,31 @@ class PairCrossOfflineTests(unittest.TestCase):
         reader.available=True;sync.refresh(now=27999)
         self.assertIsNone(self.book.runtime_error())
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+
+    def test_changed_retired_funding_currently_blocks_current_protection(self):
+        legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}
+        self.book.record_quotes(legacy,now=100);self.book.set_paused(False,now=100)
+        old=self.book.open('old-eth','ETHUSDT','LONG','5',1,legacy,now=100)
+        class Reader:
+            rate='.001';server_ms=28001000
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'90' if symbol=='SOLUSDT' else '100',
+                        'server_ms':self.server_ms,'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return ([{'symbol':'ETHUSDT','time':28000001,'rate_type':'Regular',
+                          'rate':self.rate,'mark':'100'}] if symbol=='ETHUSDT' else [])
+        reader=Reader();quotes=CrossDataSync(self.book,reader).refresh(now=28001)
+        self.book.close('old-eth-close','ETHUSDT',old['id'],old['quantity'],quotes,now=28001)
+        self.book.set_paused(True,now=28001)
+        self.choose(observed_at=28002,clock=lambda:28002)
+        active={'BTCUSDT':{**self.quote('100',28002),'next_due_ms':56800000},
+                'SOLUSDT':{**self.quote('100',28002),'next_due_ms':56800000}}
+        self.book.record_quotes(active,now=28002);self.book.set_paused(False,now=28002)
+        self.book.open('sol-risk','SOLUSDT','LONG','5',1,active,now=28002,metadata=self.info('SOL'),metadata_at=28002)
+        before=[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')]
+        reader.rate='.002';reader.server_ms=28003000
+        with self.assertRaisesRegex(ValueError,'funding event changed'):
+            CrossDataSync(self.book,reader).refresh(now=28003)
+        self.assertEqual(before,[tuple(x) for x in self.shared.db.execute('SELECT * FROM cross_funding')])
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        with self.assertRaises(ValueError):self.book.risk(self.book.stored_quotes(),now=28003)
