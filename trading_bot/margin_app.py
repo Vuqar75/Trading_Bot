@@ -44,7 +44,7 @@ def cycle(shared,book,queue,receiver,strategy,reader,*,started,clock=time.time):
         stage='settings';settings=book.db.execute('SELECT interval FROM margin_settings WHERE id=1').fetchone()
         if not settings:raise ValueError('Missing margin settings')
         interval=settings['interval'];stage='fetch';rows={}
-        for symbol in PAIRS:rows[symbol]=reader.snapshot(symbol,interval)
+        for symbol in book.pairs:rows[symbol]=reader.snapshot(symbol,interval)
         symbol=None;stage='provenance'
         if any(q.get('source')!=MarginSpotData.HOST or q.get('price_kind')!='last_public_trade' for q in rows.values()):
             raise ValueError('Untrusted margin price source')

@@ -101,13 +101,19 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                 else:cross['adjustment']-=value
         margin_cross=None; margin_cross_value=Decimal(0)
         if shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_positions'").fetchone():
-            from .margin_paper_book import MarginPaperBook
+            from .margin_paper_book import MarginPaperBook, PAIRS
             from .margin_interest_ledger import MarginInterestLedger, HOUR_MS
+            from .paper_wallet_ledger import valid_asset
             mb=object.__new__(MarginPaperBook);mb.ledger=shared.ledger;mb.db=shared.db
             mb.loans=object.__new__(MarginInterestLedger);mb.loans.ledger=shared.ledger;mb.loans.db=shared.db
+            asset_names=sorted({r[0] for r in shared.db.execute('SELECT DISTINCT asset FROM margin_loan_rates')}|{'USDT','BTC','ETH'})
+            if any(not valid_asset(a) for a in asset_names):raise ValueError('Invalid margin asset')
+            mb.loans.assets=tuple(asset_names)
+            mb._pairs={**PAIRS,**{a+'USDT':a for a in asset_names if a not in ('USDT','BTC','ETH')}}
             mb._check()
             balances['margin_cross']={'free':shared.ledger.balance('margin_cross:free'),'reserved':shared.ledger.balance('margin_cross:reserved')}
-            assets={a:{k:shared.ledger.balance('margin_cross:'+k,a) for k in ('free','reserved','principal','interest')} for a in ('USDT','BTC','ETH')}
+            assets={a:{k:shared.ledger.balance('margin_cross:'+k,a) for k in ('free','reserved','principal','interest')} for a in asset_names}
+            crypto_assets=[a for a in asset_names if a!='USDT']
             loans=[dict(r) for r in shared.db.execute("SELECT * FROM margin_loans WHERE status='OPEN' ORDER BY id")]
             now_ms=int(now*1000);due=False
             for loan in loans:
@@ -120,14 +126,14 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             marks=None
             try:marks=mb._marks(mb.stored_quotes(),now_ms)
             except ValueError:
-                if any(any(assets[a][k] for k in assets[a]) for a in ('BTC','ETH')):
+                if any(any(assets[a][k] for k in assets[a]) for a in crypto_assets):
                     incomplete.append('Margin cross: цены отсутствуют или устарели')
             margin_assets=Decimal(0);margin_debt=assets['USDT']['principal']+assets['USDT']['interest']
             if marks:
-                for asset in ('BTC','ETH'):
+                for asset in crypto_assets:
                     margin_assets+=(assets[asset]['free']+assets[asset]['reserved'])*marks[asset]
                     margin_debt+=(assets[asset]['principal']+assets[asset]['interest'])*marks[asset]
-            elif any(any(assets[a][k] for k in assets[a]) for a in ('BTC','ETH')):
+            elif any(any(assets[a][k] for k in assets[a]) for a in crypto_assets):
                 margin_assets=None;margin_debt=None
             margin_cross_value=None if margin_assets is None or margin_debt is None else margin_assets+margin_debt
             margin_positions=mb._positions()
@@ -136,7 +142,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             error_row=shared.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()
             if not settings or not state or not error_row:raise ValueError('Margin status unavailable')
             rates={}
-            for asset in ('USDT','BTC','ETH'):
+            for asset in asset_names:
                 rate=shared.db.execute('SELECT rate FROM margin_loan_rates WHERE asset=? AND effective_ms<=? ORDER BY effective_ms DESC LIMIT 1',(asset,now_ms)).fetchone()
                 rates[asset]=amount(rate['rate']) if rate else None
             margin_cross={'assets':assets,'loans':loans,'positions':margin_positions,'asset_value':margin_assets,'debt_value':margin_debt,'marks':marks,'due':due,
@@ -146,7 +152,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
                           'equity':None if due or margin_cross_value is None else balances['margin_cross']['free']+balances['margin_cross']['reserved']+margin_cross_value}
             closes=[json.loads(r['details']) for r in shared.db.execute("SELECT created,details FROM ledger_events WHERE kind='FINANCIAL_METADATA' AND id LIKE 'margin:position-close:%'") if period=='all' or start<=r['created']<=now]
             margin_cross['realized']=None if any(r['net'] is None for r in closes) else sum((amount(r['net']) for r in closes),Decimal(0))
-            margin_cross['fees']=Decimal(0);margin_cross['interest_total']={a:Decimal(0) for a in ('USDT','BTC','ETH')}
+            margin_cross['fees']=Decimal(0);margin_cross['interest_total']={a:Decimal(0) for a in asset_names}
             for row in shared.db.execute("SELECT e.created,p.account,p.asset,p.amount FROM ledger_events e JOIN ledger_postings p ON p.event_id=e.id WHERE p.account IN ('external:margin_fee','external:margin_interest')"):
                 if period=='today' and not start<=row['created']<=now:continue
                 if row['account']=='external:margin_fee':margin_cross['fees']+=amount(row['amount'])

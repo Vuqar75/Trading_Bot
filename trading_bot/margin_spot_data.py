@@ -19,7 +19,14 @@ class MarginSpotData:
     PATHS={'/api/v3/time','/api/v3/trades','/api/v3/exchangeInfo','/api/v3/klines','/api/v3/referencePrice','/api/v3/avgPrice'}
     SYMBOLS={'BTCUSDT':'BTC','ETHUSDT':'ETH'}
 
-    def __init__(self,transport=None,clock=time.time):
+    def __init__(self,transport=None,clock=time.time,*,experimental_pairs=None):
+        from .paper_wallet_ledger import valid_asset
+        extra=experimental_pairs or {}
+        if (not isinstance(extra,dict) or len(extra)>100 or
+            any(not isinstance(s,str) or not isinstance(a,str) or s!=a+'USDT' or
+                not valid_asset(a) or a=='USDT' or s in self.SYMBOLS for s,a in extra.items())):
+            raise ObservationError('Invalid experimental Spot pairs')
+        self.symbols={**self.SYMBOLS,**extra}
         self.transport=transport or self._http;self.clock=clock
 
     @staticmethod
@@ -39,7 +46,7 @@ class MarginSpotData:
         return self.transport(Request(self.HOST+path+('?' + urlencode(params) if params else ''),method='GET'))
 
     def _symbol(self,symbol):
-        if symbol not in self.SYMBOLS:raise ObservationError('Unsupported Spot symbol')
+        if symbol not in self.symbols:raise ObservationError('Unsupported Spot symbol')
         return symbol
 
     def filters(self,symbol,server_ms):
@@ -47,7 +54,7 @@ class MarginSpotData:
         rows=result.get('symbols') if isinstance(result,dict) else None
         if not isinstance(rows,list) or len(rows)!=1 or not isinstance(rows[0],dict):raise ObservationError('Invalid Spot symbol metadata')
         row=rows[0]
-        if row.get('symbol')!=symbol or row.get('baseAsset')!=self.SYMBOLS[symbol] or row.get('quoteAsset')!='USDT' or row.get('status')!='TRADING' or 'MARKET' not in row.get('orderTypes',[]):
+        if row.get('symbol')!=symbol or row.get('baseAsset')!=self.symbols[symbol] or row.get('quoteAsset')!='USDT' or row.get('status')!='TRADING' or 'MARKET' not in row.get('orderTypes',[]):
             raise ObservationError('Spot symbol is not eligible for paper pricing')
         if not isinstance(row.get('filters'),list):raise ObservationError('Missing Spot filters')
         by_type={}

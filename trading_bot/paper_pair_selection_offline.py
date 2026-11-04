@@ -248,3 +248,76 @@ def select_cross_pairs_offline(shared, queue_path, *, request_id, expected_symbo
                 return dict(result,replayed=False)
         finally:
             if queue.in_transaction:queue.rollback()
+
+
+def select_margin_pairs_offline(shared, queue_path, *, request_id, expected_symbols,
+                                expected_version, symbols, metadata, prices, quantities,
+                                observed_at, clock=time.time, max_age=120, confirm_job_id=None):
+    """Change margin's offline pair set without altering balances or liabilities."""
+    if (not isinstance(shared,SharedPaperStore) or not isinstance(request_id,str) or
+        not re.fullmatch(r'[A-Za-z0-9:_-]{1,100}',request_id) or type(expected_version) is not int or expected_version<0 or
+        not isinstance(expected_symbols,(list,tuple)) or not isinstance(symbols,(list,tuple)) or
+        not 1<=len(symbols)<=2 or any(not isinstance(s,str) for s in (*expected_symbols,*symbols)) or len(set(symbols))!=len(symbols)):
+        raise ValueError('Invalid margin selection identity')
+    expected=sorted(expected_symbols);selected=sorted(symbols)
+    fingerprint=hashlib.sha256(json.dumps([expected,expected_version,selected],separators=(',',':')).encode()).hexdigest()
+    path=Path(queue_path)
+    if path.is_symlink() or not path.is_file():raise ValueError('Existing queue database required')
+    path=path.resolve(strict=True)
+    if path==Path(shared.db.execute('PRAGMA database_list').fetchone()[2]).resolve(strict=True):raise ValueError('Financial and queue databases must be distinct')
+    with closing(sqlite3.connect(path.as_uri()+'?mode=rw',uri=True,isolation_level=None,timeout=5)) as queue:
+        if queue.execute('PRAGMA journal_mode').fetchone()[0].lower()!='delete':raise ValueError('Rollback journal required for queue')
+        try:
+            with shared.transaction():
+                queue.execute('BEGIN IMMEDIATE')
+                shared.db.execute('CREATE TABLE IF NOT EXISTS pair_margin_selection_events(request_id TEXT PRIMARY KEY,version INTEGER NOT NULL UNIQUE,fingerprint TEXT NOT NULL,result TEXT NOT NULL)')
+                for verb in ('UPDATE','DELETE'):
+                    shared.db.execute(f"CREATE TRIGGER IF NOT EXISTS immutable_pair_margin_events_{verb.lower()} BEFORE {verb} ON pair_margin_selection_events BEGIN SELECT RAISE(ABORT,'immutable pair selection'); END")
+                old=shared.db.execute('SELECT fingerprint,result FROM pair_margin_selection_events WHERE request_id=?',(request_id,)).fetchone()
+                if old is not None:
+                    if old['fingerprint']!=fingerprint:raise ValueError('Conflicting request identity')
+                    return dict(json.loads(old['result']),replayed=True)
+                now=clock()
+                current_job=_confirmed_job(queue,'margin_cross',confirm_job_id,request_id,expected,expected_version,selected,now)
+                if isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=now-observed_at<=max_age:raise ValueError('Pair data stale or future dated')
+                if not all(isinstance(v,dict) for v in (metadata,prices,quantities)) or any(s not in metadata or s not in prices or s not in quantities for s in selected):
+                    raise ValueError('Margin metadata incomplete')
+                for item in selected:spot_usdt_candidate(metadata[item],item,quantities[item],prices[item])
+                if shared.deployment_hold():raise ValueError('Deployment hold active')
+                if queue.execute("SELECT 1 FROM unified_jobs WHERE market='margin_cross' AND status='PENDING' AND id!=? LIMIT 1",(current_job,)).fetchone():raise ValueError('Margin command pending')
+                if queue.execute("SELECT 1 FROM unified_proposals WHERE market='margin_cross' AND status='OPEN' LIMIT 1").fetchone():raise ValueError('Margin confirmation pending')
+                if shared.db.execute("SELECT 1 FROM transfer_proposals WHERE status='OPEN' AND (source='margin_cross' OR destination='margin_cross') LIMIT 1").fetchone():raise ValueError('Margin transfer pending')
+                from .margin_paper_book import MarginPaperBook, PAIRS
+                if not shared.db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='margin_runtime'").fetchone():raise ValueError('Margin runtime unavailable')
+                row=shared.db.execute("SELECT value FROM margin_runtime WHERE key='pair_symbols'").fetchone()
+                current=json.loads(row[0]) if row else sorted(PAIRS)
+                row=shared.db.execute("SELECT value FROM margin_runtime WHERE key='pair_version'").fetchone()
+                version=json.loads(row[0]) if row else 0
+                latest=shared.db.execute('SELECT version,result FROM pair_margin_selection_events ORDER BY version DESC LIMIT 1').fetchone()
+                if ((latest is None and version!=0) or (latest is not None and
+                    (latest['version']!=version or json.loads(latest['result'])['symbols']!=current))):raise ValueError('Margin pair history conflicts with identity')
+                if current!=expected or version!=expected_version:raise ValueError('Stale margin pair selection')
+                assets={r[0] for r in shared.db.execute('SELECT DISTINCT asset FROM margin_loan_rates') if r[0] not in ('USDT','BTC','ETH')}
+                assets.update(s[:-4] for s in selected if s not in PAIRS)
+                extras={asset+'USDT':asset for asset in assets}
+                book=MarginPaperBook(shared.ledger,experimental_pairs=extras,selected_symbols=selected)
+                book._check()
+                state=shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()
+                error=shared.db.execute("SELECT value FROM margin_runtime WHERE key='error'").fetchone()
+                if not state or state[0]!=1:raise ValueError('Margin must be paused')
+                if not error or json.loads(error[0]) is not None:raise ValueError('Margin requires recovery')
+                if book._positions() or shared.db.execute("SELECT 1 FROM margin_loans WHERE status='OPEN' LIMIT 1").fetchone():raise ValueError('Margin position or debt prevents selection')
+                for asset in ('USDT',*book.pairs.values()):
+                    if shared.ledger.balance('margin_cross:reserved',asset):raise ValueError('Margin reserve prevents selection')
+                before={(account,asset):shared.ledger.balance('margin_cross:'+account,asset)
+                        for account in ('free','reserved','principal','interest') for asset in ('USDT',*book.pairs.values())}
+                result={'fingerprint':fingerprint,'from':current,'symbols':selected,'version':version+1,'observed_at':observed_at}
+                shared.db.execute('INSERT INTO pair_margin_selection_events VALUES(?,?,?,?)',(request_id,version+1,fingerprint,json.dumps(result,sort_keys=True)))
+                shared.db.execute("INSERT OR REPLACE INTO margin_runtime VALUES('pair_symbols',?)",(json.dumps(selected),))
+                shared.db.execute("INSERT OR REPLACE INTO margin_runtime VALUES('pair_version',?)",(json.dumps(version+1),))
+                after={(account,asset):shared.ledger.balance('margin_cross:'+account,asset)
+                       for account in ('free','reserved','principal','interest') for asset in ('USDT',*book.pairs.values())}
+                if before!=after:raise ValueError('Margin selection changed funds')
+                return dict(result,replayed=False)
+        finally:
+            if queue.in_transaction:queue.rollback()

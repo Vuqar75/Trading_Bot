@@ -4,7 +4,7 @@ import time
 from decimal import Decimal, localcontext
 
 from .paper_pair_selection_offline import (select_spot_pair_offline, select_isolated_pair_offline,
-                                           select_cross_pairs_offline)
+                                           select_cross_pairs_offline, select_margin_pairs_offline)
 
 
 def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
@@ -103,4 +103,35 @@ def process_cross_pair(queue, shared, reader_factory, *, budget='5', clock=time.
             quantities=quantities,observed_at=min(observations),clock=clock,confirm_job_id=job['id'])
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[Futures cross] Пары '+', '.join(result['symbols'])+' сохранены; входы остаются на паузе.')
+        return result
+
+
+def process_margin_pair(queue, shared, reader_factory, *, budget='5', clock=time.time,
+                        fault=lambda stage:None):
+    if not queue.allow_pair_experiment:raise ValueError('Offline pair queue required')
+    budget=Decimal(str(budget))
+    if not budget.is_finite() or not 0<budget<=5:raise ValueError('Invalid paper margin')
+    for job in queue.pending('margin_cross'):
+        if job['command']!='/confirmed_pair':continue
+        payload=json.loads(job['payload']);targets=payload['target']
+        if shared.db.in_transaction or queue.db.in_transaction:raise ValueError('Network inside SQLite transaction')
+        reader=reader_factory(targets);metadata={};prices={};quantities={};observations=[]
+        for symbol in targets:
+            response=reader.get('/api/v3/exchangeInfo',{'symbol':symbol})
+            rows=response.get('symbols') if isinstance(response,dict) else None
+            if not isinstance(rows,list) or len(rows)!=1 or not isinstance(rows[0],dict) or rows[0].get('symbol')!=symbol:raise ValueError('Pair metadata unavailable')
+            quote=reader.snapshot(symbol);observed=clock();observations.append(observed)
+            if (not isinstance(quote,dict) or type(quote.get('time_ms')) is not int or
+                not 0<=observed*1000-quote['time_ms']<=120000):raise ValueError('Pair quote stale')
+            price=Decimal(str(quote['price']))
+            if not price.is_finite() or price<=0:raise ValueError('Invalid pair price')
+            metadata[symbol]=rows[0];prices[symbol]=str(price)
+            with localcontext() as ctx:
+                ctx.prec=120;quantities[symbol]=str(budget/price)
+        result=select_margin_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
+            request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],
+            expected_version=payload['version'],symbols=targets,metadata=metadata,prices=prices,
+            quantities=quantities,observed_at=min(observations),clock=clock,confirm_job_id=job['id'])
+        fault('after_financial_commit')
+        queue.acknowledge(job['id'],'[Spot margin cross] Пары '+', '.join(result['symbols'])+' сохранены; входы остаются на паузе.')
         return result

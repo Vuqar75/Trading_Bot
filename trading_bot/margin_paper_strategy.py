@@ -31,7 +31,7 @@ class MarginPaperStrategy:
     def tick(self,quotes,candles,*,now_ms,clock_ms=None):
         if type(now_ms) is not int or now_ms<0:raise ValueError('Invalid strategy clock')
         try:
-            for symbol in PAIRS:
+            for symbol in self.book.pairs:
                 q=quotes.get(symbol) if isinstance(quotes,dict) else None
                 if not isinstance(q,dict) or type(q.get('server_ms')) is not int or abs(q['server_ms']-now_ms)>60000:
                     raise ValueError('Spot exchange clock inconsistent')
@@ -63,8 +63,8 @@ class MarginPaperStrategy:
             # A snapshot spanning a boundary is safe for risk checks only.
             period=INTERVALS[settings['interval']]*1000
             same_interval=all(type(quotes[s].get('candle_server_ms',quotes[s]['server_ms'])) is int and
-                              quotes[s].get('candle_server_ms',quotes[s]['server_ms'])//period==now_ms//period for s in PAIRS)
-            for symbol in PAIRS:
+                              quotes[s].get('candle_server_ms',quotes[s]['server_ms'])//period==now_ms//period for s in self.book.tradable)
+            for symbol in sorted(self.book.tradable):
                 q=quotes[symbol]
                 cutoff=q.get('candle_server_ms',q['server_ms'])
                 if (type(cutoff) is not int or not 0<=q['server_ms']-cutoff<=15000 or

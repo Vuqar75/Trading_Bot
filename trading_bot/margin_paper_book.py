@@ -21,7 +21,7 @@ MAINTENANCE=Decimal('0.05')  # Explicit paper assumption; not Binance tiers.
 
 
 class MarginPaperBook:
-    def __init__(self,ledger,*,experimental_pairs=None):
+    def __init__(self,ledger,*,experimental_pairs=None,selected_symbols=None):
         self.ledger=ledger;self.db=ledger.db
         extra=experimental_pairs or {}
         if (not isinstance(extra,dict) or len(extra)>8 or
@@ -30,6 +30,11 @@ class MarginPaperBook:
             len(set(extra.values()))!=len(extra)):
             raise ValueError('Invalid experimental margin pairs')
         self._pairs={**PAIRS,**extra}
+        if selected_symbols is not None:
+            if (not isinstance(selected_symbols,(list,tuple)) or not 1<=len(selected_symbols)<=2 or
+                len(set(selected_symbols))!=len(selected_symbols) or any(s not in self._pairs for s in selected_symbols)):
+                raise ValueError('Invalid selected margin pairs')
+            self._tradable=frozenset(selected_symbols)
         self.loans=MarginInterestLedger(ledger,experimental_assets=tuple(extra.values()))
         with ledger.transaction():
             self.db.execute('CREATE TABLE IF NOT EXISTS margin_positions(id TEXT PRIMARY KEY,symbol TEXT NOT NULL UNIQUE,direction TEXT NOT NULL,quantity TEXT NOT NULL,entry TEXT NOT NULL,own TEXT NOT NULL,leverage INTEGER NOT NULL,loan_id TEXT,opened_ms INTEGER NOT NULL)')
@@ -79,6 +84,10 @@ class MarginPaperBook:
     @property
     def pairs(self):
         return getattr(self,'_pairs',PAIRS)
+
+    @property
+    def tradable(self):
+        return getattr(self,'_tradable',frozenset(self.pairs))
 
     def _marks(self,quotes,now_ms):
         if type(now_ms) is not int or now_ms<0 or not isinstance(quotes,dict):raise ValueError('Invalid quote snapshot')
@@ -206,7 +215,7 @@ class MarginPaperBook:
 
     def open(self,operation,position_id,symbol,direction,quantity,own,leverage,quotes,*,now_ms,clock_ms=None):
         quantity=amount(quantity,positive=True);own=amount(own,positive=True)
-        if symbol not in self.pairs or direction not in ('LONG','SHORT') or not isinstance(position_id,str) or not position_id or own>5 or type(leverage) is not int or not 1<=leverage<=3:raise ValueError('Invalid margin entry')
+        if symbol not in self.tradable or direction not in ('LONG','SHORT') or not isinstance(position_id,str) or not position_id or own>5 or type(leverage) is not int or not 1<=leverage<=3:raise ValueError('Invalid margin entry')
         marks=self._marks(quotes,now_ms);mark=marks[self.pairs[symbol]]
         filters=self._filters(quotes,symbol,now_ms);validate_lot(quantity,mark,filters)
         parts=['open',position_id,symbol,direction,encode(quantity),encode(own),leverage,encode(mark),now_ms]
