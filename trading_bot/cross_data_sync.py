@@ -10,6 +10,7 @@ from .cross_paper_book import SYMBOLS
 from .cross_funding_tracker import CrossFundingTracker
 from .paper_wallet_ledger import amount
 from .cross_funding_period import assign_period
+from .testnet_observer import ObservationError
 
 
 class FundingReconciliationRequired(ValueError):
@@ -34,7 +35,8 @@ class CrossDataSync:
         try:
             conflict=self.db.execute("SELECT value FROM cross_runtime WHERE key='funding_history_conflict'").fetchone()
             if conflict:raise FundingHistoryContradiction('Funding history contradiction requires explicit reconciliation')
-            schedules={symbol:self.reader.schedule(symbol) for symbol in SYMBOLS}
+            selected=self.book._symbols()
+            schedules={symbol:self.reader.schedule(symbol) for symbol in selected}
             active={p['id']:p for p in self.book._positions()}
             history={}
             rows=self.db.execute("SELECT kind,created,details FROM ledger_events WHERE kind IN ('CROSS_OPEN','CROSS_CLOSE') ORDER BY created,id").fetchall()
@@ -52,16 +54,30 @@ class CrossDataSync:
                 history[ident]['closed_ms']=closed
             for ident,item in history.items():
                 if (ident in active)!=(item['closed_ms'] is None):raise ValueError('Position lifecycle mismatch')
+            # Removed symbols still need funding history rechecked. Their last
+            # closed position supplies the bounded lifecycle; only selected
+            # symbols supply live risk quotes.
+            history_symbols=sorted(set(selected)|{h['position']['symbol'] for h in history.values()})
+            end_ms=max(data['server_ms'] for data in schedules.values())
+            for symbol in history_symbols:
+                if symbol not in schedules:schedules[symbol]={'server_ms':end_ms}
             loaded={}
-            for symbol in SYMBOLS:
+            historical_unavailable=set()
+            for symbol in history_symbols:
                 relevant=[h for h in history.values() if h['position']['symbol']==symbol]
                 if relevant:
-                    events=self.reader.funding(symbol,min(h['position']['opened_ms'] for h in relevant),schedules[symbol]['server_ms'])
-                    if not isinstance(events,list):raise ValueError('Funding history unavailable')
+                    try:
+                        events=self.reader.funding(symbol,min(h['position']['opened_ms'] for h in relevant),schedules[symbol]['server_ms'])
+                        if not isinstance(events,list):raise ValueError('Funding history unavailable')
+                    except (ObservationError,OSError,TimeoutError,ValueError):
+                        if symbol in selected or any(h['closed_ms'] is None for h in relevant):raise
+                        historical_unavailable.add(symbol)
+                        continue
                     loaded[symbol]=events
-            self.page_status='loaded_available_pages'
+            self.page_status='historical_unconfirmed' if historical_unavailable else 'loaded_available_pages'
             events_by_symbol={}
-            for symbol in SYMBOLS:
+            for symbol in history_symbols:
+                if symbol in historical_unavailable:continue
                 relevant=[h for h in history.values() if h['position']['symbol']==symbol]
                 if not relevant:continue
                 schedule=schedules[symbol]
@@ -177,9 +193,17 @@ class CrossDataSync:
                     observed_due=schedule['next_due_ms'],observed_interval=schedule['interval_ms'],events=due_events)
             quotes={symbol:{'mark':data['mark'],'time':now,'funding_complete':True,'server_ms':data['server_ms'],
                             'next_due_ms':data['next_due_ms'],'interval_ms':data['interval_ms']}
-                    for symbol,data in schedules.items()}
+                    for symbol,data in schedules.items() if symbol in selected}
             self.book.record_quotes(quotes,now=now)
-            self.model_status='matches_paper_assumption'
+            if historical_unavailable:
+                self.book.set_runtime_error('HistoricalFundingUnavailable')
+                with self.shared.transaction():
+                    self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
+                self.model_status='historical_unconfirmed'
+            else:
+                self.model_status='matches_paper_assumption'
+                if self.book.runtime_error()=='HistoricalFundingUnavailable':
+                    self.book.set_runtime_error(None)
             return quotes
         except Exception as exc:
             if self.page_status!='loaded_available_pages':self.page_status='not_confirmed'

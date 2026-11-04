@@ -64,6 +64,11 @@ class PairFuturesDataTests(unittest.TestCase):
     def test_cross_reader_symbol_validator_remains_callable(self):
         reader=CrossPublicData(lambda request:{})
         self.assertEqual(reader.symbol('BTCUSDT'),'BTCUSDT')
+        with self.assertRaises(ObservationError):reader.symbol('SOLUSDT')
+        experimental=CrossPublicData(lambda request:{},symbols=('BTCUSDT','SOLUSDT','ETHUSDT'),allow_pair_experiment=True)
+        self.assertEqual(experimental.symbol('SOLUSDT'),'SOLUSDT')
+        self.assertEqual(experimental.symbol('ETHUSDT'),'ETHUSDT')
+        with self.assertRaises(ObservationError):experimental.symbol('XRPUSDT')
 
     def test_isolated_fixture_sol_long_short_funding_and_restart(self):
         with tempfile.TemporaryDirectory() as tmp:

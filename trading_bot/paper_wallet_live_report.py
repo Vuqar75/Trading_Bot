@@ -63,6 +63,8 @@ def live_report(shared, *, now=None, period='all', max_age=120):
             from .cross_paper_book import CrossPaperBook
             book=object.__new__(CrossPaperBook);book.shared=shared;book.db=shared.db;book.ledger=shared.ledger
             book._check()
+            if book.runtime_error()=='HistoricalFundingUnavailable':
+                incomplete.append('Futures cross: история funding закрытого инструмента недоступна')
             positions_cross=book._positions()
             balances['futures_cross']={'free':shared.ledger.balance('futures_cross:free'),'reserved':shared.ledger.balance('futures_cross:reserved')}
             if positions_cross:

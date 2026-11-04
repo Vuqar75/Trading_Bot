@@ -7,6 +7,9 @@ from pathlib import Path
 
 from tests.test_paper_pair_catalog import spot_info
 from trading_bot.cross_paper_book import CrossPaperBook
+from trading_bot.cross_data_sync import CrossDataSync
+from trading_bot.cross_paper_strategy import CrossPaperStrategy
+from trading_bot.testnet_observer import ObservationError
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_pair_selection_offline import select_cross_pairs_offline
@@ -118,3 +121,56 @@ class PairCrossOfflineTests(unittest.TestCase):
             self.assertEqual(self.book._symbols(),('BTCUSDT','SOLUSDT') if stage=='after_commit' else ('BTCUSDT','ETHUSDT'))
             self.assertEqual(self.shared.ledger.balance('futures_cross:free'),before)
         self.assertTrue(self.choose(request_id='crash')['replayed'])
+
+    def test_removed_symbol_funding_history_still_loaded(self):
+        legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}
+        self.book.record_quotes(legacy,now=100);self.book.set_paused(False,now=100)
+        old=self.book.open('old-eth','ETHUSDT','LONG','5',1,legacy,now=100)
+        self.book.close('old-eth-close','ETHUSDT',old['id'],old['quantity'],legacy,now=101)
+        self.book.set_paused(True,now=101);self.choose()
+        class Reader:
+            def __init__(self):self.loaded=[]
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100','server_ms':102000,'next_due_ms':28000000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):self.loaded.append(symbol);return []
+        reader=Reader();quotes=CrossDataSync(self.book,reader).refresh(now=102)
+        self.assertIn('ETHUSDT',reader.loaded)
+        self.assertEqual(set(quotes),{'BTCUSDT','SOLUSDT'})
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+        class BrokenReader(Reader):
+            def funding(self,symbol,start,end):
+                if symbol=='ETHUSDT':raise RuntimeError('fixture internal error')
+                return []
+        with self.assertRaisesRegex(RuntimeError,'internal error'):
+            CrossDataSync(self.book,BrokenReader()).refresh(now=102)
+
+    def test_unavailable_removed_symbol_keeps_current_protection_and_pauses_entries(self):
+        legacy={'BTCUSDT':self.quote('100',100),'ETHUSDT':self.quote('200',100)}
+        self.book.record_quotes(legacy,now=100);self.book.set_paused(False,now=100)
+        old=self.book.open('old-eth','ETHUSDT','LONG','5',1,legacy,now=100)
+        self.book.close('old-eth-close','ETHUSDT',old['id'],old['quantity'],legacy,now=101)
+        self.book.set_paused(True,now=101);self.choose()
+        active={'BTCUSDT':self.quote('100',102),'SOLUSDT':self.quote('100',102)}
+        self.book.record_quotes(active,now=102);self.book.set_paused(False,now=102)
+        sol=self.book.open('sol-risk','SOLUSDT','LONG','5',1,active,now=102,metadata=self.info('SOL'),metadata_at=101)
+        class Reader:
+            available=False
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'90' if symbol=='SOLUSDT' else '100','server_ms':27999000,'next_due_ms':28000000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                if symbol=='ETHUSDT' and not self.available:raise ObservationError('offline historical source unavailable')
+                return []
+        reader=Reader();sync=CrossDataSync(self.book,reader);quotes=sync.refresh(now=27999)
+        self.assertEqual(sync.model_status,'historical_unconfirmed')
+        self.assertEqual(self.book.runtime_error(),'HistoricalFundingUnavailable')
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        report=live_report(self.shared,now=27999)
+        self.assertIsNone(report['total']);self.assertIsNotNone(report['cross']['gross'])
+        candles={s:[(n*900000,Decimal('100')) for n in range(31)] for s in ('BTCUSDT','SOLUSDT')}
+        actions=CrossPaperStrategy(self.book).tick(quotes,candles,27999000,now=27999)
+        self.assertTrue(any(action['action']=='STOP' and action['symbol']=='SOLUSDT' for action in actions))
+        self.assertEqual(self.book._positions(),[])
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+        reader.available=True;sync.refresh(now=27999)
+        self.assertIsNone(self.book.runtime_error())
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)

@@ -104,7 +104,7 @@ class CrossPaperBook:
             old=self.runtime_error()
             self.db.execute("INSERT OR REPLACE INTO cross_runtime VALUES('error',?)",(json.dumps(error),))
             if old!=error:
-                self._notify('Противоречие funding: история изменилась или неоднозначна; входы на паузе, нужна сверка.' if error in ('FundingReconciliationRequired','FundingHistoryContradiction') else 'Ошибка данных или учёта; входы на паузе.' if error else 'Данные восстановлены; входы остаются на паузе до команды владельца.')
+                self._notify('История funding закрытого инструмента недоступна; оценка неполна, входы на паузе.' if error=='HistoricalFundingUnavailable' else 'Противоречие funding: история изменилась или неоднозначна; входы на паузе, нужна сверка.' if error in ('FundingReconciliationRequired','FundingHistoryContradiction') else 'Ошибка данных или учёта; входы на паузе.' if error else 'Данные восстановлены; входы остаются на паузе до команды владельца.')
 
     def _anchor(self, operation):
         event='cross:anchor:'+operation
@@ -432,7 +432,8 @@ class CrossPaperBook:
 
     def _late_funding(self, operation, symbol, position_id, stamp, revision, rate, mark, source, *, now=None, rate_type='Regular'):
         now=time.time() if now is None else now
-        if symbol not in self._symbols() or rate_type not in ('Regular','Special') or type(stamp) is not int or stamp<0 or type(revision) is not int or revision<0 or not source:
+        if (not isinstance(symbol,str) or not symbol.endswith('USDT') or not valid_asset(symbol[:-4]) or symbol[:-4]=='USDT' or
+                rate_type not in ('Regular','Special') or type(stamp) is not int or stamp<0 or type(revision) is not int or revision<0 or not source):
             raise ValueError('Invalid funding identity')
         rate,mark=amount(rate),amount(mark,positive=True)
         if abs(rate)>=1:raise ValueError('Invalid funding rate')

@@ -61,7 +61,8 @@ def main():
             while not stop.is_set():
                 try:
                     cycle(book,queue,receiver,strategy,sync,reader,started=started)
-                    error=None;book.set_runtime_error(None)
+                    error='HistoricalFundingUnavailable' if sync.model_status=='historical_unconfirmed' else None
+                    book.set_runtime_error(error)
                 except Exception as exc:
                     # Do not print exception bodies, URLs or potentially sensitive data.
                     log.error('Cross paper cycle failed: %s',type(exc).__name__)

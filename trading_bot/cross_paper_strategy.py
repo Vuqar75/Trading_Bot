@@ -37,7 +37,7 @@ class CrossPaperStrategy:
         info=signal_details([price for _,price in parsed])
         return parsed[-1][0],{k:str(v) if isinstance(v,Decimal) else v for k,v in info.items()}
 
-    def tick(self, quotes, candles, server_ms, *, now=None, clock=None):
+    def tick(self, quotes, candles, server_ms, *, now=None, clock=None, metadata=None, metadata_at=None):
         now=time.time() if now is None else now
         try:
             if type(server_ms) is not int or abs(server_ms-int(now*1000))>60000:
@@ -65,14 +65,14 @@ class CrossPaperStrategy:
             if not isinstance(candles,dict):raise ValueError('Missing candle snapshot')
             # Each candle set was filtered at that symbol's exchange time.
             # The other symbol may already have crossed a candle boundary.
-            signals={s:self._signal(candles.get(s),settings['interval'],min(quotes[s]['server_ms'],server_ms,int(now*1000))) for s in SYMBOLS}
+            signals={s:self._signal(candles.get(s),settings['interval'],min(quotes[s]['server_ms'],server_ms,int(now*1000))) for s in self.book._symbols()}
         except (ValueError,TypeError,KeyError):
             self.book.set_paused(True);raise
         # Never open from a signal snapshot spanning a candle boundary.
         period=INTERVALS[settings['interval']]*1000
-        same_interval=all(min(quotes[s]['server_ms'],server_ms)//period==int(now*1000)//period for s in SYMBOLS)
+        same_interval=all(min(quotes[s]['server_ms'],server_ms)//period==int(now*1000)//period for s in self.book._symbols())
         closed={a['symbol'] for a in actions if a['action'] in ('STOP','TAKE')}
-        for symbol in SYMBOLS:
+        for symbol in self.book._symbols():
             stamp,signal=signals[symbol]
             prior=self.db.execute('SELECT candle FROM cross_signals WHERE symbol=?',(symbol,)).fetchone()
             if prior and stamp<=prior[0]:
@@ -89,7 +89,8 @@ class CrossPaperStrategy:
                             raise ValueError('candle interval expired')
                         return current
                     result=self.book.open('signal:'+symbol+':'+str(stamp),symbol,'LONG' if action=='BUY' else 'SHORT',
-                                          '5',settings['leverage'],quotes,now=now,expected_interval=settings['interval'],clock=entry_clock)
+                                          '5',settings['leverage'],quotes,now=now,expected_interval=settings['interval'],clock=entry_clock,
+                                          metadata=(metadata or {}).get(symbol),metadata_at=metadata_at)
                     self.fault('after_open_commit')
                     actions.append({'action':'OPEN','symbol':symbol,'result':result})
                 except ValueError as exc:
