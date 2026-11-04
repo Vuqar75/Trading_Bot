@@ -44,6 +44,17 @@ class ResearchHTTPDiagnosticsTests(unittest.TestCase):
         self.assertIsNone(caught.exception.safe_details["provider_code"])
         self.assertNotIn("secret",json.dumps(caught.exception.safe_details))
 
+    def test_http_error_stream_is_closed_even_if_body_is_malformed(self):
+        stream=io.BytesIO(b'not-json')
+        error=HTTPError('https://private.invalid/secret',403,'secret-http-reason',{},stream)
+        opener=Mock();opener.open.side_effect=error
+        with patch.object(api,'build_opener',return_value=opener),patch.dict(os.environ,{'TRADING_BOT_AI':'unit-test-key'},clear=True):
+            with self.assertRaises(api.ResearchAPIError) as caught:api.check_model_access()
+        self.assertTrue(stream.closed)
+        self.assertEqual(caught.exception.safe_details['http_status'],403)
+        self.assertNotIn('secret',str(caught.exception))
+        self.assertEqual(opener.open.call_count,1)
+
     def test_timeout_tls_and_network_are_distinguished_without_retry(self):
         for exc,category in ((TimeoutError("secret"),"timeout"),(URLError(TimeoutError("secret")),"timeout"),(URLError(ssl.SSLError("secret")),"tls_error"),(URLError("secret-host"),"network_error")):
             with self.subTest(category=category):

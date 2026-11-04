@@ -81,6 +81,12 @@ def _request_json(req):
         except Exception:
             pass
         status = exc.code if type(exc.code) is int and 100 <= exc.code <= 599 else None
+        # HTTPError owns a response stream. Close it even on malformed bodies:
+        # otherwise a ResourceWarning can expose its arbitrary reason string.
+        try:
+            exc.close()
+        except Exception:
+            pass
         raise ResearchAPIError("http_error", status, code) from None
     except (TimeoutError, socket.timeout):
         raise ResearchAPIError("timeout") from None
