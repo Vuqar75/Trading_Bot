@@ -16,8 +16,9 @@ def _decimal(value):
         if isinstance(value, bool):
             raise ValueError
         result = Decimal(str(value))
-        if (not result.is_finite() or result < 0 or result > Decimal('1e20')
-                or (result and result < Decimal('1e-30'))):
+        if (not result.is_finite() or result < 0 or result >= Decimal('1e20')
+                or (result and result < Decimal('1e-30'))
+                or result.as_tuple().exponent < -60 or len(result.as_tuple().digits) > 80):
             raise ValueError
         return result
     except (InvalidOperation, TypeError, ValueError):
@@ -35,7 +36,7 @@ def spot_usdt_candidate(info, expected_symbol, desired_quantity, reference_price
     if not isinstance(info, dict) or not isinstance(expected_symbol, str):
         raise PairMetadataError('invalid_metadata')
     symbol, base = info.get('symbol'), info.get('baseAsset')
-    if (not isinstance(base, str) or not re.fullmatch(r'[A-Z0-9]{2,16}', base)
+    if (not isinstance(base, str) or not re.fullmatch(r'[A-Z0-9]{2,12}', base)
             or base == 'USDT' or symbol != base + 'USDT' or symbol != expected_symbol
             or info.get('quoteAsset') != 'USDT' or info.get('status') != 'TRADING'):
         raise PairMetadataError('unsupported_symbol')

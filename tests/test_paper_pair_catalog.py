@@ -53,6 +53,16 @@ class PaperPairCatalogTests(unittest.TestCase):
         self.assertEqual(spot_usdt_candidate(info,'SOLUSDT','0.129','200')['quantity'],'0.12')
         with self.assertRaises(PairMetadataError):spot_usdt_candidate(info,'SOLUSDT','0.20','200')
 
+    def test_asset_and_numeric_precision_do_not_exceed_current_ledger_limits(self):
+        info=spot_info('ABCDEFGHIJKLM')
+        with self.assertRaisesRegex(PairMetadataError,'unsupported_symbol'):
+            spot_usdt_candidate(info,'ABCDEFGHIJKLMUSDT','1','200')
+        info=spot_info()
+        for qty in ('1e20','1.'+'0'*81):
+            with self.subTest(qty=qty):
+                with self.assertRaisesRegex(PairMetadataError,'invalid_numeric_filter'):
+                    spot_usdt_candidate(info,'SOLUSDT',qty,'200')
+
 
 if __name__ == '__main__':
     unittest.main()
