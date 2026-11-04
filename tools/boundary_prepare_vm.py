@@ -26,7 +26,7 @@ def main():
         except (ValueError,OSError,KeyError,TypeError,sqlite3.Error,subprocess.SubprocessError):
             if time.monotonic()>=deadline:raise ValueError('Existing paper services not healthy')
             time.sleep(2)
-    if health['paused']['cross'] is not True or health['paused']['margin'] is not True:raise ValueError('Cross and margin must remain paused')
+    if any(health['paused'][market] is not True for market in ('futures','cross','margin')):raise ValueError('Isolated futures, cross and margin must remain paused')
     marker=HOME/'cross-cutovers/service-start-interlock'
     if marker.exists() or marker.is_symlink():raise ValueError('Existing service interlock requires inspection')
     with tempfile.TemporaryDirectory(prefix='.reports-candidate-',dir='/opt') as tmp:

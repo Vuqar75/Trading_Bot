@@ -72,6 +72,8 @@ def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
                 paused[market]=bool(row[0])
             if namespace in ('diagnostics','resilience','boundary') and (not paused['futures_cross'] or not paused['margin_cross']):
                 raise ValueError('Diagnostics require margin and cross paused')
+            if namespace == 'boundary' and not paused['futures']:
+                raise ValueError('Boundary update requires isolated futures paused')
             offset=int(q.execute("SELECT value FROM unified_state WHERE key='offset'").fetchone()[0])
             result={'operation':operation,'paused':paused,'queue_offset':offset,'queue_anchor':_queue_anchor(q,offset),'frozen_at':now}
             shared.db.execute('INSERT INTO ledger_meta VALUES(?,?)',(freeze_key,json.dumps(result,sort_keys=True)))

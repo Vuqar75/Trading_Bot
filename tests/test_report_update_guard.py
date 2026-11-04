@@ -89,6 +89,14 @@ class ReportUpdateGuardTests(unittest.TestCase):
         self.assertFalse(self.shared.deployment_hold());self.assertFalse(self.shared.snapshot('spot')['paused'])
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0],0)
 
+    def test_boundary_refuses_unpaused_isolated_without_changes(self):
+        with self.shared.transaction():self.shared._set('futures','paused',False)
+        with self.assertRaisesRegex(ValueError,'isolated futures paused'):
+            freeze_report_update(self.shared,self.q,'boundary:freeze:test',now=100,namespace='boundary')
+        self.assertFalse(self.shared.deployment_hold())
+        self.assertFalse(self.shared.snapshot('spot')['paused'])
+        self.assertFalse(self.shared.snapshot('futures')['paused'])
+
     def test_boundary_rollout_preserves_all_prior_checkpoints_and_pauses(self):
         for namespace in ('reports','diagnostics','resilience'):
             for state in ('freeze','release'):
