@@ -5,6 +5,7 @@ import secrets
 import sqlite3
 import time
 from .display_amount import display_amount
+from .telegram_help import unified_help_messages
 from contextlib import contextmanager
 
 
@@ -83,7 +84,10 @@ class UnifiedQueue:
             payload = {}
             jobs = []
             if authorized:
-                if command == '/mode' and len(parts) <= 2:
+                if command in ('/help', '/start') and len(parts) == 1:
+                    for message in unified_help_messages(market_label(mode)):
+                        self._notify(message)
+                elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
                         mode = parts[1]
                         self.db.execute("UPDATE unified_state SET value=? WHERE key='mode'", (mode,))

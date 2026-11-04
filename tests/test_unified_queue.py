@@ -79,6 +79,41 @@ class UnifiedQueueTests(unittest.TestCase):
         text=self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id DESC').fetchone()[0]
         self.assertIn('/report',text);self.assertIn('/balance_report',text)
 
+    def test_full_help_is_durable_and_read_only_in_every_market(self):
+        for index, market in enumerate(('spot','futures','futures_cross','margin_cross')):
+            ident=100+index*3
+            self.q.receive(ident,True,'/mode '+market)
+            before=self.q.db.execute('SELECT COALESCE(MAX(id),0) FROM unified_outbox').fetchone()[0]
+            self.q.receive(ident+1,True,'/help')
+            messages=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox WHERE id>? ORDER BY id',(before,))]
+            self.assertEqual(len(messages),3)
+            self.assertIn('Выбранный рынок:',messages[0])
+            self.assertIn('/pair из старого приложения',messages[0])
+            self.assertIn('пока не поддерживается',messages[0])
+            self.assertIn('/confirm ID',messages[1])
+            self.assertIn('/stop не является',messages[1])
+            self.assertIn('/repay ID_ЗАЙМА КОЛИЧЕСТВО',messages[2])
+            self.assertTrue(all(len(m.encode('utf-16-le'))//2<4096 for m in messages))
+            self.assertEqual(self.q.state('mode'),market)
+            self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_jobs').fetchone()[0],0)
+            self.q.receive(ident+1,True,'/help')
+            self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_outbox WHERE id>?',(before,)).fetchone()[0],3)
+
+    def test_help_start_and_after_commit_replay_do_not_lose_or_duplicate_pages(self):
+        def crash(point):
+            if point=='after_commit':raise RuntimeError('fixture crash')
+        self.q.fault=crash
+        with self.assertRaises(RuntimeError):self.q.receive(1,True,'/help@TradingBot')
+        self.q.fault=lambda _:None
+        self.q.receive(1,True,'/help@TradingBot')
+        help_pages=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id')]
+        self.assertEqual(len(help_pages),3)
+        self.q.receive(2,True,'/start')
+        start_pages=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox ORDER BY id')][3:]
+        self.assertEqual(help_pages,start_pages)
+        self.q.receive(3,False,'/help')
+        self.assertEqual(self.q.db.execute('SELECT COUNT(*) FROM unified_outbox').fetchone()[0],6)
+
     def test_foreign_sender_cannot_change_mode_or_enqueue(self):
         self.q.receive(1, False, '/mode futures')
         self.assertEqual(self.q.state('mode'), 'spot')
