@@ -95,6 +95,14 @@ class RuntimeStore:
     def pending(self):
         return self.db.execute("SELECT * FROM runtime_orders WHERE phase!='SETTLED' ORDER BY created").fetchall()
 
+    def _order_symbol(self, client):
+        # Unannotated orders come from the legacy BTC-only implementation.
+        # New pairs remain disabled until accounting and protection are wired.
+        symbol=self.get('pair_order_symbol:'+client, 'BTCUSDT')
+        if symbol!='BTCUSDT':
+            raise ObservationError('Order symbol requires unsupported pair recovery')
+        return symbol
+
     @staticmethod
     def manual_request_valid(request, pos, now=None):
         if not isinstance(request, dict) or not isinstance(pos, dict) or request.get('target') != pos.get('id'):
@@ -139,6 +147,7 @@ class RuntimeStore:
             client = 'rt' + uuid.uuid4().hex
             self.db.execute('INSERT INTO runtime_orders VALUES(?,?,?,?,?,\'PREPARED\',NULL,?,?)',
                             (client, business_key, side, str(qty), str(price), reason, time.time()))
+            self.set('pair_order_symbol:' + client, 'BTCUSDT')
             self.set('binding:' + client, pos['id'])
             if reason == 'MANUAL':
                 self.set('manual_binding:' + client, self.get('close_request'))
@@ -149,6 +158,7 @@ class RuntimeStore:
             order = self.db.execute('SELECT * FROM runtime_orders WHERE client_id=?', (client,)).fetchone()
             if order is None or order['phase'] != 'PREPARED':
                 raise ObservationError('Order not eligible to send')
+            self._order_symbol(client)
             pos = self.get('position')
             if self.get('blocked') or self.get('binding:' + client) != pos['id']:
                 raise ObservationError('Position changed or recovery required')
@@ -178,7 +188,8 @@ class RuntimeStore:
             if saved is None or saved['phase'] not in {'SUBMITTING', 'UNKNOWN', 'ACK', 'SETTLED'}:
                 raise ObservationError('Unexpected order state')
             order, fills = report['order'], report['fills']
-            expected = (client, 'BTCUSDT', saved['side'], number(saved['quantity']))
+            symbol=self._order_symbol(client)
+            expected = (client, symbol, saved['side'], number(saved['quantity']))
             actual = (order['clientOrderId'], order['symbol'], order['side'], number(order['origQty']))
             if actual != expected:
                 raise ObservationError('Order identity or quantity conflict')
@@ -195,7 +206,7 @@ class RuntimeStore:
                 raise ObservationError('Terminal status changed')
             encoded = {}
             for f in fills:
-                if f['symbol'] != 'BTCUSDT' or str(f['orderId']) != str(order['orderId']) or f['isBuyer'] is not (saved['side'] == 'BUY'):
+                if f['symbol'] != symbol or str(f['orderId']) != str(order['orderId']) or f['isBuyer'] is not (saved['side'] == 'BUY'):
                     raise ObservationError('Fill identity conflict')
                 if not number(f['qty']) or not number(f['quoteQty']):
                     raise ObservationError('Zero fill')
