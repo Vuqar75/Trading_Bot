@@ -44,11 +44,12 @@ def spot_receipt(*, mode, side, status, quantity, average, fees, remaining, reas
 
 def futures_receipt(event, pos, *, interval, payload=None):
     p = payload or pos
+    symbol=p.get('symbol','BTCUSDT');asset=symbol[:-4]
     lines = [('🟢 Открыта' if event == 'OPEN' else '🔴 Закрыта')+' виртуальная позиция',
-             f"BTCUSDT • Futures isolated • {p['direction']} • {p['leverage']}× • {interval}",
+             f"{symbol} • Futures isolated • {p['direction']} • {p['leverage']}× • {interval}",
              when((p['opened_ms'] if event == 'OPEN' else p['closed_ms'])/1000),
              f"Маржа: {fmt(p['margin'])} USDT",
-             f"Количество: {fmt(p['quantity'],'BTC')} BTC",
+             f"Количество: {fmt(p['quantity'],asset)} {asset}",
              f"Цена входа: {fmt(p['entry'])} USDT"]
     if event == 'OPEN':
         lines += [f"Номинал входа: {fmt(Decimal(p['entry'])*Decimal(p['quantity']))} USDT",

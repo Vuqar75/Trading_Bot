@@ -13,7 +13,14 @@ from .telegram_reports import when
 
 
 class FuturesStore:
-    def __init__(self, path, *, margin='10', fee_bps='5', slippage_bps='2', maintenance_bps='50', fault=lambda p: None, shared=False):
+    def __init__(self, path, *, margin='10', fee_bps='5', slippage_bps='2', maintenance_bps='50', fault=lambda p: None, shared=False,
+                 symbol='BTCUSDT', allow_pair_experiment=False):
+        from .paper_wallet_ledger import valid_asset
+        if (not isinstance(symbol,str) or not symbol.endswith('USDT') or not valid_asset(symbol[:-4]) or symbol[:-4]=='USDT'):
+            raise ObservationError('Invalid futures symbol')
+        if symbol!='BTCUSDT' and not allow_pair_experiment:
+            raise ObservationError('Selectable futures pairs are not integrated')
+        self.symbol=symbol
         self.margin, self.fee, self.slip, self.maintenance = map(number, (margin, fee_bps, slippage_bps, maintenance_bps))
         if not 0 < self.margin <= 10 or self.fee >= 100 or self.slip >= 100 or not 0 < self.maintenance < 1000:
             raise ObservationError('Invalid futures paper costs/risk')
@@ -39,7 +46,7 @@ class FuturesStore:
                 self.db.execute('CREATE TABLE IF NOT EXISTS futures_funding(position_id TEXT NOT NULL,ts INTEGER NOT NULL,payload TEXT NOT NULL,PRIMARY KEY(position_id,ts))')
                 self.db.execute('CREATE TABLE IF NOT EXISTS futures_commands(update_id INTEGER PRIMARY KEY,fingerprint TEXT NOT NULL)')
                 self.db.execute('CREATE TABLE IF NOT EXISTS '+self.outbox_table+'(id INTEGER PRIMARY KEY,message TEXT NOT NULL)')
-                identity = {'schema': 1, 'mode': 'futures-paper', 'symbol': 'BTCUSDT', 'margin': str(self.margin),
+                identity = {'schema': 1, 'mode': 'futures-paper', 'symbol': self.symbol, 'margin': str(self.margin),
                             'fee_bps': str(self.fee), 'slippage_bps': str(self.slip), 'maintenance_bps': str(self.maintenance)}
                 if tables and self.get('identity') != identity:
                     raise ObservationError('Futures identity changed; use separate database')
@@ -96,7 +103,7 @@ class FuturesStore:
         rows = self.db.execute("SELECT payload FROM futures_events WHERE event='CLOSE' AND ts>=?", (start,)).fetchall()
         return -sum((Decimal(json.loads(r[0])['net']) for r in rows), Decimal(0))
 
-    def open_position(self, direction, mark, server, key):
+    def open_position(self, direction, mark, server, key, *, metadata=None, quote_symbol=None, observed_at=None):
         if direction not in {'LONG', 'SHORT'} or number(mark) <= 0:
             raise ObservationError('Invalid futures entry')
         with self.transaction():
@@ -115,10 +122,18 @@ class FuturesStore:
             buying = direction == 'LONG'
             fill = number(mark)*(1 + (1 if buying else -1)*self.slip/10000)
             quantity = self.margin*leverage/fill
+            used_margin=self.margin
+            if self.symbol!='BTCUSDT':
+                if quote_symbol!=self.symbol or isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=time.time()-observed_at<=120:
+                    raise ObservationError('Futures quote identity or freshness not confirmed')
+                from .paper_pair_catalog import usd_m_perpetual_candidate
+                quantity=number(usd_m_perpetual_candidate(metadata,self.symbol,quantity,fill)['quantity'])
+                used_margin=quantity*fill/leverage
             pos = {'id': uuid.uuid4().hex, 'direction': direction, 'entry': str(fill), 'quantity': str(quantity),
-                   'margin': str(self.margin), 'leverage': leverage, 'entry_fee': str(quantity*fill*self.fee/10000),
+                   'margin': str(used_margin), 'leverage': leverage, 'entry_fee': str(quantity*fill*self.fee/10000),
                    'funding': '0', 'opened_ms': server, 'opened_at': server/1000, 'funding_cursor': server}
-            self.set('cash', str(cash-self.margin))
+            if self.symbol!='BTCUSDT':pos['symbol']=self.symbol
+            self.set('cash', str(cash-used_margin))
             self.set('position', pos)
             self.event(key, 'OPEN', pos)
             from .trade_notifications import futures_receipt
@@ -136,6 +151,8 @@ class FuturesStore:
             previous = pos['opened_ms']
             for row in events:
                 stamp = row['time']
+                if pos.get('symbol','BTCUSDT')!='BTCUSDT' and row.get('symbol')!=pos['symbol']:
+                    raise ObservationError('Funding symbol conflicts with position')
                 if type(stamp) is not int or not previous < stamp <= end:
                     raise ObservationError('Invalid funding order')
                 previous = stamp
@@ -153,11 +170,14 @@ class FuturesStore:
                 self.db.execute('INSERT INTO futures_funding VALUES(?,?,?)', (target, stamp, payload))
             self.set('position', {**pos, 'funding': str(funding), 'funding_cursor': end})
 
-    def valuation(self, mark):
+    def valuation(self, mark, *, quote_symbol=None, observed_at=None):
         pos = self.get('position')
         cash = Decimal(self.get('cash'))
         if not pos:
             return {'equity': cash, 'gross': Decimal(0), 'isolated': Decimal(0), 'maintenance': Decimal(0)}
+        if pos.get('symbol','BTCUSDT')!='BTCUSDT' and (quote_symbol!=pos['symbol'] or
+                isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=time.time()-observed_at<=120):
+            raise ObservationError('Futures valuation quote identity or freshness not confirmed')
         mark = number(mark)
         qty = number(pos['quantity'])
         gross = (mark-number(pos['entry']))*qty*(1 if pos['direction'] == 'LONG' else -1)
@@ -168,13 +188,16 @@ class FuturesStore:
         return {'equity': cash+max(Decimal(0), isolated-exit_fee-exit_slippage), 'gross': gross, 'isolated': isolated,
                 'maintenance': qty*mark*self.maintenance/10000+exit_fee+exit_slippage}
 
-    def close_position(self, mark, server, key, reason, target, *, reverse=None, candle=None):
+    def close_position(self, mark, server, key, reason, target, *, reverse=None, candle=None, quote_symbol=None, observed_at=None):
         with self.transaction():
             if self.db.execute('SELECT 1 FROM futures_events WHERE business_key=?', (key,)).fetchone():
                 return False
             pos = self.get('position')
             if not pos or pos['id'] != target:
                 return False
+            if pos.get('symbol','BTCUSDT')!='BTCUSDT' and (quote_symbol!=pos['symbol'] or
+                    isinstance(observed_at,bool) or not isinstance(observed_at,(int,float)) or not 0<=time.time()-observed_at<=120):
+                raise ObservationError('Futures close quote identity or freshness not confirmed')
             if reason == 'MANUAL' and not self.manual_request_valid(self.get('close_request'), pos):
                 return False
             if pos['funding_cursor'] < server:

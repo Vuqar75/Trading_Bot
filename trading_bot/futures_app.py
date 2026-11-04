@@ -18,6 +18,8 @@ from .testnet_observer import ObservationError, number, write_report
 
 class FuturesApplication:
     def __init__(self, store, reader):
+        if store.get('identity').get('symbol','BTCUSDT')!='BTCUSDT':
+            raise ObservationError('Selectable futures pairs are not integrated')
         self.store, self.reader = store, reader
         self.last_protection_at = None
         self.last_protection_position = None

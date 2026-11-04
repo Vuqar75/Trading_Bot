@@ -84,7 +84,9 @@ class FuturesData:
                 rate, mark = signed_number(row['fundingRate']), number(row['markPrice'])
                 if not mark or abs(rate) >= 1:
                     raise ObservationError('Invalid funding value')
-                found.append({'time': stamp, 'rate': str(rate), 'mark': str(mark)})
+                item={'time': stamp, 'rate': str(rate), 'mark': str(mark)}
+                if self.symbol!='BTCUSDT':item['symbol']=self.symbol
+                found.append(item)
                 previous = stamp
             if len(page) < 1000:
                 return found
