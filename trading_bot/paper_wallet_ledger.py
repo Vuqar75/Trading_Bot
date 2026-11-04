@@ -1,6 +1,7 @@
-"""Offline prototype of a double-entry paper ledger.
+"""Authoritative double-entry ledger shared by virtual paper workers.
 
-This is intentionally not wired to trading, Telegram, or the running VM.
+Transfers and market accounting share transactional state. No real funds or
+exchange account operations are provided by this module.
 """
 import hashlib
 import json
@@ -266,16 +267,22 @@ class PaperWalletLedger:
             context.prec = 120
             totals = {asset:Decimal(0) for asset in ASSETS}
             bad = []
+            account_totals = {}
             for event in self.db.execute('SELECT id,kind,details,fingerprint,posting_count FROM ledger_events'):
                 sums = {}
                 rows = self.db.execute('SELECT account,asset,amount FROM ledger_postings WHERE event_id=? ORDER BY ordinal', (event[0],)).fetchall()
                 for row in rows:
-                    sums[row['asset']] = sums.get(row['asset'],Decimal(0)) + amount(row['amount'])
+                    value = amount(row['amount'])
+                    sums[row['asset']] = sums.get(row['asset'],Decimal(0)) + value
+                    key = (row['account'], row['asset'])
+                    account_totals[key] = account_totals.get(key, Decimal(0)) + value
                 payload = json.dumps([event['kind'],json.loads(event['details']),[tuple(r) for r in rows]],sort_keys=True,separators=(',', ':'),ensure_ascii=False)
                 if len(rows) != event['posting_count'] or any(sums.values()) or hashlib.sha256(payload.encode()).hexdigest()!=event['fingerprint']:
                     bad.append(event[0])
                 for asset,value in sums.items():totals[asset] = totals.get(asset,Decimal(0))+value
-            negatives = [wallet+':'+bucket for wallet in WALLETS for bucket in ('free','reserved') if self.balance(wallet+':'+bucket) < 0]
+            protected_accounts = {wallet+':'+bucket for wallet in WALLETS for bucket in ('free','reserved')}
+            negatives = sorted({account for (account, asset), value in account_totals.items()
+                                if account in protected_accounts and value < 0})
             broken_fk = bool(self.db.execute('PRAGMA foreign_key_check').fetchone())
             return {'balanced':not bad and not any(totals.values()) and not negatives and not broken_fk,
                     'invalid_events':bad,'negative_accounts':negatives,'foreign_key_error':broken_fk,'totals':{k:encode(v) for k,v in totals.items()}}
