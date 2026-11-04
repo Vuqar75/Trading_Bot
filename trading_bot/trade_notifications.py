@@ -16,8 +16,9 @@ def fees_text(fees):
 
 
 def spot_receipt(*, mode, side, status, quantity, average, fees, remaining, reason,
-                 interval, client, entry=None, entry_is_cost=False, entry_fees=None, net='0', known=True):
+                 interval, client, entry=None, entry_is_cost=False, entry_fees=None, net='0', known=True, symbol='BTCUSDT'):
     qty = Decimal(str(quantity))
+    asset=symbol[:-4]
     label = 'Виртуальная' if mode == 'paper' else 'Testnet'
     if not qty:
         heading = f'⚠️ {label} заявка: {STATUSES.get(status, status)}'
@@ -25,10 +26,10 @@ def spot_receipt(*, mode, side, status, quantity, average, fees, remaining, reas
         heading = f'🟢 {label} покупка: '+('исполнена полностью' if status == 'FILLED' else 'частичное исполнение')
     else:
         heading = '🔴 '+label+' позиция '+('закрыта' if Decimal(str(remaining)) == 0 else 'частично закрыта')
-    lines = [heading, f'BTCUSDT • Spot • LONG • {interval}', when(time.time()),
+    lines = [heading, f'{symbol} • Spot • LONG • {interval}', when(time.time()),
              'Статус ордера: '+STATUSES.get(status, status)]
     if qty:
-        lines += [f"Исполнено по ордеру: {fmt(qty,'BTC')} BTC", f"Средняя цена {'покупки' if side == 'BUY' else 'выхода'}: {fmt(average)} USDT"]
+        lines += [f"Исполнено по ордеру: {fmt(qty,asset)} {asset}", f"Средняя цена {'покупки' if side == 'BUY' else 'выхода'}: {fmt(average)} USDT"]
         if side == 'SELL' and entry is not None:
             lines.append(('Вход (себестоимость): ' if entry_is_cost else 'Цена входа: ')+f'{fmt(entry)} USDT')
         lines.append('Комиссии этого ордера: '+fees_text(fees))
@@ -36,7 +37,7 @@ def spot_receipt(*, mode, side, status, quantity, average, fees, remaining, reas
             lines.append('Комиссии первоначальной покупки (всей): '+fees_text(entry_fees))
         if side == 'SELL':
             lines.append(f'Результат с учтёнными комиссиями: {fmt(net,signed=True)} USDT'+(' (предварительный: есть неоценённая комиссия)' if not known else ''))
-        lines.append(f"Остаток позиции: {fmt(remaining,'BTC')} BTC")
+        lines.append(f"Остаток позиции: {fmt(remaining,asset)} {asset}")
     lines += ['Причина: '+REASONS.get(reason, reason), 'Ордер: '+client]
     return '\n'.join(lines)
 

@@ -12,7 +12,7 @@ import uuid
 import time
 from decimal import Decimal, localcontext
 from pathlib import Path
-from .paper_wallet_ledger import PaperWalletLedger, amount, encode
+from .paper_wallet_ledger import PaperWalletLedger, amount, encode, valid_asset
 
 
 class SharedPaperStore:
@@ -91,12 +91,13 @@ class SharedPaperStore:
         pos=snapshot['position']; cash=amount(snapshot['cash'])
         if cash<0:raise ValueError('Negative cash')
         if market=='spot':
+            asset=self._spot_asset(pos)
             quantity=amount(pos['quantity'])
             if quantity<0:raise ValueError('Negative position')
             reserved,reserved_btc=self._spot_order_reserves()
             if cash<reserved or quantity<reserved_btc:raise ValueError('Reservation exceeds assets')
             return {('spot:free','USDT'):cash-reserved,('spot:reserved','USDT'):reserved,
-                    ('spot:position','BTC'):quantity-reserved_btc,('spot:reserved','BTC'):reserved_btc}
+                    ('spot:position',asset):quantity-reserved_btc,('spot:reserved',asset):reserved_btc}
         reserved=self.ledger.balance('futures_isolated:reserved','USDT')
         if cash<reserved:raise ValueError('Reservation exceeds assets')
         return {('futures_isolated:free','USDT'):cash-reserved,('futures_isolated:reserved','USDT'):reserved,
@@ -104,10 +105,24 @@ class SharedPaperStore:
                 ('futures_isolated:funding','USDT'):amount(pos['funding']) if pos else Decimal(0),
                 ('futures_isolated:entry_fee','USDT'):-amount(pos['entry_fee']) if pos else Decimal(0)}
 
+    def _spot_asset(self,position):
+        identity=self._get('spot','identity') or {}
+        symbol=identity.get('symbol','BTCUSDT')
+        if (not isinstance(symbol,str) or not symbol.endswith('USDT') or
+                not valid_asset(symbol[:-4]) or symbol[:-4]=='USDT'):
+            raise ValueError('Invalid Spot identity symbol')
+        saved=position.get('symbol','BTCUSDT')
+        if amount(position['quantity']) and saved!=symbol:
+            raise ValueError('Spot position symbol conflicts with identity')
+        return symbol[:-4]
+
     def _spot_order_reserves(self):
         """Conservative reservation for unfinished paper Spot orders."""
         usdt=Decimal(0);btc=Decimal(0)
         for order in self.db.execute("SELECT client_id,side,quantity,price FROM runtime_orders WHERE phase!='SETTLED'"):
+            symbol=self._get('spot','pair_order_symbol:'+order['client_id'],'BTCUSDT')
+            if symbol != (self._get('spot','identity') or {}).get('symbol','BTCUSDT'):
+                raise ValueError('Pending Spot order symbol conflicts with identity')
             fills=[json.loads(r[0]) for r in self.db.execute('SELECT payload FROM runtime_fills WHERE client_id=?',(order['client_id'],))]
             if order['side']=='BUY':
                 spent=sum((amount(f['quoteQty'])+(amount(f['commission']) if f['commissionAsset']=='USDT' else 0) for f in fills),Decimal(0))
@@ -128,7 +143,7 @@ class SharedPaperStore:
             if market=='spot':
                 for fill in (extra or {}).get('new_fills',[]):
                     asset=fill['commissionAsset']; fee=amount(fill['commission'])
-                    if asset not in ('BTC','USDT') and fee:
+                    if asset not in (fill['symbol'][:-4],'USDT') and fee:
                         postings += [('spot:unvalued_fee',asset,-fee),('external:spot_fee',asset,fee)]
             previous=self._financial_projection(before);current=self._financial_projection(after)
             if postings or previous!=current:
@@ -173,6 +188,14 @@ class SharedPaperStore:
         snapshot=self.snapshot(market)
         with localcontext() as c:
             c.prec=120
+            if market=='spot':
+                # Until pair selection is integrated, no other position asset
+                # may be silently ignored by the BTC-only shadow projection.
+                current=self._spot_asset(snapshot['position'])
+                for row in self.db.execute("SELECT DISTINCT account,asset FROM ledger_postings WHERE account IN ('spot:position','spot:reserved')"):
+                    allowed={current} if row['account']=='spot:position' else {current,'USDT'}
+                    if row['asset'] not in allowed and self.ledger.balance(row['account'],row['asset'])!=0:
+                        raise ValueError('Journal/state mismatch: untracked Spot asset')
             for (account,asset),expected in self._expected(market,snapshot).items():
                 if self.ledger.balance(account,asset)!=expected:raise ValueError('Journal/state mismatch: '+account+' '+asset)
         row=self.db.execute('SELECT e.details FROM shared_market_anchor a JOIN ledger_events e ON e.id=a.event_id WHERE a.market=?',(market,)).fetchone()

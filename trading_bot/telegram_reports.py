@@ -14,13 +14,15 @@ def status(store):
     identity = store.get('identity')
     pos = store.get('position')
     quote = store.get('quote')
+    symbol=identity.get('symbol','BTCUSDT');asset=symbol[:-4]
+    if quote and quote.get('symbol','BTCUSDT')!=symbol:quote=None
     mode = 'Симуляция (виртуальные деньги)' if identity['mode'] == 'paper' else 'Spot Testnet (тестовые средства)'
-    lines = [mode, 'Пара: BTCUSDT | Рынок: Spot | Без плеча',
+    lines = [mode, 'Пара: '+symbol+' | Рынок: Spot | Без плеча',
              'Таймфрейм: ' + store.get('selected_interval', identity.get('interval', '15m')),
              'Размер входа: до ' + fmt(identity.get('amount', '10')) + ' USDT',
              'Новые входы: ' + ('на паузе' if store.get('paused') else 'разрешены')]
     qty = Decimal(pos['quantity'])
-    lines.append('Позиция: нет' if not qty else f"Позиция: LONG {fmt(qty,'BTC')} BTC\nСредняя себестоимость: {fmt(Decimal(pos['cost'])/qty)} USDT/BTC")
+    lines.append('Позиция: нет' if not qty else f"Позиция: LONG {fmt(qty,asset)} {asset}\nСредняя себестоимость: {fmt(Decimal(pos['cost'])/qty)} USDT/{asset}")
     if quote:
         age = max(0, int(time.time()-quote['time']))
         lines.append(f"Котировка: {fmt(quote['price'])} USDT\nПолучена: {when(quote['time'])}, {age} сек. назад" + (' — УСТАРЕЛА' if age > 120 else ''))
@@ -44,9 +46,12 @@ def signal_report(store):
     snap = store.get('signal')
     if not snap:
         return 'Сигнал ещё не рассчитан. Дождитесь следующего цикла проверки.'
+    symbol=store.get('identity').get('symbol','BTCUSDT')
+    if snap.get('symbol','BTCUSDT')!=symbol:
+        return 'Сигнал для выбранной пары ещё не рассчитан.'
     action = snap.get('action', 'HOLD')
     lines = ['Стратегия: пересечение SMA 10/30', 'Источник: Binance Spot Testnet',
-             'BTCUSDT | Таймфрейм: ' + snap.get('interval', '15m')]
+             symbol+' | Таймфрейм: ' + snap.get('interval', '15m')]
     if snap.get('time'):
         age = max(0, int(time.time()-snap['time']))
         lines.append(f"Проверка: {when(snap['time'])}, {age} сек. назад" + (' — УСТАРЕЛА' if age > 120 else ''))
@@ -78,7 +83,7 @@ def history(store):
     rows = store.db.execute("SELECT o.*,MAX(c.ts) AS closed_at,MIN(c.known) AS known FROM runtime_orders o JOIN runtime_closes c ON o.client_id=c.client_id GROUP BY o.client_id ORDER BY closed_at DESC LIMIT 10").fetchall()
     if not rows:
         return 'История выходов из позиции пуста.'
-    entries = ['Последние выходы LONG • BTCUSDT Spot (включая частичные):']
+    entries = ['Последние выходы LONG • Spot (включая частичные):']
     for row in rows:
         fills = [json.loads(r[0]) for r in store.db.execute('SELECT payload FROM runtime_fills WHERE client_id=?', (row['client_id'],))]
         qty = sum((Decimal(f['qty']) for f in fills), Decimal(0))
@@ -88,7 +93,8 @@ def history(store):
         for f in fills:
             asset = f['commissionAsset']
             fees[asset] = fees.get(asset, Decimal(0))+Decimal(f['commission'])
-        part = [when(row['closed_at']), f"Продано: {fmt(qty,'BTC')} BTC"]
+        symbol=store._order_symbol(row['client_id'],history=True);asset=symbol[:-4]
+        part = [when(row['closed_at']), f"Пара: {symbol}", f"Продано: {fmt(qty,asset)} {asset}"]
         entry = store.get('entry_snapshot:'+row['client_id'])
         if entry:
             part.append(('Вход (себестоимость): ' if entry['is_cost'] else 'Цена входа: ')+f"{fmt(entry['price'])} USDT")
@@ -109,7 +115,7 @@ def daily_report(store, now=None):
     known = all(r['known'] for r in rows)
     net = sum((Decimal(r['pnl']) for r in rows), Decimal(0))
     all_known=not store.db.execute('SELECT 1 FROM runtime_closes WHERE known=0 LIMIT 1').fetchone()
-    return '\n'.join(['Spot • BTCUSDT • отчёт за '+local.strftime('%d.%m.%Y')+' (Баку)',
+    return '\n'.join(['Spot • все пары • отчёт за '+local.strftime('%d.%m.%Y')+' (Баку)',
         'Обновлён: '+when(now), f'Ордеров с выходами сегодня: {len({r["client_id"] for r in rows})} (возможны частичные)',
         f'Реализованный результат сегодня: {fmt(net,signed=True)} USDT' if known else 'Реализованный результат сегодня: неизвестен — не все комиссии оценены.',
         f"Результат за всё время: {fmt(store.get('pnl'),signed=True)} USDT" if all_known else 'Результат за всё время: неизвестен — не все комиссии оценены.',

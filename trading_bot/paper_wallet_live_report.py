@@ -23,13 +23,15 @@ def live_report(shared, *, now=None, period='all', max_age=120):
         spot=shared._assert_consistent('spot');future=shared._assert_consistent('futures')
         positions={'spot':spot['position'],'futures':future['position']}
         balances={w:{'free':shared.ledger.balance(w+':free'),'reserved':shared.ledger.balance(w+':reserved')} for w in ('reserve','spot','futures_isolated')}
-        btc=shared.ledger.balance('spot:position','BTC')+shared.ledger.balance('spot:reserved','BTC')
+        spot_asset=shared._spot_asset(positions['spot'])
+        btc=shared.ledger.balance('spot:position',spot_asset)+shared.ledger.balance('spot:reserved',spot_asset)
         margin=shared.ledger.balance('futures_isolated:margin');funding_open=shared.ledger.balance('futures_isolated:funding')
         entry_fee=-shared.ledger.balance('futures_isolated:entry_fee')
         incomplete=[]
         def quote(market):
             q=shared._get(market,'quote')
             if not isinstance(q,dict):return None
+            if market=='spot' and q.get('symbol','BTCUSDT')!=spot_asset+'USDT':return None
             try:
                 age=now-float(q['time']); price=amount(q['price'],positive=True)
                 return price if 0<=age<=max_age else None
@@ -223,7 +225,7 @@ def live_report(shared, *, now=None, period='all', max_age=120):
         transfers=[]
         for row in shared.db.execute("SELECT created,details FROM ledger_events WHERE kind='TRANSFER' ORDER BY created,id"):
             if period=='all' or start<=row['created']<=now:transfers.append(json.loads(row['details']))
-        data={'wallets':balances,'btc':btc,'margin':margin,'funding_open':funding_open,'entry_fee':entry_fee,
+        data={'wallets':balances,'btc':btc,'spot_asset':spot_asset,'margin':margin,'funding_open':funding_open,'entry_fee':entry_fee,
               'spot_open':spot_open if sp is not None or not btc else None,'futures_open':future_open if fp is not None or not pos else None,
               'spot_realized':spot_realized,'futures_realized':futures_realized,'spot_fees':spot_fees if period=='all' else None,
               'future_fees':future_fees,'funding_total':funding_total,'transfers':transfers,'total':total,
@@ -253,14 +255,14 @@ def render_live_report(data):
     lines.append('Свободно — средства без резерва ордеров; в margin cross сумма включает обеспечение позиции, которое нельзя переводить. Доступность перевода проверяется с учётом паузы, риска и получателя: /wallet ИМЯ.')
     lines += ['Расчёт оценки капитала (USDT; суммы без повторного учёта):',
               'Свободные средства + резервы ордеров: '+_fmt(terms['cash']),
-              '+ рыночная стоимость Spot BTC: '+_fmt(terms['spot_asset']),
+              '+ рыночная стоимость Spot '+data.get('spot_asset','BTC')+': '+_fmt(terms['spot_asset']),
               '+ isolated: маржа '+_fmt(terms['isolated_margin'])+'; funding '+_fmt(terms['isolated_funding'])+'; открытый PnL '+_fmt(terms['isolated_open']),
               '− комиссия входа isolated: '+_fmt(terms['isolated_entry_fee'].copy_negate())+'; − оценочные издержки выхода: '+_fmt(terms['isolated_exit_cost'].copy_negate() if terms['isolated_exit_cost'] is not None else None)+'; корректировка ограничения нулём: '+_fmt(terms['isolated_floor']),
               '+ cross: маржа '+_fmt(terms['cross_margin'])+'; funding '+_fmt(terms['cross_funding'])+'; открытый PnL '+_fmt(terms['cross_open'])+'; обязательства '+_fmt(terms['cross_liability'])+'; − оценочные издержки выхода '+_fmt(terms['cross_exit_cost'].copy_negate() if terms['cross_exit_cost'] is not None else None),
               '+ margin cross: стоимость криптоактивов '+_fmt(terms['margin_assets'])+'; обязательства '+_fmt(terms['margin_debt']),
               'Учтённые комиссии и реализованный PnL отражены в остатках или отдельных строках выше; повторно не вычитаются. Округлены только показанные числа; сумма строк может отличаться из-за округления.',
               'Проверка расчёта оценки: '+('пройдена' if data['valuation_ok'] is True else 'расхождение' if data['valuation_ok'] is False else 'неполные данные')+'.']
-    lines += ['Spot актив: '+_fmt(data['btc'],'BTC')+' BTC; результат к себестоимости: '+_fmt(data['spot_open'])+' USDT',
+    lines += ['Spot актив: '+_fmt(data['btc'],data.get('spot_asset','BTC'))+' '+data.get('spot_asset','BTC')+'; результат к себестоимости: '+_fmt(data['spot_open'])+' USDT',
               'Futures isolated маржа: '+_fmt(data['margin'])+' USDT; открытый результат до выхода: '+_fmt(data['futures_open'])+' USDT',
               'Реализованный результат с учтёнными издержками: Spot '+_fmt(data['spot_realized'])+' USDT; futures isolated '+_fmt(data['futures_realized'])+' USDT',
               'Spot комиссии по активам: '+('неизвестно за день' if data['spot_fees'] is None else (', '.join(_fmt(v,k)+' '+k for k,v in sorted(data['spot_fees'].items())) or 'нет зафиксированных')),

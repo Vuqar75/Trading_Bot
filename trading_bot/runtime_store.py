@@ -95,7 +95,7 @@ class RuntimeStore:
     def pending(self):
         return self.db.execute("SELECT * FROM runtime_orders WHERE phase!='SETTLED' ORDER BY created").fetchall()
 
-    def _order_symbol(self, client):
+    def _order_symbol(self, client, *, history=False):
         # Unannotated orders come from the legacy BTC-only implementation.
         # New pairs remain disabled until accounting and protection are wired.
         symbol=self.get('pair_order_symbol:'+client)
@@ -103,8 +103,15 @@ class RuntimeStore:
             if self.get('pair_legacy_btc_migration') is not None:
                 raise ObservationError('Migrated order symbol is missing')
             symbol='BTCUSDT'
-        if symbol!='BTCUSDT':
-            raise ObservationError('Order symbol requires unsupported pair recovery')
+        from .paper_wallet_ledger import valid_asset
+        identity=self.get('identity') or {}
+        if (not isinstance(symbol,str) or not symbol.endswith('USDT') or
+                not valid_asset(symbol[:-4]) or symbol[:-4]=='USDT'):
+            raise ObservationError('Invalid order symbol')
+        if symbol!='BTCUSDT' and (identity.get('mode')!='paper' or identity.get('symbol')!=symbol):
+            row=self.db.execute('SELECT phase FROM runtime_orders WHERE client_id=?',(client,)).fetchone() if history else None
+            if identity.get('mode')!='paper' or row is None or row['phase']!='SETTLED':
+                raise ObservationError('Order symbol requires unsupported pair recovery')
         return symbol
 
     @staticmethod
@@ -151,7 +158,9 @@ class RuntimeStore:
             client = 'rt' + uuid.uuid4().hex
             self.db.execute('INSERT INTO runtime_orders VALUES(?,?,?,?,?,\'PREPARED\',NULL,?,?)',
                             (client, business_key, side, str(qty), str(price), reason, time.time()))
-            self.set('pair_order_symbol:' + client, 'BTCUSDT')
+            symbol=self.get('identity').get('symbol','BTCUSDT')
+            self.set('pair_order_symbol:' + client, symbol)
+            self._order_symbol(client)
             self.set('binding:' + client, pos['id'])
             if reason == 'MANUAL':
                 self.set('manual_binding:' + client, self.get('close_request'))
@@ -239,19 +248,22 @@ class RuntimeStore:
                 asset = f['commissionAsset']
                 if not isinstance(asset, str) or not asset:
                     raise ObservationError('Invalid fee asset')
-                known = known and (fee == 0 or asset in {'BTC', 'USDT'})
+                base_asset=symbol[:-4]
+                known = known and (fee == 0 or asset in {base_asset, 'USDT'})
                 if saved['side'] == 'BUY':
-                    received = q - (fee if asset == 'BTC' else 0)
+                    received = q - (fee if asset == base_asset else 0)
                     if received <= 0:
                         raise ObservationError('Invalid entry fee')
                     debit = v + (fee if asset == 'USDT' else 0)
                     if base == 0:
                         pos = {**pos, 'id': uuid.uuid4().hex, 'opened_at': time.time()}
+                        if symbol!='BTCUSDT':pos['symbol']=symbol
+                        else:pos.pop('symbol',None)
                     cash -= debit
                     base += received
                     cost += debit
                 else:
-                    debit = q + (fee if asset == 'BTC' else 0)
+                    debit = q + (fee if asset == base_asset else 0)
                     if debit > base:
                         raise ObservationError('Exit exceeds owned position')
                     basis = cost * debit / base
@@ -292,7 +304,7 @@ class RuntimeStore:
                     quantity=qty, average=quote/qty if qty else 0, fees=fees, remaining=base,
                     reason=saved['reason'], interval=self.get('selected_interval', self.get('identity').get('interval', '15m')),
                     client=client, entry=entry.get('price'), entry_is_cost=entry.get('is_cost', False), entry_fees=entry.get('fees'),
-                    net=self.get('order_net:' + client, '0'), known=known))
+                    net=self.get('order_net:' + client, '0'), known=known, symbol=symbol))
 
     def command(self, update_id, authorized, command, target=None, *, routed=False):
         fingerprint = hashlib.sha256(json.dumps([authorized, command, target]).encode()).hexdigest()

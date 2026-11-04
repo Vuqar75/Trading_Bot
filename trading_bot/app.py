@@ -138,6 +138,8 @@ class Application:
     def __init__(self, store, exchange, reader, *, interval='15m', amount='10', daily_loss='5', stop='2', take='4'):
         if store.get('identity')['mode'] != exchange.mode:
             raise ObservationError('Exchange and database mode disagree')
+        if store.get('identity').get('symbol','BTCUSDT') != 'BTCUSDT':
+            raise ObservationError('Selectable paper pairs are not integrated')
         self.last_protection_at = None
         self.last_protection_position = None
         self.store, self.exchange, self.reader = store, exchange, reader
@@ -154,7 +156,7 @@ class Application:
 
     def recover(self):
         for row in self.store.pending():
-            report = (self.exchange.inspect_saved(row) if self.exchange.mode == 'paper'
+            report = (self.exchange.inspect_saved({**dict(row),'symbol':self.store._order_symbol(row['client_id'])}) if self.exchange.mode == 'paper'
                       else self.exchange.inspect(row['client_id']))
             try:
                 self.store.apply(row['client_id'], report)

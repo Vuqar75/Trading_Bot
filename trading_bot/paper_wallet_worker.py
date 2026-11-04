@@ -42,7 +42,9 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                     result=f"{label}: свободно {_fmt(v['free'])} USDT; резерв ордеров {_fmt(v['reserved'])} USDT. "
                     result+=('Доступно к запросу перевода: '+_fmt(available)+' USDT.' if available is not None else 'Доступно для перевода: не подтверждено; проверьте паузу и состояние.')
                     result+=' Свободно — остаток без резервов; маржа позиций показана отдельно. Получатель и средства повторно проверяются при подтверждении.'
-                    if w=='spot':result+=f" Spot актив: {_fmt(data['btc'],'BTC')} BTC."
+                    if w=='spot':
+                        asset=data.get('spot_asset','BTC')
+                        result+=f" Spot актив: {_fmt(data['btc'],asset)} {asset}."
                     if w=='futures_isolated':result+=f" Маржа {_fmt(data['margin'])} USDT; funding {_fmt(data['funding_open'])} USDT."
                     if w=='futures_cross':
                         cross=data['cross']
