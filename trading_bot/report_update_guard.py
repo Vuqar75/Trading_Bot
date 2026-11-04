@@ -5,7 +5,7 @@ financial posting, database restore or service operation is performed here.
 """
 import json
 import time
-from decimal import localcontext
+from decimal import Decimal, localcontext
 
 from .cross_paper_book import CrossPaperBook
 from .cross_rollout import _queue_anchor
@@ -76,6 +76,8 @@ def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
                 raise ValueError('Boundary update requires isolated futures paused')
             if namespace == 'spothelp' and not paused['spot']:
                 raise ValueError('Spot must remain paused during help update')
+            if namespace == 'spothelp' and Decimal(str(states['spot']['position']['quantity'])) != 0:
+                raise ValueError('Spot position must be flat during help update')
             offset=int(q.execute("SELECT value FROM unified_state WHERE key='offset'").fetchone()[0])
             result={'operation':operation,'paused':paused,'queue_offset':offset,'queue_anchor':_queue_anchor(q,offset),'frozen_at':now}
             shared.db.execute('INSERT INTO ledger_meta VALUES(?,?)',(freeze_key,json.dumps(result,sort_keys=True)))
