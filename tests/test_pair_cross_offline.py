@@ -14,7 +14,7 @@ from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.paper_pair_selection_offline import select_cross_pairs_offline
 from trading_bot.paper_pair_worker_offline import process_cross_pair
-from trading_bot.paper_pair_runtime_offline import restore_cross_book
+from trading_bot.paper_pair_runtime_offline import restore_cross_book, ExperimentalCrossRunner
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.runtime_store import RuntimeStore
@@ -101,6 +101,28 @@ class PairCrossOfflineTests(unittest.TestCase):
             self.assertTrue(result['replayed']);self.assertEqual(q.pending('futures_cross'),[])
             self.assertEqual(self.book._symbols(),('BTCUSDT','SOLUSDT'))
             self.assertEqual(self.shared.ledger.balance('futures_cross:free'),before)
+            self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        finally:q.close()
+
+    def test_cross_runner_rebinds_after_financial_commit_before_ack(self):
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(1,True,'/mode futures_cross',now=100)
+        q.receive(2,True,'/pair BTCUSDT SOLUSDT',now=100,
+                  pairs={'futures_cross':{'symbols':['BTCUSDT','ETHUSDT'],'version':0}})
+        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        q.receive(3,True,'/confirm '+token,now=101)
+        class Reader:
+            def get(inner,path):return {'symbols':[self.info('BTC'),self.info('SOL')]}
+            def schedule(inner,symbol):return {'symbol':symbol,'mark':'100'}
+        runner=ExperimentalCrossRunner(self.shared,q,lambda symbols:Reader());old=runner.book
+        def crash(stage):
+            if stage=='after_financial_commit':raise RuntimeError('fixture crash')
+        try:
+            with self.assertRaises(RuntimeError):runner.pair_step(clock=lambda:102,fault=crash)
+            with self.assertRaisesRegex(ValueError,'version superseded'):old._symbols()
+            self.assertEqual(runner.book._symbols(),('BTCUSDT','SOLUSDT'))
+            self.assertTrue(runner.pair_step(clock=lambda:103)['replayed'])
+            self.assertEqual(q.pending('futures_cross'),[])
             self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         finally:q.close()
 

@@ -17,7 +17,8 @@ from trading_bot.margin_paper_book import MarginPaperBook
 from trading_bot.margin_paper_strategy import MarginPaperStrategy
 from trading_bot.paper_pair_worker_offline import process_spot_pair, process_isolated_pair, process_margin_pair
 from trading_bot.paper_pair_runtime_offline import (restore_margin_book, ExperimentalMarginRunner,
-                                                    restore_spot_store, restore_isolated_store)
+                                                    restore_spot_store, restore_isolated_store,
+                                                    ExperimentalSpotRunner, ExperimentalIsolatedRunner)
 from trading_bot.paper_shared_store import SharedPaperStore
 from trading_bot.paper_wallet_live_report import live_report
 from trading_bot.runtime_store import RuntimeStore
@@ -169,6 +170,83 @@ class PairSelectionOfflineTests(unittest.TestCase):
             self.assertTrue(self.shared.snapshot('spot')['paused'])
             self.assertEqual(self.shared.db.execute('SELECT count(*) FROM pair_spot_selection_events').fetchone()[0],1)
         finally:q.close()
+
+    def test_expired_pair_job_rejected_without_blocking_following_pause(self):
+        token,job=self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(3,True,'/pause',now=221)
+        class Reader:
+            def get(inner,path,params):
+                return {'symbols':[spot_info()]} if path.endswith('exchangeInfo') else {'symbol':'SOLUSDT','price':'100'}
+        try:
+            self.assertIsNone(process_spot_pair(q,self.shared,Reader(),clock=lambda:221))
+            self.assertEqual(q.db.execute('SELECT status FROM unified_jobs WHERE id=?',(job,)).fetchone()[0],'FAILED')
+            self.assertEqual([r['command'] for r in q.pending('spot')],['/pause'])
+            self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
+        finally:q.close()
+
+    def test_pair_worker_temporary_data_error_does_not_discard_job(self):
+        token,job=self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        class Reader:
+            def get(inner,path,params):raise TimeoutError('fixture')
+        try:
+            with self.assertRaises(TimeoutError):process_spot_pair(q,self.shared,Reader(),clock=lambda:102)
+            self.assertEqual(q.db.execute('SELECT status FROM unified_jobs WHERE id=?',(job,)).fetchone()[0],'PENDING')
+            self.assertEqual(self.shared._get('spot','identity')['symbol'],'BTCUSDT')
+        finally:q.close()
+
+    def test_pair_worker_invalid_filter_is_final_and_does_not_block_queue(self):
+        token,job=self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(3,True,'/pause',now=102)
+        class Reader:
+            def get(inner,path,params):
+                if path.endswith('exchangeInfo'):
+                    info=spot_info();info['status']='BREAK';return {'symbols':[info]}
+                return {'symbol':'SOLUSDT','price':'100'}
+        try:
+            self.assertIsNone(process_spot_pair(q,self.shared,Reader(),clock=lambda:102))
+            self.assertEqual(q.db.execute('SELECT status FROM unified_jobs WHERE id=?',(job,)).fetchone()[0],'FAILED')
+            self.assertEqual([r['command'] for r in q.pending('spot')],['/pause'])
+        finally:q.close()
+
+    def test_spot_runner_rebinds_after_financial_commit_before_ack(self):
+        self.confirmed_pair_job();q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        store=RuntimeStore(self.financial,{'mode':'paper','symbol':'BTCUSDT'},shared=True)
+        class Reader:
+            def get(inner,path,params):
+                return {'symbols':[spot_info()]} if path.endswith('exchangeInfo') else {'symbol':'SOLUSDT','price':'100'}
+        runner=ExperimentalSpotRunner(store,q,Reader());old=runner.app
+        def crash(stage):
+            if stage=='after_financial_commit':raise RuntimeError('fixture crash')
+        try:
+            with self.assertRaises(RuntimeError):runner.pair_step(clock=lambda:102,fault=crash)
+            self.assertEqual(runner.app.symbol,'SOLUSDT')
+            with self.assertRaisesRegex(Exception,'version superseded'):old.tick()
+            self.assertTrue(runner.pair_step(clock=lambda:103)['replayed'])
+            self.assertTrue(store.get('paused'));self.assertEqual(q.pending('spot'),[])
+        finally:store.close();q.close()
+
+    def test_isolated_runner_rebinds_after_financial_commit_before_ack(self):
+        q=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        q.receive(1,True,'/mode futures',now=100)
+        q.receive(2,True,'/pair SOLUSDT',now=100,pairs={'futures':{'symbols':['BTCUSDT'],'version':0}})
+        token=q.db.execute('SELECT id FROM unified_pair_proposals').fetchone()[0]
+        q.receive(3,True,'/confirm '+token,now=101)
+        store=FuturesStore(self.financial,shared=True)
+        class Reader:
+            def __init__(inner,symbol):inner.pair_symbol=symbol
+            def get(inner,path):
+                info=spot_info();info.update(contractType='PERPETUAL',marginAsset='USDT')
+                return {'symbols':[info]}
+            def mark(inner):return Decimal('100'),102000
+        runner=ExperimentalIsolatedRunner(store,q,Reader)
+        def crash(stage):
+            if stage=='after_financial_commit':raise RuntimeError('fixture crash')
+        try:
+            with self.assertRaises(RuntimeError):runner.pair_step(clock=lambda:102,fault=crash)
+            self.assertEqual(runner.store.symbol,'SOLUSDT')
+            self.assertTrue(runner.pair_step(clock=lambda:103)['replayed'])
+            self.assertTrue(runner.store.get('paused'));self.assertEqual(q.pending('futures'),[])
+        finally:runner.store.close();q.close()
 
     def test_isolated_pair_worker_replays_after_commit_without_capital_change(self):
         q=UnifiedQueue(self.queue,allow_pair_experiment=True)

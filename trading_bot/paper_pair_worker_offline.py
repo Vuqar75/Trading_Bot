@@ -3,8 +3,20 @@ import json
 import time
 from decimal import Decimal, localcontext
 
+from .paper_pair_catalog import PairMetadataError
 from .paper_pair_selection_offline import (select_spot_pair_offline, select_isolated_pair_offline,
                                            select_cross_pairs_offline, select_margin_pairs_offline)
+
+
+def _select_or_expire(queue,job,select):
+    try:return select()
+    except PairMetadataError:
+        queue.acknowledge(job['id'],'Пара не проходит проверку рыночных фильтров.',applied=False)
+        return None
+    except ValueError as exc:
+        if str(exc)!='Pair confirmation expired':raise
+        queue.acknowledge(job['id'],'Подтверждение смены пары истекло; отправьте новую команду.',applied=False)
+        return None
 
 
 def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
@@ -29,10 +41,11 @@ def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
         if not price.is_finite() or price<=0:raise ValueError('Invalid pair price')
         with localcontext() as ctx:
             ctx.prec=120
-            result=select_spot_pair_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
+            result=_select_or_expire(queue,job,lambda:select_spot_pair_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
                 request_id='pair:'+payload['proposal'],expected_symbol=payload['previous'][0],
                 expected_version=payload['version'],symbol=target,metadata=symbols[0],price=str(price),
-                quantity=str(budget/price),observed_at=observed,clock=clock,confirm_job_id=job['id'])
+                quantity=str(budget/price),observed_at=observed,clock=clock,confirm_job_id=job['id']))
+        if result is None:continue
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[SPOT] Пара '+result['symbol']+' сохранена; входы остаются на паузе.')
         return result
@@ -60,10 +73,11 @@ def process_isolated_pair(queue, shared, reader_factory, *, budget='10', clock=t
         if not price.is_finite() or price<=0:raise ValueError('Invalid pair price')
         with localcontext() as ctx:
             ctx.prec=120
-            result=select_isolated_pair_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
+            result=_select_or_expire(queue,job,lambda:select_isolated_pair_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
                 request_id='pair:'+payload['proposal'],expected_symbol=payload['previous'][0],
                 expected_version=payload['version'],symbol=target,metadata=matches[0],price=str(price),
-                quantity=str(budget/price),observed_at=observed,clock=clock,confirm_job_id=job['id'])
+                quantity=str(budget/price),observed_at=observed,clock=clock,confirm_job_id=job['id']))
+        if result is None:continue
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[Futures isolated] Пара '+result['symbol']+' сохранена; входы остаются на паузе.')
         return result
@@ -97,10 +111,11 @@ def process_cross_pair(queue, shared, reader_factory, *, budget='5', clock=time.
             metadata[symbol]=matches[0];prices[symbol]=str(price)
             with localcontext() as ctx:
                 ctx.prec=120;quantities[symbol]=str(budget/price)
-        result=select_cross_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
+        result=_select_or_expire(queue,job,lambda:select_cross_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
             request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],
             expected_version=payload['version'],symbols=targets,metadata=metadata,prices=prices,
-            quantities=quantities,observed_at=min(observations),clock=clock,confirm_job_id=job['id'])
+            quantities=quantities,observed_at=min(observations),clock=clock,confirm_job_id=job['id']))
+        if result is None:continue
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[Futures cross] Пары '+', '.join(result['symbols'])+' сохранены; входы остаются на паузе.')
         return result
@@ -133,10 +148,11 @@ def process_margin_pair(queue, shared, reader_factory, *, budget='5', clock=time
             metadata[symbol]=rows[0];prices[symbol]=str(price)
             with localcontext() as ctx:
                 ctx.prec=120;quantities[symbol]=str(budget/price)
-        result=select_margin_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
+        result=_select_or_expire(queue,job,lambda:select_margin_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
             request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],
             expected_version=payload['version'],symbols=targets,metadata=metadata,prices=prices,
-            quantities=quantities,observed_at=min(observations),clock=clock,confirm_job_id=job['id'])
+            quantities=quantities,observed_at=min(observations),clock=clock,confirm_job_id=job['id']))
+        if result is None:continue
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[Spot margin cross] Пары '+', '.join(result['symbols'])+' сохранены; входы остаются на паузе.')
         return result
