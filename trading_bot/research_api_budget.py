@@ -30,8 +30,14 @@ class _NoRedirect(HTTPRedirectHandler):
         raise ResearchError("api_redirect_rejected")
 
 
+def _api_key():
+    # Standard name wins; accept the user's existing secret binding as an alias.
+    # Never copy either value into command text, files, logs or request JSON.
+    return os.environ.get("OPENAI_API_KEY") or os.environ.get("TRADING_BOT_AI")
+
+
 def _send(request):
-    key = os.environ.get("OPENAI_API_KEY")
+    key = _api_key()
     if not key:
         raise ResearchError("openai_api_key_not_configured")
     req = Request("https://api.openai.com/v1/responses", data=canonical(request).encode(),
@@ -81,7 +87,7 @@ def paid_analysis(snapshot, budget_path, *, enabled=False, transport=None):
     input_bound = len(canonical(request).encode()) + 4096
     reserve = int((Decimal(input_bound)*INPUT_USD_PER_MILLION +
                    Decimal(request["max_output_tokens"])*OUTPUT_USD_PER_MILLION).to_integral_value(rounding=ROUND_CEILING))
-    if transport is None and not os.environ.get("OPENAI_API_KEY"):
+    if transport is None and not _api_key():
         raise ResearchError("openai_api_key_not_configured")
     ident = hashlib.sha256(canonical(request).encode()).hexdigest()
     db = _connect(budget_path)

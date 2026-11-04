@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from trading_bot.market_research import ResearchError, build_snapshot, offline_report, render_report
 from trading_bot.openai_research import analyze_with_transport, prepare_request, validate_analysis
-from trading_bot.research_api_budget import paid_analysis
+from trading_bot.research_api_budget import paid_analysis, _api_key
 from trading_bot.research_public_inputs import capture_public, parse_feed
 
 
@@ -174,6 +174,25 @@ class ResearchBudgetTests(unittest.TestCase):
         with self.assertRaisesRegex(ResearchError,"disabled"):
             paid_analysis(self.snap,self.db,transport=lambda _:self.fail("called"))
         self.assertFalse(self.db.exists())
+
+    def test_user_key_alias_and_standard_name_precedence(self):
+        with patch.dict("os.environ",{"TRADING_BOT_AI":"unit-test-alias"},clear=True):
+            self.assertEqual(_api_key(),"unit-test-alias")
+            with patch.dict("os.environ",{"OPENAI_API_KEY":"unit-test-standard"}):
+                self.assertEqual(_api_key(),"unit-test-standard")
+
+    def test_empty_standard_name_does_not_hide_configured_alias(self):
+        with patch.dict("os.environ",{"OPENAI_API_KEY":"","TRADING_BOT_AI":"unit-test-alias"},clear=True):
+            self.assertEqual(_api_key(),"unit-test-alias")
+
+    def test_alias_reaches_transport_without_key_in_request_or_result(self):
+        raw=fixture();raw["markets"]["BTCUSDT"]["source"]="binance_public_spot"
+        snapshot=build_snapshot(raw)
+        with patch.dict("os.environ",{"TRADING_BOT_AI":"unit-test-not-a-real-key"},clear=True):
+            with patch("trading_bot.research_api_budget._send",return_value=response()) as send:
+                result=paid_analysis(snapshot,self.db,enabled=True)
+        self.assertNotIn("unit-test-not-a-real-key",json.dumps(send.call_args.args[0]))
+        self.assertNotIn("unit-test-not-a-real-key",json.dumps(result))
 
     def test_missing_key_no_reservation_or_charge(self):
         self.snap["markets"]["BTCUSDT"]["source"]="binance_public_spot"
