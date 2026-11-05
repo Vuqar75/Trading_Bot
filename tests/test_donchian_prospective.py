@@ -56,6 +56,11 @@ class ProspectiveTests(unittest.TestCase):
         self.cycle();target=Path(self.temp.name)/'restore.db';p.backup(self.db,target)
         with sqlite3.connect(target) as r:
             self.assertEqual(r.execute('PRAGMA integrity_check').fetchone()[0],'ok');self.assertEqual(r.execute('SELECT COUNT(*) FROM events').fetchone()[0],12)
+        restored=p.connect(target)
+        try:
+            with patch.object(p,'now',self.clock):p.cycle(restored,'v1',fetch=self.fake_fetch,quote=self.quote,clock=self.clock)
+            self.assertFalse(p.meta(restored,'halted'));self.assertEqual(restored.execute('SELECT COUNT(*) FROM events').fetchone()[0],12)
+        finally:restored.close()
     def test_crash_before_decision_commit_rolls_back(self):
         self.db.execute('BEGIN IMMEDIATE');self.db.execute('INSERT INTO decisions VALUES(?,?,?,?,?,?,NULL,?,?,?)',(self.boundary,'BTCUSDT','base','BUY','90',self.clock(),'a','b','v1'))
         self.db.close();self.db=p.connect(self.path)
