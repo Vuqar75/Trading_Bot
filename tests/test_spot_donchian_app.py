@@ -73,6 +73,20 @@ class DonchianAppTest(unittest.TestCase):
   with patch('trading_bot.runtime_store.time.time',self.clock):self.app.tick()
   self.assertEqual(self.store.get('donchian60')['last_result'],'entry_skipped_exchange_filter');self.assertEqual(self.store.db.execute('select count(*) from runtime_orders').fetchone()[0],0)
   self.assertIn('не проходит биржевые фильтры',status(self.store))
+ def test_waits_for_new_public_trade_without_repeating_order(self):
+  original=self.reader.get;calls=[]
+  def get(path,params=None):
+   result=original(path,params)
+   if path.endswith('/trades'):
+    calls.append(1)
+    if len(calls)==1:result[0]['time']=self.b
+   return result
+  self.reader.get=get
+  with self.store.transaction():self.store.set('paused',False)
+  self.clock.t=self.b/1000+1
+  with patch('trading_bot.runtime_store.time.time',self.clock),patch('trading_bot.spot_donchian_app.time.sleep'):
+   self.app.tick()
+  self.assertEqual(len(calls),2);self.assertEqual(self.store.db.execute('select count(*) from runtime_orders').fetchone()[0],1)
  def test_quote_is_rechecked_after_real_sqlite_lock_wait(self):
   now=time.time()
   with self.store.transaction():

@@ -88,9 +88,15 @@ class DonchianSpotApplication(Application):
             raise
 
     def _execute_decision(self,state,pos):
-        b=state['boundary_ms'];start=int(self.clock()*1000);before=int(self.reader.get('/api/v3/time')['serverTime']);trades=self.reader.get('/api/v3/trades',{'symbol':self.symbol,'limit':1});after=int(self.reader.get('/api/v3/time')['serverTime']);received=int(self.clock()*1000)
-        if not isinstance(trades,list) or len(trades)!=1 or type(trades[0].get('id')) is not int:raise ObservationError('Trade quote ambiguous')
-        trade=trades[0];price=number(trade['price']);validate_execution(boundary_ms=b,signal_commit_ms=state['commit_ms'],request_ms=start,trade_ms=trade['time'],received_ms=received,server_before_ms=before,server_after_ms=after)
+        b=state['boundary_ms']
+        for attempt in range(3):
+            start=int(self.clock()*1000);before=int(self.reader.get('/api/v3/time')['serverTime']);trades=self.reader.get('/api/v3/trades',{'symbol':self.symbol,'limit':1});after=int(self.reader.get('/api/v3/time')['serverTime']);received=int(self.clock()*1000)
+            if not isinstance(trades,list) or len(trades)!=1 or type(trades[0].get('id')) is not int or trades[0]['id']<0 or type(trades[0].get('time')) is not int:raise ObservationError('Trade quote ambiguous')
+            trade=trades[0]
+            if trade['time']>state['commit_ms']:break
+            if attempt==2:raise ObservationError('No public trade after signal')
+            time.sleep(.4)
+        price=number(trade['price']);validate_execution(boundary_ms=b,signal_commit_ms=state['commit_ms'],request_ms=start,trade_ms=trade['time'],received_ms=received,server_before_ms=before,server_after_ms=after)
         if trade['time']>after:raise ObservationError('Trade quote in future')
         with self.store.transaction():
             current=self.store.get('donchian60');check=int(self.clock()*1000)
