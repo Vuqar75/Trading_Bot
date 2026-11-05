@@ -63,6 +63,11 @@ class MonitorTests(unittest.TestCase):
         first=next(self.control.glob('week-*.json'));saved=first.read_bytes();m.run(self.now+1000,self.dbpath,self.control,self.marker,self.code,active=True);self.assertEqual(saved,first.read_bytes());self.assertEqual(before,list(self.db.iterdump()))
         for days in (90,180):
             t=m.START+days*m.DAY;m.run(t,self.dbpath,self.control,self.marker,self.code,active=True);f=self.control/f'checkpoint-{days}.json';v=f.read_bytes();m.run(t+1000,self.dbpath,self.control,self.marker,self.code,active=True);self.assertEqual(v,f.read_bytes())
+    def test_atomic_public_snapshot_is_read_only(self):
+        before=list(self.db.iterdump());public=self.root/'snapshot.json'
+        m.run(self.now,self.dbpath,self.control,self.marker,self.code,active=True,public=public)
+        snap=json.loads(public.read_text());self.assertEqual(len(snap['accounts']),18);self.assertEqual(sum(snap['closed'].values()),0)
+        self.assertTrue((self.root/'last-success.json').exists());self.assertEqual(before,list(self.db.iterdump()))
     def test_restore_corruption_failure_and_clean_success(self):
         manifest,raw=backup.snapshot(self.dbpath,self.root/'snapshot.sqlite',clock=lambda:3);blob=backup.package(manifest,raw);digest=hashlib.sha256(blob).hexdigest()
         marker={'sha256':digest,'object':backup.PREFIX+'test.tar.gz','manifest':manifest};mf=self.root/'restore-marker.json';mf.write_text(json.dumps(marker))

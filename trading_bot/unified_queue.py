@@ -168,8 +168,15 @@ class UnifiedQueue:
                 if command == '/start' and len(parts) == 1:
                     self._notify(unified_start_message())
                 elif command == '/help' and len(parts) == 1:
-                    for message in unified_help_messages(market_label(mode),experimental_pair=self.allow_pair_experiment):
-                        self._notify(message)
+                    messages=unified_help_messages(market_label(mode),experimental_pair=self.allow_pair_experiment)
+                    for index,message in enumerate(messages):
+                        buttons=[[('Наблюдение Donchian60',{'command':'/donchian','market':mode,'expires':now+86400,'kind':'view'})]] if index==len(messages)-1 else None
+                        self._notify(message,buttons=buttons)
+                elif command == '/donchian' and len(parts)<=2 and (len(parts)==1 or parts[1] in ('assets','baseline','health')):
+                    from .donchian_view import render
+                    view=parts[1] if len(parts)==2 else 'summary'
+                    buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('По активам','/donchian assets'),('Сравнение с baseline','/donchian baseline'),('Данные и здоровье','/donchian health'),('Обновить','/donchian'))]
+                    self._notify(render(view),buttons=buttons)
                 elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
                         mode = parts[1]

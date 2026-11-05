@@ -158,7 +158,7 @@ def record_incidents(status,control,now):
     for reason in list(data['open']):
         if reason not in reasons:data['closed'].append({**data['open'].pop(reason),'resolved_observed_utc':iso(now)})
     replace(path,data)
-def run(now=None,dbpath=DB,control=CONTROL,backup=BACKUP,code=CODE,active=None):
+def run(now=None,dbpath=DB,control=CONTROL,backup=BACKUP,code=CODE,active=None,public=None):
     now=int(time.time()*1000) if now is None else now;control=Path(control);control.mkdir(parents=True,exist_ok=True)
     b=backup_state(backup,now);restore=restore_state(control/'restore.json',now)
     db=sqlite3.connect('file:'+str(dbpath)+'?mode=ro',uri=True,timeout=.2,isolation_level=None);db.row_factory=sqlite3.Row
@@ -166,6 +166,11 @@ def run(now=None,dbpath=DB,control=CONTROL,backup=BACKUP,code=CODE,active=None):
         db.execute('PRAGMA query_only=ON');db.execute('BEGIN')
         running,valid=process_state() if active is None else (active,active)
         status=collect(db,now,running,b,restore,code=code,process_valid=valid)
+        snapshot=None
+        if public is not None:
+            accounts=account_report(db,now) if status['accounts_valid'] else []
+            closed={f'{sc}:{s}':db.execute("SELECT COUNT(*) FROM events WHERE id LIKE ? AND json_extract(payload,'$.kind')='strategy' AND json_extract(payload,'$.result')='filled' AND json_extract(payload,'$.side')='SELL'",(f'%:{s}:{sc}',)).fetchone()[0] for sc in SCENARIOS for s in SYMBOLS}
+            snapshot={'schema':1,'generated_utc':iso(now),'status':status,'accounts':accounts,'closed':closed}
         current=dt.datetime.fromtimestamp(now/1000,dt.timezone.utc);y,w,_=current.isocalendar();week=control/f'week-{y}-W{w:02d}.json'
         checkpoints=[(90,control/'checkpoint-90.json'),(180,control/'checkpoint-180.json')]
         need=not week.exists() or any(now>=START+days*DAY and not path.exists() for days,path in checkpoints)
@@ -195,6 +200,12 @@ def run(now=None,dbpath=DB,control=CONTROL,backup=BACKUP,code=CODE,active=None):
         db.rollback()
     finally:db.close()
     replace(control/'status.json',status)
+    if snapshot is not None:
+        target=Path(public);tmp=target.with_name('.'+target.name+'.'+str(os.getpid()))
+        try:
+            tmp.write_text(json.dumps(snapshot,ensure_ascii=False,sort_keys=True)+'\n');os.chmod(tmp,0o644);os.replace(tmp,target)
+            tmp.write_text(json.dumps({'generated_utc':iso(now)})+'\n');os.chmod(tmp,0o644);os.replace(tmp,target.with_name('last-success.json'))
+        finally:tmp.unlink(missing_ok=True)
     record_incidents(status,control,now)
     if need:
         write_once(week,report)
@@ -202,4 +213,4 @@ def run(now=None,dbpath=DB,control=CONTROL,backup=BACKUP,code=CODE,active=None):
             if now>=START+days*DAY:write_once(path,{**report,'checkpoint_days':days})
     return status
 if __name__=='__main__':
-    a=argparse.ArgumentParser();a.add_argument('--state',default=str(DB));a.add_argument('--control',default=str(CONTROL));a.add_argument('--backup',default=str(BACKUP));args=a.parse_args();print(json.dumps(run(dbpath=args.state,control=args.control,backup=args.backup),ensure_ascii=False,sort_keys=True))
+    a=argparse.ArgumentParser();a.add_argument('--state',default=str(DB));a.add_argument('--control',default=str(CONTROL));a.add_argument('--backup',default=str(BACKUP));a.add_argument('--public',default='/var/lib/donchian-public/snapshot.json');args=a.parse_args();print(json.dumps(run(dbpath=args.state,control=args.control,backup=args.backup,public=args.public),ensure_ascii=False,sort_keys=True))
