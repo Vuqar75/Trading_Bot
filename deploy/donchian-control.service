@@ -6,8 +6,8 @@ After=donchian-observer.service
 Type=oneshot
 User=donchianbackup
 Group=donchian
-WorkingDirectory=/opt/donchian-control-code
-Environment=PYTHONPATH=/opt/donchian-control-code
+WorkingDirectory=/opt/donchian-control-publisher
+Environment=PYTHONPATH=/opt/donchian-control-publisher
 Environment=HOME=/nonexistent
 Environment=TZ=UTC
 Environment=TMPDIR=/var/lib/donchian-control
