@@ -139,6 +139,7 @@ def _connect(path):
         db.execute(f"PRAGMA application_id={APP_ID}")
         db.execute("CREATE TABLE IF NOT EXISTS api_attempts (request_id TEXT PRIMARY KEY, reserved_micro_usd INTEGER NOT NULL, created_at REAL NOT NULL, result_json TEXT)")
         db.execute("CREATE TABLE IF NOT EXISTS api_diagnostics (request_id TEXT PRIMARY KEY, details_json TEXT NOT NULL)")
+        db.execute("CREATE TABLE IF NOT EXISTS api_usage (request_id TEXT PRIMARY KEY, usage_json TEXT NOT NULL)")
         db.commit()
         return db
     except Exception:
@@ -180,6 +181,9 @@ def paid_analysis(snapshot, budget_path, *, enabled=False, transport=None):
         db.execute("INSERT INTO api_attempts VALUES (?,?,?,NULL)", (ident, reserve, time.time()))
         db.commit()
         response = (transport or _send)(request)
+        if isinstance(response,dict) and isinstance(response.get('usage'),dict):
+            usage={k:v for k,v in response['usage'].items() if k in ('input_tokens','output_tokens','total_tokens') and type(v) is int and v>=0}
+            db.execute('INSERT OR REPLACE INTO api_usage VALUES (?,?)',(ident,canonical(usage)))
         result = analyze_with_transport(snapshot, model=MODEL, transport=lambda _: response)
         result["budget"] = {"request_id": ident, "reserved_micro_usd": reserve,
                             "experiment_cap_micro_usd": TOTAL_EXPERIMENT_MICRO_USD,
