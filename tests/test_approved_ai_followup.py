@@ -6,6 +6,7 @@ from trading_bot.research_api_budget import APP_ID
 from trading_bot.research_api_budget import paid_analysis
 from trading_bot.market_research import build_snapshot
 from tools.export_ai_telegram import export
+from tests.test_market_research_observer import fixture,analysis
 
 class FollowupTest(unittest.TestCase):
  def setUp(self):
@@ -26,3 +27,6 @@ class FollowupTest(unittest.TestCase):
  def test_export_rejects_unconfirmed_result(self):
   with self.assertRaises(Exception):export({'snapshot_id':'one'},{'mode':'model_observation','snapshot_id':'different'},self.root/'view.json')
   self.assertFalse((self.root/'view.json').exists())
+ def test_export_separates_model_from_computed_metrics(self):
+  snapshot=build_snapshot(fixture());result={'mode':'model_observation','snapshot_id':snapshot['snapshot_id'],'response_received_ms':snapshot['as_of_ms']+1000,'analysis':analysis()};p=self.root/'view.json'
+  export(snapshot,result,p);view=json.loads(p.read_text());self.assertTrue(view['complete']);self.assertIn('close',view['metrics']);self.assertIn('Режим',view['summary']);self.assertIn('полнота не подтверждена',view['coverage'])
