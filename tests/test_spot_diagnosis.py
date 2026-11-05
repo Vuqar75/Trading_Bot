@@ -38,4 +38,12 @@ class SpotDiagnosticTests(unittest.TestCase):
         self.assertEqual(got['trade_count'],0)
         self.assertEqual(got['net'],0)
 
+    def test_rejected_minimum_does_not_create_trade_or_cost(self):
+        start=int(dt.datetime(2025,1,1,tzinfo=dt.timezone.utc).timestamp()*1000)
+        rows=[(start,2000000,2000000,2000000,2000000),(start+PERIOD,2000000,2000000,2000000,2000000)]
+        got=diagnostic(rows,[1,0],'BTCUSDT',start,start+2*PERIOD)
+        self.assertEqual(got['entries_attempted'],1)
+        self.assertEqual(got['rejected'],{'min_notional':1})
+        self.assertEqual((got['trade_count'],got['costs'],got['net']),(0,0,0))
+
 if __name__=='__main__':unittest.main()

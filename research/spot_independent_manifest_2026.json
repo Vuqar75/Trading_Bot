@@ -1,0 +1,189 @@
+{
+  "manifest_created_utc": "2026-11-05T06:53:37.654319+00:00",
+  "archive_mtime_min_utc": "2026-11-05T06:47:36.945683+00:00",
+  "archive_mtime_max_utc": "2026-11-05T06:47:50.737279+00:00",
+  "interval": "2026-01-01T00:00:00Z <= open < 2026-11-01T00:00:00Z",
+  "quality": "all intervals continuous; OHLC and close time checked; no missing or duplicate bars",
+  "files": [
+    {
+      "file": "BTCUSDT-15m-2026-01.zip",
+      "sha256": "545a4a8f7ed9aefb9f4d785778f76ae4ce2679c2929a62c10899fee96dec82fc",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-01.zip",
+      "bytes": 164099
+    },
+    {
+      "file": "BTCUSDT-15m-2026-02.zip",
+      "sha256": "d09bac6fc336d31e943427071bcbf448f024d3116255edbbe5c9646993f700fe",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-02.zip",
+      "bytes": 151741
+    },
+    {
+      "file": "BTCUSDT-15m-2026-03.zip",
+      "sha256": "1ecf7fcaffea810ee26e66eac1e3aa2f1fdf4d71330ea2cb2c5e6c0195c964a5",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-03.zip",
+      "bytes": 167457
+    },
+    {
+      "file": "BTCUSDT-15m-2026-04.zip",
+      "sha256": "ba9adf37ba8dc020618db953888cb9a6e1ccc4f1ae62c026b2d99ed66e92b853",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-04.zip",
+      "bytes": 159408
+    },
+    {
+      "file": "BTCUSDT-15m-2026-05.zip",
+      "sha256": "1df53032797db1ca7ab680d9aa726b6cd591e0b7ae0e13d6b5e1bbfd1bd04b8c",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-05.zip",
+      "bytes": 163343
+    },
+    {
+      "file": "BTCUSDT-15m-2026-06.zip",
+      "sha256": "1380a9c33e1025bdd4bbe690fd1bb67e37ca8b57d50dfc2993ba36d9dc4a1c7d",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-06.zip",
+      "bytes": 158549
+    },
+    {
+      "file": "BTCUSDT-15m-2026-07.zip",
+      "sha256": "b043676622c6abcf82eaa07d9c149028aead438636fba1ef97cd88bb6ce1bab4",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-07.zip",
+      "bytes": 162249
+    },
+    {
+      "file": "BTCUSDT-15m-2026-08.zip",
+      "sha256": "c46dee1dac1460f9b0067175e282c98fd2b2e7506ae4d35f0a644d3c07b174fb",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-08.zip",
+      "bytes": 161382
+    },
+    {
+      "file": "BTCUSDT-15m-2026-09.zip",
+      "sha256": "0d452e884c1bdd20bbb414b8feab30753e8e9ebef3e8c821d8a54eef48859cd0",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-09.zip",
+      "bytes": 157264
+    },
+    {
+      "file": "BTCUSDT-15m-2026-10.zip",
+      "sha256": "c361adf2edd04bd8231226c4bbc0db2b4eed7bd9de7ff17db07f275bc8c49846",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-10.zip",
+      "bytes": 162500
+    },
+    {
+      "file": "ETHUSDT-15m-2026-01.zip",
+      "sha256": "f9b69306bb83aabdba848b7b0e39eae08ef06bce33a8e2df43e4e4d9319c28de",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-01.zip",
+      "bytes": 157206
+    },
+    {
+      "file": "ETHUSDT-15m-2026-02.zip",
+      "sha256": "88c42f0ae1ce10df10784d00b692d59114ea3739464d2d0f1ce5a3a6726d5bf4",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-02.zip",
+      "bytes": 144050
+    },
+    {
+      "file": "ETHUSDT-15m-2026-03.zip",
+      "sha256": "4db1d336066d4e3a89d53f4e2c8de009ee91944de20b4096d01cee73e04f5cf2",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-03.zip",
+      "bytes": 157513
+    },
+    {
+      "file": "ETHUSDT-15m-2026-04.zip",
+      "sha256": "c86b7752f8eb21a15a20b7197d0951a5ddb523628a6756daeece3dcb96ca2f7c",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-04.zip",
+      "bytes": 150488
+    },
+    {
+      "file": "ETHUSDT-15m-2026-05.zip",
+      "sha256": "487c08d03a03d1ff7adac5d2d61b009165bd364e4ec44a0c5ca0dda44ef780b5",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-05.zip",
+      "bytes": 154191
+    },
+    {
+      "file": "ETHUSDT-15m-2026-06.zip",
+      "sha256": "be1199a81d8064fe6193f2993de58f75f4a57fd9ca11a5e8c7c7ba2ca50fa9ce",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-06.zip",
+      "bytes": 150677
+    },
+    {
+      "file": "ETHUSDT-15m-2026-07.zip",
+      "sha256": "d4742ef1a072a4662f371ddd56b4388fb2af68310c70831ccfadda89bd29b8c8",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-07.zip",
+      "bytes": 153944
+    },
+    {
+      "file": "ETHUSDT-15m-2026-08.zip",
+      "sha256": "9fee5627c59a8eba386ea8574db136dced264ffb0c41e69975008a25d6e18ebb",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-08.zip",
+      "bytes": 153390
+    },
+    {
+      "file": "ETHUSDT-15m-2026-09.zip",
+      "sha256": "88bb25ae0989bc335a1a1eb0e661a32b3984369ff94b6e8db888a82e916b4b1f",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-09.zip",
+      "bytes": 150670
+    },
+    {
+      "file": "ETHUSDT-15m-2026-10.zip",
+      "sha256": "d7998e6cb9c3992b8862e66b5d665231aa4b63482cca9ee070a624e7e3e6f693",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/ETHUSDT/15m/ETHUSDT-15m-2026-10.zip",
+      "bytes": 154837
+    },
+    {
+      "file": "SOLUSDT-15m-2026-01.zip",
+      "sha256": "5709dc75fb58b1e8980b4a4204a76221146447eefabb7a3f784e67ebd6823bf3",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-01.zip",
+      "bytes": 143467
+    },
+    {
+      "file": "SOLUSDT-15m-2026-02.zip",
+      "sha256": "a6ce8287142b4a66acf0535d80a7ce4d09c90908eb6e1cfab6cbef3d6107b61d",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-02.zip",
+      "bytes": 130372
+    },
+    {
+      "file": "SOLUSDT-15m-2026-03.zip",
+      "sha256": "96fd9e1cc295a2115e7231ee152a18401907e231dca6fc57ed28d1b37212eb2b",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-03.zip",
+      "bytes": 142455
+    },
+    {
+      "file": "SOLUSDT-15m-2026-04.zip",
+      "sha256": "e0fe3ab8e8dcf896f0c08368bae0d0c4a0ec4ad43d8ac47b02524adc5b1f3c8a",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-04.zip",
+      "bytes": 135840
+    },
+    {
+      "file": "SOLUSDT-15m-2026-05.zip",
+      "sha256": "79da15d4858b571f58fcc531bde67a9d31436f70caf98671e24a4e71f2210cd4",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-05.zip",
+      "bytes": 139820
+    },
+    {
+      "file": "SOLUSDT-15m-2026-06.zip",
+      "sha256": "81e7d6cb78e8a263ffc62e1ec0cd53bdc22cf46b64111536b093663674a2537b",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-06.zip",
+      "bytes": 137137
+    },
+    {
+      "file": "SOLUSDT-15m-2026-07.zip",
+      "sha256": "180483fe021ea7ff7997545d135dc1b382c00481205ea6338cfa5b1ab9e5dc64",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-07.zip",
+      "bytes": 138113
+    },
+    {
+      "file": "SOLUSDT-15m-2026-08.zip",
+      "sha256": "2afcd57a077f5694d6da7f94518499561a41e67cd99d847bb4968acd9db98450",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-08.zip",
+      "bytes": 138983
+    },
+    {
+      "file": "SOLUSDT-15m-2026-09.zip",
+      "sha256": "6cab6dc48b598e7d1b503e5a38356c6dce3f04f95cb006c98ebc324001af7b54",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-09.zip",
+      "bytes": 138208
+    },
+    {
+      "file": "SOLUSDT-15m-2026-10.zip",
+      "sha256": "0545f51a11186edd831a60a3abfa75a8092d0e1f171da736aa6a80334a83a6b8",
+      "url": "https://data.binance.vision/data/spot/monthly/klines/SOLUSDT/15m/SOLUSDT-15m-2026-10.zip",
+      "bytes": 140894
+    }
+  ]
+}
