@@ -327,8 +327,10 @@ class RuntimeStore:
                     client=client, entry=entry.get('price'), entry_is_cost=entry.get('is_cost', False), entry_fees=entry.get('fees'),
                     net=self.get('order_net:' + client, '0'), known=known, symbol=symbol))
 
-    def command(self, update_id, authorized, command, target=None, *, routed=False):
-        fingerprint = hashlib.sha256(json.dumps([authorized, command, target]).encode()).hexdigest()
+    def command(self, update_id, authorized, command, target=None, *, routed=False,expected_setting=None,expires=None):
+        identity=[authorized,command,target]
+        if expected_setting is not None:identity.extend([expected_setting,expires])
+        fingerprint = hashlib.sha256(json.dumps(identity).encode()).hexdigest()
         with self.transaction():
             prior = self.db.execute('SELECT fingerprint FROM runtime_commands WHERE update_id=?', (update_id,)).fetchone()
             if prior:
@@ -338,6 +340,11 @@ class RuntimeStore:
             if not routed and update_id < self.get('offset'):
                 raise ObservationError('Unexpected older update')
             self.db.execute('INSERT INTO runtime_commands VALUES(?,?)', (update_id, fingerprint))
+            if expected_setting is not None:
+                actual=self.get('selected_interval',self.get('identity').get('interval','15m'))
+                if (not routed or not command.startswith('/timeframe ') or type(expires) not in (int,float) or time.time()>=expires or actual!=expected_setting):
+                    self.notify('Настройка изменилась или кнопка устарела; запросите новое меню.')
+                    return
             if authorized:
                 if command in {'/pause', '/stop', '/resume'}:
                     allowed = command == '/resume'

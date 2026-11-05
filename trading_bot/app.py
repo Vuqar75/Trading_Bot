@@ -51,13 +51,34 @@ class TelegramTransport:
 
     def poll(self, store, unified=None):
         offset = int(unified.state('offset')) if unified is not None else store.get('offset')
-        updates = self.call('getUpdates', {'offset': offset, 'timeout': 0, 'limit': 20, 'allowed_updates': ['message']})
+        updates = self.call('getUpdates', {'offset': offset, 'timeout': 0, 'limit': 20, 'allowed_updates': ['message','callback_query'] if unified is not None else ['message']})
         previous = -1
         for update in updates:
             ident = update.get('update_id')
             if type(ident) is not int or ident <= previous:
                 raise ObservationError('Invalid Telegram update ordering')
             previous = ident
+            if unified is not None and 'callback_query' in update:
+                callback=update.get('callback_query')
+                if not isinstance(callback,dict):callback={}
+                message=callback.get('message') if isinstance(callback.get('message'),dict) else {}
+                sender=callback.get('from') if isinstance(callback.get('from'),dict) else {}
+                chat=message.get('chat') if isinstance(message.get('chat'),dict) else {}
+                authorized=(hmac.compare_digest(str(sender.get('id','')),self.owner) and
+                    hmac.compare_digest(str(chat.get('id','')),self.owner) and chat.get('type')=='private')
+                data=callback.get('data');data=data if isinstance(data,str) and len(data.encode('utf-8'))<=64 else ''
+                unified.receive(ident,authorized,'',callback_data=data)
+                callback_id=callback.get('id')
+                if isinstance(callback_id,str) and 0<len(callback_id)<=256:
+                    try:self.call('answerCallbackQuery',{'callback_query_id':callback_id})
+                    except (ObservationError,OSError,TimeoutError):pass
+                message_id=message.get('message_id')
+                if authorized and type(message_id) is int and message_id>0:
+                    try:
+                        self.call('editMessageReplyMarkup',{'chat_id':self.owner,'message_id':message_id,'reply_markup':{'inline_keyboard':[]}})
+                        with unified.transaction():unified.db.execute('DELETE FROM unified_state WHERE key=?',('inline-sent:'+str(message_id),))
+                    except (ObservationError,OSError,TimeoutError):pass
+                continue
             msg = update.get('message', {})
             authorized = (hmac.compare_digest(str(msg.get('from', {}).get('id', '')), self.owner)
                 and hmac.compare_digest(str(msg.get('chat', {}).get('id', '')), self.owner)
@@ -116,6 +137,20 @@ class TelegramTransport:
         table = getattr(store, 'outbox_table', 'runtime_outbox')
         if table not in ('runtime_outbox', 'unified_outbox', 'futures_outbox'):
             raise ValueError('Unknown outbox')
+        if table=='unified_outbox':
+            cleaned=0
+            for sent in store.db.execute("SELECT key,value FROM unified_state WHERE key LIKE 'inline-sent:%' ORDER BY key").fetchall():
+                if cleaned>=20:break
+                record=json.loads(sent['value']);tokens=record['tokens'];now=time.time();terminal=True
+                for token in tokens:
+                    row=store.db.execute('SELECT value FROM unified_state WHERE key=?',('inline-action:'+token,)).fetchone()
+                    action=json.loads(row[0]) if row else None
+                    if action and not action.get('closed',False) and action.get('expires',0)>now:terminal=False;break
+                if not terminal:continue
+                try:self.call('editMessageReplyMarkup',{'chat_id':self.owner,'message_id':record['message_id'],'reply_markup':{'inline_keyboard':[]}})
+                except (ObservationError,OSError,TimeoutError):continue
+                with store.transaction():store.db.execute('DELETE FROM unified_state WHERE key=?',(sent['key'],))
+                cleaned+=1
         for row in store.db.execute('SELECT id,message FROM '+table+' ORDER BY id LIMIT 5').fetchall():
             label = getattr(store, 'delivery_label', '')
             body = row['message']
@@ -133,12 +168,22 @@ class TelegramTransport:
             text = (label + '\n' if label else '') + body[:cut]
             if remaining:
                 text += '\n(Продолжение в следующем сообщении.)'
-            self.call('sendMessage', {'chat_id': self.owner, 'text': text})
+            request={'chat_id': self.owner, 'text': text}
+            if table=='unified_outbox' and not remaining:
+                entry=store.db.execute('SELECT value FROM unified_state WHERE key=?',('inline-outbox:'+str(row['id']),)).fetchone()
+                if entry:request['reply_markup']=json.loads(entry[0])
+            delivered=self.call('sendMessage', request)
             with store.transaction():
                 if remaining:
                     store.db.execute('UPDATE '+table+' SET message=? WHERE id=?', (remaining, row['id']))
                 else:
                     store.db.execute('DELETE FROM '+table+' WHERE id=?', (row['id'],))
+                    if table=='unified_outbox':
+                        if 'reply_markup' in request and isinstance(delivered,dict) and type(delivered.get('message_id')) is int and delivered['message_id']>0:
+                            tokens=[button['callback_data'] for line in request['reply_markup']['inline_keyboard'] for button in line]
+                            record={'message_id':delivered['message_id'],'tokens':tokens}
+                            store.db.execute('INSERT OR REPLACE INTO unified_state VALUES(?,?)',('inline-sent:'+str(delivered['message_id']),json.dumps(record,sort_keys=True)))
+                        store.db.execute('DELETE FROM unified_state WHERE key=?',('inline-outbox:'+str(row['id']),))
 
 
 

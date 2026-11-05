@@ -20,7 +20,7 @@ MODULES={'tradingbot-spot.service':'deploy/cloud_paper_launch.py',
 TRADING={'tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service','tradingbot-margin.service'}
 
 
-def stage_units(source,destination,*,installed_root,candidate_root,installed_roots=None):
+def stage_units(source,destination,*,installed_root,candidate_root,installed_roots=None,pair_already_enabled=False):
     source=Path(source);destination=Path(destination)
     old=Path(installed_root);new=Path(candidate_root)
     if (not source.is_absolute() or source.is_symlink() or not source.is_dir() or
@@ -29,6 +29,7 @@ def stage_units(source,destination,*,installed_root,candidate_root,installed_roo
         not old.is_absolute() or not new.is_absolute() or old==new or
         source.resolve() in destination.parent.resolve().parents or source.resolve()==destination.parent.resolve()):
         raise ValueError('Distinct absolute unit paths and a new staging directory required')
+    if type(pair_already_enabled) is not bool:raise ValueError('Invalid pair flag mode')
     if installed_roots is None: installed_roots={}
     if (not isinstance(installed_roots,dict) or any(
         name not in MODULES or not isinstance(root,str) or not Path(root).is_absolute() or Path(root)==new
@@ -49,7 +50,9 @@ def stage_units(source,destination,*,installed_root,candidate_root,installed_roo
             text.count(str(unit_old))!=1 or str(new) in text):
             raise ValueError('Unexpected unit structure')
         start=lines[starts[0]]
-        if module not in start or '--experimental-pair' in start or '\\' in start:
+        count=start.split().count('--experimental-pair')
+        expected_count=1 if pair_already_enabled and name in TRADING else 0
+        if module not in start or count!=expected_count or start.count('--experimental-pair')!=count or '\\' in start:
             raise ValueError('Unexpected unit command')
         if name!='tradingbot-spot.service' and '--telegram' in start:
             raise ValueError('Additional Telegram polling is forbidden')
@@ -60,7 +63,7 @@ def stage_units(source,destination,*,installed_root,candidate_root,installed_roo
         if name in ('tradingbot-cross.service','tradingbot-margin.service') and ('--db ' not in start or '--queue ' not in start):
             raise ValueError('Shared financial and queue paths required')
         ending='\r\n' if start.endswith('\r\n') else '\n' if start.endswith('\n') else ''
-        if name in TRADING:lines[starts[0]]=start.rstrip('\r\n')+' --experimental-pair'+ending
+        if name in TRADING and not pair_already_enabled:lines[starts[0]]=start.rstrip('\r\n')+' --experimental-pair'+ending
         lines[work[0]]='WorkingDirectory='+str(new)+('\r\n' if lines[work[0]].endswith('\r\n') else '\n' if lines[work[0]].endswith('\n') else '')
         staged=''.join(lines).encode('utf-8')
         entries[name]={'old':data,'new':staged}
@@ -83,13 +86,14 @@ def main():
     parser.add_argument('--source',required=True);parser.add_argument('--destination',required=True)
     parser.add_argument('--installed-root',required=True);parser.add_argument('--candidate-root',required=True)
     parser.add_argument('--installed-roots-json',help='JSON object mapping unit names to their verified current working directories')
+    parser.add_argument('--pair-already-enabled',action='store_true',help='Require and preserve the installed paper pair flags')
     args=parser.parse_args()
     roots=None
     if args.installed_roots_json:
         path=Path(args.installed_roots_json)
         if path.is_symlink() or not path.is_file(): raise ValueError('Expected a regular roots file')
         roots=json.loads(path.read_text(encoding='utf-8'))
-    print(json.dumps(stage_units(args.source,args.destination,installed_root=args.installed_root,candidate_root=args.candidate_root,installed_roots=roots),sort_keys=True))
+    print(json.dumps(stage_units(args.source,args.destination,installed_root=args.installed_root,candidate_root=args.candidate_root,installed_roots=roots,pair_already_enabled=args.pair_already_enabled),sort_keys=True))
 
 
 if __name__=='__main__':main()

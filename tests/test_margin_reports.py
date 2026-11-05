@@ -55,6 +55,22 @@ class MarginReportsTests(unittest.TestCase):
         out=[r[0] for r in self.q.db.execute('SELECT message FROM unified_outbox')]
         self.assertTrue(all(m.count('[Spot margin cross • PAPER]')<=1 for m in out))
 
+    def test_inline_setting_rechecks_cross_and_margin_actual_state(self):
+        for offset,(market,receiver,book,worker,table) in enumerate((('futures_cross',self.cross_receiver,self.cross,process_cross,'cross_settings'),('margin_cross',self.receiver,self.book,process_margin,'margin_settings'))):
+            uid=100+offset*10;self.q.receive(uid,True,'/mode '+market,now=self.now)
+            self.q.receive(uid+1,True,'/timeframe',now=self.now)
+            if market=='futures_cross':worker(self.q,receiver,book,now=self.now)
+            else:worker(self.q,receiver,book,self.shared,clock=lambda:self.now)
+            row=self.q.db.execute("SELECT value FROM unified_state WHERE key LIKE 'inline-outbox:%' ORDER BY rowid DESC LIMIT 1").fetchone()
+            button=next(x['callback_data'] for x in json.loads(row[0])['inline_keyboard'][0] if x['text']=='1m')
+            self.q.receive(uid+2,True,'',now=self.now+1,callback_data=button)
+            with self.shared.transaction():self.shared.db.execute('UPDATE '+table+" SET interval='5m' WHERE id=1")
+            if market=='futures_cross':worker(self.q,receiver,book,now=self.now+2,clock=lambda:self.now+2)
+            else:worker(self.q,receiver,book,self.shared,clock=lambda:self.now+2)
+            self.assertEqual(self.shared.db.execute('SELECT interval FROM '+table+' WHERE id=1').fetchone()[0],'5m')
+            result=self.q.db.execute('SELECT result FROM unified_jobs WHERE update_id=?',(uid+2,)).fetchone()[0]
+            self.assertIn('изменилась',result)
+
     def test_open_loans_report_actual_asset_principal_interest_and_accrual(self):
         with self.shared.ledger.transaction():
             self.shared.ledger._post('fund','FIXTURE',{},[('margin_cross:free','USDT',Decimal(50)),('external:fixture','USDT',Decimal(-50))])

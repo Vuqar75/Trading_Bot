@@ -133,7 +133,9 @@ class WalletCommandTests(unittest.TestCase):
         self.q.receive(1,True,'/mode margin_cross',now=now);self.q.receive(2,True,'/repay position:loan 1',now=now)
         process_margin(self.q,receiver,book,self.shared,clock=clock)
         token=self.shared.db.execute('SELECT id FROM margin_repay_proposals').fetchone()[0]
-        self.q.receive(3,True,'/mode spot',now=now);self.q.receive(4,True,'/confirm '+token,now=now)
+        action=next((r['key'].removeprefix('inline-action:') for r in self.q.db.execute("SELECT key,value FROM unified_state WHERE key LIKE 'inline-action:%'") if json.loads(r['value']).get('command')=='/confirm '+token),None)
+        self.assertIsNotNone(action)
+        self.q.receive(3,True,'/mode spot',now=now);self.q.receive(4,True,'',now=now,callback_data=action)
         def crash(where):
             if where=='after_destination_commit':raise RuntimeError('simulated crash')
         with self.assertRaises(RuntimeError):process_margin(self.q,receiver,book,self.shared,clock=clock,fault=crash)
@@ -286,6 +288,20 @@ with patch.object(socket,'socket',deny),patch.object(app,'MarginSpotData',Reader
         self.assertEqual(self.shared.snapshot('futures')['position'],future_pos)
         self.assertEqual(self.shared.db.execute("select count(*) from ledger_events where kind='TRANSFER'").fetchone()[0],1)
         self.assertEqual(self.q.state('mode'),'futures')
+
+    def test_inline_transfer_commits_once_after_destination_crash(self):
+        self.q.receive(1,True,'/transfer spot reserve 10');self._process()
+        row=self.q.db.execute("SELECT value FROM unified_state WHERE key LIKE 'inline-outbox:%' ORDER BY rowid DESC LIMIT 1").fetchone()
+        buttons=json.loads(row[0])['inline_keyboard'][0];confirm=buttons[0]['callback_data'];cancel=buttons[1]['callback_data']
+        self.q.receive(2,True,'',callback_data=confirm)
+        self.q.receive(3,True,'',callback_data=cancel)
+        def crash(point):
+            if point=='after_destination_commit':raise RuntimeError('after financial commit')
+        with self.assertRaisesRegex(RuntimeError,'after financial commit'):self._process(fault=crash)
+        self._process()
+        self.assertEqual(self.shared.db.execute("select count(*) from ledger_events where kind='TRANSFER'").fetchone()[0],1)
+        self.assertEqual(self.shared.ledger.balance('reserve:free'),Decimal(10))
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
     def test_wallet_reports_and_other_modes_not_available(self):
         self.q.receive(1,True,'/wallet spot');self.q.receive(2,True,'/wallet futures_cross');self.q.receive(3,True,'/balance_report today')

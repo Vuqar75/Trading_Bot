@@ -13,7 +13,7 @@ class CrossCommandReceiver:
         with self.shared.transaction():
             self.db.execute('CREATE TABLE IF NOT EXISTS cross_commands(update_id INTEGER PRIMARY KEY,fingerprint TEXT NOT NULL,result TEXT NOT NULL)')
 
-    def apply(self, update_id, command, payload, *, now=None):
+    def apply(self, update_id, command, payload, *, now=None, clock=time.time):
         if type(update_id) is not int or update_id<0 or not isinstance(command,str) or not isinstance(payload,dict):
             raise ValueError('Invalid cross command')
         now=time.time() if now is None else now
@@ -25,7 +25,15 @@ class CrossCommandReceiver:
                 if old['fingerprint']!=fingerprint:raise ValueError('Cross command identity conflict')
                 return old['result']
             parts=command.split();name=parts[0] if parts else ''
-            if name=='/pause' and len(parts)==1:
+            expected=payload.get('expected_setting')
+            if expected is not None:
+                setting=self.db.execute('SELECT leverage,interval FROM cross_settings WHERE id=1').fetchone()
+                current=setting['leverage'] if name=='/leverage' else setting['interval'] if name=='/timeframe' else None
+                stale=(current!=expected or type(payload.get('expires')) not in (int,float) or clock()>=payload['expires'])
+            else:stale=False
+            if stale:
+                result='Настройка изменилась или кнопка устарела; запросите новое меню.'
+            elif name=='/pause' and len(parts)==1:
                 self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
                 result='Новые входы на паузе; контроль открытых позиций продолжается.'
             elif name=='/resume' and len(parts)==1:

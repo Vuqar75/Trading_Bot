@@ -26,7 +26,11 @@ def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=
             result=receiver.apply(uid,command,payload,clock_ms=lambda:int(clock()*1000))
             fault('after_destination_commit')
             applied=command!='/pause' or bool(book.db.execute("SELECT paused FROM wallet_state WHERE wallet='margin_cross'").fetchone()[0])
-            queue.acknowledge(job['id'],result,applied=applied);continue
+            setting=None
+            if command in ('/timeframe','/leverage'):
+                row=book.db.execute('SELECT leverage,interval FROM margin_settings WHERE id=1').fetchone()
+                setting=row['leverage'] if command=='/leverage' else row['interval']
+            queue.acknowledge(job['id'],result,applied=applied,menu_setting=setting);continue
         if command=='/close':
             p=book.db.execute('SELECT * FROM margin_positions WHERE symbol=?',(payload.get('symbol'),)).fetchone()
             valid=bool(p and p['id']==payload.get('position') and p['quantity']==payload.get('quantity') and now<payload.get('expires',0))
@@ -50,7 +54,7 @@ def process_margin(queue,receiver,book,shared,*,started=0,clock=time.time,fault=
             except (KeyError,ValueError):
                 queue.acknowledge(job['id'],'Погашение недоступно: проверьте долг, свободный актив и срок.',applied=False);continue
             fault('after_destination_commit')
-            queue.acknowledge(job['id'],'Погасить '+fmt(proposal['quantity'],proposal['asset'])+' '+proposal['asset']+' из свободного остатка? /confirm '+proposal['id']+' или /cancel '+proposal['id']+'.');continue
+            queue.acknowledge(job['id'],'Погасить '+fmt(proposal['quantity'],proposal['asset'])+' '+proposal['asset']+' из свободного остатка? /confirm '+proposal['id']+' или /cancel '+proposal['id']+'.',buttons=queue.confirmation_buttons(proposal['id'],'margin_cross',proposal['expires_ms']/1000));continue
         if command in ('/confirm_repay','/cancel_repay'):
             try:
                 if command=='/confirm_repay':proposals.confirm(payload['token'],clock_ms=lambda:int(clock()*1000))

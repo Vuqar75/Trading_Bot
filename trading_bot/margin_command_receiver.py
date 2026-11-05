@@ -30,6 +30,9 @@ class MarginCommandReceiver:
                 self.book._check()
                 if payload.get('expires') is not None and now_ms>=payload['expires']*1000:
                     result='Команда устарела; отправьте заново.'
+                elif payload.get('expected_setting') is not None and (name not in ('/timeframe','/leverage') or
+                    self.db.execute('SELECT '+('leverage' if name=='/leverage' else 'interval')+' FROM margin_settings WHERE id=1').fetchone()[0]!=payload['expected_setting']):
+                    result='Настройка изменилась; запросите новое меню.'
                 elif name=='/resume' and len(parts)==1:
                     try:
                         hold=self.db.execute("SELECT value FROM ledger_meta WHERE key='deployment_hold'").fetchone()

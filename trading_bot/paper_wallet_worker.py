@@ -10,6 +10,7 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
     for job in queue.pending('wallet')[:20]:
         parts=job['command'].split();cmd=parts[0];payload=json.loads(job['payload'])
         try:
+            buttons=None
             if cmd=='/transfer':
                 if payload.get('received_at',0)<started or time.time()>=payload.get('expires',0):
                     raise ValueError('Запрос устарел после перезапуска или ожидания')
@@ -19,6 +20,7 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                 result=(f"Перевод {_fmt(p['quantity'])} USDT: {p['source']} → {p['destination']}. "
                         f"После перевода: {_fmt(p['source_after'])} и {_fmt(p['destination_after'])} USDT. "
                         f"Подтвердите /confirm {p['id']} или отмените /cancel {p['id']} до {deadline}.")
+                buttons=queue.confirmation_buttons(p['id'],'wallet',p['expires'])
             elif cmd=='/confirm_transfer':
                 token=payload['token']
                 prior=shared.db.execute('SELECT status FROM transfer_proposals WHERE id=?',(token,)).fetchone()
@@ -61,7 +63,7 @@ def process_wallet(queue,shared,*,started=0,fault=lambda p:None):
                 result='\n'.join(datetime.fromtimestamp(ts,ZoneInfo('Asia/Baku')).strftime('%Y-%m-%d %H:%M:%S Баку')+' | '+p['source']+' → '+p['destination']+' | '+_fmt(p['quantity'])+' USDT' for ts,p in items) or 'Переводов пока нет.'
             else:raise ValueError('Неизвестная команда кошельков')
             fault('after_destination_commit')
-            queue.acknowledge(job['id'],result)
+            queue.acknowledge(job['id'],result,buttons=buttons)
         except ValueError as exc:
             # Validation/reconciliation rejects the operation permanently; storage
             # and unexpected internal errors propagate and retain the queue item.

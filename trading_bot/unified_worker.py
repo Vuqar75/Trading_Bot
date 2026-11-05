@@ -45,9 +45,14 @@ def process_market(queue, receiver, store, market, *, started=0, fault=lambda po
         if payload.get('expires') is not None and time.time() >= payload['expires']:
             queue.acknowledge(job['id'], 'Команда устарела до обработки.', applied=False)
             continue
-        store.command(job['update_id'], True, action, routed=True)
+        if 'expected_setting' in payload:
+            store.command(job['update_id'], True, action, routed=True,expected_setting=payload['expected_setting'],expires=payload['expires'])
+        else:store.command(job['update_id'], True, action, routed=True)
         fault('after_destination_commit')
         # These commands write their answer durably to the market outbox in
         # store.command; acknowledging the queue must not send a second reply.
         informational=action in ('/status','/signal','/history','/report','/timeframe','/leverage')
-        queue.acknowledge(job['id'], 'Ответ сохранён в журнале рынка.', notify=not informational)
+        if action in ('/timeframe','/leverage'):
+            setting=(store.get('selected_interval',store.get('identity').get('interval','15m')) if market=='spot' else store.get('leverage' if action=='/leverage' else 'interval'))
+            queue.acknowledge(job['id'],'Выберите значение или используйте текстовую команду.',menu_setting=setting)
+        else:queue.acknowledge(job['id'], 'Ответ сохранён в журнале рынка.', notify=not informational)

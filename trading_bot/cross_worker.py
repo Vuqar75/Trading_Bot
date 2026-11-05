@@ -43,12 +43,16 @@ def process_cross(queue, receiver, book, *, started=0, now=None, clock=time.time
         if command in ('/pause','/resume','/timeframe','/leverage') or command.startswith(('/timeframe ','/leverage ')):
             if command!='/pause' and payload.get('expires') is not None and now>=payload['expires']:
                 queue.acknowledge(job['id'],'Команда устарела.',applied=False);continue
-            try:result=receiver.apply(uid,command,payload,now=now)
+            try:result=receiver.apply(uid,command,payload,now=now,clock=clock)
             except ValueError:
                 book.fail_closed();queue.acknowledge(job['id'],'Ошибка учёта; входы на паузе.',applied=False);continue
             fault('after_destination_commit')
             applied=command!='/pause' or bool(book.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0])
-            queue.acknowledge(job['id'],result,applied=applied);continue
+            setting=None
+            if command in ('/timeframe','/leverage'):
+                row=book.db.execute('SELECT leverage,interval FROM cross_settings WHERE id=1').fetchone()
+                setting=row['leverage'] if command=='/leverage' else row['interval']
+            queue.acknowledge(job['id'],result,applied=applied,menu_setting=setting);continue
         if command=='/close':
             p=book.db.execute('SELECT * FROM cross_positions WHERE symbol=?',(payload.get('symbol'),)).fetchone()
             valid=bool(p and p['id']==payload.get('position') and p['quantity']==payload.get('quantity') and now<payload.get('expires',0))

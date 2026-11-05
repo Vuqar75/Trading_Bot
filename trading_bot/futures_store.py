@@ -293,8 +293,10 @@ class FuturesStore:
                   'Ошибка: '+error_text(self.get('error')), 'Сделки моделируются, на биржу не отправляются.']
         return '\n'.join(lines)
 
-    def command(self, update_id, authorized, command, target=None, *, routed=False):
-        fingerprint = hashlib.sha256(json.dumps([authorized, command, target]).encode()).hexdigest()
+    def command(self, update_id, authorized, command, target=None, *, routed=False,expected_setting=None,expires=None):
+        identity=[authorized,command,target]
+        if expected_setting is not None:identity.extend([expected_setting,expires])
+        fingerprint = hashlib.sha256(json.dumps(identity).encode()).hexdigest()
         with self.transaction():
             saved = self.db.execute('SELECT fingerprint FROM futures_commands WHERE update_id=?', (update_id,)).fetchone()
             if saved:
@@ -304,6 +306,11 @@ class FuturesStore:
             if not routed and update_id < self.get('offset'):
                 raise ObservationError('Unexpected old command')
             self.db.execute('INSERT INTO futures_commands VALUES(?,?)', (update_id, fingerprint))
+            if expected_setting is not None:
+                key='leverage' if command.startswith('/leverage ') else 'interval' if command.startswith('/timeframe ') else None
+                if (not routed or key is None or type(expires) not in (int,float) or time.time()>=expires or self.get(key)!=expected_setting):
+                    self.notify('Настройка изменилась или кнопка устарела; запросите новое меню.')
+                    return
             if authorized:
                 parts = command.split()
                 cmd = parts[0] if parts else ''

@@ -57,6 +57,15 @@ class PairRolloutPlanTests(unittest.TestCase):
         self.assertIn('WorkingDirectory='+str(self.new),(self.stage/name).read_text())
         self.assertIn('WorkingDirectory=/opt/fixture-backup',path.read_text())
 
+    def test_next_rollout_preserves_existing_pair_flags_exactly_once(self):
+        stage_units(self.units,self.stage,installed_root=self.old,candidate_root=self.new)
+        next_stage=self.root/'next';next_root=Path('/opt/fixture-next')
+        with self.assertRaises(ValueError):stage_units(self.stage,next_stage,installed_root=self.new,candidate_root=next_root)
+        stage_units(self.stage,next_stage,installed_root=self.new,candidate_root=next_root,pair_already_enabled=True)
+        for name in MODULES:
+            data=(next_stage/name).read_text()
+            self.assertEqual(data.count('--experimental-pair'),int(name in TRADING))
+
     def test_staging_accepts_repository_service_templates(self):
         deploy=Path(__file__).resolve().parents[1]/'deploy'
         names={'tradingbot-spot.service':'vm-cross-spot-paper.service',
