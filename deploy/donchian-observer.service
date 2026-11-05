@@ -1,0 +1,43 @@
+[Unit]
+Description=Isolated prospective Donchian60 public-data observer
+Wants=network-online.target time-sync.target
+After=network-online.target time-sync.target
+StartLimitIntervalSec=1800
+StartLimitBurst=4
+
+[Service]
+Type=simple
+User=donchian
+Group=donchian
+WorkingDirectory=/opt/donchian-observer
+Environment=PYTHONPATH=/opt/donchian-observer
+Environment=HOME=/nonexistent
+Environment=TZ=UTC
+UMask=0027
+ExecStart=/usr/bin/python3 -u -B -m research.donchian_service --state /var/lib/donchian-observer/observer.sqlite
+Restart=on-failure
+RestartSec=180
+TimeoutStopSec=120
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=169.254.169.254/32
+IPAddressDeny=fd20:ce::254/128
+InaccessiblePaths=-/var/lib/tradingbot
+ReadWritePaths=/var/lib/donchian-observer
+MemoryHigh=64M
+MemoryMax=96M
+CPUQuota=15%
+TasksMax=16
+Nice=10
+LogRateLimitIntervalSec=1min
+LogRateLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target
