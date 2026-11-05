@@ -9,6 +9,18 @@ FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_s
 
 def call(*args,timeout=90):return subprocess.check_output(args,text=True,timeout=timeout).strip()
 
+def ensure_service_git_access(target, candidate, *, run=subprocess.run):
+    target=str(target)
+    probe=run(['git','-c','safe.directory='+target,'-C',target,'rev-parse','HEAD'],capture_output=True,text=True,timeout=20)
+    if probe.returncode or probe.stdout.strip()!=candidate:raise ValueError('Candidate trust precheck failed')
+    entries=run(['git','config','--system','--get-all','safe.directory'],capture_output=True,text=True,timeout=20)
+    if entries.returncode not in (0,1):raise ValueError('Git trust configuration unavailable')
+    if target not in entries.stdout.splitlines():
+        result=run(['git','config','--system','--add','safe.directory',target],capture_output=True,text=True,timeout=20)
+        if result.returncode:raise ValueError('Scoped git trust failed')
+    check=run(['runuser','-u','tradingbot','--','git','-C',target,'rev-parse','HEAD'],capture_output=True,text=True,timeout=20)
+    if check.returncode or check.stdout.strip()!=candidate:raise ValueError('Service git access unavailable')
+
 def main():
     if os.geteuid()!=0 or call('hostname')!='tradingbot-paper-test' or len(sys.argv)!=2 or len(sys.argv[1])!=40 or any(c not in '0123456789abcdef' for c in sys.argv[1]):raise ValueError('Unexpected host or candidate')
     candidate=sys.argv[1];target=Path('/opt/trading-bot-pair-'+candidate[:7])
@@ -33,6 +45,7 @@ def main():
         call('git','-C',str(repo),'checkout','--quiet','--detach',candidate)
         if call('git','-C',str(repo),'rev-parse','HEAD')!=candidate or call('git','-C',str(repo),'status','--porcelain','--untracked-files=all'):raise ValueError('Candidate mismatch')
         os.chmod(repo,0o755);os.rename(repo,target)
+    ensure_service_git_access(target,candidate)
     # Import the staging planner from the verified candidate, not the installed checkout.
     planner_path=target/'trading_bot/pair_rollout_plan.py'
     spec=importlib.util.spec_from_file_location('pair_staging_planner',planner_path);planner=importlib.util.module_from_spec(spec);spec.loader.exec_module(planner)
