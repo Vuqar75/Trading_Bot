@@ -11,6 +11,7 @@ WorkingDirectory=/opt/donchian-observer
 Environment=PYTHONPATH=/opt/donchian-observer
 Environment=HOME=/nonexistent
 Environment=TZ=UTC
+Environment=TMPDIR=/var/lib/donchian-backup
 UMask=0027
 ExecStart=/usr/bin/python3 -B -m research.donchian_external_backup
 TimeoutStartSec=180
