@@ -1,0 +1,2810 @@
+{
+  "BTCUSDT|2024|current|base": {
+    "net": -17.52499863782782,
+    "max_dd_pct": 1.7951960354130954,
+    "max_recovery_hours": 8728.5,
+    "open_drawdown_at_end": true,
+    "trades": 730,
+    "turnover": 14131.78359693692,
+    "exposure_pct": 48.16142987249545,
+    "avg_trade": -0.024006847449079508,
+    "without_best_trade": -17.898410489995705,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 447,
+        "net": -11.812669659746412
+      },
+      "down": {
+        "trades": 283,
+        "net": -5.712328978081629
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|current|expensive": {
+    "net": -24.340343566256024,
+    "max_dd_pct": 2.4742139687326055,
+    "max_recovery_hours": 8734.75,
+    "open_drawdown_at_end": true,
+    "trades": 730,
+    "turnover": 14124.366952853597,
+    "exposure_pct": 48.306580145719494,
+    "avg_trade": -0.03334293639213256,
+    "without_best_trade": -24.708758424339813,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 447,
+        "net": -15.896436519623796
+      },
+      "down": {
+        "trades": 283,
+        "net": -8.44390704663297
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|current|take_first": {
+    "net": -17.52499863782782,
+    "max_dd_pct": 1.7951960354130954,
+    "max_recovery_hours": 8728.5,
+    "open_drawdown_at_end": true,
+    "trades": 730,
+    "turnover": 14131.78359693692,
+    "exposure_pct": 48.16142987249545,
+    "avg_trade": -0.024006847449079508,
+    "without_best_trade": -17.898410489995705,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 447,
+        "net": -11.812669659746412
+      },
+      "down": {
+        "trades": 283,
+        "net": -5.712328978081629
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|trend|base": {
+    "net": -1.4550842096050474,
+    "max_dd_pct": 0.445257936352259,
+    "max_recovery_hours": 7081.5,
+    "open_drawdown_at_end": true,
+    "trades": 108,
+    "turnover": 2090.731121185982,
+    "exposure_pct": 27.698087431693992,
+    "avg_trade": -0.013473001940788331,
+    "without_best_trade": -1.8275160568750426,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 60,
+        "net": 0.4942411593316862
+      },
+      "down": {
+        "trades": 48,
+        "net": -1.949325368936826
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|trend|expensive": {
+    "net": -2.1756280299225637,
+    "max_dd_pct": 0.47537294958875115,
+    "max_recovery_hours": 7081.5,
+    "open_drawdown_at_end": true,
+    "trades": 108,
+    "turnover": 2091.0554271460223,
+    "exposure_pct": 27.80908469945355,
+    "avg_trade": -0.02014470398076706,
+    "without_best_trade": -2.5430759975249586,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 60,
+        "net": 0.07058602295910887
+      },
+      "down": {
+        "trades": 48,
+        "net": -2.2462140528819514
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|trend|take_first": {
+    "net": -1.4550842096050474,
+    "max_dd_pct": 0.445257936352259,
+    "max_recovery_hours": 7081.5,
+    "open_drawdown_at_end": true,
+    "trades": 108,
+    "turnover": 2090.731121185982,
+    "exposure_pct": 27.698087431693992,
+    "avg_trade": -0.013473001940788331,
+    "without_best_trade": -1.8275160568750426,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 60,
+        "net": 0.4942411593316862
+      },
+      "down": {
+        "trades": 48,
+        "net": -1.949325368936826
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|breakout|base": {
+    "net": -16.278302355412848,
+    "max_dd_pct": 1.6965745817943567,
+    "max_recovery_hours": 8750.5,
+    "open_drawdown_at_end": true,
+    "trades": 594,
+    "turnover": 11491.162388245826,
+    "exposure_pct": 38.137522768670316,
+    "avg_trade": -0.027404549419886376,
+    "without_best_trade": -16.65253362846086,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 356,
+        "net": -9.58056675271711
+      },
+      "down": {
+        "trades": 238,
+        "net": -6.697735602695396
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|breakout|expensive": {
+    "net": -21.620360241300887,
+    "max_dd_pct": 2.228105846106561,
+    "max_recovery_hours": 8750.5,
+    "open_drawdown_at_end": true,
+    "trades": 593,
+    "turnover": 11467.099500633718,
+    "exposure_pct": 38.146061020036434,
+    "avg_trade": -0.03645929214384652,
+    "without_best_trade": -21.988204660646975,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 355,
+        "net": -12.704443013315233
+      },
+      "down": {
+        "trades": 238,
+        "net": -8.915917227985753
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|breakout|take_first": {
+    "net": -16.278302355412848,
+    "max_dd_pct": 1.6965745817943567,
+    "max_recovery_hours": 8750.5,
+    "open_drawdown_at_end": true,
+    "trades": 594,
+    "turnover": 11491.162388245826,
+    "exposure_pct": 38.137522768670316,
+    "avg_trade": -0.027404549419886376,
+    "without_best_trade": -16.65253362846086,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 356,
+        "net": -9.58056675271711
+      },
+      "down": {
+        "trades": 238,
+        "net": -6.697735602695396
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|reversion|base": {
+    "net": -20.104858400894045,
+    "max_dd_pct": 2.034032452512335,
+    "max_recovery_hours": 8743.0,
+    "open_drawdown_at_end": true,
+    "trades": 785,
+    "turnover": 15181.777551488985,
+    "exposure_pct": 24.100637522768668,
+    "avg_trade": -0.025611284587125954,
+    "without_best_trade": -20.47703081670351,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 452,
+        "net": -12.551284817230721
+      },
+      "down": {
+        "trades": 333,
+        "net": -7.553573583663155
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|reversion|expensive": {
+    "net": -27.341421220595862,
+    "max_dd_pct": 2.7548306307408255,
+    "max_recovery_hours": 8743.0,
+    "open_drawdown_at_end": true,
+    "trades": 787,
+    "turnover": 15216.344604007616,
+    "exposure_pct": 24.103483606557376,
+    "avg_trade": -0.034741323024901655,
+    "without_best_trade": -27.70456115760052,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 454,
+        "net": -16.780238427527813
+      },
+      "down": {
+        "trades": 333,
+        "net": -10.561182793069788
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|reversion|take_first": {
+    "net": -20.104858400894045,
+    "max_dd_pct": 2.034032452512335,
+    "max_recovery_hours": 8743.0,
+    "open_drawdown_at_end": true,
+    "trades": 785,
+    "turnover": 15181.777551488985,
+    "exposure_pct": 24.100637522768668,
+    "avg_trade": -0.025611284587125954,
+    "without_best_trade": -20.47703081670351,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 452,
+        "net": -12.551284817230721
+      },
+      "down": {
+        "trades": 333,
+        "net": -7.553573583663155
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|hold|base": {
+    "net": 11.75039094352826,
+    "max_dd_pct": 0.5444064194290438,
+    "max_recovery_hours": 5705.75,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 31.2418047717,
+    "exposure_pct": 100.0,
+    "avg_trade": 11.750390943528302,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": 11.750390943528302
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|hold|expensive": {
+    "net": 11.734772990456577,
+    "max_dd_pct": 0.5441412785627069,
+    "max_recovery_hours": 5705.75,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 31.2359061434,
+    "exposure_pct": 100.0,
+    "avg_trade": 11.7347729904566,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": 11.7347729904566
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|hold|take_first": {
+    "net": 11.75039094352826,
+    "max_dd_pct": 0.5444064194290438,
+    "max_recovery_hours": 5705.75,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 31.2418047717,
+    "exposure_pct": 100.0,
+    "avg_trade": 11.750390943528302,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": 11.750390943528302
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|none|base": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|none|expensive": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2024|none|take_first": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|current|base": {
+    "net": -17.868290646675405,
+    "max_dd_pct": 1.8427780696134832,
+    "max_recovery_hours": 8623.5,
+    "open_drawdown_at_end": true,
+    "trades": 704,
+    "turnover": 13361.579544774411,
+    "exposure_pct": 48.37043378995433,
+    "avg_trade": -0.025381094668573453,
+    "without_best_trade": -18.24262462921493,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 306,
+        "net": -9.250508228261959
+      },
+      "down": {
+        "trades": 398,
+        "net": -8.617782418413752
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|current|expensive": {
+    "net": -24.306631991330505,
+    "max_dd_pct": 2.4749024284916206,
+    "max_recovery_hours": 8623.5,
+    "open_drawdown_at_end": true,
+    "trades": 704,
+    "turnover": 13354.161427772633,
+    "exposure_pct": 48.38470319634703,
+    "avg_trade": -0.03452646589677832,
+    "without_best_trade": -24.674548534138893,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 306,
+        "net": -12.076166527843593
+      },
+      "down": {
+        "trades": 398,
+        "net": -12.230465463488343
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|current|take_first": {
+    "net": -17.868290646675405,
+    "max_dd_pct": 1.8427780696134832,
+    "max_recovery_hours": 8623.5,
+    "open_drawdown_at_end": true,
+    "trades": 704,
+    "turnover": 13361.579544774411,
+    "exposure_pct": 48.37043378995433,
+    "avg_trade": -0.025381094668573453,
+    "without_best_trade": -18.24262462921493,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 306,
+        "net": -9.250508228261959
+      },
+      "down": {
+        "trades": 398,
+        "net": -8.617782418413752
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|trend|base": {
+    "net": -3.441296724950689,
+    "max_dd_pct": 0.3832197495687364,
+    "max_recovery_hours": 8531.75,
+    "open_drawdown_at_end": true,
+    "trades": 114,
+    "turnover": 2162.40255971166,
+    "exposure_pct": 34.957191780821915,
+    "avg_trade": -0.03018681337676456,
+    "without_best_trade": -3.8125522584287985,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 44,
+        "net": -1.7816328313349086
+      },
+      "down": {
+        "trades": 70,
+        "net": -1.6596638936162513
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|trend|expensive": {
+    "net": -4.4082039092299965,
+    "max_dd_pct": 0.4793825410182559,
+    "max_recovery_hours": 8531.75,
+    "open_drawdown_at_end": true,
+    "trades": 114,
+    "turnover": 2160.8484019152866,
+    "exposure_pct": 34.266552511415526,
+    "avg_trade": -0.03866845534411681,
+    "without_best_trade": -4.774491304459872,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 44,
+        "net": -2.103364287125677
+      },
+      "down": {
+        "trades": 70,
+        "net": -2.304839622103639
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|trend|take_first": {
+    "net": -3.441296724950689,
+    "max_dd_pct": 0.3832197495687364,
+    "max_recovery_hours": 8531.75,
+    "open_drawdown_at_end": true,
+    "trades": 114,
+    "turnover": 2162.40255971166,
+    "exposure_pct": 34.957191780821915,
+    "avg_trade": -0.03018681337676456,
+    "without_best_trade": -3.8125522584287985,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 44,
+        "net": -1.7816328313349086
+      },
+      "down": {
+        "trades": 70,
+        "net": -1.6596638936162513
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|breakout|base": {
+    "net": -17.937853589644533,
+    "max_dd_pct": 1.8243838557268104,
+    "max_recovery_hours": 8692.75,
+    "open_drawdown_at_end": true,
+    "trades": 569,
+    "turnover": 10783.461143816567,
+    "exposure_pct": 35.87043378995433,
+    "avg_trade": -0.03152522599234565,
+    "without_best_trade": -18.303641587397657,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 245,
+        "net": -8.95717044858029
+      },
+      "down": {
+        "trades": 324,
+        "net": -8.98068314106438
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|breakout|expensive": {
+    "net": -23.40900772795544,
+    "max_dd_pct": 2.3647635063063484,
+    "max_recovery_hours": 8692.75,
+    "open_drawdown_at_end": true,
+    "trades": 569,
+    "turnover": 10777.654681080732,
+    "exposure_pct": 35.8162100456621,
+    "avg_trade": -0.041140611121185715,
+    "without_best_trade": -23.769900753975016,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 245,
+        "net": -11.283734240792267
+      },
+      "down": {
+        "trades": 324,
+        "net": -12.125273487162408
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|breakout|take_first": {
+    "net": -17.937853589644533,
+    "max_dd_pct": 1.8243838557268104,
+    "max_recovery_hours": 8692.75,
+    "open_drawdown_at_end": true,
+    "trades": 569,
+    "turnover": 10783.461143816567,
+    "exposure_pct": 35.87043378995433,
+    "avg_trade": -0.03152522599234565,
+    "without_best_trade": -18.303641587397657,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 245,
+        "net": -8.95717044858029
+      },
+      "down": {
+        "trades": 324,
+        "net": -8.98068314106438
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|reversion|base": {
+    "net": -21.086431820381108,
+    "max_dd_pct": 2.11212429427128,
+    "max_recovery_hours": 8751.5,
+    "open_drawdown_at_end": true,
+    "trades": 745,
+    "turnover": 14151.385520171803,
+    "exposure_pct": 24.563356164383563,
+    "avg_trade": -0.028303935329369853,
+    "without_best_trade": -21.4519923543889,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 300,
+        "net": -7.94982756009254
+      },
+      "down": {
+        "trades": 445,
+        "net": -13.136604260287998
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|reversion|expensive": {
+    "net": -28.27603646726368,
+    "max_dd_pct": 2.8310830175327055,
+    "max_recovery_hours": 8751.5,
+    "open_drawdown_at_end": true,
+    "trades": 748,
+    "turnover": 14202.008790460388,
+    "exposure_pct": 24.6175799086758,
+    "avg_trade": -0.03780218779045904,
+    "without_best_trade": -28.63670507345688,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 301,
+        "net": -10.943183924196314
+      },
+      "down": {
+        "trades": 447,
+        "net": -17.332852543067048
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|reversion|take_first": {
+    "net": -21.086431820381108,
+    "max_dd_pct": 2.11212429427128,
+    "max_recovery_hours": 8751.5,
+    "open_drawdown_at_end": true,
+    "trades": 745,
+    "turnover": 14151.385520171803,
+    "exposure_pct": 24.563356164383563,
+    "avg_trade": -0.028303935329369853,
+    "without_best_trade": -21.4519923543889,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 300,
+        "net": -7.94982756009254
+      },
+      "down": {
+        "trades": 445,
+        "net": -13.136604260287998
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|hold|base": {
+    "net": -0.6199619293890919,
+    "max_dd_pct": 0.4485393703032104,
+    "max_recovery_hours": 2911.5,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 18.122718389,
+    "exposure_pct": 100.0,
+    "avg_trade": -0.6199619293889995,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -0.6199619293889995
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|hold|expensive": {
+    "net": -0.6290234367779703,
+    "max_dd_pct": 0.44831989421468155,
+    "max_recovery_hours": 2911.5,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 18.123014777999998,
+    "exposure_pct": 100.0,
+    "avg_trade": -0.629023436777997,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -0.629023436777997
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|hold|take_first": {
+    "net": -0.6199619293890919,
+    "max_dd_pct": 0.4485393703032104,
+    "max_recovery_hours": 2911.5,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 18.122718389,
+    "exposure_pct": 100.0,
+    "avg_trade": -0.6199619293889995,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -0.6199619293889995
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|none|base": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|none|expensive": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "BTCUSDT|2025|none|take_first": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|current|base": {
+    "net": -19.46142518489978,
+    "max_dd_pct": 2.0192655979740093,
+    "max_recovery_hours": 8529.0,
+    "open_drawdown_at_end": true,
+    "trades": 697,
+    "turnover": 13730.023403398489,
+    "exposure_pct": 46.197632058287795,
+    "avg_trade": -0.027921700408751214,
+    "without_best_trade": -19.835741138306478,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 312,
+        "net": -9.34482941050858
+      },
+      "down": {
+        "trades": 385,
+        "net": -10.116595774391016
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|current|expensive": {
+    "net": -26.214140885490224,
+    "max_dd_pct": 2.6778299382983684,
+    "max_recovery_hours": 8529.0,
+    "open_drawdown_at_end": true,
+    "trades": 697,
+    "turnover": 13722.234162340857,
+    "exposure_pct": 45.989867941712205,
+    "avg_trade": -0.03760995822882323,
+    "without_best_trade": -26.582806895092883,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 312,
+        "net": -12.140839476216284
+      },
+      "down": {
+        "trades": 385,
+        "net": -14.073301409273506
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|current|take_first": {
+    "net": -19.46142518489978,
+    "max_dd_pct": 2.0192655979740093,
+    "max_recovery_hours": 8529.0,
+    "open_drawdown_at_end": true,
+    "trades": 697,
+    "turnover": 13730.023403398489,
+    "exposure_pct": 46.197632058287795,
+    "avg_trade": -0.027921700408751214,
+    "without_best_trade": -19.835741138306478,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 312,
+        "net": -9.34482941050858
+      },
+      "down": {
+        "trades": 385,
+        "net": -10.116595774391016
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|trend|base": {
+    "net": -0.14212487825739117,
+    "max_dd_pct": 0.4705435640615682,
+    "max_recovery_hours": 7212.5,
+    "open_drawdown_at_end": true,
+    "trades": 110,
+    "turnover": 2168.870804515259,
+    "exposure_pct": 23.82456739526412,
+    "avg_trade": -0.0012920443478029434,
+    "without_best_trade": -0.5159680960531254,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 41,
+        "net": 1.3187889209301975
+      },
+      "down": {
+        "trades": 69,
+        "net": -1.4609137991885213
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|trend|expensive": {
+    "net": -1.6760282145961583,
+    "max_dd_pct": 0.5646646803619624,
+    "max_recovery_hours": 7212.5,
+    "open_drawdown_at_end": true,
+    "trades": 110,
+    "turnover": 2166.958315182586,
+    "exposure_pct": 23.491575591985427,
+    "avg_trade": -0.015236620132692703,
+    "without_best_trade": -2.0448686657753985,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 41,
+        "net": 1.05676292839847
+      },
+      "down": {
+        "trades": 69,
+        "net": -2.7327911429946674
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|trend|take_first": {
+    "net": -0.14212487825739117,
+    "max_dd_pct": 0.4705435640615682,
+    "max_recovery_hours": 7212.5,
+    "open_drawdown_at_end": true,
+    "trades": 110,
+    "turnover": 2168.870804515259,
+    "exposure_pct": 23.82456739526412,
+    "avg_trade": -0.0012920443478029434,
+    "without_best_trade": -0.5159680960531254,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 41,
+        "net": 1.3187889209301975
+      },
+      "down": {
+        "trades": 69,
+        "net": -1.4609137991885213
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|breakout|base": {
+    "net": -15.469159206033964,
+    "max_dd_pct": 1.5660423634158132,
+    "max_recovery_hours": 8754.5,
+    "open_drawdown_at_end": true,
+    "trades": 572,
+    "turnover": 11264.856636042003,
+    "exposure_pct": 38.37090163934426,
+    "avg_trade": -0.027043984625933513,
+    "without_best_trade": -15.84337814000858,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 267,
+        "net": -10.175468451615073
+      },
+      "down": {
+        "trades": 305,
+        "net": -5.293690754418897
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|breakout|expensive": {
+    "net": -21.386962409609737,
+    "max_dd_pct": 2.154812647573511,
+    "max_recovery_hours": 8754.5,
+    "open_drawdown_at_end": true,
+    "trades": 572,
+    "turnover": 11259.212442142538,
+    "exposure_pct": 38.24282786885246,
+    "avg_trade": -0.03738979442239185,
+    "without_best_trade": -21.75584979739786,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 266,
+        "net": -12.589073289164535
+      },
+      "down": {
+        "trades": 306,
+        "net": -8.797889120443601
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|breakout|take_first": {
+    "net": -15.469159206033964,
+    "max_dd_pct": 1.5660423634158132,
+    "max_recovery_hours": 8754.5,
+    "open_drawdown_at_end": true,
+    "trades": 572,
+    "turnover": 11264.856636042003,
+    "exposure_pct": 38.37090163934426,
+    "avg_trade": -0.027043984625933513,
+    "without_best_trade": -15.84337814000858,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 267,
+        "net": -10.175468451615073
+      },
+      "down": {
+        "trades": 305,
+        "net": -5.293690754418897
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|reversion|base": {
+    "net": -23.99093425572653,
+    "max_dd_pct": 2.465710425292398,
+    "max_recovery_hours": 8724.75,
+    "open_drawdown_at_end": true,
+    "trades": 853,
+    "turnover": 16799.15201617345,
+    "exposure_pct": 24.928847905282332,
+    "avg_trade": -0.028125362550677446,
+    "without_best_trade": -24.362494108073374,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 389,
+        "net": -10.742647634015144
+      },
+      "down": {
+        "trades": 464,
+        "net": -13.248286621712717
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|reversion|expensive": {
+    "net": -32.75993865241833,
+    "max_dd_pct": 3.31258791125174,
+    "max_recovery_hours": 8724.75,
+    "open_drawdown_at_end": true,
+    "trades": 862,
+    "turnover": 16966.099180620193,
+    "exposure_pct": 24.829234972677597,
+    "avg_trade": -0.03800456920234405,
+    "without_best_trade": -33.12652629412662,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 393,
+        "net": -14.61583348792161
+      },
+      "down": {
+        "trades": 469,
+        "net": -18.144105164498967
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|reversion|take_first": {
+    "net": -23.99093425572653,
+    "max_dd_pct": 2.465710425292398,
+    "max_recovery_hours": 8724.75,
+    "open_drawdown_at_end": true,
+    "trades": 853,
+    "turnover": 16799.15201617345,
+    "exposure_pct": 24.928847905282332,
+    "avg_trade": -0.028125362550677446,
+    "without_best_trade": -24.362494108073374,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 389,
+        "net": -10.742647634015144
+      },
+      "down": {
+        "trades": 464,
+        "net": -13.248286621712717
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|hold|base": {
+    "net": 4.504168527706497,
+    "max_dd_pct": 0.8139955967895216,
+    "max_recovery_hours": 6715.0,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 24.162224793500002,
+    "exposure_pct": 100.0,
+    "avg_trade": 4.5041685277065024,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 1,
+        "net": 4.5041685277065024
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|hold|expensive": {
+    "net": 4.492088550412973,
+    "max_dd_pct": 0.813599436438939,
+    "max_recovery_hours": 6715.0,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 24.159954587,
+    "exposure_pct": 100.0,
+    "avg_trade": 4.492088550413001,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 1,
+        "net": 4.492088550413001
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|hold|take_first": {
+    "net": 4.504168527706497,
+    "max_dd_pct": 0.8139955967895216,
+    "max_recovery_hours": 6715.0,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 24.162224793500002,
+    "exposure_pct": 100.0,
+    "avg_trade": 4.5041685277065024,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 1,
+        "net": 4.5041685277065024
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|none|base": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|none|expensive": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2024|none|take_first": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|current|base": {
+    "net": -14.657179463853367,
+    "max_dd_pct": 1.5352779956418334,
+    "max_recovery_hours": 7889.0,
+    "open_drawdown_at_end": true,
+    "trades": 694,
+    "turnover": 13677.076245150267,
+    "exposure_pct": 44.3236301369863,
+    "avg_trade": -0.021119855135236103,
+    "without_best_trade": -15.031551044232526,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 267,
+        "net": -5.980850036021101
+      },
+      "down": {
+        "trades": 427,
+        "net": -8.676329427832755
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|current|expensive": {
+    "net": -21.426773860679532,
+    "max_dd_pct": 2.1921791293298756,
+    "max_recovery_hours": 8680.75,
+    "open_drawdown_at_end": true,
+    "trades": 694,
+    "turnover": 13669.134479508824,
+    "exposure_pct": 44.21803652968037,
+    "avg_trade": -0.030874313920285477,
+    "without_best_trade": -21.79575427165578,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 267,
+        "net": -8.561077259958452
+      },
+      "down": {
+        "trades": 427,
+        "net": -12.86569660071967
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|current|take_first": {
+    "net": -14.657179463853367,
+    "max_dd_pct": 1.5352779956418334,
+    "max_recovery_hours": 7889.0,
+    "open_drawdown_at_end": true,
+    "trades": 694,
+    "turnover": 13677.076245150267,
+    "exposure_pct": 44.3236301369863,
+    "avg_trade": -0.021119855135236103,
+    "without_best_trade": -15.031551044232526,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 267,
+        "net": -5.980850036021101
+      },
+      "down": {
+        "trades": 427,
+        "net": -8.676329427832755
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|trend|base": {
+    "net": -3.245012814128245,
+    "max_dd_pct": 0.4144338158444125,
+    "max_recovery_hours": 8292.25,
+    "open_drawdown_at_end": true,
+    "trades": 111,
+    "turnover": 2185.623567834707,
+    "exposure_pct": 23.24486301369863,
+    "avg_trade": -0.0292343496768254,
+    "without_best_trade": -3.6185306235022843,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 32,
+        "net": -1.6419305910161803
+      },
+      "down": {
+        "trades": 79,
+        "net": -1.6030822231114392
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|trend|expensive": {
+    "net": -3.9410134797856244,
+    "max_dd_pct": 0.47221111573237057,
+    "max_recovery_hours": 8292.25,
+    "open_drawdown_at_end": true,
+    "trades": 111,
+    "turnover": 2183.7829462865,
+    "exposure_pct": 23.24200913242009,
+    "avg_trade": -0.03550462594401624,
+    "without_best_trade": -4.30953287715745,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 32,
+        "net": -1.832997341306056
+      },
+      "down": {
+        "trades": 79,
+        "net": -2.108016138479746
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|trend|take_first": {
+    "net": -3.245012814128245,
+    "max_dd_pct": 0.4144338158444125,
+    "max_recovery_hours": 8292.25,
+    "open_drawdown_at_end": true,
+    "trades": 111,
+    "turnover": 2185.623567834707,
+    "exposure_pct": 23.24486301369863,
+    "avg_trade": -0.0292343496768254,
+    "without_best_trade": -3.6185306235022843,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 32,
+        "net": -1.6419305910161803
+      },
+      "down": {
+        "trades": 79,
+        "net": -1.6030822231114392
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|breakout|base": {
+    "net": -13.225815609715141,
+    "max_dd_pct": 1.4400006777154433,
+    "max_recovery_hours": 8296.75,
+    "open_drawdown_at_end": true,
+    "trades": 571,
+    "turnover": 11236.798448278578,
+    "exposure_pct": 34.46632420091324,
+    "avg_trade": -0.02316254922891942,
+    "without_best_trade": -13.599484304907419,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 226,
+        "net": -3.5666485063477644
+      },
+      "down": {
+        "trades": 345,
+        "net": -9.659167103365224
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|breakout|expensive": {
+    "net": -18.384578155987356,
+    "max_dd_pct": 1.944710576789926,
+    "max_recovery_hours": 8297.0,
+    "open_drawdown_at_end": true,
+    "trades": 570,
+    "turnover": 11213.833241277292,
+    "exposure_pct": 34.340753424657535,
+    "avg_trade": -0.032253645887695546,
+    "without_best_trade": -18.753246420025178,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 226,
+        "net": -5.739439137166489
+      },
+      "down": {
+        "trades": 344,
+        "net": -12.645139018819972
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|breakout|take_first": {
+    "net": -13.225815609715141,
+    "max_dd_pct": 1.4400006777154433,
+    "max_recovery_hours": 8296.75,
+    "open_drawdown_at_end": true,
+    "trades": 571,
+    "turnover": 11236.798448278578,
+    "exposure_pct": 34.46632420091324,
+    "avg_trade": -0.02316254922891942,
+    "without_best_trade": -13.599484304907419,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 226,
+        "net": -3.5666485063477644
+      },
+      "down": {
+        "trades": 345,
+        "net": -9.659167103365224
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|reversion|base": {
+    "net": -28.701491576860803,
+    "max_dd_pct": 2.8882362948216262,
+    "max_recovery_hours": 8705.0,
+    "open_drawdown_at_end": true,
+    "trades": 873,
+    "turnover": 17184.495421198368,
+    "exposure_pct": 24.169520547945204,
+    "avg_trade": -0.03287685174897979,
+    "without_best_trade": -29.073985063309113,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 316,
+        "net": -8.893608768999906
+      },
+      "down": {
+        "trades": 557,
+        "net": -19.807882807859453
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|reversion|expensive": {
+    "net": -37.40221373049553,
+    "max_dd_pct": 3.758506101852603,
+    "max_recovery_hours": 8705.0,
+    "open_drawdown_at_end": true,
+    "trades": 883,
+    "turnover": 17373.595686011497,
+    "exposure_pct": 24.292237442922374,
+    "avg_trade": -0.04235811294507057,
+    "without_best_trade": -37.769722512424316,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 320,
+        "net": -12.313849831175842
+      },
+      "down": {
+        "trades": 563,
+        "net": -25.08836389932147
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|reversion|take_first": {
+    "net": -28.701491576860803,
+    "max_dd_pct": 2.8882362948216262,
+    "max_recovery_hours": 8705.0,
+    "open_drawdown_at_end": true,
+    "trades": 873,
+    "turnover": 17184.495421198368,
+    "exposure_pct": 24.169520547945204,
+    "avg_trade": -0.03287685174897979,
+    "without_best_trade": -29.073985063309113,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 316,
+        "net": -8.893608768999906
+      },
+      "down": {
+        "trades": 557,
+        "net": -19.807882807859453
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|hold|base": {
+    "net": -1.0892525079029838,
+    "max_dd_pct": 0.6753528704132394,
+    "max_recovery_hours": 4675.25,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 18.297848903000002,
+    "exposure_pct": 100.0,
+    "avg_trade": -1.0892525079030015,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -1.0892525079030015
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|hold|expensive": {
+    "net": -1.0984016978060254,
+    "max_dd_pct": 0.6750219374699402,
+    "max_recovery_hours": 4675.25,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 18.298379806,
+    "exposure_pct": 100.0,
+    "avg_trade": -1.0984016978060005,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -1.0984016978060005
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|hold|take_first": {
+    "net": -1.0892525079029838,
+    "max_dd_pct": 0.6753528704132394,
+    "max_recovery_hours": 4675.25,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 18.297848903000002,
+    "exposure_pct": 100.0,
+    "avg_trade": -1.0892525079030015,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -1.0892525079030015
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|none|base": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|none|expensive": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "ETHUSDT|2025|none|take_first": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|current|base": {
+    "net": -25.08883368251861,
+    "max_dd_pct": 2.5532518752756532,
+    "max_recovery_hours": 8678.0,
+    "open_drawdown_at_end": true,
+    "trades": 703,
+    "turnover": 13939.105653841314,
+    "exposure_pct": 38.942964480874316,
+    "avg_trade": -0.03568824136915696,
+    "without_best_trade": -25.46319983130617,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 395,
+        "net": -13.784320530428323
+      },
+      "down": {
+        "trades": 308,
+        "net": -11.304513152089019
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|current|expensive": {
+    "net": -33.07717288201172,
+    "max_dd_pct": 3.3492055547541963,
+    "max_recovery_hours": 8728.75,
+    "open_drawdown_at_end": true,
+    "trades": 703,
+    "turnover": 13932.6882502082,
+    "exposure_pct": 38.81773679417122,
+    "avg_trade": -0.04705145502420237,
+    "without_best_trade": -33.446350759377765,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 395,
+        "net": -18.881814158335736
+      },
+      "down": {
+        "trades": 308,
+        "net": -14.195358723678535
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|current|take_first": {
+    "net": -25.08883368251861,
+    "max_dd_pct": 2.5532518752756532,
+    "max_recovery_hours": 8678.0,
+    "open_drawdown_at_end": true,
+    "trades": 703,
+    "turnover": 13939.105653841314,
+    "exposure_pct": 38.942964480874316,
+    "avg_trade": -0.03568824136915696,
+    "without_best_trade": -25.46319983130617,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 395,
+        "net": -13.784320530428323
+      },
+      "down": {
+        "trades": 308,
+        "net": -11.304513152089019
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|trend|base": {
+    "net": 0.20841456115329038,
+    "max_dd_pct": 0.29224072383919586,
+    "max_recovery_hours": 7053.5,
+    "open_drawdown_at_end": true,
+    "trades": 101,
+    "turnover": 2006.2065162774295,
+    "exposure_pct": 16.04337431693989,
+    "avg_trade": 0.0020635105064615734,
+    "without_best_trade": -0.16553204414529965,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 48,
+        "net": 0.2811412363909085
+      },
+      "down": {
+        "trades": 53,
+        "net": -0.07272667523828957
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|trend|expensive": {
+    "net": -0.4437915146983187,
+    "max_dd_pct": 0.31116652615437435,
+    "max_recovery_hours": 7545.5,
+    "open_drawdown_at_end": true,
+    "trades": 101,
+    "turnover": 2005.4643335788803,
+    "exposure_pct": 15.906762295081966,
+    "avg_trade": -0.00439397539305419,
+    "without_best_trade": -0.8127339698501448,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 48,
+        "net": 0.008562233823562693
+      },
+      "down": {
+        "trades": 53,
+        "net": -0.4523537485220359
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|trend|take_first": {
+    "net": 0.20841456115329038,
+    "max_dd_pct": 0.29224072383919586,
+    "max_recovery_hours": 7053.5,
+    "open_drawdown_at_end": true,
+    "trades": 101,
+    "turnover": 2006.2065162774295,
+    "exposure_pct": 16.04337431693989,
+    "avg_trade": 0.0020635105064615734,
+    "without_best_trade": -0.16553204414529965,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 48,
+        "net": 0.2811412363909085
+      },
+      "down": {
+        "trades": 53,
+        "net": -0.07272667523828957
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|breakout|base": {
+    "net": -23.75011750750207,
+    "max_dd_pct": 2.4838647015211732,
+    "max_recovery_hours": 8750.5,
+    "open_drawdown_at_end": true,
+    "trades": 645,
+    "turnover": 12789.821636499022,
+    "exposure_pct": 35.10075136612022,
+    "avg_trade": -0.03682188760852938,
+    "without_best_trade": -24.124497141616775,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 375,
+        "net": -14.811337945641005
+      },
+      "down": {
+        "trades": 270,
+        "net": -8.938779561860446
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|breakout|expensive": {
+    "net": -29.589866537690682,
+    "max_dd_pct": 3.0657430579525355,
+    "max_recovery_hours": 8750.5,
+    "open_drawdown_at_end": true,
+    "trades": 645,
+    "turnover": 12783.222397659958,
+    "exposure_pct": 34.98406193078324,
+    "avg_trade": -0.04587576207394371,
+    "without_best_trade": -29.959032958089267,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 377,
+        "net": -18.73484066018276
+      },
+      "down": {
+        "trades": 268,
+        "net": -10.855025877510938
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|breakout|take_first": {
+    "net": -23.75011750750207,
+    "max_dd_pct": 2.4838647015211732,
+    "max_recovery_hours": 8750.5,
+    "open_drawdown_at_end": true,
+    "trades": 645,
+    "turnover": 12789.821636499022,
+    "exposure_pct": 35.10075136612022,
+    "avg_trade": -0.03682188760852938,
+    "without_best_trade": -24.124497141616775,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 375,
+        "net": -14.811337945641005
+      },
+      "down": {
+        "trades": 270,
+        "net": -8.938779561860446
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|reversion|base": {
+    "net": -24.002108537867457,
+    "max_dd_pct": 2.429281478314897,
+    "max_recovery_hours": 8745.25,
+    "open_drawdown_at_end": true,
+    "trades": 976,
+    "turnover": 19361.693332504634,
+    "exposure_pct": 23.80464480874317,
+    "avg_trade": -0.02459232432158227,
+    "without_best_trade": -24.3763847844765,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 546,
+        "net": -13.918536230720063
+      },
+      "down": {
+        "trades": 430,
+        "net": -10.083572307144234
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|reversion|expensive": {
+    "net": -33.51319160311493,
+    "max_dd_pct": 3.3622080068130917,
+    "max_recovery_hours": 8745.25,
+    "open_drawdown_at_end": true,
+    "trades": 985,
+    "turnover": 19535.659434691584,
+    "exposure_pct": 23.685109289617486,
+    "avg_trade": -0.03402354477473645,
+    "without_best_trade": -33.88239867726812,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 550,
+        "net": -19.0698537017324
+      },
+      "down": {
+        "trades": 435,
+        "net": -14.443337901383003
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|reversion|take_first": {
+    "net": -24.002108537867457,
+    "max_dd_pct": 2.429281478314897,
+    "max_recovery_hours": 8745.25,
+    "open_drawdown_at_end": true,
+    "trades": 976,
+    "turnover": 19361.693332504634,
+    "exposure_pct": 23.80464480874317,
+    "avg_trade": -0.02459232432158227,
+    "without_best_trade": -24.3763847844765,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 546,
+        "net": -13.918536230720063
+      },
+      "down": {
+        "trades": 430,
+        "net": -10.083572307144234
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|hold|base": {
+    "net": 8.541042881910016,
+    "max_dd_pct": 0.96406261830236,
+    "max_recovery_hours": 5693.25,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 28.516648090000004,
+    "exposure_pct": 100.0,
+    "avg_trade": 8.541042881910002,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 1,
+        "net": 8.541042881910002
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|hold|expensive": {
+    "net": 8.526786703819994,
+    "max_dd_pct": 0.9635948938180319,
+    "max_recovery_hours": 5693.25,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 28.512356179999998,
+    "exposure_pct": 100.0,
+    "avg_trade": 8.526786703820001,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 1,
+        "net": 8.526786703820001
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|hold|take_first": {
+    "net": 8.541042881910016,
+    "max_dd_pct": 0.96406261830236,
+    "max_recovery_hours": 5693.25,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 28.516648090000004,
+    "exposure_pct": 100.0,
+    "avg_trade": 8.541042881910002,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 1,
+        "net": 8.541042881910002
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|none|base": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|none|expensive": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2024|none|take_first": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|current|base": {
+    "net": -18.492535486706743,
+    "max_dd_pct": 1.9357834801206657,
+    "max_recovery_hours": 8687.75,
+    "open_drawdown_at_end": true,
+    "trades": 685,
+    "turnover": 13578.092726770055,
+    "exposure_pct": 40.76769406392694,
+    "avg_trade": -0.026996402170372902,
+    "without_best_trade": -18.866825218644138,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 277,
+        "net": -4.218694390519955
+      },
+      "down": {
+        "trades": 408,
+        "net": -14.273841096185484
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|current|expensive": {
+    "net": -24.90114370873755,
+    "max_dd_pct": 2.5680769764854547,
+    "max_recovery_hours": 8687.75,
+    "open_drawdown_at_end": true,
+    "trades": 685,
+    "turnover": 13573.138650701943,
+    "exposure_pct": 40.79623287671233,
+    "avg_trade": -0.036352034611298045,
+    "without_best_trade": -25.270262453364996,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 277,
+        "net": -6.736471574266103
+      },
+      "down": {
+        "trades": 408,
+        "net": -18.164672134473058
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|current|take_first": {
+    "net": -18.492535486706743,
+    "max_dd_pct": 1.9357834801206657,
+    "max_recovery_hours": 8687.75,
+    "open_drawdown_at_end": true,
+    "trades": 685,
+    "turnover": 13578.092726770055,
+    "exposure_pct": 40.76769406392694,
+    "avg_trade": -0.026996402170372902,
+    "without_best_trade": -18.866825218644138,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 277,
+        "net": -4.218694390519955
+      },
+      "down": {
+        "trades": 408,
+        "net": -14.273841096185484
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|trend|base": {
+    "net": -0.8903242241234466,
+    "max_dd_pct": 0.3590420630447523,
+    "max_recovery_hours": 8193.25,
+    "open_drawdown_at_end": true,
+    "trades": 114,
+    "turnover": 2262.704260926804,
+    "exposure_pct": 16.629566210045663,
+    "avg_trade": -0.007809861615116893,
+    "without_best_trade": -1.2641172465361787,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 40,
+        "net": -1.6365937661541885
+      },
+      "down": {
+        "trades": 74,
+        "net": 0.7462695420308627
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|trend|expensive": {
+    "net": -1.5298756689491029,
+    "max_dd_pct": 0.3905901595097641,
+    "max_recovery_hours": 8193.25,
+    "open_drawdown_at_end": true,
+    "trades": 114,
+    "turnover": 2261.842177868919,
+    "exposure_pct": 16.74942922374429,
+    "avg_trade": -0.013419962008328876,
+    "without_best_trade": -1.898666596460897,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 40,
+        "net": -1.8560373159019914
+      },
+      "down": {
+        "trades": 74,
+        "net": 0.3261616469524995
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|trend|take_first": {
+    "net": -0.8903242241234466,
+    "max_dd_pct": 0.3590420630447523,
+    "max_recovery_hours": 8193.25,
+    "open_drawdown_at_end": true,
+    "trades": 114,
+    "turnover": 2262.704260926804,
+    "exposure_pct": 16.629566210045663,
+    "avg_trade": -0.007809861615116893,
+    "without_best_trade": -1.2641172465361787,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 40,
+        "net": -1.6365937661541885
+      },
+      "down": {
+        "trades": 74,
+        "net": 0.7462695420308627
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|breakout|base": {
+    "net": -15.647031832121797,
+    "max_dd_pct": 1.8308671900714342,
+    "max_recovery_hours": 8316.75,
+    "open_drawdown_at_end": true,
+    "trades": 623,
+    "turnover": 12347.607502950823,
+    "exposure_pct": 34.54337899543379,
+    "avg_trade": -0.02511562091833177,
+    "without_best_trade": -16.021418208899263,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 264,
+        "net": -8.821878710581657
+      },
+      "down": {
+        "trades": 359,
+        "net": -6.825153121539035
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|breakout|expensive": {
+    "net": -22.34358579715706,
+    "max_dd_pct": 2.4665007609085876,
+    "max_recovery_hours": 8316.75,
+    "open_drawdown_at_end": true,
+    "trades": 624,
+    "turnover": 12356.980447089929,
+    "exposure_pct": 34.414954337899545,
+    "avg_trade": -0.03580702852108468,
+    "without_best_trade": -22.71270158514579,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 265,
+        "net": -11.636915701685028
+      },
+      "down": {
+        "trades": 359,
+        "net": -10.706670095471814
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|breakout|take_first": {
+    "net": -15.647031832121797,
+    "max_dd_pct": 1.8308671900714342,
+    "max_recovery_hours": 8316.75,
+    "open_drawdown_at_end": true,
+    "trades": 623,
+    "turnover": 12347.607502950823,
+    "exposure_pct": 34.54337899543379,
+    "avg_trade": -0.02511562091833177,
+    "without_best_trade": -16.021418208899263,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 264,
+        "net": -8.821878710581657
+      },
+      "down": {
+        "trades": 359,
+        "net": -6.825153121539035
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|reversion|base": {
+    "net": -33.52125989412775,
+    "max_dd_pct": 3.4296980346325694,
+    "max_recovery_hours": 8614.25,
+    "open_drawdown_at_end": true,
+    "trades": 900,
+    "turnover": 17830.56311078666,
+    "exposure_pct": 24.46917808219178,
+    "avg_trade": -0.0372458443268055,
+    "without_best_trade": -33.895105734066576,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 383,
+        "net": -11.548197252408267
+      },
+      "down": {
+        "trades": 517,
+        "net": -21.973062641716687
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|reversion|expensive": {
+    "net": -41.36959584288422,
+    "max_dd_pct": 4.204297648507108,
+    "max_recovery_hours": 8614.25,
+    "open_drawdown_at_end": true,
+    "trades": 906,
+    "turnover": 17944.0416034005,
+    "exposure_pct": 24.429223744292237,
+    "avg_trade": -0.045661805566095316,
+    "without_best_trade": -41.738438881118824,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 385,
+        "net": -14.564987441375852
+      },
+      "down": {
+        "trades": 521,
+        "net": -26.804608401506506
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|reversion|take_first": {
+    "net": -33.52125989412775,
+    "max_dd_pct": 3.4296980346325694,
+    "max_recovery_hours": 8614.25,
+    "open_drawdown_at_end": true,
+    "trades": 900,
+    "turnover": 17830.56311078666,
+    "exposure_pct": 24.46917808219178,
+    "avg_trade": -0.0372458443268055,
+    "without_best_trade": -33.895105734066576,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 383,
+        "net": -11.548197252408267
+      },
+      "down": {
+        "trades": 517,
+        "net": -21.973062641716687
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|hold|base": {
+    "net": -3.3868105611600186,
+    "max_dd_pct": 1.020167859183846,
+    "max_recovery_hours": 8316.75,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 16.32760116,
+    "exposure_pct": 100.0,
+    "avg_trade": -3.386810561159999,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -3.386810561159999
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|hold|expensive": {
+    "net": -3.3949752023199835,
+    "max_dd_pct": 1.019670279385467,
+    "max_recovery_hours": 8316.75,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 16.32928232,
+    "exposure_pct": 100.0,
+    "avg_trade": -3.3949752023199986,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -3.3949752023199986
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|hold|take_first": {
+    "net": -3.3868105611600186,
+    "max_dd_pct": 1.020167859183846,
+    "max_recovery_hours": 8316.75,
+    "open_drawdown_at_end": true,
+    "trades": 1,
+    "turnover": 16.32760116,
+    "exposure_pct": 100.0,
+    "avg_trade": -3.386810561159999,
+    "without_best_trade": 0.0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 1,
+        "net": -3.386810561159999
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|none|base": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|none|expensive": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  },
+  "SOLUSDT|2025|none|take_first": {
+    "net": 0.0,
+    "max_dd_pct": 0.0,
+    "max_recovery_hours": 0.0,
+    "open_drawdown_at_end": false,
+    "trades": 0,
+    "turnover": 0.0,
+    "exposure_pct": 0.0,
+    "avg_trade": null,
+    "without_best_trade": 0,
+    "ambiguous": 0,
+    "regimes": {
+      "up": {
+        "trades": 0,
+        "net": 0
+      },
+      "down": {
+        "trades": 0,
+        "net": 0
+      },
+      "unknown": {
+        "trades": 0,
+        "net": 0
+      }
+    }
+  }
+}
