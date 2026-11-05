@@ -1,0 +1,35 @@
+[Unit]
+Description=Read-only local Donchian observation health and reports
+After=donchian-observer.service
+
+[Service]
+Type=oneshot
+User=donchianbackup
+Group=donchian
+WorkingDirectory=/opt/donchian-control-code
+Environment=PYTHONPATH=/opt/donchian-control-code
+Environment=HOME=/nonexistent
+Environment=TZ=UTC
+Environment=TMPDIR=/var/lib/donchian-control
+UMask=0027
+ExecStart=/usr/bin/python3 -B -m research.donchian_monitor
+TimeoutStartSec=60
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX
+IPAddressDeny=any
+InaccessiblePaths=-/var/lib/tradingbot
+ReadOnlyPaths=/var/lib/donchian-observer /var/lib/donchian-backup
+ReadWritePaths=/var/lib/donchian-control
+MemoryMax=64M
+CPUQuota=10%
+TasksMax=12
+Nice=15
+LogRateLimitIntervalSec=1min
+LogRateLimitBurst=10

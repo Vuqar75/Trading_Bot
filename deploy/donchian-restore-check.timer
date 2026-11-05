@@ -1,0 +1,11 @@
+[Unit]
+Description=Weekly isolated Donchian external restore verification
+
+[Timer]
+OnCalendar=Sun *-*-* 04:30:00 UTC
+Persistent=true
+RandomizedDelaySec=2min
+Unit=donchian-restore-check.service
+
+[Install]
+WantedBy=timers.target

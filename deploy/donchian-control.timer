@@ -1,0 +1,10 @@
+[Unit]
+Description=Quarter-hour local Donchian observation checks
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=15min
+Unit=donchian-control.service
+
+[Install]
+WantedBy=timers.target

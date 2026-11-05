@@ -1,0 +1,35 @@
+[Unit]
+Description=Isolated weekly verification of external Donchian snapshot
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=donchianbackup
+Group=donchian
+WorkingDirectory=/opt/donchian-control-code
+Environment=PYTHONPATH=/opt/donchian-control-code
+Environment=HOME=/nonexistent
+Environment=TZ=UTC
+Environment=TMPDIR=/var/lib/donchian-control
+UMask=0027
+ExecStart=/usr/bin/python3 -B -m research.donchian_restore_check
+TimeoutStartSec=180
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+InaccessiblePaths=-/var/lib/tradingbot
+ReadOnlyPaths=/var/lib/donchian-observer /var/lib/donchian-backup
+ReadWritePaths=/var/lib/donchian-control
+MemoryMax=80M
+CPUQuota=10%
+TasksMax=12
+Nice=15
+LogRateLimitIntervalSec=1min
+LogRateLimitBurst=10
