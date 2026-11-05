@@ -30,6 +30,11 @@ def status(store):
                   'Сигнал: '+str(donchian.get('last_action') or 'ожидание сигнала')+'; уровень выхода: '+(fmt(donchian['level'])+' USDT' if donchian.get('level') else 'нет'),
                   'Защита: выход по закрытию дня; внутридневной стоп не гарантирован.',
                   'Статус расчёта: '+(str(donchian.get('error') or 'заблокирован') if donchian.get('halted') else 'работает')]
+        reasons={'entry_skipped_exchange_filter':'Вход пропущен: лимит 10 USDT не проходит биржевые фильтры.',
+                 'entry_skipped_paused':'Вход пропущен: рынок был на паузе.',
+                 'partial_residual':'Остаток позиции требует проверки биржевых фильтров.',
+                 'filled':'Последний сигнал исполнен в paper-модели.'}
+        if donchian.get('last_result') in reasons:lines.append(reasons[donchian['last_result']])
         closed=store.db.execute('SELECT pnl,known FROM runtime_closes WHERE ts>=?',(donchian['start_ms']/1000,)).fetchall()
         lines.append('Реализованный PnL нового этапа: '+(fmt(sum((Decimal(x['pnl']) for x in closed),Decimal(0)),signed=True)+' USDT' if all(x['known'] for x in closed) else 'неизвестно'))
         import json

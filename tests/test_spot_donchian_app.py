@@ -10,7 +10,7 @@ from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.unified_queue import UnifiedQueue
 from tools.donchianspot_preconditions import check
-from trading_bot.telegram_reports import history
+from trading_bot.telegram_reports import history,status
 from trading_bot.paper_pair_runtime_offline import ExperimentalSpotRunner
 
 class Clock:
@@ -72,6 +72,7 @@ class DonchianAppTest(unittest.TestCase):
   self.clock.t=self.b/1000+1
   with patch('trading_bot.runtime_store.time.time',self.clock):self.app.tick()
   self.assertEqual(self.store.get('donchian60')['last_result'],'entry_skipped_exchange_filter');self.assertEqual(self.store.db.execute('select count(*) from runtime_orders').fetchone()[0],0)
+  self.assertIn('не проходит биржевые фильтры',status(self.store))
  def test_quote_is_rechecked_after_real_sqlite_lock_wait(self):
   now=time.time()
   with self.store.transaction():
