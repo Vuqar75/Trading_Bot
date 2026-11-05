@@ -442,7 +442,10 @@ def main():
     key = os.getenv('BINANCE_TESTNET_API_KEY') if args.mode == 'testnet' else None
     secret = os.getenv('BINANCE_TESTNET_API_SECRET') if args.mode == 'testnet' else None
     exchange = TestnetExchange(key, secret, enabled=True) if args.mode == 'testnet' else PaperExchange()
-    reader = exchange if args.mode == 'testnet' else SpotTestnetReader()
+    if args.donchian_paper:
+        from .spot_public_data import SpotPublicData
+        reader=SpotPublicData()
+    else:reader = exchange if args.mode == 'testnet' else SpotTestnetReader()
     identity = {'schema': 1, 'mode': args.mode, 'symbol': 'BTCUSDT', 'interval': args.interval, 'amount': args.amount,
                 'account': hashlib.sha256(key.encode()).hexdigest() if key else 'paper'}
     telegram = TelegramTransport(os.getenv('RUNTIME_TELEGRAM_BOT_TOKEN'), os.getenv('RUNTIME_TELEGRAM_OWNER_ID')) if args.telegram else None
