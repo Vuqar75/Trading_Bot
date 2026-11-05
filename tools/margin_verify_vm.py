@@ -4,7 +4,7 @@ No production database is replaced. If any check fails the durable deployment
 hold remains active; after allocation the old financial snapshot is never used
 as a restore source. Outputs deliberately exclude Telegram configuration.
 """
-import argparse,fcntl,json,os,shutil,sqlite3,subprocess,sys,tempfile,time
+import argparse,fcntl,json,math,os,shutil,sqlite3,subprocess,sys,tempfile,time
 from contextlib import closing
 from pathlib import Path
 
@@ -62,13 +62,33 @@ def _positions(db):
     return {'spot':spot,'futures':future,'cross':cross}
 
 
+def health_record_problem(health,*,checked_at,started_at):
+    """Classify one already-read record using a time obtained after that read."""
+    if not isinstance(health,dict):return 'missing'
+    stamp=health.get('time')
+    if type(stamp) not in (int,float) or not math.isfinite(stamp):return 'invalid_time'
+    if stamp>checked_at:return 'future_time'
+    if checked_at-stamp>120:return 'stale_time'
+    if stamp<started_at-1:return 'before_service_start'
+    if health.get('error') or health.get('blocked'):return 'error_or_blocked'
+    return None
+
+
+def cross_refresh_in_progress(value,*,checked_at,pid):
+    """Only classify a current worker's marker; this never establishes health."""
+    if not isinstance(value,dict) or value.get('phase')!='refreshing' or value.get('pid')!=pid:return False
+    stamp=value.get('observed_at');start=value.get('started_at')
+    return (type(stamp) in (int,float) and type(start) in (int,float) and
+            math.isfinite(stamp) and math.isfinite(start) and start<=stamp<=checked_at and checked_at-stamp<=120)
+
+
 def _market_health(target,*,held):
     from trading_bot.cross_paper_book import CrossPaperBook
     from trading_bot.margin_paper_book import MarginPaperBook
     from trading_bot.margin_interest_ledger import MarginInterestLedger
     from trading_bot.paper_wallet_ledger import PaperWalletLedger
     from trading_bot.paper_shared_store import SharedPaperStore
-    now=time.time();pids={};health={}
+    pids={};health={}
     if _counts()!={k:1 for k in UNITS} or not _relay_locked():raise ValueError('Process or relay uniqueness not proven')
     if prop('tradingbot-paper-backup.timer','ActiveState')!='active':raise ValueError('Backup timer inactive')
     if prop(UNITS['margin'],'UnitFileState')!='enabled':raise ValueError('Margin service is not enabled')
@@ -86,9 +106,11 @@ def _market_health(target,*,held):
     for market,name in names.items():
         h=json.loads((FINANCIAL.parent/name).read_text());health[market]=h
         monotonic=int(prop(UNITS[market],'ExecMainStartTimestampMonotonic'))
+        now=time.time()
         started=now-(time.monotonic()-monotonic/1_000_000)
-        if not monotonic or not 0<=now-h['time']<=120 or h['time']<started-1 or h.get('error') or h.get('blocked'):
-            raise ValueError('Stale or unhealthy paper service: '+market)
+        reason=health_record_problem(h,checked_at=now,started_at=started)
+        if not monotonic or reason:
+            raise ValueError('Stale or unhealthy paper service: '+market+' ['+(reason or 'unknown_start')+']')
         if held and h.get('paused') is not True:raise ValueError('Market not paused: '+market)
         if market in ('spot','futures') and (not h.get('quote') or not 0<=now-h['quote'].get('time',0)<=120):raise ValueError('Market quote stale: '+market)
     if health['spot'].get('telegram_error'):raise ValueError('Telegram poller reports an error')
@@ -109,7 +131,16 @@ def _market_health(target,*,held):
         if held and not shared.deployment_hold():raise ValueError('Deployment hold missing')
         if not held and shared.deployment_hold():raise ValueError('Deployment hold still active')
         book=object.__new__(CrossPaperBook);book.shared=shared;book.db=db;book.ledger=shared.ledger
-        book._check();book._require_coverage(now);book._marks(book.stored_quotes(),now)
+        now=time.time()
+        book._check();book._require_coverage(now)
+        try:book._marks(book.stored_quotes(),now)
+        except ValueError as exc:
+            if str(exc).startswith('Incomplete cross data:'):
+                try:marker=json.loads((FINANCIAL.parent/'cross-sync-diagnostic.json').read_text())
+                except (OSError,ValueError,TypeError):marker=None
+                if cross_refresh_in_progress(marker,checked_at=time.time(),pid=pids['cross']):
+                    raise ValueError('Cross data synchronization in progress; risk data unconfirmed') from None
+            raise
         mb=object.__new__(MarginPaperBook);mb.db=db;mb.ledger=shared.ledger
         mb.loans=object.__new__(MarginInterestLedger);mb.loans.db=db;mb.loans.ledger=shared.ledger;mb._check()
     _history_preserved(ARCHIVE/'stopped/financial.db',FINANCIAL)

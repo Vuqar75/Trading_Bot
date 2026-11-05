@@ -22,13 +22,21 @@ from .unified_queue import UnifiedQueue
 log=logging.getLogger('margin-paper')
 
 
-def cycle_diagnostic(exc, stage, symbol=None, interval=None):
+def cycle_diagnostic(exc, stage, symbol=None, interval=None, *, observed_at_ms=None, rows=None):
     """Return allowlisted context only; exception text and locals are private."""
     allowed={'commands','settings','fetch','provenance','candles','strategy','postcheck'}
     value={'stage':stage if stage in allowed else 'unknown',
            'exception_type':type(exc).__name__ if re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]{0,79}',type(exc).__name__) else 'Exception'}
     if symbol in PAIRS:value['symbol']=symbol
     if interval in ('1m','3m','5m','15m','30m','1h','2h','4h','6h','8h','12h','1d','3d','1w','1M'):value['interval']=interval
+    if type(observed_at_ms) is int and 0<=observed_at_ms<2**63:value['observed_at_ms']=observed_at_ms
+    if isinstance(rows,dict):
+        stamps={}
+        for name,row in list(rows.items())[:2]:
+            if not isinstance(name,str) or not re.fullmatch(r'[A-Z0-9]{2,20}USDT',name) or not isinstance(row,dict):continue
+            fields={k:row[k] for k in ('time_ms','server_ms','candle_server_ms') if type(row.get(k)) is int and 0<=row[k]<2**63}
+            if fields:stamps[name]=fields
+        if stamps:value['data_times_ms']=stamps
     root=Path(__file__).resolve().parent
     for frame in reversed(traceback.extract_tb(exc.__traceback__)):
         path=Path(frame.filename)
@@ -38,12 +46,12 @@ def cycle_diagnostic(exc, stage, symbol=None, interval=None):
 
 
 def cycle(shared,book,queue,receiver,strategy,reader,*,started,clock=time.time):
-    stage='commands';symbol=None;interval=None
+    stage='commands';symbol=None;interval=None;rows={}
     try:
         process_margin(queue,receiver,book,shared,started=started,clock=clock)
         stage='settings';settings=book.db.execute('SELECT interval FROM margin_settings WHERE id=1').fetchone()
         if not settings:raise ValueError('Missing margin settings')
-        interval=settings['interval'];stage='fetch';rows={}
+        interval=settings['interval'];stage='fetch'
         for symbol in book.pairs:rows[symbol]=reader.snapshot(symbol,interval)
         symbol=None;stage='provenance'
         if any(q.get('source')!=MarginSpotData.HOST or q.get('price_kind')!='last_public_trade' for q in rows.values()):
@@ -52,7 +60,7 @@ def cycle(shared,book,queue,receiver,strategy,reader,*,started,clock=time.time):
         stage='strategy';now_ms=int(clock()*1000)
         return strategy.tick(rows,candles,now_ms=now_ms,clock_ms=lambda:int(clock()*1000))
     except Exception as exc:
-        log.error('Margin cycle diagnostic: %s',json.dumps(cycle_diagnostic(exc,stage,symbol,interval),sort_keys=True))
+        log.error('Margin cycle diagnostic: %s',json.dumps(cycle_diagnostic(exc,stage,symbol,interval,observed_at_ms=int(time.time()*1000),rows=rows),sort_keys=True))
         raise
 
 

@@ -5,6 +5,7 @@ supervision and Telegram wiring are still required before live deployment.
 """
 import hashlib
 import json
+import re
 import time
 from .cross_paper_book import SYMBOLS
 from .cross_funding_tracker import CrossFundingTracker
@@ -22,10 +23,20 @@ class FundingHistoryContradiction(FundingReconciliationRequired):
 
 
 class CrossDataSync:
-    def __init__(self, book, reader):
+    def __init__(self, book, reader, *, diagnostic=None):
         self.book=book;self.shared=book.shared;self.db=book.db;self.reader=reader
         self.tracker=CrossFundingTracker(book)
         self.page_status='not_checked';self.model_status='not_checked'
+        self.diagnostic=diagnostic
+
+    def _diagnose(self,phase,stage,started,exc=None):
+        if self.diagnostic is None:return
+        item={'phase':phase,'stage':stage,'started_at':started,'observed_at':time.time()}
+        if exc is not None:
+            name=type(exc).__name__
+            item['exception_type']=name if re.fullmatch(r'[A-Za-z_][A-Za-z_0-9]{0,79}',name) else 'Exception'
+        try:self.diagnostic(item)
+        except Exception:pass  # Observability must never interrupt protection.
 
     def _check_retired_history(self, symbol, events):
         """Detect contradictions before any new funding postings for a retired pair."""
@@ -51,17 +62,18 @@ class CrossDataSync:
 
     def refresh(self, *, now=None):
         now=time.time() if now is None else now
-        # Even if the process dies during I/O, previous quotes remain unusable.
-        self.book.invalidate_all()
+        started=time.time();stage='invalidate';self._diagnose('refreshing','fetch_or_reconcile',started)
         self.page_status='not_checked';self.model_status='not_checked'
         try:
+            # Even if the process dies during I/O, previous quotes remain unusable.
+            self.book.invalidate_all()
             selected=self.book._symbols()
             conflict=self.db.execute("SELECT value FROM cross_runtime WHERE key='funding_history_conflict'").fetchone()
             retired_row=self.db.execute("SELECT value FROM cross_runtime WHERE key='retired_funding_conflicts'").fetchone()
             retired=set(json.loads(retired_row[0])) if retired_row else set()
             if conflict and (not getattr(self.book,'_pair_experiment',False) or not retired or retired.intersection(selected)):
                 raise FundingHistoryContradiction('Funding history contradiction requires explicit reconciliation')
-            schedules={symbol:self.reader.schedule(symbol) for symbol in selected}
+            stage='schedule';schedules={symbol:self.reader.schedule(symbol) for symbol in selected}
             active={p['id']:p for p in self.book._positions()}
             history={}
             rows=self.db.execute("SELECT kind,created,details FROM ledger_events WHERE kind IN ('CROSS_OPEN','CROSS_CLOSE') ORDER BY created,id").fetchall()
@@ -89,7 +101,7 @@ class CrossDataSync:
             end_ms=max(data['server_ms'] for data in schedules.values())
             for symbol in history_symbols:
                 if symbol not in schedules:schedules[symbol]={'server_ms':end_ms}
-            loaded={}
+            stage='history';loaded={}
             historical_unavailable=set()
             for symbol in history_symbols:
                 if symbol in retired:continue
@@ -122,7 +134,7 @@ class CrossDataSync:
                         self.db.execute("UPDATE wallet_state SET paused=1 WHERE wallet='futures_cross'")
             self.page_status=('historical_contradiction' if retired else
                               'historical_unconfirmed' if historical_unavailable else 'loaded_available_pages')
-            events_by_symbol={}
+            stage='reconcile';events_by_symbol={}
             for symbol in history_symbols:
                 if symbol in historical_unavailable or symbol in retired:continue
                 relevant=[h for h in history.values() if h['position']['symbol']==symbol]
@@ -241,7 +253,7 @@ class CrossDataSync:
             quotes={symbol:{'mark':data['mark'],'time':now,'funding_complete':True,'server_ms':data['server_ms'],
                             'next_due_ms':data['next_due_ms'],'interval_ms':data['interval_ms']}
                     for symbol,data in schedules.items() if symbol in selected}
-            self.book.record_quotes(quotes,now=now)
+            stage='publish';self.book.record_quotes(quotes,now=now)
             if retired:
                 self.book.set_runtime_error('FundingHistoryContradiction')
                 self.model_status='historical_contradiction'
@@ -254,8 +266,10 @@ class CrossDataSync:
                 self.model_status='matches_paper_assumption'
                 if self.book.runtime_error()=='HistoricalFundingUnavailable':
                     self.book.set_runtime_error(None)
+            self._diagnose('complete' if self.model_status=='matches_paper_assumption' else 'unconfirmed','complete',started)
             return quotes
         except Exception as exc:
+            self._diagnose('failed',stage,started,exc)
             if self.page_status!='loaded_available_pages':self.page_status='not_confirmed'
             if isinstance(exc,FundingHistoryContradiction):self.model_status='contradiction'
             elif self.page_status=='loaded_available_pages':self.model_status='unconfirmed'

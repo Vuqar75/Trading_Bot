@@ -5,6 +5,7 @@ It shares the financial DB and durable queue with the existing paper services.
 """
 import argparse
 import logging
+import os
 import signal
 import threading
 import time
@@ -73,6 +74,11 @@ def main():
                 sync=CrossDataSync(book,reader);strategy=CrossPaperStrategy(book)
             book.set_paused(True)
             started=time.time();error=None
+            diagnostic_state={'available':None}
+            def diagnostic(item):
+                try:write_report(path.parent/'cross-sync-diagnostic.json',dict(item,pid=os.getpid()))
+                except (OSError,ValueError,TypeError):diagnostic_state['available']=False
+                else:diagnostic_state['available']=True
             while not stop.is_set():
                 try:
                     if pair_runner:
@@ -80,6 +86,7 @@ def main():
                         except Exception as exc:log.error('Cross pair selection failed: %s',type(exc).__name__)
                         finally:
                             book=pair_runner.book;receiver=pair_runner.receiver;reader=pair_runner.reader;sync=pair_runner.sync;strategy=pair_runner.strategy
+                    sync.diagnostic=diagnostic
                     cycle(book,queue,receiver,strategy,sync,reader,started=started,experimental_pair=args.experimental_pair)
                     if pair_runner:receiver.hold_resume=args.hold_resume
                     error={'historical_unconfirmed':'HistoricalFundingUnavailable',
@@ -102,6 +109,7 @@ def main():
                     'funding_pages':sync.page_status,'funding_paper_model':sync.model_status,
                     'funding_publication_finality':'not_guaranteed_by_source',
                     'quotes_fresh':quotes_fresh,'protection_fresh':protection_fresh,
+                    'sync_diagnostics_available':diagnostic_state['available'],
                     'protection_checked_at':strategy.last_protection_at,'resume_held':args.hold_resume})
                 if args.once:
                     if error:raise SystemExit(1)

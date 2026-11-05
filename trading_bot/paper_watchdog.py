@@ -27,6 +27,8 @@ def assess(snapshot,now):
             put('pause:'+market,market+(': защитная пауза' if h.get('pause_source')=='protective' else ': причина паузы не подтверждена'))
         if market=='spot' and h.get('telegram_error'):put('telegram','Spot: ошибка Telegram-поллера')
         if market in ('cross','margin'):
+            if market=='cross' and h.get('sync_diagnostics_available') is False:
+                put('diagnostic:cross','cross: недоступна запись диагностики сверки',h.get('time'))
             if h.get('quotes_fresh') is not True or not fresh(h.get('data_at'),120):put('quotes:'+market,market+': котировки не подтверждены',h.get('data_at'))
             protection=h.get('protection_checked_at')
             protection=(protection/1000 if market=='margin' else protection) if isinstance(protection,(int,float)) else None
@@ -69,6 +71,7 @@ def recovery_proofs(snapshot,now):
         if type(h.get('paused')) is bool and (not h['paused'] or h.get('pause_source') in ('manual','deployment','agreed')):result.add('pause:'+market)
         if market=='spot' and 'telegram_error' in h and h['telegram_error'] is None:result.add('telegram')
         if market in ('cross','margin'):
+            if market=='cross' and h.get('sync_diagnostics_available') is True:result.add('diagnostic:cross')
             if h.get('quotes_fresh') is True and fresh(h.get('data_at'),120):result.add('quotes:'+market)
             value=h.get('protection_checked_at');value=value/1000 if market=='margin' and isinstance(value,(int,float)) else value
             if h.get('protection_fresh') is True and fresh(value,120) and not h.get('error') and not h.get('blocked'):result.add('protection:'+market)

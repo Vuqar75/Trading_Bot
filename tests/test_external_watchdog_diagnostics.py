@@ -107,17 +107,46 @@ class WatchdogTests(unittest.TestCase):
         state,events=transitions(assess(self.healthy(),10003),state,10003)
         self.assertEqual({e['kind'] for e in events},{'recovered'});self.assertEqual(state,{})
 
+    def test_publish_observes_time_after_collect_and_rejects_truly_stale_data(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as tmp:
+            path=Path(tmp)/'financial.db'
+            with closing(sqlite3.connect(path)) as db:db.execute('CREATE TABLE futures_outbox(id INTEGER PRIMARY KEY,message TEXT NOT NULL)');db.commit()
+            sample=self.healthy()
+            with patch('trading_bot.paper_watchdog_runtime.time.time',return_value=10000.3):
+                self.assertEqual(publish(path,sample)['new_messages'],0)
+            with patch('trading_bot.paper_watchdog_runtime.time.time',return_value=10121):
+                self.assertGreater(publish(path,sample)['new_messages'],0)
+
     def test_absent_protection_and_stuck_queue_are_not_healthy(self):
         s=self.healthy();s['health']['cross']['protection_checked_at']=None;s['queue']={'pending':1,'oldest_received':9000}
         s['health']['margin']['pause_source']='protective';s['health']['cross']['pause_source']='unknown'
         r=assess(s,10000);self.assertIn('protection:cross',r);self.assertIn('queue:stuck',r)
         self.assertIn('защитная',r['pause:margin']['message']);self.assertIn('не подтверждена',r['pause:cross']['message'])
 
+    def test_diagnostic_write_failure_is_one_durable_incident_and_requires_proof(self):
+        from trading_bot.paper_watchdog import recovery_proofs
+        s=self.healthy();s['health']['cross']['sync_diagnostics_available']=False
+        problems=assess(s,10000);self.assertIn('diagnostic:cross',problems)
+        state,events=transitions(problems,{},10000);self.assertEqual(len(events),1)
+        state,events=transitions(problems,state,10001);self.assertEqual(events,[])
+        s['health']['cross'].pop('sync_diagnostics_available')
+        self.assertNotIn('diagnostic:cross',recovery_proofs(s,10002))
+        s['health']['cross']['sync_diagnostics_available']=True
+        self.assertIn('diagnostic:cross',recovery_proofs(s,10002))
+
     def test_diagnostics_does_not_copy_sensitive_error_text_or_url(self):
         try:raise ValueError('token=super-secret https://example.com/?signature=secret')
         except ValueError as exc:d=cycle_diagnostic(exc,'fetch','BTCUSDT','15m')
         output=json.dumps(d);self.assertEqual(d['stage'],'fetch');self.assertEqual(d['exception_type'],'ValueError')
         self.assertEqual(d['symbol'],'BTCUSDT');self.assertNotIn('secret',output);self.assertNotIn('https',output)
+
+    def test_margin_diagnostics_only_include_allowlisted_data_times(self):
+        try:raise ValueError('secret')
+        except ValueError as exc:
+            d=cycle_diagnostic(exc,'strategy',None,'15m',observed_at_ms=1005,rows={'BTCUSDT':{'time_ms':1000,'server_ms':999,'candle_server_ms':998,'price':'secret','headers':'secret'},'BAD/path':{'time_ms':1}})
+        self.assertEqual(d['data_times_ms'],{'BTCUSDT':{'time_ms':1000,'server_ms':999,'candle_server_ms':998}})
+        self.assertEqual(d['observed_at_ms'],1005);self.assertNotIn('secret',json.dumps(d))
 
     def test_outbox_transaction_deduplicates_and_reports_recovery(self):
         import tempfile

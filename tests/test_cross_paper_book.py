@@ -302,6 +302,60 @@ class CrossPaperBookTests(unittest.TestCase):
         self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
         self.assertTrue(self.shared.ledger.reconcile()['balanced'])
 
+    def test_refresh_diagnostics_do_not_treat_inflight_quotes_as_risk_ready(self):
+        self.positions();events=[];observed=[];book=self.book
+        class Reader:
+            def schedule(self,symbol):
+                if not observed:
+                    current=book.stored_quotes();observed.append(current)
+                    with self_test.assertRaises(ValueError):book.risk(current,now=28001)
+                    with self_test.assertRaisesRegex(ValueError,'Incomplete cross data'):
+                        book._marks(current,28001,book._symbols())
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':28001000,
+                        'next_due_ms':56800000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):
+                return [{'symbol':symbol,'time':28000000,'rate_type':'Regular','rate':'.001','mark':'100' if symbol=='BTCUSDT' else '200'}]
+        self_test=self;sync=CrossDataSync(self.book,Reader(),diagnostic=events.append)
+        quotes=sync.refresh(now=28001)
+        self.assertEqual([e['phase'] for e in events],['refreshing','complete'])
+        self.assertTrue(all(not q['funding_complete'] for q in observed[0].values()))
+        self.assertEqual(len(self.book.risk(quotes,now=28001)['positions']),2)
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_failed_diagnostic_sink_cannot_break_protection_data_refresh(self):
+        class Reader:
+            def schedule(self,symbol):
+                return {'symbol':symbol,'mark':'100' if symbol=='BTCUSDT' else '200','server_ms':101000,
+                        'next_due_ms':28000000,'interval_ms':28800000}
+        def unavailable(_):raise OSError('diagnostics unavailable')
+        quotes=CrossDataSync(self.book,Reader(),diagnostic=unavailable).refresh(now=101)
+        self.assertTrue(all(q['funding_complete'] for q in quotes.values()))
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
+    def test_source_failure_pauses_entries_and_fresh_recovery_keeps_protection(self):
+        btc,eth=self.positions()
+        class Reader:
+            fail=True
+            def schedule(self,symbol):
+                if self.fail:raise OSError('temporary public source outage')
+                return {'symbol':symbol,'mark':'90' if symbol=='BTCUSDT' else '200','server_ms':27900000,
+                        'next_due_ms':28000000,'interval_ms':28800000}
+            def funding(self,symbol,start,end):return []
+        reader=Reader();events=[];sync=CrossDataSync(self.book,reader,diagnostic=events.append)
+        with self.assertRaises(OSError):sync.refresh(now=27900)
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertEqual(len(self.book._positions()),2)
+        with self.assertRaises(ValueError):self.book.risk(self.book.stored_quotes(),now=27900)
+        reader.fail=False;quotes=sync.refresh(now=27900)
+        last=(27900000//900000-1)*900000
+        candles={s:[(last-(30-i)*900000,Decimal('100')) for i in range(31)] for s in ('BTCUSDT','ETHUSDT')}
+        strategy=CrossPaperStrategy(self.book);actions=strategy.tick(quotes,candles,27900000,now=27900)
+        self.assertTrue(any(a['action']=='STOP' and a['symbol']=='BTCUSDT' for a in actions))
+        self.assertEqual([p['id'] for p in self.book._positions()],[eth['id']])
+        self.assertEqual(self.shared.db.execute("SELECT paused FROM wallet_state WHERE wallet='futures_cross'").fetchone()[0],1)
+        self.assertEqual([e['phase'] for e in events],['refreshing','failed','refreshing','complete'])
+        self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
     def test_public_funding_one_millisecond_after_due_is_once_after_restart(self):
         # Observed on the VM for both pairs: the public source reports the
         # regular event at 08:00:00.001 while the saved deadline is 08:00:00.000.

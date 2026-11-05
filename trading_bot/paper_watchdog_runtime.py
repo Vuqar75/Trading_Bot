@@ -95,10 +95,11 @@ def collect(home,*,now=None,service_status=None):
 
 
 def publish(financial,snapshot,*,now=None,reminder_seconds=3600):
-    now=time.time() if now is None else now;snapshot=copy.deepcopy(snapshot)
+    snapshot=copy.deepcopy(snapshot)
     with closing(sqlite3.connect(financial,isolation_level=None,timeout=5)) as db:
         db.execute('BEGIN IMMEDIATE')
         try:
+            now=time.time() if now is None else now
             db.execute('CREATE TABLE IF NOT EXISTS paper_watchdog_state(key TEXT PRIMARY KEY,value TEXT NOT NULL)')
             row=db.execute("SELECT value FROM paper_watchdog_state WHERE key='incidents'").fetchone()
             old=json.loads(row[0]) if row else {}
