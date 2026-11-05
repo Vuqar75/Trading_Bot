@@ -1,15 +1,13 @@
 """Explicitly authorized one-shot follow-up; never run without owner approval."""
-import argparse,hashlib,json,os,sqlite3
+import argparse,hashlib,json,os,sqlite3,time,re
 from decimal import Decimal,ROUND_CEILING
 from pathlib import Path
 from trading_bot.market_research import ResearchError,canonical
 from trading_bot.openai_research import prepare_request
 from trading_bot.research_api_budget import APP_ID,MODEL,paid_analysis
 
-SNAPSHOT='8522cfc3c543fc41fda2b8fdb2e7d4c43d5d3cc3b61803a5037e92c4f72e4d4d'
-SNAPSHOT_SHA256='bfa7658e0bbc8e8845b5284c3f0c0ffdff41c188b5a31e76d37baee854953ce2'
 MAX_RESERVE=3640
-def run(snapshot_path,state,*,approved=False,transport=None):
+def run(snapshot_path,state,*,approved=False,expected_sha256=None,transport=None):
     if approved is not True:raise ResearchError('explicit_approval_required')
     if transport is None and not os.environ.get('TRADING_BOT_AI'):raise ResearchError('trading_bot_ai_unavailable')
     state=Path(state);budget=state/'experiment-budget.db';old_lock=state/'interactive-once.lock';new_lock=state/'approved-followup-once.lock'
@@ -21,9 +19,12 @@ def run(snapshot_path,state,*,approved=False,transport=None):
         if (count,reserved,unknown)!=(1,3630,1):raise ResearchError('original_budget_changed_requires_review')
     finally:db.close()
     raw=Path(snapshot_path).read_bytes()
-    if hashlib.sha256(raw).hexdigest()!=SNAPSHOT_SHA256:raise ResearchError('snapshot_hash_mismatch')
+    if not isinstance(expected_sha256,str) or not re.fullmatch('[0-9a-f]{64}',expected_sha256) or hashlib.sha256(raw).hexdigest()!=expected_sha256:raise ResearchError('snapshot_hash_mismatch')
     snapshot=json.loads(raw)
-    if snapshot.get('snapshot_id')!=SNAPSHOT:raise ResearchError('unexpected_snapshot')
+    ident=snapshot.get('snapshot_id');body={k:v for k,v in snapshot.items() if k!='snapshot_id'}
+    if not isinstance(ident,str) or hashlib.sha256(canonical(body).encode()).hexdigest()!=ident:raise ResearchError('snapshot_id_mismatch')
+    captured=snapshot.get('as_of_ms');now=int(time.time()*1000)
+    if type(captured) is not int or not 0<=now-captured<=900000:raise ResearchError('snapshot_stale_or_future')
     req=prepare_request(snapshot,model=MODEL);req['service_tier']='default'
     bound=len(canonical(req).encode())+4096;reserve=int((Decimal(bound)*Decimal('.1')+Decimal(req['max_output_tokens'])*Decimal('.5')).to_integral_value(rounding=ROUND_CEILING))
     if reserve>MAX_RESERVE:raise ResearchError('approved_cost_exceeded')
@@ -38,9 +39,9 @@ def run(snapshot_path,state,*,approved=False,transport=None):
         if old is not None:os.environ['OPENAI_API_KEY']=old
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--snapshot',required=True);p.add_argument('--approved-by-owner',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--snapshot',required=True);p.add_argument('--snapshot-sha256',required=True);p.add_argument('--approved-by-owner',action='store_true');a=p.parse_args()
     try:
-        result=run(a.snapshot,Path.home()/'.local/state/tradingbot-ai',approved=a.approved_by_owner)
+        result=run(a.snapshot,Path.home()/'.local/state/tradingbot-ai',approved=a.approved_by_owner,expected_sha256=a.snapshot_sha256)
         from tools.export_ai_telegram import export
         try:export(json.loads(Path(a.snapshot).read_text(encoding='utf-8')),result,Path.home()/'.local/state/tradingbot-ai/telegram-report.json')
         except (ResearchError,ValueError,OSError,KeyError,TypeError):print('model_result_saved_but_view_not_exported; do not retry API')
