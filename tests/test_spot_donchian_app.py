@@ -10,6 +10,7 @@ from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_consolidation import consolidate_snapshots
 from trading_bot.unified_queue import UnifiedQueue
 from tools.donchianspot_preconditions import check
+from trading_bot.telegram_reports import history
 from trading_bot.paper_pair_runtime_offline import ExperimentalSpotRunner
 
 class Clock:
@@ -38,6 +39,7 @@ class DonchianAppTest(unittest.TestCase):
   self.reader.boundary+=DAY_MS;self.reader.breakout=False;self.clock.t=self.reader.boundary/1000+1
   with patch('trading_bot.runtime_store.time.time',self.clock):self.app.tick();self.app.tick()
   self.assertEqual(float(self.store.get('position')['quantity']),0);self.assertEqual(self.store.db.execute('select count(*) from runtime_orders').fetchone()[0],2);self.assertTrue(self.store.get('paused'))
+  self.assertIn('Дневной выход Donchian60',history(self.store))
  def test_paused_signal_not_backfilled(self):
   self.clock.t=self.b/1000+1
   with patch('trading_bot.runtime_store.time.time',self.clock):self.app.tick()

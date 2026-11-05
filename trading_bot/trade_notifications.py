@@ -6,7 +6,8 @@ from .display_amount import display_amount as fmt
 
 REASONS = {'SIGNAL': 'Пересечение SMA 10/30', 'STOP': 'Стоп-лосс', 'TAKE': 'Тейк-профит',
            'MANUAL': 'Команда /close', 'REVERSAL': 'Обратное пересечение SMA',
-           'MODEL_LIQUIDATION': 'Модельная ликвидация', 'TEST': 'Проверка', 'DEMO': 'Демонстрация'}
+           'MODEL_LIQUIDATION': 'Модельная ликвидация', 'TEST': 'Проверка', 'DEMO': 'Демонстрация',
+           'DONCHIAN60_ENTRY': 'Дневной пробой Donchian60', 'DONCHIAN60_EXIT': 'Дневной выход Donchian60'}
 STATUSES = {'PARTIALLY_FILLED': 'частично исполнен', 'NEW': 'принят', 'PENDING_CANCEL': 'ожидает отмены', 'FILLED': 'исполнен полностью', 'CANCELED': 'отменён', 'REJECTED': 'отклонён',
             'EXPIRED': 'истёк', 'EXPIRED_IN_MATCH': 'истёк при сопоставлении'}
 
