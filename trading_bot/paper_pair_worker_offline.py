@@ -85,7 +85,7 @@ def process_spot_pair(queue, shared, reader, *, budget='10', clock=time.time,
             result=_select_or_expire(queue,job,lambda:select_spot_pair_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
                 request_id='pair:'+payload['proposal'],expected_symbol=payload['previous'][0],
                 expected_version=payload['version'],symbol=target,metadata=symbols[0],price=str(price),
-                quantity=str(budget/price),observed_at=observed,clock=clock,confirm_job_id=job['id']))
+                quantity=budget/price,observed_at=observed,clock=clock,confirm_job_id=job['id']))
         if result is None:continue
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[SPOT] Пара '+result['symbol']+' сохранена; входы остаются на паузе.')
@@ -121,7 +121,7 @@ def process_isolated_pair(queue, shared, reader_factory, *, budget='10', clock=t
             result=_select_or_expire(queue,job,lambda:select_isolated_pair_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
                 request_id='pair:'+payload['proposal'],expected_symbol=payload['previous'][0],
                 expected_version=payload['version'],symbol=target,metadata=matches[0],price=str(price),
-                quantity=str(budget/price),observed_at=observed,clock=clock,confirm_job_id=job['id']))
+                quantity=budget/price,observed_at=observed,clock=clock,confirm_job_id=job['id']))
         if result is None:continue
         fault('after_financial_commit')
         queue.acknowledge(job['id'],'[Futures isolated] Пара '+result['symbol']+' сохранена; входы остаются на паузе.')
@@ -158,7 +158,7 @@ def process_cross_pair(queue, shared, reader_factory, *, budget='5', clock=time.
             if not price.is_finite() or price<=0:raise ValueError('Invalid pair price')
             metadata[symbol]=matches[0];prices[symbol]=str(price)
             with localcontext() as ctx:
-                ctx.prec=120;quantities[symbol]=str(budget/price)
+                ctx.prec=120;quantities[symbol]=budget/price
         if unsupported:_unsupported(queue,job);continue
         result=_select_or_expire(queue,job,lambda:select_cross_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
             request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],
@@ -198,7 +198,7 @@ def process_margin_pair(queue, shared, reader_factory, *, budget='5', clock=time
             if not price.is_finite() or price<=0:raise ValueError('Invalid pair price')
             metadata[symbol]=rows[0];prices[symbol]=str(price)
             with localcontext() as ctx:
-                ctx.prec=120;quantities[symbol]=str(budget/price)
+                ctx.prec=120;quantities[symbol]=budget/price
         if unsupported:_unsupported(queue,job);continue
         result=_select_or_expire(queue,job,lambda:select_margin_pairs_offline(shared,queue.db.execute('PRAGMA database_list').fetchone()[2],
             request_id='pair:'+payload['proposal'],expected_symbols=payload['previous'],

@@ -25,6 +25,17 @@ def _decimal(value):
         raise PairMetadataError('invalid_numeric_filter') from None
 
 
+def _preview_quantity(value):
+    # Worker-calculated Decimal ratios may repeat for all 120 context digits.
+    # Keep that precision; untrusted textual filter inputs retain tighter limits.
+    if not isinstance(value,Decimal):return _decimal(value)
+    if (not value.is_finite() or value < 0 or value >= Decimal('1e20') or
+        (value and value < Decimal('1e-30')) or value.as_tuple().exponent < -180 or
+        len(value.as_tuple().digits)>120):
+        raise PairMetadataError('invalid_numeric_filter')
+    return value
+
+
 def spot_usdt_candidate(info, expected_symbol, desired_quantity, reference_price):
     """Validate supplied exchangeInfo-like data; return a paper-only preview.
 
@@ -55,7 +66,7 @@ def spot_usdt_candidate(info, expected_symbol, desired_quantity, reference_price
     if 'LOT_SIZE' not in by_type or not any(k in by_type for k in ('MIN_NOTIONAL', 'NOTIONAL')):
         raise PairMetadataError('required_filter_missing')
     try:
-        quantity, price = _decimal(desired_quantity), _decimal(reference_price)
+        quantity, price = _preview_quantity(desired_quantity), _decimal(reference_price)
         if not quantity or not price:
             raise PairMetadataError('nonpositive_input')
         with localcontext() as ctx:

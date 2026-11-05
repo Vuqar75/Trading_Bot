@@ -1,6 +1,6 @@
 import copy
 import unittest
-from decimal import Decimal
+from decimal import Decimal, localcontext
 
 from trading_bot.paper_pair_catalog import PairMetadataError, spot_usdt_candidate
 from trading_bot.runtime_exchange import order_quantity
@@ -62,6 +62,18 @@ class PaperPairCatalogTests(unittest.TestCase):
             with self.subTest(qty=qty):
                 with self.assertRaisesRegex(PairMetadataError,'invalid_numeric_filter'):
                     spot_usdt_candidate(info,'SOLUSDT',qty,'200')
+
+    def test_computed_repeating_decimal_keeps_precision_but_is_bounded(self):
+        from trading_bot.paper_pair_catalog import _preview_quantity
+        info=spot_info('BTC');info['filters'][0].update({'minQty':'0.00001000','stepSize':'0.00001000','maxQty':'9000'})
+        with localcontext() as ctx:
+            ctx.prec=120;ratio=Decimal(10)/Decimal('80506.01000000')
+        self.assertEqual(_preview_quantity(ratio),ratio)
+        preview=spot_usdt_candidate(info,'BTCUSDT',ratio,'80506.01000000')
+        self.assertEqual(preview['quantity'],'0.00012000')
+        self.assertLessEqual(Decimal(preview['reference_notional']),Decimal(10))
+        for bad in (Decimal('1.'+'1'*120),Decimal('1e-181'),Decimal('1e20')):
+            with self.assertRaises(PairMetadataError):_preview_quantity(bad)
 
 
 if __name__ == '__main__':

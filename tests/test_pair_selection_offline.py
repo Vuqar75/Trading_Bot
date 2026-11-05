@@ -52,6 +52,22 @@ class PairSelectionOfflineTests(unittest.TestCase):
         args.update(overrides)
         return select_spot_pair_offline(self.shared,self.queue,**args)
 
+    def test_spot_pair_preview_accepts_realistic_repeating_budget_division(self):
+        now=time.time();queue=UnifiedQueue(self.queue,allow_pair_experiment=True)
+        try:
+            queue.receive(1,True,'/pair BTCUSDT',now=now,pairs={'spot':{'symbols':['BTCUSDT'],'version':0}})
+            token=queue.pair_proposals()[0]['id'];queue.receive(2,True,'/confirm '+token,now=now)
+            info=spot_info('BTC');info['filters'][0].update({'minQty':'0.00001000','stepSize':'0.00001000','maxQty':'9000'})
+            class Reader:
+                def get(self,path,params):
+                    return {'symbols':[info]} if path.endswith('exchangeInfo') else {'symbol':'BTCUSDT','price':'80506.01000000'}
+            result=process_spot_pair(queue,self.shared,Reader(),clock=lambda:now)
+            self.assertIsNotNone(result)
+            self.assertEqual(result['symbol'],'BTCUSDT')
+            self.assertTrue(self.shared.snapshot('spot')['paused'])
+            self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+        finally:queue.close()
+
     def test_selection_preserves_capital_and_is_idempotent_across_reopen(self):
         before=self.shared.snapshot('spot');events=self.shared.db.execute('SELECT count(*) FROM ledger_events').fetchone()[0]
         result=self.choose();self.assertEqual(result['symbol'],'SOLUSDT');self.assertFalse(result['replayed'])

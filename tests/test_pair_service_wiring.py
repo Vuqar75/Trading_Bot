@@ -144,7 +144,7 @@ class PairServiceWiringTests(unittest.TestCase):
             def get(self,path):
                 info=spot_info();info.update(contractType='PERPETUAL',marginAsset='USDT')
                 return {'symbols':[info]}
-            def mark(self):return Decimal('100'),int(time.time()*1000)
+            def mark(self):return Decimal('101'),int(time.time()*1000)
             def candles(self,interval,server):
                 period=900000;last=(server//period-1)*period
                 return [(last-(30-i)*period,Decimal('100')) for i in range(31)]
@@ -172,11 +172,11 @@ class PairServiceWiringTests(unittest.TestCase):
             def get(self,path):
                 rows=[]
                 for base in ('BTC','SOL'):
-                    info=spot_info(base);info.update(contractType='PERPETUAL',marginAsset='USDT');rows.append(info)
+                    info=spot_info(base);info['filters'][-1]['minNotional']='4';info.update(contractType='PERPETUAL',marginAsset='USDT');rows.append(info)
                 return {'symbols':rows}
             def schedule(self,symbol):
                 now=int(time.time()*1000)
-                return {'symbol':symbol,'mark':'100','server_ms':now,'next_due_ms':now+28800000,'interval_ms':28800000}
+                return {'symbol':symbol,'mark':'101','server_ms':now,'next_due_ms':now+28800000,'interval_ms':28800000}
             def candles(self,symbol,interval,server):
                 period=900000;last=(server//period-1)*period
                 return [(last-(30-i)*period,Decimal('100')) for i in range(31)]
@@ -198,11 +198,12 @@ class PairServiceWiringTests(unittest.TestCase):
         class Reader:
             HOST='https://api.binance.com'
             def __init__(self,*,experimental_pairs):self.pairs=experimental_pairs
-            def get(self,path,params):return {'symbols':[spot_info(params['symbol'][:-4])]}
+            def get(self,path,params):
+                info=spot_info(params['symbol'][:-4]);info['filters'][-1]['minNotional']='4';return {'symbols':[info]}
             def snapshot(self,symbol,interval='15m'):
                 now=int(time.time()*1000);period=900000;last=(now//period-1)*period
                 filters={'lot_rules':[{'min':'0','max':'0','step':'.001'}],'min_notional':'0','max_notional':'0','observed_ms':now}
-                return {'price':'100','time_ms':now,'server_ms':now,'candle_server_ms':now,'source':self.HOST,
+                return {'price':'101','time_ms':now,'server_ms':now,'candle_server_ms':now,'source':self.HOST,
                         'price_kind':'last_public_trade','filters':filters,
                         'candles':[(last-(30-i)*period,Decimal('100')) for i in range(31)]}
         args=['margin','--experimental-pair','--once','--db',str(self.financial),'--queue',str(self.queue)]
