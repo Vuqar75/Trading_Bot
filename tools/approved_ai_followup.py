@@ -41,6 +41,9 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--snapshot',required=True);p.add_argument('--approved-by-owner',action='store_true');a=p.parse_args()
     try:
         result=run(a.snapshot,Path.home()/'.local/state/tradingbot-ai',approved=a.approved_by_owner)
+        from tools.export_ai_telegram import export
+        try:export(json.loads(Path(a.snapshot).read_text(encoding='utf-8')),result,Path.home()/'.local/state/tradingbot-ai/telegram-report.json')
+        except (ResearchError,ValueError,OSError,KeyError,TypeError):print('model_result_saved_but_view_not_exported; do not retry API')
         print(canonical(result))
     except Exception as exc:
         print('AI follow-up failed:',str(exc) if isinstance(exc,ResearchError) else type(exc).__name__)
