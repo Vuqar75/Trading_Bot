@@ -44,4 +44,9 @@ class ResilienceTests(unittest.TestCase):
         self.db.execute('BEGIN IMMEDIATE');p.event(self.db,'pending',123,{})
         manifest,raw=b.snapshot(self.path,self.root/'concurrent.sqlite',clock=lambda:3);self.assertEqual(manifest['counts']['events'],0)
         self.db.commit();self.assertEqual(self.db.execute('SELECT COUNT(*) FROM events').fetchone()[0],1);self.assertEqual(b.verify(b.package(manifest,raw))['counts']['events'],0)
+    def test_upload_failure_never_records_success(self):
+        work=self.root/'work'
+        with patch.object(b,'WORK',work),patch.object(b,'STATE',self.path),patch.object(b,'transfer',side_effect=OSError('offline')):
+            with self.assertRaises(OSError):b.run()
+        self.assertFalse((work/'success.json').exists())
 if __name__=='__main__':unittest.main()

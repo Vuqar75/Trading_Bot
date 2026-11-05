@@ -1,5 +1,48 @@
 # Изолированный Donchian60 на существующей paper VM
 
+## Фактическая установка 5 ноября 2026
+
+На `tradingbot-paper-test` работает ровно один наблюдатель из кода
+`cc6a4b2f7ea07487a8ac734ab9ed0f0234402b8f`, база
+`/var/lib/donchian-observer/observer.sqlite`. Исходный старт сохранён:
+2026-11-05 07:45:47.836 UTC / 11:45:47.836 Баку. Финальная согласованная копия
+Cloud Shell сделана после останова в 08:22:05 UTC; V2 транзакционно вступила в
+силу 08:27:12.913 UTC. Окно 00:00 UTC не пропущено. Исходный Cloud Shell архив
+сохранён, старый процесс и сессия остановлены; ссылок в cron/user systemd не
+обнаружено. Все 18 счетов и исходные 270 свечей/шесть событий сверены по
+снимку; с переходом добавлено только событие версии. Стратегических сделок нет.
+
+На VM сервис включён для запуска после reboot; наблюдатель изолирован пользователем
+`donchian`, пределами 96 MiB/15% CPU/16 задач, запретом metadata и каталога
+торговых данных. Изолированная проверка cgroup не смогла обратиться к metadata;
+фактический процесс не имеет соответствующих секретных переменных и прав чтения
+торговой финансовой базы. Для отдельного uploader используется **уже прикреплённый
+VM service account**: его существующие bucket-права действуют на bucket целиком,
+а не принудительно только на prefix. Прав и service account не добавляли.
+
+Первый итоговый backup в GCS загружен 08:27:31 UTC; размер 31 811 байт,
+SHA-256 `adcc3a80e798555c97928a1f8636649264175fbd1e4648479b0eaaad23c2a238`.
+Скачанная копия проверена по hash, `integrity_check`, счетам, событиям и дате
+старта в отдельном каталоге без запуска процесса. Таймер активен ежедневно
+03:15 UTC, `Persistent=true`. Существующие правила lifecycle удаляют объекты
+после 14 дней и далее действует soft delete 7 дней; очистка асинхронная.
+Переносной snapshot и манифест лежат отдельно в `.../donchian60/migration/`.
+Тестовые rehearsal-объекты в том же ограниченном prefix удалятся по этой политике.
+
+При текущем размере 31 811 байт и 21 днях хранения: примерно 0,00062 GiB и
+около $0,000013/мес за Standard-хранение; 30 загрузок и 30 проверочных чтений
+при $0,005/1000 A и $0,0004/1000 B — около $0,000162/мес, вместе порядка
+$0,0002/мес без налогов и возможного внешнего трафика. Фактическая сумма
+изменится при росте базы и числа операций. Источник цен:
+https://cloud.google.com/storage/pricing . Новые платные ресурсы не создавались.
+
+До переноса свободно было примерно 527 MiB RAM и 15 GiB диска; после запуска
+доступно примерно 494 MiB, observer использовал около 13 MiB. Публичные запросы
+проверены с VM, возраст выбранных сделок составил 1,6–2,3 с; это измерения,
+не гарантия будущей доступности. Торговые службы остались active с прежними PID.
+Reboot не выполнялся: автозапуск проверен конфигурацией `enabled` и systemd,
+фактическая работа после перезагрузки остаётся непроверенной.
+
 Эта инструкция относится только к отдельному публичному наблюдателю; торговые
 службы, их базы, Telegram, параметры и паузы не меняются. Стратегия и исходная
 дата не меняются; метка источника котировки V2 и её срок действия описаны в
@@ -41,6 +84,32 @@ IAM, lifecycle и торговые копии не меняются. В архи
 содержимое перед записью success marker; отсутствие успеха не маскируется
 старым локальным архивом. Восстанавливать только в изолированный каталог,
 не запуская второй сборщик.
+
+Пример отдельной проверки последнего внешнего объекта (с существующей VM SA):
+
+```sh
+sudo install -d -m 700 /var/lib/donchian-restore-check
+sudo /usr/bin/python3 - <<'PY'
+import hashlib, io, json, os, sys, tarfile, urllib.parse, urllib.request
+from pathlib import Path
+sys.path.insert(0, '/opt/donchian-observer')
+from research import donchian_external_backup as b
+marker=json.loads(Path('/var/lib/donchian-backup/success.json').read_text())
+req=urllib.request.Request('http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token',headers={'Metadata-Flavor':'Google'})
+with urllib.request.urlopen(req,timeout=5) as r: token=json.load(r)['access_token']
+url='https://storage.googleapis.com/storage/v1/b/'+b.BUCKET+'/o/'+urllib.parse.quote(marker['object'],safe='')+'?alt=media'
+with urllib.request.urlopen(urllib.request.Request(url,headers={'Authorization':'Bearer '+token}),timeout=60) as r: data=r.read(20000001)
+assert hashlib.sha256(data).hexdigest()==marker['sha256']
+manifest=b.verify(data)
+with tarfile.open(fileobj=io.BytesIO(data),mode='r:gz') as t: raw=t.extractfile('observer.sqlite').read()
+fd=os.open('/var/lib/donchian-restore-check/observer.sqlite',os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+with os.fdopen(fd,'wb') as f: f.write(raw)
+print('verified_start_ms',manifest['start_ms'],'counts',manifest['counts'])
+PY
+```
+
+Команда не запускает восстановленный экземпляр и откажется перезаписать уже
+существующий проверочный файл. Для нового испытания выберите новый каталог.
 
 Перенос: вне 5-минутного окна UTC подтвердить health и отсутствие claims,
 остановить Cloud Shell и убедиться в отсутствии процесса/автозапуска; выполнить
