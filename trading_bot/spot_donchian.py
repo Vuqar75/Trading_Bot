@@ -11,8 +11,8 @@ def closed_days(rows,server_ms):
         try:
             start,end=r[0],r[6]
             if type(start) is not int or type(end) is not int or start%DAY_MS or end!=start+DAY_MS-1:raise ValueError('invalid_day_boundary')
-            close=Decimal(str(r[4]))
-            if not close.is_finite() or close<=0:raise ValueError('invalid_close')
+            op,high,low,close=(Decimal(str(x)) for x in r[1:5])
+            if any(not x.is_finite() or x<=0 for x in (op,high,low,close)) or not low<=min(op,close)<=max(op,close)<=high:raise ValueError('invalid_ohlc')
         except (IndexError,TypeError,InvalidOperation):raise ValueError('invalid_candle') from None
         if end<server_ms:candles.append((start,close))
     if len(candles)<61:raise ValueError('insufficient_warmup')

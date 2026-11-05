@@ -15,6 +15,8 @@ class DonchianTests(unittest.TestCase):
   accepted=d.closed_days(rows,server);self.assertEqual(len(accepted),61);self.assertEqual(accepted[-1][0],99*d.DAY_MS)
   with self.assertRaises(ValueError):d.closed_days(rows[:20]+rows[21:],server)
   with self.assertRaises(ValueError):d.closed_days(rows[:-1]+[rows[-2]],server)
+  bad=[x[:] for x in rows];bad[10][2]='0.5'
+  with self.assertRaises(ValueError):d.closed_days(bad,server)
  def test_execution_requires_signal_and_new_trade_and_window(self):
   b=100*d.DAY_MS;ok=dict(boundary_ms=b,signal_commit_ms=b+10,request_ms=b+20,trade_ms=b+11,received_ms=b+30,server_before_ms=b+20,server_after_ms=b+30)
   d.validate_execution(**ok)
