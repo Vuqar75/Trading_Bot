@@ -5,6 +5,7 @@ from tools import approved_ai_followup as f
 from trading_bot.research_api_budget import APP_ID
 from trading_bot.research_api_budget import paid_analysis
 from trading_bot.market_research import build_snapshot
+from tools.export_ai_telegram import export
 
 class FollowupTest(unittest.TestCase):
  def setUp(self):
@@ -22,3 +23,6 @@ class FollowupTest(unittest.TestCase):
   fixture=Path(__file__).resolve().parents[1]/'research/fixtures/ai-observer-synthetic.json';snapshot=build_snapshot(json.loads(fixture.read_text()))
   with self.assertRaises(Exception):paid_analysis(snapshot,self.root/'isolated.db',enabled=True,transport=lambda _:{'status':'incomplete','usage':{'input_tokens':123,'output_tokens':5,'secret':'ignored'}})
   d=sqlite3.connect(self.root/'isolated.db');usage=json.loads(d.execute('select usage_json from api_usage').fetchone()[0]);d.close();self.assertEqual(usage,{'input_tokens':123,'output_tokens':5})
+ def test_export_rejects_unconfirmed_result(self):
+  with self.assertRaises(Exception):export({'snapshot_id':'one'},{'mode':'model_observation','snapshot_id':'different'},self.root/'view.json')
+  self.assertFalse((self.root/'view.json').exists())
