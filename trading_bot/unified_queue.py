@@ -16,8 +16,9 @@ def market_label(market):
 
 class UnifiedQueue:
     outbox_table = 'unified_outbox'
-    def __init__(self, path, fault=lambda point: None, *, allow_pair_experiment=False):
+    def __init__(self, path, fault=lambda point: None, *, allow_pair_experiment=False, donchian_spot=False):
         self.allow_pair_experiment=allow_pair_experiment
+        self.donchian_spot=donchian_spot
         self.db = sqlite3.connect(path, isolation_level=None, timeout=5)
         self.db.row_factory = sqlite3.Row
         self.fault = fault
@@ -177,6 +178,9 @@ class UnifiedQueue:
                     view=parts[1] if len(parts)==2 else 'summary'
                     buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('По активам','/donchian assets'),('Сравнение с baseline','/donchian baseline'),('Данные и здоровье','/donchian health'),('Обновить','/donchian'))]
                     self._notify(render(view),buttons=buttons)
+                elif command == '/ai' and len(parts)==1:
+                    from .ai_view import render
+                    self._notify(render())
                 elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
                         mode = parts[1]
@@ -195,7 +199,9 @@ class UnifiedQueue:
                     market = parts[1]; jobs = [(market, '/status')]
                 elif command == '/pair' and self.allow_pair_experiment:
                     snapshot=(pairs or {}).get(market)
-                    if len(parts)==1:
+                    if self.donchian_spot and market=='spot':
+                        self._notify('[SPOT] Donchian60: BTCUSDT. Смена пары недоступна в этом режиме.')
+                    elif len(parts)==1:
                         jobs=[(market,'/pair_status')]
                         if isinstance(snapshot,dict):
                             targets=[('BTCUSDT',),('ETHUSDT',),('SOLUSDT',)]

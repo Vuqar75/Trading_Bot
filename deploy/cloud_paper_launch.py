@@ -28,7 +28,7 @@ os.set_inheritable(legacy_lock.fileno(), True)
 os.environ['RUNTIME_TELEGRAM_BOT_TOKEN'] = token
 os.environ['RUNTIME_TELEGRAM_OWNER_ID'] = owner
 shared_db = os.getenv('SHARED_PAPER_DB')
-if sys.argv[1:] not in ([],['--experimental-pair']):
+if sys.argv[1:] not in ([],['--experimental-pair'],['--experimental-pair','--donchian-paper']):
     raise SystemExit('Unsupported launcher option')
 if sys.argv[1:] and not shared_db:
     raise SystemExit('Pair experiment requires shared paper database')
@@ -39,6 +39,8 @@ if shared_db:
     arguments += ['--shared-paper']
 if sys.argv[1:]:
     arguments += ['--experimental-pair']
+if '--donchian-paper' in sys.argv[1:]:
+    arguments += ['--donchian-paper']
 if os.getenv('FUTURES_OUTBOX_DB'):
     arguments += ['--futures-outbox-db', os.environ['FUTURES_OUTBOX_DB']]
 os.execv(sys.executable, arguments)

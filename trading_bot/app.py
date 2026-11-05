@@ -416,7 +416,10 @@ def main():
     parser.add_argument('--experimental-pair', action='store_true', help='Enable experimental shared paper pair selection')
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--allow-paper-signal', action='store_true', help='Allow explicit SIGUSR1 activation of paper entries')
+    parser.add_argument('--donchian-paper',action='store_true',help='Use BTCUSDT daily Donchian60 in paper mode')
     args = parser.parse_args()
+    if args.donchian_paper and (args.mode!='paper' or not args.experimental_pair or not args.shared_paper):
+        raise ObservationError('Donchian requires the shared experimental paper runtime')
     if args.demo:
         demo()
         return
@@ -475,7 +478,7 @@ def main():
                     raise ObservationError('Unified control requires paper mode, Telegram and futures relay')
                 from .unified_queue import UnifiedQueue
                 from .unified_receiver import MarketReceiver
-                unified = UnifiedQueue(unified_path,allow_pair_experiment=args.experimental_pair)
+                unified = UnifiedQueue(unified_path,allow_pair_experiment=args.experimental_pair,donchian_spot=args.donchian_paper)
                 unified.seed_offset(store.get('offset'))
                 receiver = MarketReceiver(args.db, 'spot')
                 store.delivery_label = '[Spot paper]'
@@ -491,7 +494,8 @@ def main():
             if args.experimental_pair:
                 if not unified:raise ObservationError('Pair experiment requires unified queue')
                 from .paper_pair_runtime_offline import ExperimentalSpotRunner
-                pair_runner=ExperimentalSpotRunner(store,unified,reader,amount=args.amount,interval=args.interval)
+                if args.donchian_paper and args.mode!='paper':raise ObservationError('Donchian restricted to paper')
+                pair_runner=ExperimentalSpotRunner(store,unified,reader,amount=args.amount,interval=args.interval,donchian=args.donchian_paper)
                 app=pair_runner.app
             else:app = Application(store, exchange, reader, interval=args.interval, amount=args.amount)
             while running:

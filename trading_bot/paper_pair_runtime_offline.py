@@ -146,17 +146,21 @@ class ExperimentalCrossRunner:
 
 
 class ExperimentalSpotRunner:
-    def __init__(self,store,queue,reader,*,amount='10',interval='15m'):
+    def __init__(self,store,queue,reader,*,amount='10',interval='15m',donchian=False):
         from .runtime_exchange import PaperExchange
         if not store.shared or not queue.allow_pair_experiment:raise ValueError('Offline shared paper queue required')
-        self.store=store;self.queue=queue;self.reader=reader;self.amount=amount;self.interval=interval;self.exchange=PaperExchange()
+        self.store=store;self.queue=queue;self.reader=reader;self.amount=amount;self.interval=interval;self.exchange=PaperExchange();self.donchian=donchian
         self._bind()
 
     def _bind(self):
         from .app import Application
-        self.app=Application(self.store,self.exchange,self.reader,amount=self.amount,interval=self.interval,allow_pair_experiment=True)
+        if self.donchian:
+            from .spot_donchian_app import DonchianSpotApplication
+            self.app=DonchianSpotApplication(self.store,self.exchange,self.reader,amount=self.amount,interval=self.interval,allow_pair_experiment=True)
+        else:self.app=Application(self.store,self.exchange,self.reader,amount=self.amount,interval=self.interval,allow_pair_experiment=True)
 
     def pair_step(self,*,clock,fault=lambda stage:None):
+        if self.donchian:return None
         from .paper_pair_worker_offline import process_spot_pair
         try:
             return process_spot_pair(self.queue,self.store.shared,self.reader,budget=self.amount,clock=clock,fault=fault)

@@ -144,6 +144,13 @@ class RuntimeStore:
                 raise ObservationError('Spot pair version superseded')
             if expected_pair_version is not None and self.get('pair_selection_version',0)!=expected_pair_version:
                 raise ObservationError('Spot pair version superseded')
+            if reason in ('DONCHIAN60_ENTRY','DONCHIAN60_EXIT'):
+                state=self.get('donchian60',{});stamp=time.time()
+                if (isinstance(quote_at,bool) or not isinstance(quote_at,(int,float)) or not 0<=stamp-quote_at<=5 or
+                    not isinstance(state,dict) or state.get('phase')!='executing' or
+                    type(state.get('quote_trade_ms')) is not int or not 0<=stamp*1000-state['quote_trade_ms']<=5000 or
+                    stamp*1000>state.get('boundary_ms',0)+300000):
+                    raise ObservationError('Donchian execution window or quote expired after database wait')
             if identity.get('symbol','BTCUSDT')!='BTCUSDT':
                 if (isinstance(quote_at,bool) or not isinstance(quote_at,(int,float)) or
                         not 0<=time.time()-quote_at<=120):
@@ -170,7 +177,7 @@ class RuntimeStore:
             symbol=self.get('identity').get('symbol','BTCUSDT')
             self.set('pair_order_symbol:' + client, symbol)
             self._order_symbol(client)
-            if symbol!='BTCUSDT':self.set('pair_order_quote_at:'+client,quote_at)
+            if symbol!='BTCUSDT' or reason in ('DONCHIAN60_ENTRY','DONCHIAN60_EXIT'):self.set('pair_order_quote_at:'+client,quote_at)
             self.set('binding:' + client, pos['id'])
             if reason == 'MANUAL':
                 self.set('manual_binding:' + client, self.get('close_request'))
@@ -186,6 +193,13 @@ class RuntimeStore:
                 raise ObservationError('Spot pair version superseded')
             if expected_pair_version is not None and self.get('pair_selection_version',0)!=expected_pair_version:
                 raise ObservationError('Spot pair version superseded')
+            if order['reason'] in ('DONCHIAN60_ENTRY','DONCHIAN60_EXIT'):
+                observed=self.get('pair_order_quote_at:'+client);state=self.get('donchian60',{});stamp=time.time()
+                if (isinstance(observed,bool) or not isinstance(observed,(int,float)) or not 0<=stamp-observed<=5 or
+                    not isinstance(state,dict) or state.get('phase')!='executing' or type(state.get('quote_trade_ms')) is not int or
+                    not 0<=stamp*1000-state['quote_trade_ms']<=5000 or stamp*1000>state.get('boundary_ms',0)+300000):
+                    self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?",(client,))
+                    return None
             if self._order_symbol(client)!='BTCUSDT':
                 observed=self.get('pair_order_quote_at:'+client)
                 if (isinstance(observed,bool) or not isinstance(observed,(int,float)) or
@@ -380,7 +394,9 @@ class RuntimeStore:
                 elif command.startswith('/timeframe'):
                     parts = command.split()
                     current = self.get('selected_interval', self.get('identity').get('interval', '15m'))
-                    if len(parts) == 1:
+                    if self.get('donchian60') is not None:
+                        message = 'Donchian60: дневные свечи UTC; изменение интервала недоступно в этом режиме.'
+                    elif len(parts) == 1:
                         message = 'Таймфрейм: ' + current + '. Выбор: /timeframe 1m, 5m, 15m или 1h. Сначала /pause и закрытие позиции.'
                     elif len(parts) != 2 or parts[1] not in {'1m', '5m', '15m', '1h'}:
                         message = 'Используйте /timeframe 1m, /timeframe 5m, /timeframe 15m или /timeframe 1h.'

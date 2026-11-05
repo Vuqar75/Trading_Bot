@@ -21,14 +21,30 @@ def status(store):
              'Таймфрейм: ' + store.get('selected_interval', identity.get('interval', '15m')),
              'Размер входа: до ' + fmt(identity.get('amount', '10')) + ' USDT',
              'Новые входы: ' + ('на паузе' if store.get('paused') else 'разрешены')]
+    donchian=store.get('donchian60')
+    if isinstance(donchian,dict):
+        lines[2]='Стратегия: Donchian60 • дневные свечи UTC; вход до 10 USDT'
+        lines += ['Новый paper-этап: '+when(donchian['start_ms']/1000),
+                  'Следующий дневной расчёт: '+when(donchian['next_boundary_ms']/1000),
+                  'Последняя закрытая свеча: '+(when(donchian['last_candle_ms']/1000) if donchian.get('last_candle_ms') else 'ещё не обработана'),
+                  'Сигнал: '+str(donchian.get('last_action') or 'ожидание сигнала')+'; уровень выхода: '+(fmt(donchian['level'])+' USDT' if donchian.get('level') else 'нет'),
+                  'Защита: выход по закрытию дня; внутридневной стоп не гарантирован.',
+                  'Статус расчёта: '+(str(donchian.get('error') or 'заблокирован') if donchian.get('halted') else 'работает')]
+        closed=store.db.execute('SELECT pnl,known FROM runtime_closes WHERE ts>=?',(donchian['start_ms']/1000,)).fetchall()
+        lines.append('Реализованный PnL нового этапа: '+(fmt(sum((Decimal(x['pnl']) for x in closed),Decimal(0)),signed=True)+' USDT' if all(x['known'] for x in closed) else 'неизвестно'))
+        import json
+        fills=[json.loads(x[0]) for x in store.db.execute("SELECT f.payload FROM runtime_fills f JOIN runtime_orders o ON o.client_id=f.client_id WHERE o.created>=?",(donchian['start_ms']/1000,))]
+        fee=sum((Decimal(f['commission']) for f in fills if f.get('commissionAsset')=='USDT'),Decimal(0))
+        lines.append('Комиссии нового этапа: '+(fmt(fee)+' USDT' if all(f.get('commissionAsset')=='USDT' for f in fills) else 'неизвестны: комиссия в другом активе'))
     qty = Decimal(pos['quantity'])
     lines.append('Позиция: нет' if not qty else f"Позиция: LONG {fmt(qty,asset)} {asset}\nСредняя себестоимость: {fmt(Decimal(pos['cost'])/qty)} USDT/{asset}")
     if quote:
         age = max(0, int(time.time()-quote['time']))
         lines.append(f"Котировка: {fmt(quote['price'])} USDT\nПолучена: {when(quote['time'])}, {age} сек. назад" + (' — УСТАРЕЛА' if age > 120 else ''))
-        if qty:
-            estimate = qty*Decimal(quote['price'])*Decimal('.999')-Decimal(pos['cost'])
+        if qty and (not donchian or age<=120):
+            estimate = qty*Decimal(quote['price'])*Decimal('.999')*(Decimal('.9995') if donchian else Decimal(1))-Decimal(pos['cost'])
             lines.append(f'Оценка результата закрытия с комиссией 0,1%: {fmt(estimate,signed=True)} USDT')
+        elif qty and donchian:lines.append('Открытый PnL неизвестен: котировка устарела.')
     else:
         lines.append('Котировка: ещё не получена')
     lines += [f"Накопленный реализованный PnL: {fmt(store.get('pnl'),signed=True)} USDT",
@@ -43,6 +59,15 @@ def status(store):
 
 
 def signal_report(store):
+    state=store.get('donchian60')
+    if isinstance(state,dict):
+        return '\n'.join(['Spot • PAPER • Donchian60 • BTCUSDT • дневные свечи UTC',
+          'Сигнал: '+str(state.get('last_action') or 'ожидание сигнала'),
+          'Последняя свеча: '+(when(state['last_candle_ms']/1000) if state.get('last_candle_ms') else 'ещё нет'),
+          'Следующий расчёт: '+when(state['next_boundary_ms']/1000),
+          'Уровень выхода: '+(fmt(state['level'])+' USDT' if state.get('level') else 'нет'),
+          'Состояние: '+(str(state.get('error') or 'заблокирован') if state.get('halted') else 'ожидание расчёта'),
+          'Дневной выход по закрытию; внутридневное исполнение не гарантируется.'])
     snap = store.get('signal')
     if not snap:
         return 'Сигнал ещё не рассчитан. Дождитесь следующего цикла проверки.'
@@ -115,11 +140,18 @@ def daily_report(store, now=None):
     known = all(r['known'] for r in rows)
     net = sum((Decimal(r['pnl']) for r in rows), Decimal(0))
     all_known=not store.db.execute('SELECT 1 FROM runtime_closes WHERE known=0 LIMIT 1').fetchone()
-    return '\n'.join(['Spot • все пары • отчёт за '+local.strftime('%d.%m.%Y')+' (Баку)',
+    state=store.get('donchian60');label='Spot • PAPER • Donchian60 • BTCUSDT • дневные UTC • ' if isinstance(state,dict) else 'Spot • все пары • '
+    result=[label+'отчёт за '+local.strftime('%d.%m.%Y')+' (Баку)',
         'Обновлён: '+when(now), f'Ордеров с выходами сегодня: {len({r["client_id"] for r in rows})} (возможны частичные)',
         f'Реализованный результат сегодня: {fmt(net,signed=True)} USDT' if known else 'Реализованный результат сегодня: неизвестен — не все комиссии оценены.',
         f"Результат за всё время: {fmt(store.get('pnl'),signed=True)} USDT" if all_known else 'Результат за всё время: неизвестен — не все комиссии оценены.',
-        'Суточные комиссии и просадка: см. отчёт наблюдателя; отсутствие данных не означает ноль.'])
+        'Суточные комиссии и просадка: см. отчёт наблюдателя; отсутствие данных не означает ноль.']
+    if isinstance(state,dict):
+        stage=store.db.execute('SELECT pnl,known FROM runtime_closes WHERE ts>=? AND ts<=?',(state['start_ms']/1000,now)).fetchall()
+        result += ['Начало Donchian60: '+when(state['start_ms']/1000),
+                   'Реализованный PnL этапа: '+(fmt(sum((Decimal(r['pnl']) for r in stage),Decimal(0)),signed=True)+' USDT' if all(r['known'] for r in stage) else 'неизвестен'),
+                   'Открытый PnL и комиссии этапа: /status. Независимое исследование: /donchian.']
+    return '\n'.join(result)
 
 
 def futures_daily_report(store, now=None):
