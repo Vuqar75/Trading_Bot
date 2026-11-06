@@ -4337,3 +4337,38 @@ historical full run's single skipped case was
 it requires `FOUR_MARKET_OFFLINE_BENCH`; the separate bench isolation probe
 was run and passed. No full application suite was repeated for this separate
 study implementation.
+
+### Installed boundary and publisher fixes
+
+The original study missed the first post-start 23:00 UTC candle boundary: a
+cycle could finish across a boundary and sleep until the next one. No decision
+or position existed and no trade was backfilled. The installed study was
+updated, retaining its exact start and both cash accounts, to GitHub
+`b95c1ca18ce2b21da17d85f709bf7f5535ac81b5` (local `0cf2277d5d09bd1b05df08d4680f66e642ae23af`,
+identical tree). The missed boundary now appears as one gap for each market.
+The new code immediately rechecks an imminent crossed boundary and explicitly
+records windows missed after a delay. Thirty-eight affected tests passed.
+
+The root publisher originally watched individual file paths and failed to
+notice subsequent atomic replacements. Its path unit now watches the source
+directory; two atomic replacements triggered a separate real-systemd test,
+and the real 23:09:20 UTC budget update propagated automatically at 23:09:22.
+The protected AI executor remains on its separately verified evidence code
+`1a1d999bf11621382c1ae84aed36953abcf21771`, with the same timer and journal.
+Only the research supervisor and its newly created path unit were restarted;
+trading services and the independent observer were not restarted. A fresh
+pre-switch study archive was externally restored and verified with SHA-256
+`d77a3dfad33902e66d688afceea0ad85f14bffc47a23a7d3c9f384360c7a30f6`.
+Public BTCUSDT USD-M funding returned three valid events over a 24-hour probe;
+source publication time remains unknown. No funding was applied without an
+open research position.
+
+At the next actual boundary, 23:15 UTC, the installed corrected service
+accepted the closed Spot and USD-M candles; their receipt times were
+23:15:03.317 and 23:15:00.863 UTC respectively. The single earlier missed
+window remains recorded for each market; no trade was fabricated. One active
+writer was confirmed when a second lock attempt failed. Both accounts remain
+1,000 USDT cash with no positions or decisions, and the AI budget aggregate is
+fresh. A subsequent real external snapshot including these observations was
+downloaded and verified in isolated restoration: SHA-256
+`88c4a6982123c8d086be7e1903d7e004e9a2cea73ab6324ea70a9b4632c92e6e`.
