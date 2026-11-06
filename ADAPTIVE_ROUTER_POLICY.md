@@ -1,0 +1,9 @@
+# Offline policy v1 — fixed before implementation
+
+This is an isolated research experiment, not a paper-trading admission. All three researched rules failed economic selection and remain forbidden in any ordinary runtime. No VM, Telegram, API credential or network executor is used.
+
+BTCUSDT only. `TREND_UP` maps to Spot long and the pre-registered `trend1` 1-hour breakout in `ADAPTIVE_RESEARCH_PLAN.md`; `TREND_DOWN` maps to isolated futures short at 1x and the same `trend1` rule. `RANGE` maps to Spot long and the fixed 15-minute range rule from that plan. `NO_TRADE` blocks entries. No mapping is defined for cross futures or margin; their capability must be reported as disallowed. The trend selection is fixed here before running the new bench; trend4 is not tested or optimized in this stage.
+
+Research decisions must be bound to a snapshot, BTCUSDT, source, expiry and approved protocol version. Use 15m complete bars and the existing `research.adaptive_study.signals` implementation for signal calculation. An entry signal is not execution: it is eligible only after the prescribed extra 15m bar has elapsed. Fixed stop, target, inverse-channel and timeout are those in the original plan; the saved entry strategy governs its exit despite a later regime change. Stale data, missed execution, active pause, pending action, stale decision or unresolved state must fail closed. At most 10 USDT notional, 1x isolated, one exposure across Spot and isolated including pending state. Cross-database claims must not be advertised as atomic; durable idempotent transitions and recovery must be shown.
+
+No historical PnL from synthetic candles is evidence of a profitable strategy. No result from this experiment permits production or working-paper execution. Partial fills and partial isolated closes are outside the supported model.
