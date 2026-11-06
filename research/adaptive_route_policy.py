@@ -1,5 +1,5 @@
 """Fixed research routing decisions; no execution, network, or API access."""
-import math
+import hashlib,json,math
 from .adaptive_shadow import validate_model
 from .adaptive_study import signals
 
@@ -8,6 +8,12 @@ MAPPING={'TREND_UP':('spot','trend1','LONG'),'TREND_DOWN':('futures','trend1','S
          'RANGE':('spot','range','LONG')}
 CAPABILITIES={'spot':('TREND_UP','RANGE'),'futures':('TREND_DOWN',),
               'futures_cross':(),'margin_cross':()}
+
+def decision_digest(decision):
+    return hashlib.sha256(json.dumps(decision,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()).hexdigest()
+
+def candle_digest(bars,skip_bar):
+    return hashlib.sha256(json.dumps({'bars':bars,'skip_bar':skip_bar},sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False).encode()).hexdigest()
 
 def route(decision,*,snapshot_id,data_ms,now_ms,symbol,decision_version,market=None,eligible=False,research_sandbox=False):
     """Return admission metadata; rejected strategies require isolated sandbox."""

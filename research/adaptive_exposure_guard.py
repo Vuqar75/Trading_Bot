@@ -6,7 +6,7 @@ validate freshness and decision/strategy eligibility under the same locks.
 import json,sqlite3
 from decimal import Decimal
 
-def require_clear(financial):
+def require_clear(financial,*,own_job_id=None,own_business_key=None):
  if not isinstance(financial,sqlite3.Connection) or not financial.in_transaction:raise ValueError('financial_transaction_required')
  attached={row[1] for row in financial.execute('PRAGMA database_list')}
  if 'route_queue' not in attached:raise ValueError('attached_queue_required')
@@ -19,15 +19,21 @@ def require_clear(financial):
  if not isinstance(meta('futures_meta','identity'),dict):raise ValueError('state_missing')
  spot=meta('runtime_meta','position');futures=meta('futures_meta','position',missing_ok=True)
  if not isinstance(spot,dict) or Decimal(str(spot['quantity']))!=0 or futures is not None:raise ValueError('position_exists')
- if financial.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone():raise ValueError('pending_spot_order')
+ if financial.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' AND (? IS NULL OR business_key!=?) LIMIT 1",(own_business_key,own_business_key)).fetchone():raise ValueError('pending_spot_order')
  for table in ('cross_positions','margin_positions'):
   if financial.execute('SELECT 1 FROM '+table+" WHERE symbol='BTCUSDT' LIMIT 1").fetchone():raise ValueError('position_exists')
  if financial.execute("SELECT 1 FROM margin_loans WHERE status='OPEN' LIMIT 1").fetchone():raise ValueError('margin_debt_exists')
  balances={}
  for account,asset,amount in financial.execute("SELECT account,asset,amount FROM ledger_postings WHERE account LIKE '%:reserved'"):
   key=(account,asset);balances[key]=balances.get(key,Decimal(0))+Decimal(amount)
+ if own_business_key:
+  own=financial.execute("SELECT side,phase,quantity,price FROM runtime_orders WHERE business_key=?",(own_business_key,)).fetchone()
+  if not own or own[0]!='BUY' or own[1]!='PREPARED':raise ValueError('own_reservation_not_prepared')
+  expected=Decimal(own[2])*Decimal(own[3])*Decimal('1.002')
+  if balances.get(('spot:reserved','USDT'),Decimal(0))!=expected:raise ValueError('own_reservation_mismatch')
+  balances[('spot:reserved','USDT')]=Decimal(0)
  if any(value!=0 for value in balances.values()):raise ValueError('financial_reserve_exists')
- if financial.execute("SELECT 1 FROM route_queue.unified_jobs WHERE status='PENDING' LIMIT 1").fetchone():raise ValueError('queued_action_exists')
+ if financial.execute("SELECT 1 FROM route_queue.unified_jobs WHERE status='PENDING' AND (? IS NULL OR id!=?) LIMIT 1",(own_job_id,own_job_id)).fetchone():raise ValueError('queued_action_exists')
  if financial.execute("SELECT 1 FROM route_queue.unified_proposals WHERE status='OPEN' LIMIT 1").fetchone():raise ValueError('confirmation_pending')
  for (value,) in financial.execute("SELECT value FROM route_queue.unified_state WHERE key LIKE 'pair-proposal:%'"):
   if json.loads(value).get('status')=='OPEN':raise ValueError('confirmation_pending')

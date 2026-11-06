@@ -12,7 +12,7 @@ class DurableRouteTest(unittest.TestCase):
  def setUp(self):
   self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.path=Path(self.tmp.name)/'route.sqlite';self.now=20000*PERIOD
   self.d={'mode':'TREND_UP','snapshot_id':'s','data_ms':self.now,'expires_ms':self.now+PERIOD,'reasons':['r'],'uncertainties':['u']}
-  self.signal={'symbol':'BTCUSDT','snapshot_id':'s','strategy':'trend1','direction':'LONG'}
+  self.signal={'source':'AI','symbol':'BTCUSDT','snapshot_id':'s','strategy':'trend1','direction':'LONG'}
   self.kw={'snapshot_id':'s','data_ms':self.now,'symbol':'BTCUSDT','decision_version':'regular-regime-horizon-v2','quote_ms':self.now,'expiry_ms':self.now+10000,'eligible':True,'research_sandbox':True}
  def store(self,clock=None):
   s=RouteState(self.path,clock=clock or (lambda:self.now));self.addCleanup(s.close);return s

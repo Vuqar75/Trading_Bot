@@ -115,12 +115,15 @@ class FuturesStore:
         rows = self.db.execute("SELECT payload FROM futures_events WHERE event='CLOSE' AND ts>=?", (start,)).fetchall()
         return -sum((Decimal(json.loads(r[0])['net']) for r in rows), Decimal(0))
 
-    def open_position(self, direction, mark, server, key, *, metadata=None, quote_symbol=None, observed_at=None):
+    def open_position(self, direction, mark, server, key, *, metadata=None, quote_symbol=None, observed_at=None, clock_ms=None):
         if direction not in {'LONG', 'SHORT'} or number(mark) <= 0:
             raise ObservationError('Invalid futures entry')
         with self.transaction():
             if self.db.execute('SELECT 1 FROM futures_events WHERE business_key=?', (key,)).fetchone():
                 return False
+            if clock_ms is not None:
+                server = clock_ms()
+                if type(server) is not int or server < 0:raise ObservationError('Invalid futures execution clock')
             if self.shared and self.shared.deployment_hold():
                 return False
             if self.get('position') or self.get('paused') or self.get('blocked') or self.loss() >= 5:
@@ -200,10 +203,13 @@ class FuturesStore:
         return {'equity': cash+max(Decimal(0), isolated-exit_fee-exit_slippage), 'gross': gross, 'isolated': isolated,
                 'maintenance': qty*mark*self.maintenance/10000+exit_fee+exit_slippage}
 
-    def close_position(self, mark, server, key, reason, target, *, reverse=None, candle=None, quote_symbol=None, observed_at=None):
+    def close_position(self, mark, server, key, reason, target, *, reverse=None, candle=None, quote_symbol=None, observed_at=None, clock_ms=None):
         with self.transaction():
             if self.db.execute('SELECT 1 FROM futures_events WHERE business_key=?', (key,)).fetchone():
                 return False
+            if clock_ms is not None:
+                server = clock_ms()
+                if type(server) is not int or server < 0:raise ObservationError('Invalid futures execution clock')
             pos = self.get('position')
             if not pos or pos['id'] != target:
                 return False

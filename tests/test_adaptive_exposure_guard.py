@@ -48,7 +48,7 @@ class ExposureGuardTests(unittest.TestCase):
  def test_isolated_real_spot_fill_and_queued_manual_pause(self):
   now=20000*PERIOD;route=RouteState(self.fin.parent/'route',clock=lambda:now)
   decision={'mode':'TREND_UP','snapshot_id':'s','data_ms':now,'expires_ms':now+PERIOD,'reasons':['r'],'uncertainties':['u']}
-  signal={'symbol':'BTCUSDT','snapshot_id':'s','strategy':'trend1','direction':'LONG'}
+  signal={'source':'AI','symbol':'BTCUSDT','snapshot_id':'s','strategy':'trend1','direction':'LONG'}
   store=RuntimeStore(self.fin,{'mode':'paper','symbol':'BTCUSDT'},shared=True)
   q=UnifiedQueue(self.qpath)
   try:
