@@ -4,6 +4,7 @@ This is an uninstalled prototype. A privileged publisher must supply read-only
 evidence, and an external backup mechanism must be verified before deployment.
 """
 import argparse,fcntl,json,os,pwd,signal,sqlite3,stat,tempfile,time
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing,contextmanager
 from pathlib import Path
 from . import adaptive_public_feed as feed
@@ -64,18 +65,28 @@ def bootstrap(root,*,clock=lambda:int(time.time()*1000)):
  for source,name in (('AI','ai'),('baseline','baseline')):initialize(root/name,source=source,start_ms=info['start_ms'])
  return info
 
-def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed):
+def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed,filter_cache=None):
  markets={};errors={}
- for market in ('spot','futures'):
+ if filter_cache is None:filter_cache={}
+ def collect_one(market):
   item={'entry_window':signal_window}
-  try:item['quote']=provider.spot_quote(clock=clock) if market=='spot' else provider.futures_quote(clock=clock)
-  except Exception:errors[market+'_quote']='unavailable'
+  local_errors={};cached=filter_cache.get(market);now=clock()
+  need_filter=not cached or type(cached.get('received_ms')) is not int or not 0<=now-cached['received_ms']<=60000
   if signal_window:
    try:
     item['candles']=provider.closed_15m(market,clock=clock);item['bars']=item['candles']['bars'];item['skip_bar']=item['candles']['skip_bar'];item['risk_bar']=item['skip_bar']
-    item['filters']=provider.filters(market,clock=clock)
-   except Exception:errors[market+'_candles_or_filters']='unavailable'
-  markets[market]=item
+   except Exception:local_errors[market+'_candles']='unavailable'
+  if need_filter:
+   try:cached=provider.filters(market,clock=clock);filter_cache[market]=cached
+   except Exception:cached=None;local_errors[market+'_filters']='unavailable'
+  if cached:item['filters']=cached
+  # The executable quote is sampled after the slower candle/filter calls.
+  try:item['quote']=provider.spot_quote(clock=clock) if market=='spot' else provider.futures_quote(clock=clock)
+  except Exception:local_errors[market+'_quote']='unavailable'
+  return market,item,local_errors
+ with ThreadPoolExecutor(max_workers=2,thread_name_prefix='study-public') as pool:
+  for market,item,local_errors in pool.map(collect_one,('spot','futures')):
+   markets[market]=item;errors.update(local_errors)
  if markets['futures'].get('quote'):
   due=[]
   for name in ('ai','baseline'):
@@ -228,13 +239,14 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
  if not stat.S_ISDIR(meta.st_mode) or meta.st_uid!=os.geteuid() or meta.st_mode&0o077:raise ValueError('study_root_untrusted')
  with writer_lock(root):
   identity=bootstrap(root,clock=clock)
+  filter_cache={}
   if capture_fetch is None:
    from .adaptive_snapshot_proof import capture
    from .adaptive_shadow import get,headlines
    capture_fetch=lambda:capture(get,clock=clock,news_fetch=headlines)
   while not stop():
    before=clock();window=(before%900000)<2000
-   markets,errors=collect_markets(root,signal_window=window,clock=clock,provider=provider)
+   markets,errors=collect_markets(root,signal_window=window,clock=clock,provider=provider,filter_cache=filter_cache)
    selected,baseline_uid,baseline_origin=select_baseline(root,baseline_path,publisher_uid=publisher_uid,start_ms=identity['start_ms'],clock=clock,capture_fetch=capture_fetch)
    with cycle_lock(root):
     audit_data=markets['futures'].get('funding_audit');audit_attempt=markets['futures'].get('audit_attempt')

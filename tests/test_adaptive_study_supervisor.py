@@ -1,4 +1,4 @@
-import tempfile,unittest
+import tempfile,threading,unittest
 from pathlib import Path
 from research.adaptive_study_supervisor import bootstrap,writer_lock,run_once,collect_markets,serve,select_baseline
 from research.adaptive_snapshot_proof import capture
@@ -59,3 +59,17 @@ class SupervisorTest(unittest.TestCase):
   serve(self.root,ai_path=self.root/'missing-ai',baseline_path=self.root/'missing-base',publisher_uid=0,version='test',stop=lambda:stopped[0],clock=lambda:now,sleeper=lambda seconds:stopped.__setitem__(0,True),provider=Provider(),capture_fetch=lambda:(_ for _ in ()).throw(ValueError('offline')))
   state=json.loads((self.root/'funding-audit.json').read_text())
   self.assertEqual(state['status'],'checked');self.assertEqual(state['next_start_ms'],old+7*86400000)
+ def test_both_markets_collect_concurrently_and_quote_after_candles(self):
+  bootstrap(self.root,clock=lambda:1000);gate=threading.Barrier(2);calls=[];now=9000000
+  class Provider:
+   def closed_15m(self,market,**kw):
+    calls.append(('candles',market));gate.wait(timeout=2)
+    return {'bars':[(0,100,101,99,100)],'skip_bar':(900000,100,101,99,100)}
+   def spot_quote(self,**kw):calls.append(('quote','spot'));return {'received_ms':now}
+   def futures_quote(self,**kw):calls.append(('quote','futures'));return {'received_ms':now}
+   def filters(self,*args,**kw):raise AssertionError('fresh cached filters must be reused')
+  cached={k:{'received_ms':now} for k in ('spot','futures')}
+  markets,errors=collect_markets(self.root,signal_window=True,clock=lambda:now,provider=Provider(),filter_cache=cached)
+  self.assertFalse(errors)
+  for market in ('spot','futures'):self.assertLess(calls.index(('candles',market)),calls.index(('quote',market)))
+  self.assertEqual(set(markets),{'spot','futures'})
