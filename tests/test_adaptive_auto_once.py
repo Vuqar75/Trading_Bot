@@ -44,7 +44,7 @@ class AutoOnceTests(unittest.TestCase):
    p=Path(tmp)/'report.json';p.write_text(json.dumps({'complete':True,'summary':'ИИ: TREND_UP; baseline того же среза: RANGE'}));calls=[]
    def paths(args,**kwargs):return subprocess.CompletedProcess(args,0,str(args[-1]),'')
    def send(args,**kwargs):
-    script=Path(args[-1]).read_text();compile(script,'remote','exec');self.assertIn('installed version changed',script);self.assertIn('report is not newer',script);self.assertNotIn('fake-secret',script);calls.append('published');return subprocess.CompletedProcess(args,0,'AI_COMPARISON_DISPLAY_VERIFIED','')
+    script=Path(args[-1]).read_text();compile(script,'remote','exec');self.assertIn('installed version changed',script);self.assertIn('report is not newer',script);self.assertNotIn('fake-secret',script);self.assertNotIn('TRADING_BOT_AI',kwargs['env']);self.assertIn('CLOUDSDK_CONFIG',kwargs['env']['WSLENV']);calls.append('published');return subprocess.CompletedProcess(args,0,'AI_COMPARISON_DISPLAY_VERIFIED','')
    with patch.object(a.shutil,'which',side_effect=lambda name:'/fake/'+name),patch.object(a.subprocess,'run',side_effect=paths),patch.dict(os.environ,{'TRADING_BOT_AI':'fake-secret'}):a.publish_report(p,runner=send)
    self.assertEqual(calls,['published'])
  def test_credential_is_read_from_captured_pipe_without_arguments(self):
@@ -60,3 +60,10 @@ class AutoOnceTests(unittest.TestCase):
    state=Path(tmp);calls=[]
    with patch.object(a,'STATE',state),patch.object(a.sys,'argv',['runner','14400000','a'*64]),patch.object(a,'code_hash',return_value='b'*64),patch.object(a,'one_shot',side_effect=lambda *x:calls.append('sent')):a.main()
    self.assertEqual(calls,[]);self.assertEqual(json.loads((state/'adaptive-one-shot-status.json').read_text())['reason'],'scheduled_code_changed')
+ def test_publication_uses_pinned_powershell_when_not_on_path(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   p=Path(tmp)/'report.json';p.write_text(json.dumps({'complete':True,'summary':'ИИ: TREND_UP; baseline того же среза: RANGE'}));calls=[]
+   def paths(args,**kwargs):return subprocess.CompletedProcess(args,0,str(args[-1]),'')
+   def send(args,**kwargs):calls.append(args[0]);return subprocess.CompletedProcess(args,0,'AI_COMPARISON_DISPLAY_VERIFIED','')
+   with patch.object(a.shutil,'which',side_effect=lambda name:None if name=='pwsh.exe' else '/fake/wslpath'),patch.object(a.Path,'is_file',return_value=True),patch.object(a.subprocess,'run',side_effect=paths):a.publish_report(p,runner=send)
+   self.assertTrue(calls[0].endswith('/powershell/pwsh.exe'))
