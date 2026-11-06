@@ -42,12 +42,17 @@ def render(path=REPORT,now=None):
         now=time.time() if now is None else now
         if stamps[1].timestamp()>now+5:raise ValueError('future_answer')
         stale=now-stamps[0].timestamp()>86400 or now-stamps[1].timestamp()>86400
+        expiry=None
+        if 'expires_utc' in data:
+            expiry=dt.datetime.fromisoformat(data['expires_utc'])
+            if expiry.tzinfo is None or not stamps[0]<expiry<=stamps[0]+dt.timedelta(hours=4):raise ValueError('invalid_expiry')
+            stale=stale or now>=expiry.timestamp()
         fmt=lambda x:x.astimezone(dt.timezone(dt.timedelta(hours=4))).strftime('%Y-%m-%d %H:%M:%S Баку')
         labels=[]
         if stale:labels.append('УСТАРЕЛО')
         if data.get('complete') is not True:labels.append('НЕПОЛНЫЙ ОТВЕТ')
         state=', '.join(labels) if labels else 'подготовлено'
-        lines=['[ИИ-аналитик] '+state,'Данные: '+fmt(stamps[0])+'; ответ: '+fmt(stamps[1]),'Вычисленные метрики: '+data['metrics'],'Покрытие и пробелы: '+data['coverage'],'Вывод модели: '+data['summary'],'Риски и ограничения: '+data['risks']]
+        lines=['[ИИ-аналитик] '+state,'Данные: '+fmt(stamps[0])+'; ответ: '+fmt(stamps[1])+('; срок решения: '+fmt(expiry) if expiry else ''),'Вычисленные метрики: '+data['metrics'],'Покрытие и пробелы: '+data['coverage'],'Вывод модели: '+data['summary'],'Риски и ограничения: '+data['risks']]
         sources=data.get('sources',[])
         if not isinstance(sources,list) or len(sources)>30:raise ValueError('invalid_sources')
         for x in sources[:3]:

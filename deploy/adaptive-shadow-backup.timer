@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily verified external adaptive research snapshot
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 UTC
+Persistent=true
+RandomizedDelaySec=2min
+Unit=adaptive-shadow-backup.service
+
+[Install]
+WantedBy=timers.target
