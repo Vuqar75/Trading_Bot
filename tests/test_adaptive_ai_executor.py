@@ -1,3 +1,4 @@
+from contextlib import closing
 import hashlib,json,sqlite3,tempfile,unittest
 from pathlib import Path
 from research.adaptive_shadow import canonical,PERIOD
@@ -31,9 +32,11 @@ class ExecutorTests(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'original_budget'):run(self.snap,'RANGE',self.p,transport=self.response,clock=lambda:self.now)
  def test_claims_shared_gate_without_removing_original(self):
   from unittest.mock import patch
-  with patch('research.adaptive_ai_executor._send',self.response):run(self.snap,'RANGE',self.p,clock=lambda:self.now)
-  self.assertTrue((self.p/'interactive-once.lock').exists());self.assertTrue((self.p/'approved-followup-once.lock').exists())
-  with self.assertRaisesRegex(ValueError,'gate_already_claimed'):run(self.snap,'RANGE',self.p,clock=lambda:self.now)
+  (self.p/'approved-followup-once.lock').write_text('old')
+  with self.assertRaisesRegex(ValueError,'separate_next_authorization_required'):run(self.snap,'RANGE',self.p,clock=lambda:self.now)
+  with patch('research.adaptive_ai_executor._send',self.response):run(self.snap,'RANGE',self.p,clock=lambda:self.now,next_authorized=True)
+  self.assertTrue((self.p/'interactive-once.lock').exists());self.assertEqual((self.p/'approved-followup-once.lock').read_text(),'old');self.assertTrue((self.p/'adaptive-next-once.lock').exists())
+  with self.assertRaisesRegex(ValueError,'next_gate_already_claimed'):run(self.snap,'RANGE',self.p,clock=lambda:self.now,next_authorized=True)
  def test_export_labels_baseline_and_rejects_expired(self):
   from research.adaptive_ai_export import export
   run(self.snap,'RANGE',self.p,transport=self.response,clock=lambda:self.now)
@@ -53,3 +56,26 @@ class ExecutorTests(unittest.TestCase):
   db.close()
   result=run(self.snap,'RANGE',self.p,transport=self.response,clock=lambda:self.now);self.assertEqual(result['response']['mode'],'TREND_DOWN')
   db=sqlite3.connect(self.p/'experiment-budget.db');self.assertEqual(db.execute('select count(*) from api_usage').fetchone()[0],1);db.close()
+ def test_crash_boundaries_keep_reservation_and_allow_only_local_recovery(self):
+  from research.adaptive_ai_executor import recover
+  self.tearDown()
+  for stage in ('after_reservation','after_response','after_response_saved','before_usage'):
+   with self.subTest(stage=stage):
+    self.setUp();calls=[]
+    def transport(req):calls.append(1);return self.response(req)
+    def fault(s):
+     if s==stage:raise RuntimeError('simulated crash')
+    with self.assertRaises(RuntimeError):run(self.snap,'RANGE',self.p,transport=transport,clock=lambda:self.now,fault=fault)
+    with self.assertRaisesRegex(ValueError,'already_exists'):run(self.snap,'RANGE',self.p,transport=transport,clock=lambda:self.now)
+    self.assertEqual(len(calls),0 if stage=='after_reservation' else 1)
+    db=sqlite3.connect(self.p/'experiment-budget.db');rid=db.execute("select request_id from api_attempts where request_id like 'adaptive:%'").fetchone()[0];self.assertEqual(db.execute('select count(*) from api_attempts where result_json is null').fetchone()[0],2);db.close()
+    if stage in ('after_response_saved','before_usage'):
+     result=recover(self.p,rid);self.assertEqual(result['response']['mode'],'TREND_DOWN');self.assertEqual(recover(self.p,rid),result)
+    else:
+     with self.assertRaisesRegex(ValueError,'stored_response_unavailable'):recover(self.p,rid)
+    self.tearDown()
+ def test_response_with_authorization_is_not_stored(self):
+  def unsafe(req):
+   response=self.response(req);response['authorization']='sensitive-value';return response
+  with self.assertRaisesRegex(ValueError,'response_unsafe'):run(self.snap,'RANGE',self.p,transport=unsafe,clock=lambda:self.now)
+  with closing(sqlite3.connect(self.p/'experiment-budget.db')) as db:self.assertEqual(db.execute('select count(*) from adaptive_responses').fetchone()[0],0)
