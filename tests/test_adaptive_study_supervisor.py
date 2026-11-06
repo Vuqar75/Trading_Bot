@@ -1,6 +1,6 @@
 import tempfile,threading,unittest
 from pathlib import Path
-from research.adaptive_study_supervisor import bootstrap,writer_lock,run_once,collect_markets,serve,select_baseline
+from research.adaptive_study_supervisor import bootstrap,writer_lock,run_once,collect_markets,serve,select_baseline,next_delay,update_watermarks
 from research.adaptive_snapshot_proof import capture
 from research.adaptive_shadow import PERIOD
 from tests import test_adaptive_shadow as shadow_fixture
@@ -13,6 +13,21 @@ class SupervisorTest(unittest.TestCase):
    with self.assertRaisesRegex(ValueError,'already_running'):
     with writer_lock(self.root):pass
   self.assertEqual(bootstrap(self.root,clock=lambda:2000),start)
+ def test_prior_cycle_crossing_boundary_schedules_immediate_recheck(self):
+  boundary=20000*900000
+  self.assertEqual(next_delay(boundary-1000,boundary+20),.1)
+  self.assertEqual(next_delay(boundary-1000,boundary+1999),.1)
+  self.assertEqual(next_delay(boundary-1000,boundary+2001),30.)
+  self.assertAlmostEqual(next_delay(boundary-1000,boundary-20),.32)
+ def test_missing_boundary_is_recorded_once_without_late_candles(self):
+  self.root.mkdir(mode=0o700);boundary=20000*900000
+  markets={'spot':{},'futures':{}}
+  first=update_watermarks(self.root,markets,now_ms=boundary+2001,start_ms=boundary-10000,signal_window=False)
+  again=update_watermarks(self.root,markets,now_ms=boundary+4000,start_ms=boundary-10000,signal_window=False)
+  for market in markets:
+   self.assertEqual(first[market]['missed_windows'],1)
+   self.assertEqual(again[market]['missed_windows'],1)
+   self.assertNotIn('last_closed_boundary_ms',again[market])
  def test_missing_decisions_are_not_trades_or_zero_valuations(self):
   bootstrap(self.root,clock=lambda:1000)
   result=run_once(self.root,ai_path=self.root/'no-ai',baseline_path=self.root/'no-base',publisher_uid=0,markets={},clock=lambda:2000)

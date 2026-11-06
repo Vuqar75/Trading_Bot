@@ -2,9 +2,9 @@
 Description=Watch sanitized adaptive AI research evidence
 
 [Path]
-PathChanged=/var/lib/tradingbot-ai-study-export/baseline-current.json
-PathChanged=/var/lib/tradingbot-ai-study-export/ai-current.json
-PathChanged=/var/lib/tradingbot-ai-study-export/budget-current.json
+# Watch the directory: each document is published via atomic rename, which
+# replaces its inode and does not reliably retrigger watches on a file path.
+PathChanged=/var/lib/tradingbot-ai-study-export
 Unit=adaptive-study-publisher.service
 
 [Install]

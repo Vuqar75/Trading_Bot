@@ -185,8 +185,11 @@ def update_watermarks(root,markets,*,now_ms,start_ms,signal_window):
   item=markets.get(market,{});view=state.setdefault(market,{})
   quote=item.get('quote')
   if quote:view['quote_event_ms']=quote.get('event_ms');view['quote_received_ms']=quote.get('received_ms')
-  if signal_window:
-   boundary=now_ms//900000*900000;candles=item.get('candles');previous=view.get('last_checked_boundary_ms')
+  boundary=now_ms//900000*900000
+  # Even if no loop ran during the two-second admission window, explicitly
+  # record the missed boundary on the first subsequent pass; never backfill it.
+  if boundary>start_ms and (signal_window or now_ms-boundary>=2000):
+   candles=item.get('candles') if signal_window else None;previous=view.get('last_checked_boundary_ms')
    first=(start_ms//900000+1)*900000
    if previous is None and boundary>first:view['missed_windows']=view.get('missed_windows',0)+(boundary-first)//900000
    if type(previous) is int and boundary>previous+900000:view['missed_windows']=view.get('missed_windows',0)+(boundary-previous)//900000-1
@@ -198,6 +201,13 @@ def update_watermarks(root,markets,*,now_ms,start_ms,signal_window):
     if close_ms==boundary:view['last_closed_boundary_ms']=close_ms;view['candles_received_ms']=candles['received_ms']
     else:view['data_conflict']='closed_candle_boundary_mismatch'
  _atomic_json(Path(root),'market-watermarks.json',state);return state
+
+def next_delay(before,after):
+ """Do not skip a boundary crossed while the prior cycle was finishing."""
+ period=900000
+ if before//period<after//period and after%period<2000:return .1
+ next_boundary=(after//period+1)*period+300
+ return max(.1,min(30.,(next_boundary-after)/1000))
 
 def select_baseline(root,published,*,publisher_uid,start_ms,clock,capture_fetch):
  """Prefer the AI input; collect independent baseline only after its window."""
@@ -303,9 +313,7 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
     watermarks=update_watermarks(root,markets,now_ms=before,start_ms=identity['start_ms'],signal_window=window)
     result.update({'schema':1,'process_pid':os.getpid(),'start_ms':identity['start_ms'],'code_version':version,'data_errors':errors,'signal_window':window,'market_watermarks':watermarks,'next_signal_boundary_ms':(clock()//900000+1)*900000,'baseline_origin':baseline_origin,'backup':backup_health(backup_path,owner_uid=backup_uid,now_ms=clock()),'global_ai_budget':budget_health(budget_path,owner_uid=publisher_uid,now_ms=clock())})
     write_status(root,result)
-   after=clock();next_boundary=(after//900000+1)*900000+300
-   delay=max(.1,min(30.,(next_boundary-after)/1000))
-   sleeper(delay)
+   sleeper(next_delay(before,clock()))
 
 def main():
  parser=argparse.ArgumentParser();parser.add_argument('--root',required=True);parser.add_argument('--ai',required=True);parser.add_argument('--baseline',required=True);parser.add_argument('--publisher-uid',type=int,required=True);parser.add_argument('--version',required=True);parser.add_argument('--backup-status');parser.add_argument('--backup-user');parser.add_argument('--budget-status')
