@@ -59,16 +59,19 @@ def publish(db,state,public,now,blocker=None):
  for row in usage:
   u=json.loads(row[0]);i+=u.get('input_tokens',0);o+=u.get('output_tokens',0)
  estimate=(Decimal(i)*Decimal('.1')+Decimal(o)*Decimal('.5'))/Decimal(1000000)
+ budget_display=('Успешных регулярных: '+str(c.get('completed',0))+'; неопределённых: '+str(c.get('uncertain',0))+'; пропущенных: '+str(c.get('missed',0))+'; ошибок обработки: '+str(c.get('processing_failed',0))+'. Оценка известных ответов: $'+str(estimate)+'; занято резервами: $'+str(Decimal(total)/1000000)+'; остаток лимита: $'+str(Decimal(CAP-total)/1000000)+'. Два прежних фактических списания неизвестны.')
  if blocker:
   import datetime as dt
   stamp=lambda x:dt.datetime.fromtimestamp(x/1000,dt.timezone.utc).isoformat()
   next_at=dt.datetime.fromtimestamp((now//PERIOD+1)*PERIOD/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%Y-%m-%d %H:%M Баку')
-  recent=db.execute('SELECT decision_json FROM adaptive_decisions WHERE decision_json IS NOT NULL ORDER BY rowid DESC LIMIT 1').fetchone();previous='предыдущего ответа нет'
+  recent=db.execute('SELECT decision_json,snapshot_json FROM adaptive_decisions WHERE decision_json IS NOT NULL ORDER BY rowid DESC LIMIT 1').fetchone();previous='предыдущего ответа нет';detail={}
   if recent:
    rec=json.loads(recent[0]);decision=rec['response'];label='действует' if now<decision['expires_ms'] else 'устарело'
    previous='последнее решение '+label+': ИИ '+decision['mode']+', baseline '+rec['baseline']
-  labels={'waiting_for_first_boundary':'ожидание первой границы','source_unavailable_or_stale':'данные отсутствуют или устарели','uncertain_http':'неопределённая попытка, вызовы приостановлены','budget_exhausted':'общий лимит исчерпан','daily_limit':'дневной лимит достигнут','local_recovery_failed':'ошибка локальной обработки, вызовы приостановлены'}
+   snap=json.loads(recent[1]);detail={'model':decision['mode'],'baseline':rec['baseline'],'reasons':decision['reasons'],'uncertainties':decision['uncertainties'],'features':snap.get('features',{}),'previous_data_utc':stamp(decision['data_ms']),'previous_answer_utc':stamp(rec['received_ms']),'previous_expiry_utc':stamp(decision['expires_ms'])}
+  labels={'waiting_for_first_boundary':'ожидание первой границы','missed':'окно пропущено; задним числом запрос не отправляется','source_unavailable_or_stale':'данные отсутствуют или устарели','uncertain_http':'неопределённая попытка, вызовы приостановлены','budget_exhausted':'общий лимит исчерпан','daily_limit':'дневной лимит достигнут','local_recovery_failed':'ошибка локальной обработки, вызовы приостановлены'}
   d={'schema':1,'data_utc':stamp(now),'answer_utc':stamp(now),'expires_utc':stamp(now+PERIOD),'diagnostic_only':True,'complete':False,'metrics':'Состояние расписания; рыночное решение не обновлено.','coverage':'Предыдущее решение показано с его состоянием свежести.','summary':'ИИ работает в shadow; адаптивные торговые входы запрещены. Состояние расписания: '+labels.get(blocker,'ошибка, требуется проверка')+'; следующая граница '+next_at+'; '+previous,'risks':('Резерв micro-USD: '+str(total)+'; остаток: '+str(CAP-total)+'; регулярных успешных: '+str(c.get('completed',0))+'; неопределённых: '+str(c.get('uncertain',0))+'; ошибок обработки: '+str(c.get('processing_failed',0))+'; пропущенных: '+str(c.get('missed',0))+'; оценка usage USD: '+str(estimate)+'; счёт провайдера не подтверждён.'),'sources':[]}
+  detail.update({'budget_display':budget_display,'schedule':'Состояние: '+labels.get(blocker,'ошибка, требуется проверка')+'; следующий пересмотр '+next_at+'.'});d['shadow_details']=detail
   from .adaptive_ai_export import write
   return write(path,d)
  candidate=path.with_name('.regular-candidate.json')
@@ -83,6 +86,8 @@ def publish(db,state,public,now,blocker=None):
   same=sum(x==y for x,y in pairs);switches=sum(pairs[j][0]!=pairs[j-1][0] for j in range(1,len(pairs)));no_trade=sum(x=='NO_TRADE' for x,y in pairs)
   stats='Расписание активно; следующий пересмотр '+datetime.fromtimestamp(next_ms/1000,timezone(timedelta(hours=4))).strftime('%Y-%m-%d %H:%M Баку')+'; совпадений '+str(same)+'/'+str(len(pairs))+'; расхождений '+str(len(pairs)-same)+'; NO_TRADE '+str(no_trade)+'; переключений ИИ '+str(switches)+'. '
   d['summary']=(stats+d['summary']+'; baseline: закрытие против SMA20 4H с порогом 1%; причины ИИ приведены выше.')[:800]
+  d['shadow_details']['budget_display']=budget_display
+  d['shadow_details']['schedule']='Следующий пересмотр '+datetime.fromtimestamp(next_ms/1000,timezone(timedelta(hours=4))).strftime('%Y-%m-%d %H:%M Баку')+'.'
   horizons={}
   for hours in (4,24):
    values=[Decimal(x[0]) for x in db.execute('SELECT return_pct FROM regular_horizons WHERE hours=?',(hours,))]
@@ -135,12 +140,14 @@ def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=
     setmeta(db,'last_boundary',boundary);db.commit()
    row=db.execute('SELECT state FROM regular_windows WHERE boundary_ms=?',(boundary,)).fetchone()
    if row:
+    if row[0]=='missed' and status(db,'reported_missed')!=boundary:
+     publish(db,state,public,now,'missed');setmeta(db,'reported_missed',boundary)
     if row[0]=='completed' and status(db,'published_boundary')!=boundary:
      try:publish(db,state,public,now);setmeta(db,'published_boundary',boundary)
      except ValueError:pass
     return {'status':row[0]}
    if now-boundary>300000:
-    db.execute('BEGIN IMMEDIATE');mark(db,boundary,'missed',now,'window_expired');db.commit();return {'status':'missed'}
+    db.execute('BEGIN IMMEDIATE');mark(db,boundary,'missed',now,'window_expired');db.commit();publish(db,state,public,now,'missed');setmeta(db,'reported_missed',boundary);return {'status':'missed'}
    if now-boundary<120000:return {'status':'waiting'}
    try:
     snapshot,baseline=fetch();now=clock()
@@ -149,7 +156,7 @@ def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=
    except Exception:
     publish(db,state,public,clock(),'source_unavailable_or_stale');return {'status':'source_unavailable_or_stale'}
    rid='regular:'+str(boundary);req=request(snapshot)
-   req['input'][0]['content']+=' Respond in Russian using plain language. The decision expires no later than '+str(boundary+PERIOD)+' milliseconds UTC; do not infer unseen events.'
+   req['input'][0]['content']+=' Write every item of reasons and uncertainties in Russian, using plain language. The decision expires no later than '+str(boundary+PERIOD)+' milliseconds UTC; a shorter expiry is retained, never extended. Do not infer unseen events.'
    reserve=int((Decimal(len(canonical(req).encode())+4096)*Decimal('.1')+Decimal(2000)*Decimal('.5')).to_integral_value(rounding=ROUND_CEILING))
    if reserve>MAX_RESERVE:raise ValueError('reserve_limit')
    db.execute('BEGIN IMMEDIATE');require_schema(db);locked_now=clock()

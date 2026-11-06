@@ -169,6 +169,8 @@ class TelegramTransport:
             if remaining:
                 text += '\n(Продолжение в следующем сообщении.)'
             request={'chat_id': self.owner, 'text': text}
+            if body.startswith('[ИИ •'):
+                request['disable_web_page_preview']=True
             if table=='unified_outbox' and not remaining:
                 entry=store.db.execute('SELECT value FROM unified_state WHERE key=?',('inline-outbox:'+str(row['id']),)).fetchone()
                 if entry:request['reply_markup']=json.loads(entry[0])

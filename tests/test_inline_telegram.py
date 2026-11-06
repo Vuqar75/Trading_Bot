@@ -159,6 +159,14 @@ class InlineTelegramTests(unittest.TestCase):
         self.assertEqual(self.q.db.execute("select count(*) from unified_state where key like 'inline-outbox:%'").fetchone()[0],0)
         self.assertEqual(self.q.db.execute("select count(*) from unified_state where key like 'inline-action:%'").fetchone()[0],4)
 
+    def test_ai_report_disables_link_previews(self):
+        self.q.receive(1,True,'/ai',now=time.time())
+        self.t.flush(self.q)
+        sent=[payload for method,payload in self.api.calls if method=='sendMessage']
+        self.assertEqual(len(sent),1)
+        self.assertTrue(sent[0]['disable_web_page_preview'])
+        self.assertEqual(len(sent[0]['reply_markup']['inline_keyboard']),5)
+
     def test_expired_sent_menu_is_removed_even_after_restart(self):
         now=time.time();self.q.receive(1,True,'/mode',now=now-121);self.t.flush(self.q)
         self.q.close();self.q=UnifiedQueue(self.path,allow_pair_experiment=True)

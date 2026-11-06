@@ -90,7 +90,7 @@ switch_unit_files(sys.argv[1],sys.argv[2],sys.argv[3],units,assert_safe=lambda:T
     def test_reboot_after_completed_release_does_not_touch_workers(self):
         for name in recovery.ALL_UNITS:(self.units/name).write_bytes((self.stages/name).read_bytes())
         with self.assertRaisesRegex(ValueError,'release not proven'):self.run_recovery(held=False)
-        (self.archive/'release-proof.json').write_text(json.dumps({'operation':'regularai:release:20261106f','enabled':[]}))
+        (self.archive/'release-proof.json').write_text(json.dumps({'operation':'regularai:release:20261106g','enabled':[]}))
         self.run_recovery(held=False)
         self.assertFalse(self.started)
     def test_unknown_unit_is_refused(self):

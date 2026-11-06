@@ -32,3 +32,6 @@ usage могут быть меньше; суммы резервов не рав�
 существующего закрытого bucket и проверяется загрузкой и восстановлением.
 Архив не является активным писателем. Восстановление host-bound шифрования на
 другой VM не доказано; новые IAM-права и изменения торговых backups запрещены.
+# Presentation and expiry clarification, 2026-11-06
+
+For future requests every `reasons` and `uncertainties` item is requested in Russian. Saved responses are not translated through an additional model call. A decision expires at its model-provided `expires_ms` or the next 4H boundary, whichever is earlier; a short expiry is never extended. The display reads a separately published snapshot; its buttons do not collect data, call an AI endpoint, or change trade state. This clarification does not alter old responses, reservations or the existing boundary authorization.

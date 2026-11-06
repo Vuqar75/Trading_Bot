@@ -8,7 +8,7 @@ import hashlib,json,os,shutil,signal,sqlite3,subprocess,sys,tempfile,time
 from contextlib import closing
 from pathlib import Path
 
-HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106f'
+HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106g'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
 UNITDIR=Path('/etc/systemd/system');MARKER=HOME/'cross-cutovers/service-start-interlock'
 SERVICES=('tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service','tradingbot-margin.service','tradingbot-monitor.service')
@@ -17,7 +17,7 @@ AUX_TIMERS=(WATCH_TIMER,'tradingbot-external-hourly.timer','tradingbot-external-
 AUX_SERVICES=(WATCH,'tradingbot-external-backup@hourly.service','tradingbot-external-backup@daily.service','tradingbot-heartbeat.service')
 ALL_UNITS=SERVICES+('tradingbot-paper-backup.service',WATCH,'tradingbot-external-backup@.service','tradingbot-heartbeat.service')
 OLD=SERVICES;TIMER='tradingbot-paper-backup.timer';BACKUP='tradingbot-paper-backup.service'
-FREEZE='regularai:freeze:20261106f';INTERLOCK='cross:freeze:regularai-20261106f'
+FREEZE='regularai:freeze:20261106g';INTERLOCK='cross:freeze:regularai-20261106g'
 
 def command(*args,timeout=180):
     return subprocess.run(['systemctl',*args],capture_output=True,text=True,timeout=timeout,check=True).stdout.strip()

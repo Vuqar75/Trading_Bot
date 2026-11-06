@@ -76,6 +76,11 @@ class RegularTests(unittest.TestCase):
   self.assertEqual(self.tick()['status'],'completed');self.b+=3*PERIOD;self.now=self.b+120001;self.make_snapshot();self.assertEqual(self.tick()['status'],'completed')
   with closing(sqlite3.connect(self.p/'experiment-budget.db')) as db:self.assertEqual(db.execute("select count(*) from regular_windows where state='missed'").fetchone()[0],2)
   self.assertEqual(len(self.calls),2)
+ def test_expired_window_publishes_missed_status_without_request(self):
+  self.now=self.b+300001
+  self.assertEqual(self.tick()['status'],'missed')
+  self.assertEqual(self.calls,[])
+  self.assertIn('окно пропущено',json.loads(self.public.read_text())['summary'])
  def test_daily_limit_blocks_before_send(self):
   from research.adaptive_budget_resilience import migrate
   migrate(self.p)

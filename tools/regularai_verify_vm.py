@@ -3,9 +3,9 @@ import argparse,importlib.util,json,os,shutil,sqlite3,subprocess,sys,tempfile,ti
 from contextlib import closing
 from pathlib import Path
 
-HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106f'
+HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106g'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
-RELEASE='regularai:release:20261106f'
+RELEASE='regularai:release:20261106g'
 
 
 def main():

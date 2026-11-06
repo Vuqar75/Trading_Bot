@@ -178,10 +178,11 @@ class UnifiedQueue:
                     view=parts[1] if len(parts)==2 else 'summary'
                     buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('По активам','/donchian assets'),('Сравнение с baseline','/donchian baseline'),('Данные и здоровье','/donchian health'),('Обновить','/donchian'))]
                     self._notify(render(view),buttons=buttons)
-                elif command == '/ai' and len(parts)==1:
-                    from .ai_view import render
-                    buttons=[[('Обновить',{'command':'/ai','market':mode,'expires':now+86400,'kind':'view'})]]
-                    self._notify(render(),buttons=buttons)
+                elif command == '/ai' and len(parts)<=2 and (len(parts)==1 or parts[1] in ('why','metrics','sources','costs')):
+                    from .ai_screens import render_screen
+                    screen=parts[1] if len(parts)==2 else 'main'
+                    buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('Почему такое решение','/ai why'),('Метрики рынка','/ai metrics'),('Источники и новости','/ai sources'),('Расходы и состояние','/ai costs'),('Обновить','/ai'))]
+                    self._notify(render_screen(screen),buttons=buttons)
                 elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
                         mode = parts[1]

@@ -27,12 +27,16 @@ def export(budget,target,now_ms=None):
  for news in snap.get('news',[]):
   if len(sources)>=3:break
   if not isinstance(news,dict) or not str(news.get('url','')).startswith('https://') or type(news.get('published_ms')) is not int or type(news.get('observed_ms')) is not int:continue
-  sources.append({'title':str(news.get('title',''))[:250],'url':news['url'][:250],'published_utc':stamp(news['published_ms']),'observed_utc':stamp(news['observed_ms'])})
+  sources.append({'source':str(news.get('source','Источник не указан'))[:100],'title':str(news.get('title',''))[:250],'url':news['url'][:250],'published_utc':stamp(news['published_ms']),'observed_utc':stamp(news['observed_ms'])})
  reason='; '.join(decision['reasons']);uncertainty='; '.join(decision['uncertainties']);usage=record.get('usage') or {}
  report={'schema':1,'data_utc':stamp(snap['as_of_ms']),'answer_utc':stamp(record['received_ms']),'expires_utc':stamp(expiry),'metrics':metrics[:800] or 'нет метрик',
   'coverage':str(snap.get('coverage','неизвестно'))[:800], 'summary':('ИИ: '+decision['mode']+'; baseline того же среза: '+record['baseline']+'; '+reason)[:800],
   'risks':('Адаптивные входы запрещены; время события стакана не подтверждено. '+uncertainty+'; usage: '+json.dumps(usage,sort_keys=True)+'; резерв micro-USD: '+str(record['reserved_micro_usd'])+'; фактический счёт провайдера не подтверждён.')[:800],
   'sources':sources,'complete':True}
+ report['shadow_details']={'model':decision['mode'],'baseline':record['baseline'],
+  'reasons':decision['reasons'],'uncertainties':decision['uncertainties'],
+  'features':{k:features[k] for k in ('close_4h','sma20_4h','volatility_20h_pct','spread_bps') if k in features},
+  'sources_used_by_model':'не зафиксированы'}
  return write(target,report)
 def write(target,report):
  target=Path(target);target.parent.mkdir(parents=True,exist_ok=True,mode=0o700);tmp=target.with_suffix('.tmp');tmp.write_text(json.dumps(report,ensure_ascii=False,sort_keys=True)+'\n',encoding='utf-8');os.chmod(tmp,0o600);os.replace(tmp,target);return report
