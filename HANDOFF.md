@@ -4081,3 +4081,10 @@ pauses and health therefore remain unverified through a trusted connection. Do n
 install or assert live status until verified. See `PAIR_SELECTION_OFFLINE.md` for
 the backup, guarded cutover and no-stale-financial-restore plan. No working service,
 database, AI budget or lock was changed.
+# Adaptive paper regime research — 2026-11-06
+
+Branch `research/adaptive-paper-regimes`: the preregistered BTC 1h/4h breakout and 15m range candidates failed the stated selection criteria under increased costs. See `ADAPTIVE_RESEARCH_PLAN.md` and `ADAPTIVE_RESEARCH_REPORT.md`. No adaptive trading strategy is approved. Historical development data are not an independent validation; the short funding model and range execution also have explicitly documented evidence gaps.
+
+The isolated shadow collector and `/ai` view are prepared for guarded deployment. Shadow records public data and deterministic baseline, but does not call the model or execute trades. `NO_TRADE` due to missing AI is a local safety decision, not an AI answer. Original WSL budget DB and lock retain the previous 3,630 micro-USD uncertain reservation; the existing key was not present in this WSL process. A key previously available in another cloud environment is not proof that the same process can access both the key and sole budget. No model metadata GET or paid call was made in this work. Do not create a second budget or release the uncertain reservation.
+
+Last verified VM application was `29619616ae171fce1a59565f389559ad87608e31`; Spot Donchian paper entries were previously enabled, other three markets paused. This is a timestamped observation, not a substitute for a new preflight. The independent Donchian observer is separate and must remain unchanged. Consult `ADAPTIVE_SHADOW_OPERATIONS.md` and the rollout guards; never replace financial history with a stale backup.

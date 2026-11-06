@@ -1,0 +1,33 @@
+[Unit]
+Description=Read-only adaptive paper research shadow
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=adaptiveobserver
+Group=adaptiveobserver
+WorkingDirectory=/opt/adaptive-shadow-code
+Environment=PYTHONPATH=/opt/adaptive-shadow-code
+Environment=TZ=UTC
+UMask=0077
+ExecStart=/usr/bin/python3 -B -m research.adaptive_shadow --state /var/lib/adaptive-shadow --public /var/lib/adaptive-shadow-public
+TimeoutStartSec=90
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=169.254.169.254
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/donchian-observer -/var/lib/donchian-control -/var/lib/donchian-backup
+ReadWritePaths=/var/lib/adaptive-shadow /var/lib/adaptive-shadow-public
+MemoryMax=64M
+CPUQuota=10%
+TasksMax=12
+Nice=15
+LogRateLimitIntervalSec=1min
+LogRateLimitBurst=10

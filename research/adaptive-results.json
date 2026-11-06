@@ -1,0 +1,1898 @@
+{
+  "data_end_exclusive_utc": "2026-11-01",
+  "futures_manifest": {
+    "captured_utc": "2026-11-06T07:43:58.171613+00:00",
+    "files": [
+      {
+        "bytes": 143554,
+        "file": "BTCUSDT-15m-2023-12.zip",
+        "sha256": "f6b191e620d269d229dee0c5b9abfb6e9610bd0a8e6718d2a96e0e820a013bb0",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2023-12.zip"
+      },
+      {
+        "bytes": 145000,
+        "file": "BTCUSDT-15m-2024-01.zip",
+        "sha256": "76953983fcd4cc35ac181c4a1c69d28cbb4ef8b983021aac84a111ea4e82ef69",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-01.zip"
+      },
+      {
+        "bytes": 135641,
+        "file": "BTCUSDT-15m-2024-02.zip",
+        "sha256": "f6a9399826f593aa23746d920e595e9705addd1154d4ec53fcf7a2564755e67b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-02.zip"
+      },
+      {
+        "bytes": 147580,
+        "file": "BTCUSDT-15m-2024-03.zip",
+        "sha256": "0f7dbdf7859f36d41c1444065409b2c9c4d66f5b3008647436fbc1b7a0d9f080",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-03.zip"
+      },
+      {
+        "bytes": 141412,
+        "file": "BTCUSDT-15m-2024-04.zip",
+        "sha256": "e1e52aa89d7004e4b93af4cfa5d8f03826881604bf2a990fd2f6979ed754c7ff",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-04.zip"
+      },
+      {
+        "bytes": 144408,
+        "file": "BTCUSDT-15m-2024-05.zip",
+        "sha256": "180775c3969d5e1a4f80dab6d62639945db50ed26b7fb240e66cc384d572295b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-05.zip"
+      },
+      {
+        "bytes": 137470,
+        "file": "BTCUSDT-15m-2024-06.zip",
+        "sha256": "ff353ea993bd5db2ac704c7ab30b0f706216208da92089875daed06177b7a805",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-06.zip"
+      },
+      {
+        "bytes": 145340,
+        "file": "BTCUSDT-15m-2024-07.zip",
+        "sha256": "13cdc84f34becfaaaa9736896a0a0c92fa64bb20e84492569a1c1bb401634095",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-07.zip"
+      },
+      {
+        "bytes": 145551,
+        "file": "BTCUSDT-15m-2024-08.zip",
+        "sha256": "7db2001bc9958a0f42748ab56319a067be0610eb3f69ae7360251f9c54b933e1",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-08.zip"
+      },
+      {
+        "bytes": 139696,
+        "file": "BTCUSDT-15m-2024-09.zip",
+        "sha256": "ccc54f637eb90c3dd2bb190b3bfa40340c3812917726d203b5a9c94b8d27c727",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-09.zip"
+      },
+      {
+        "bytes": 143532,
+        "file": "BTCUSDT-15m-2024-10.zip",
+        "sha256": "64c3283e3e1020fb99916e908ec129c7ed2829319889db87319f3b48c72f6217",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-10.zip"
+      },
+      {
+        "bytes": 141946,
+        "file": "BTCUSDT-15m-2024-11.zip",
+        "sha256": "e54cdf3523373e2011ca133f12ee18ed54cf0e5a1a59426a9746fd2c39313a54",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-11.zip"
+      },
+      {
+        "bytes": 146336,
+        "file": "BTCUSDT-15m-2024-12.zip",
+        "sha256": "717d3e617fdc6f5c486c16d2f2c0e3e0929fd9158f75827bc603c003ad709544",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2024-12.zip"
+      },
+      {
+        "bytes": 145675,
+        "file": "BTCUSDT-15m-2025-01.zip",
+        "sha256": "0867b0b8e22069621de45df42cc49a8df1b8217cf777529b1df6d43253927588",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-01.zip"
+      },
+      {
+        "bytes": 130972,
+        "file": "BTCUSDT-15m-2025-02.zip",
+        "sha256": "44280cf80923ec6ee42e28e4606723b2f36909eab5c334ee5aee132ff989f12b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-02.zip"
+      },
+      {
+        "bytes": 145535,
+        "file": "BTCUSDT-15m-2025-03.zip",
+        "sha256": "aea345f1561a16710812658f2d435f0e02de5fc25d7ba8ad821526d67b2ab229",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-03.zip"
+      },
+      {
+        "bytes": 140475,
+        "file": "BTCUSDT-15m-2025-04.zip",
+        "sha256": "6a5166823a9e80e25f520a8e7e26f34550c975e26bd1c5bb95a20d530b89bfa5",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-04.zip"
+      },
+      {
+        "bytes": 145447,
+        "file": "BTCUSDT-15m-2025-05.zip",
+        "sha256": "303a174c2d15248fe00342ac2b01bec41bb4e11c4a5d26d480e2a382808bc020",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-05.zip"
+      },
+      {
+        "bytes": 139881,
+        "file": "BTCUSDT-15m-2025-06.zip",
+        "sha256": "4c980922647b630dbf146cb80934776930f8b4a9b419967710ecb8ce398e036d",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-06.zip"
+      },
+      {
+        "bytes": 143938,
+        "file": "BTCUSDT-15m-2025-07.zip",
+        "sha256": "dd5bb32a02e5a3dc93717530abe572f41e1bc50b920daad6e226bb6024e52b51",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-07.zip"
+      },
+      {
+        "bytes": 144410,
+        "file": "BTCUSDT-15m-2025-08.zip",
+        "sha256": "b8965932ae4008e4f1f8ec1ed344f11fbd1f743b44679dacfab665f05414aced",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-08.zip"
+      },
+      {
+        "bytes": 138388,
+        "file": "BTCUSDT-15m-2025-09.zip",
+        "sha256": "fcfe6d1c17890b82788b13707bbdc99694361f701a49f15347c8f0e85e55fd1f",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-09.zip"
+      },
+      {
+        "bytes": 146246,
+        "file": "BTCUSDT-15m-2025-10.zip",
+        "sha256": "14f11249137327f5ecadfaceab1eea9ba87f819298af645998fc9bd2cde02b77",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-10.zip"
+      },
+      {
+        "bytes": 140773,
+        "file": "BTCUSDT-15m-2025-11.zip",
+        "sha256": "66c714d54807c313814d0aef6ee2ef21e07e311605b47c23ae32978c721a4b23",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-11.zip"
+      },
+      {
+        "bytes": 143001,
+        "file": "BTCUSDT-15m-2025-12.zip",
+        "sha256": "d497e319364b0c13a0cd59e0192568ea1542e8f430844046189a8cf534895805",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2025-12.zip"
+      },
+      {
+        "bytes": 142704,
+        "file": "BTCUSDT-15m-2026-01.zip",
+        "sha256": "065fc8cf21f51ad6bd043fa670ba2dbc8c6030efd5dff63d5d4a9d99e0b88d0b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-01.zip"
+      },
+      {
+        "bytes": 131955,
+        "file": "BTCUSDT-15m-2026-02.zip",
+        "sha256": "983c066f0cf0171466e89d7596433f5ac717ea8c805fe5b650a83b3176cd92c1",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-02.zip"
+      },
+      {
+        "bytes": 145250,
+        "file": "BTCUSDT-15m-2026-03.zip",
+        "sha256": "ea25e84ddffdcc8b7ba68fb47363daee6a9ef53941f152c9ebf6d4e165d32bf8",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-03.zip"
+      },
+      {
+        "bytes": 138462,
+        "file": "BTCUSDT-15m-2026-04.zip",
+        "sha256": "0bc151133aa47be76f535539e25c04970bd6d0afd54e532951638dc8330fcc58",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-04.zip"
+      },
+      {
+        "bytes": 142000,
+        "file": "BTCUSDT-15m-2026-05.zip",
+        "sha256": "1c0a865f62ddca9890f5d7bbe901b7261a3818785594d960f5fce36ee7ce81f5",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-05.zip"
+      },
+      {
+        "bytes": 139837,
+        "file": "BTCUSDT-15m-2026-06.zip",
+        "sha256": "54369ae74f8122e0d3c8152807f78ec3ced435a8b0ab59c5efcea2cbad878857",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-06.zip"
+      },
+      {
+        "bytes": 142057,
+        "file": "BTCUSDT-15m-2026-07.zip",
+        "sha256": "10df439d8404a31fc55ed91fe0169b79db3fa3e7a8c83bc2eb704004eadea1c2",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-07.zip"
+      },
+      {
+        "bytes": 141194,
+        "file": "BTCUSDT-15m-2026-08.zip",
+        "sha256": "0702d68a42de591fb39929d10327f1258ce1d59b9d81158c07e412029eb36306",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-08.zip"
+      },
+      {
+        "bytes": 138273,
+        "file": "BTCUSDT-15m-2026-09.zip",
+        "sha256": "e879fa6903fd905201bd1f59e456773638cdf8c13848da79331cee89b0046964",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-09.zip"
+      },
+      {
+        "bytes": 137578,
+        "file": "BTCUSDT-15m-2026-10.zip",
+        "sha256": "df7b18c784a6214b4d10d54272e7775f07c85870206f2bd7f63befb59edad459",
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/BTCUSDT/15m/BTCUSDT-15m-2026-10.zip"
+      },
+      {
+        "bytes": 810,
+        "file": "BTCUSDT-fundingRate-2023-12.zip",
+        "sha256": "8f02fdd2a2da261bbf13ab301c74bdb57fae005f19d5088e9ece5f8824c1a2a7",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2023-12.zip"
+      },
+      {
+        "bytes": 696,
+        "file": "BTCUSDT-fundingRate-2024-01.zip",
+        "sha256": "3e0d30870672aa8f0f937881056e3cfd55913ae5c780cd50b33f2763aa0ba58e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-01.zip"
+      },
+      {
+        "bytes": 776,
+        "file": "BTCUSDT-fundingRate-2024-02.zip",
+        "sha256": "daf1e4901e3d6436d82ad60f90d007eb5300be8047cfef121007203a7212cde6",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-02.zip"
+      },
+      {
+        "bytes": 939,
+        "file": "BTCUSDT-fundingRate-2024-03.zip",
+        "sha256": "711dcaf2a341aedfd06447b4117b540f60adb0784c5e64a313c718e4cf092bc3",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-03.zip"
+      },
+      {
+        "bytes": 842,
+        "file": "BTCUSDT-fundingRate-2024-04.zip",
+        "sha256": "6d220b8e2815362a11d294d35dbca28568370d8295351937eceec10f2b359b85",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-04.zip"
+      },
+      {
+        "bytes": 830,
+        "file": "BTCUSDT-fundingRate-2024-05.zip",
+        "sha256": "aef8c5fdce1493fd570b5829a72f2f17c7e459483390f25544d16c2a30be592e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-05.zip"
+      },
+      {
+        "bytes": 721,
+        "file": "BTCUSDT-fundingRate-2024-06.zip",
+        "sha256": "43fc4473820d1fb4fe340d1b1951a87555f6841aa352e684fa95d6adffce04c6",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-06.zip"
+      },
+      {
+        "bytes": 847,
+        "file": "BTCUSDT-fundingRate-2024-07.zip",
+        "sha256": "acab0593c1452660ce74a6c239fb215c1192b0a9c6e8c1689e6495de40a0174b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-07.zip"
+      },
+      {
+        "bytes": 904,
+        "file": "BTCUSDT-fundingRate-2024-08.zip",
+        "sha256": "7003d29a43dd5f9357f838da8766834954939e22c1d80af682d9f33984f67b71",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-08.zip"
+      },
+      {
+        "bytes": 924,
+        "file": "BTCUSDT-fundingRate-2024-09.zip",
+        "sha256": "6ef23b02392b481ef9c3855434bf3644289fb6e228b4f7d9a0dfc6d3cdff1116",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-09.zip"
+      },
+      {
+        "bytes": 801,
+        "file": "BTCUSDT-fundingRate-2024-10.zip",
+        "sha256": "26db65ac8020d80ece35df79c254c5f7e24427529bcceeb2972748c4fe2d2707",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-10.zip"
+      },
+      {
+        "bytes": 746,
+        "file": "BTCUSDT-fundingRate-2024-11.zip",
+        "sha256": "e1b19cccfe2cdcba48b022790789b7b01edd86c075f39bc152e44c267d43bd51",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-11.zip"
+      },
+      {
+        "bytes": 808,
+        "file": "BTCUSDT-fundingRate-2024-12.zip",
+        "sha256": "069409f525ebf6370ee1c7defe475167de4b97284c5ac8e68768652968cd3dc9",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2024-12.zip"
+      },
+      {
+        "bytes": 825,
+        "file": "BTCUSDT-fundingRate-2025-01.zip",
+        "sha256": "df725010d55458866eb5a47e9ee708c6796c9d7e77b14c38342cea11f381815e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-01.zip"
+      },
+      {
+        "bytes": 854,
+        "file": "BTCUSDT-fundingRate-2025-02.zip",
+        "sha256": "e918b90fb33df3a3317feea13807a892047f1ec86eeac100bdb7b3dd83285d46",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-02.zip"
+      },
+      {
+        "bytes": 938,
+        "file": "BTCUSDT-fundingRate-2025-03.zip",
+        "sha256": "a3b95cfb315641fbfddc61eb32adf2a2588afb7a3973a61f464aca007ad43e3f",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-03.zip"
+      },
+      {
+        "bytes": 929,
+        "file": "BTCUSDT-fundingRate-2025-04.zip",
+        "sha256": "01dbb7bd0135f98bd63bdde6b943cde1accc1770cabf92f68a1ec0653ced3888",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-04.zip"
+      },
+      {
+        "bytes": 943,
+        "file": "BTCUSDT-fundingRate-2025-05.zip",
+        "sha256": "e7355e2775b88009c984db1783bb8ed6b5f24ede2b52bb764151b5722d6a5e42",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-05.zip"
+      },
+      {
+        "bytes": 946,
+        "file": "BTCUSDT-fundingRate-2025-06.zip",
+        "sha256": "a1f4a40953740fa83ee9ad97776ff8325d1958654a67f1325614071a983819d4",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-06.zip"
+      },
+      {
+        "bytes": 796,
+        "file": "BTCUSDT-fundingRate-2025-07.zip",
+        "sha256": "b097dff828f6e43fece23db0d3cb98042a9d7bc19693b8cbfd051d88eb973b7b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-07.zip"
+      },
+      {
+        "bytes": 927,
+        "file": "BTCUSDT-fundingRate-2025-08.zip",
+        "sha256": "1180129860b6e196e8d70bb9719e81573aa6b4acb423ba5ee7f82f10c836f7ab",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-08.zip"
+      },
+      {
+        "bytes": 941,
+        "file": "BTCUSDT-fundingRate-2025-09.zip",
+        "sha256": "21dc6570fc6bffad0e7b5f9e99211b82ad07c95ab4f18c3a2daa3b95ec98344c",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-09.zip"
+      },
+      {
+        "bytes": 944,
+        "file": "BTCUSDT-fundingRate-2025-10.zip",
+        "sha256": "9ecdedab6344fc4cdb154763266b8e09627a71c3cc5574cf868158b541c259c2",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-10.zip"
+      },
+      {
+        "bytes": 941,
+        "file": "BTCUSDT-fundingRate-2025-11.zip",
+        "sha256": "23735400405627d610123e3a43db3e98ae7addb93459cd670e65a7659a5f081b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-11.zip"
+      },
+      {
+        "bytes": 963,
+        "file": "BTCUSDT-fundingRate-2025-12.zip",
+        "sha256": "35318b789f020b0e04c9043112480743855554e52e1d188437cbdaa67246d51d",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2025-12.zip"
+      },
+      {
+        "bytes": 965,
+        "file": "BTCUSDT-fundingRate-2026-01.zip",
+        "sha256": "fcdc796484f395830d418588a34a26baed8849dbef0ff2b56173247e493ff51f",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-01.zip"
+      },
+      {
+        "bytes": 937,
+        "file": "BTCUSDT-fundingRate-2026-02.zip",
+        "sha256": "80df1dd669dc1e3afc360c9da8b9a949a127fce088eedbf5bf708bd37b0a1f58",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-02.zip"
+      },
+      {
+        "bytes": 1008,
+        "file": "BTCUSDT-fundingRate-2026-03.zip",
+        "sha256": "5c069d5e9597a44fd0e213395082e59ff223fb99c9eab3a2a5a2a5622ba7867c",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-03.zip"
+      },
+      {
+        "bytes": 960,
+        "file": "BTCUSDT-fundingRate-2026-04.zip",
+        "sha256": "51cdeb4de7d5ef1d4eece80b6115e391bdf7a2d0803bf9ad8371ab23340b22d3",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-04.zip"
+      },
+      {
+        "bytes": 980,
+        "file": "BTCUSDT-fundingRate-2026-05.zip",
+        "sha256": "445b65fd6b17bfcfb5e4d035db29fad34f729fa078f0449024db42621be84e6e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-05.zip"
+      },
+      {
+        "bytes": 964,
+        "file": "BTCUSDT-fundingRate-2026-06.zip",
+        "sha256": "cff97ce688329592bccbbf5873b5c7021649e093f5f5806e332c5b4fb7fd6a00",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-06.zip"
+      },
+      {
+        "bytes": 914,
+        "file": "BTCUSDT-fundingRate-2026-07.zip",
+        "sha256": "e36fcc66f493d7d9ec348c852fc22e9f318c79cf7adae17398a3994ae0adc41e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-07.zip"
+      },
+      {
+        "bytes": 896,
+        "file": "BTCUSDT-fundingRate-2026-08.zip",
+        "sha256": "7c108b3a02bd6dc7345ca7323e3a49664edcea0afdcf780ffb3b44762c45a964",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-08.zip"
+      },
+      {
+        "bytes": 924,
+        "file": "BTCUSDT-fundingRate-2026-09.zip",
+        "sha256": "913cd31b8f924a06717a2fac17f3df6132c24ccded209eb3e4ae7d83e1b247f2",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-09.zip"
+      },
+      {
+        "bytes": 943,
+        "file": "BTCUSDT-fundingRate-2026-10.zip",
+        "sha256": "9c09b0bc6d8a57da06c34ec41add7dc9917dcb45dd83f7393ab0b3c2a2c34e5e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-10.zip"
+      },
+      {
+        "bytes": 81673,
+        "file": "MARK-BTCUSDT-15m-2023-12.zip",
+        "kind": "mark",
+        "sha256": "f1c827e6dd177777eda8a1db09829d84732f708223a18890766f2b47740a88f8",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2023-12.zip"
+      },
+      {
+        "bytes": 88267,
+        "file": "MARK-BTCUSDT-15m-2024-01.zip",
+        "kind": "mark",
+        "sha256": "aa64b8b765a37c28f11235f2f2ff59f8558b9ff62251315de8b789a22698c926",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-01.zip"
+      },
+      {
+        "bytes": 76532,
+        "file": "MARK-BTCUSDT-15m-2024-02.zip",
+        "kind": "mark",
+        "sha256": "ce4966e1db0c8f9336cdb2420941d4586ec8b0d6f51878b3d94e231fd86ff1e0",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-02.zip"
+      },
+      {
+        "bytes": 83648,
+        "file": "MARK-BTCUSDT-15m-2024-03.zip",
+        "kind": "mark",
+        "sha256": "0997a2ca7eb4651c01e3e1c5f31e2a469587da9633d41295fa60338cbd8a8791",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-03.zip"
+      },
+      {
+        "bytes": 80678,
+        "file": "MARK-BTCUSDT-15m-2024-04.zip",
+        "kind": "mark",
+        "sha256": "d4d2205a569ceae45cd38462f3ac479d8f5e6380b9657f1db8e20dae9a7e9c76",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-04.zip"
+      },
+      {
+        "bytes": 80550,
+        "file": "MARK-BTCUSDT-15m-2024-05.zip",
+        "kind": "mark",
+        "sha256": "d71f9a11587b79d3a31ea4b2ea1fa57c157506336c70b14e5e6cec0aff4413a1",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-05.zip"
+      },
+      {
+        "bytes": 78119,
+        "file": "MARK-BTCUSDT-15m-2024-06.zip",
+        "kind": "mark",
+        "sha256": "0a65196979a76e7f4661b25fdff365f490870216ecc7b44bd34cf7e6e4a78cec",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-06.zip"
+      },
+      {
+        "bytes": 82229,
+        "file": "MARK-BTCUSDT-15m-2024-07.zip",
+        "kind": "mark",
+        "sha256": "b288ce4ae420cbe03c8f41737a84872c8a0640bec87a03c325984ce95fa7ad6b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-07.zip"
+      },
+      {
+        "bytes": 81718,
+        "file": "MARK-BTCUSDT-15m-2024-08.zip",
+        "kind": "mark",
+        "sha256": "3c4664c4b75e98a85ec8b619062e94a71dcec77a4062f120a9988d1ae1ee9ed2",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-08.zip"
+      },
+      {
+        "bytes": 77797,
+        "file": "MARK-BTCUSDT-15m-2024-09.zip",
+        "kind": "mark",
+        "sha256": "eca5dcacc7bf7ac6118c72bc19c2826893463ff5bcef6b0246fe20230da658c7",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-09.zip"
+      },
+      {
+        "bytes": 81249,
+        "file": "MARK-BTCUSDT-15m-2024-10.zip",
+        "kind": "mark",
+        "sha256": "41150843f1eb21da5ec8cab9ac788118d0349b8558ec267bf3f954328b659f34",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-10.zip"
+      },
+      {
+        "bytes": 81368,
+        "file": "MARK-BTCUSDT-15m-2024-11.zip",
+        "kind": "mark",
+        "sha256": "625ed7ceb449a248ff68265558152349090e42178611642faabca5ebd5537a30",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-11.zip"
+      },
+      {
+        "bytes": 83855,
+        "file": "MARK-BTCUSDT-15m-2024-12.zip",
+        "kind": "mark",
+        "sha256": "d17f87eb0fbbd3c8928cb295515b8d65982a813affd7e1574268ad97ee14085e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2024-12.zip"
+      },
+      {
+        "bytes": 82374,
+        "file": "MARK-BTCUSDT-15m-2025-01.zip",
+        "kind": "mark",
+        "sha256": "0a8b80bc10afa49680aee80bc6c562e3d2b3ac011ab0848c3cdf9a46e17fea97",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-01.zip"
+      },
+      {
+        "bytes": 73012,
+        "file": "MARK-BTCUSDT-15m-2025-02.zip",
+        "kind": "mark",
+        "sha256": "37863bb5ee4367dfc0d33683a5809ba223ae95d57c8524ce52edf5cdf48a5a1c",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-02.zip"
+      },
+      {
+        "bytes": 81483,
+        "file": "MARK-BTCUSDT-15m-2025-03.zip",
+        "kind": "mark",
+        "sha256": "c7580a81a08e9b27b1b5fa68f6ffdcb1f0bfd35f7e5b156c7b82874157b7397c",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-03.zip"
+      },
+      {
+        "bytes": 78148,
+        "file": "MARK-BTCUSDT-15m-2025-04.zip",
+        "kind": "mark",
+        "sha256": "216f041a965d568836572907c178789683fb4816224838a219ba7746b38248a7",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-04.zip"
+      },
+      {
+        "bytes": 81722,
+        "file": "MARK-BTCUSDT-15m-2025-05.zip",
+        "kind": "mark",
+        "sha256": "6e7f672cadaaf8da91411021242b0321b804eda9c1e162b5abb56361ec2d8731",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-05.zip"
+      },
+      {
+        "bytes": 79311,
+        "file": "MARK-BTCUSDT-15m-2025-06.zip",
+        "kind": "mark",
+        "sha256": "7721fb960b5e117d7229b06b911a07e47c54bb3091fa45333e7512ced4b16204",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-06.zip"
+      },
+      {
+        "bytes": 83011,
+        "file": "MARK-BTCUSDT-15m-2025-07.zip",
+        "kind": "mark",
+        "sha256": "5ba4d7745d1094246935d52656cf1d028ffb742b7d55124ef9f2b13625595116",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-07.zip"
+      },
+      {
+        "bytes": 82541,
+        "file": "MARK-BTCUSDT-15m-2025-08.zip",
+        "kind": "mark",
+        "sha256": "f5f08e7a9f93ca235f7715f207e82423fa6dedba0870b929849545a133c24368",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-08.zip"
+      },
+      {
+        "bytes": 78096,
+        "file": "MARK-BTCUSDT-15m-2025-09.zip",
+        "kind": "mark",
+        "sha256": "aff2eaafbcb3fe9ab554070c36d39799d0577d8b5047d7058c00914ebfb13a53",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-09.zip"
+      },
+      {
+        "bytes": 82190,
+        "file": "MARK-BTCUSDT-15m-2025-10.zip",
+        "kind": "mark",
+        "sha256": "a18366cc56ae5f7d801df4096e0a244998e4f61f7eb8e8e77ea302183d47946e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-10.zip"
+      },
+      {
+        "bytes": 79959,
+        "file": "MARK-BTCUSDT-15m-2025-11.zip",
+        "kind": "mark",
+        "sha256": "42d47470a5c07f0f18549a479d6fa456e2fe486f1ba439a1cf5ed341b2c32a9c",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-11.zip"
+      },
+      {
+        "bytes": 80611,
+        "file": "MARK-BTCUSDT-15m-2025-12.zip",
+        "kind": "mark",
+        "sha256": "3de7151c68db1bc4e46f318c935b52b73bd5a52620078ed8a59dc9ec71082e7c",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2025-12.zip"
+      },
+      {
+        "bytes": 80665,
+        "file": "MARK-BTCUSDT-15m-2026-01.zip",
+        "kind": "mark",
+        "sha256": "3a4eed87e9c9e2e8a358929c968a45153daf1587401a339982821482db45fdb9",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-01.zip"
+      },
+      {
+        "bytes": 75333,
+        "file": "MARK-BTCUSDT-15m-2026-02.zip",
+        "kind": "mark",
+        "sha256": "a1f67c6af5fdf9b5b82351ee635ef0faf3f304a9b9e21c7cc96a84a23f4b3a2b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-02.zip"
+      },
+      {
+        "bytes": 83881,
+        "file": "MARK-BTCUSDT-15m-2026-03.zip",
+        "kind": "mark",
+        "sha256": "79edfb409a35630cfb8894b883c2bcc4d5a3d6f78bf4d449585cc9e6e8f475e3",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-03.zip"
+      },
+      {
+        "bytes": 78686,
+        "file": "MARK-BTCUSDT-15m-2026-04.zip",
+        "kind": "mark",
+        "sha256": "6ef410191ddaf997e80df3499b15220871ef220eebfd879cc73216e9a0c09a3e",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-04.zip"
+      },
+      {
+        "bytes": 80652,
+        "file": "MARK-BTCUSDT-15m-2026-05.zip",
+        "kind": "mark",
+        "sha256": "68aed519485ae8e61f9fe9febbb766958b2cfaefc49be87eb079e04842cc8a8b",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-05.zip"
+      },
+      {
+        "bytes": 76917,
+        "file": "MARK-BTCUSDT-15m-2026-06.zip",
+        "kind": "mark",
+        "sha256": "81826f38cc91b1e7537831ffadfad9c8629401ef06925dd414d21dc5848187a6",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-06.zip"
+      },
+      {
+        "bytes": 79413,
+        "file": "MARK-BTCUSDT-15m-2026-07.zip",
+        "kind": "mark",
+        "sha256": "6605e9b4bdfa6effd569f31cef331765c3dbe3836402f9aae77cc19da7be0b25",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-07.zip"
+      },
+      {
+        "bytes": 79421,
+        "file": "MARK-BTCUSDT-15m-2026-08.zip",
+        "kind": "mark",
+        "sha256": "20af7e93ee7fd78d9595e35c097f10f57b29f3bb3c40951aeb4306c95eb97d14",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-08.zip"
+      },
+      {
+        "bytes": 77683,
+        "file": "MARK-BTCUSDT-15m-2026-09.zip",
+        "kind": "mark",
+        "sha256": "1b1afebcb9fd2f6f939ace5ea664c2be697cb0c80e1635f21e659187b3c66f47",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-09.zip"
+      },
+      {
+        "bytes": 74605,
+        "file": "MARK-BTCUSDT-15m-2026-10.zip",
+        "kind": "mark",
+        "sha256": "f28eb38229c6351870acdba93349afaeb17c7332162d5b74da71e9c50e564fcc",
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/BTCUSDT/15m/BTCUSDT-15m-2026-10.zip"
+      }
+    ],
+    "mark_downloaded_utc": "2026-11-06T07:44:58.137146+00:00",
+    "rest_gap_fills": [
+      {
+        "captured_utc": "2026-11-06T07:48:58.013884+00:00",
+        "file": "REST-klines-2026-10-28.json",
+        "records": 96,
+        "sha256": "c2f0fb9f93dce024af5a98c33729b79d4018f9e7a39a3afada703cf31182f84c",
+        "url": "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&startTime=1793145600000&endTime=1793231999999&limit=100"
+      },
+      {
+        "captured_utc": "2026-11-06T07:48:58.407178+00:00",
+        "file": "REST-markPriceKlines-2026-06-29.json",
+        "records": 96,
+        "sha256": "784711ec1a0114acd9fb420bd02e57643fb996af0a355066071715e25496b17b",
+        "url": "https://fapi.binance.com/fapi/v1/markPriceKlines?symbol=BTCUSDT&interval=15m&startTime=1782691200000&endTime=1782777599999&limit=100"
+      },
+      {
+        "captured_utc": "2026-11-06T07:48:58.777753+00:00",
+        "file": "REST-markPriceKlines-2026-10-28.json",
+        "records": 96,
+        "sha256": "ba61bb8dffb9b0a9a1f61273c140e5d10229832357d05d9d12a16947484645ee",
+        "url": "https://fapi.binance.com/fapi/v1/markPriceKlines?symbol=BTCUSDT&interval=15m&startTime=1793145600000&endTime=1793231999999&limit=100"
+      },
+      {
+        "captured_utc": "2026-11-06T07:48:59.150298+00:00",
+        "file": "REST-markPriceKlines-2026-10-29.json",
+        "records": 96,
+        "sha256": "c2d560f29a8a5708ed2deda8de8daa1a952d58e11c637a409ea85a5fc5056c02",
+        "url": "https://fapi.binance.com/fapi/v1/markPriceKlines?symbol=BTCUSDT&interval=15m&startTime=1793232000000&endTime=1793318399999&limit=100"
+      }
+    ]
+  },
+  "limitations": [
+    "No historical bid/ask/depth or partial fills; no live execution proof.",
+    "Funding uses actual rates and 15m mark-candle open approximation.",
+    "AI not involved in history; 2024\u20132026 are development data."
+  ],
+  "quality": {
+    "exact_interval_mismatches": 1629,
+    "funding_completeness": "One event per nonoverlapping 8h slot is a documented paper assumption, not finality proof.",
+    "funding_mark": "15m mark candle open approximation",
+    "funding_records": 3198,
+    "manifest_files": 105,
+    "reported_intervals_hours": [
+      8
+    ],
+    "unique_nonoverlapping_8h_slot_gaps": 0
+  },
+  "results": {
+    "range|LONG|2024|10": {
+      "best_trade": 0.07391706831920114,
+      "closed": 111,
+      "exit_reasons": {
+        "signal": 0,
+        "stop": 61,
+        "stop_gap": 0,
+        "target": 48,
+        "time": 2
+      },
+      "exposure_fraction": 0.06400842440801457,
+      "fees": 2.141874362900584,
+      "funding": 0.0,
+      "gross_closed": -1.4843738732890732,
+      "impact": 2.1418728785265992,
+      "max_drawdown_pct": 0.5768121114715882,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 5.065315315315316,
+      "mean_notional": 0.6175858077555776,
+      "mean_trade_net": -0.05196505508753385,
+      "net_marked": -5.768121114715882,
+      "open_net": 3.7569947153315297e-13,
+      "open_position": false,
+      "realized_net": -5.768121114716258,
+      "rejected_entries": 104,
+      "turnover": 2141.8743629005853,
+      "without_best_trade": -5.842038183035083
+    },
+    "range|LONG|2024|5": {
+      "best_trade": 0.08371757295959961,
+      "closed": 107,
+      "exit_reasons": {
+        "signal": 0,
+        "stop": 57,
+        "stop_gap": 0,
+        "target": 48,
+        "time": 2
+      },
+      "exposure_fraction": 0.06460610200364299,
+      "fees": 2.0642779197752326,
+      "funding": 0.0,
+      "gross_closed": -1.4092876686030318,
+      "impact": 1.0321386075655794,
+      "max_drawdown_pct": 0.451524456507652,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 5.30373831775701,
+      "mean_notional": 0.6233743500142298,
+      "mean_trade_net": -0.042109385008820964,
+      "net_marked": -4.5057041959430535,
+      "open_net": 7.895906151134113e-13,
+      "open_position": false,
+      "realized_net": -4.505704195943843,
+      "rejected_entries": 103,
+      "turnover": 2064.2779197752307,
+      "without_best_trade": -4.589421768902653
+    },
+    "range|LONG|2025|10": {
+      "best_trade": 0.08879361956039958,
+      "closed": 135,
+      "exit_reasons": {
+        "signal": 0,
+        "stop": 58,
+        "stop_gap": 0,
+        "target": 68,
+        "time": 9
+      },
+      "exposure_fraction": 0.11495433789954337,
+      "fees": 2.557153160116781,
+      "funding": 0.0,
+      "gross_closed": 0.3956505476299358,
+      "impact": 2.557143884647484,
+      "max_drawdown_pct": 0.48885026492351635,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 7.401851851851852,
+      "mean_notional": 1.084301408133564,
+      "mean_trade_net": -0.03480958953047876,
+      "net_marked": -4.767734964229817,
+      "open_net": -0.06844037761518429,
+      "open_position": true,
+      "realized_net": -4.6992945866146325,
+      "rejected_entries": 142,
+      "turnover": 2557.153160116781,
+      "without_best_trade": -4.856528583790216
+    },
+    "range|LONG|2025|5": {
+      "best_trade": 0.09808528318020114,
+      "closed": 134,
+      "exit_reasons": {
+        "signal": 0,
+        "stop": 55,
+        "stop_gap": 0,
+        "target": 69,
+        "time": 10
+      },
+      "exposure_fraction": 0.11575342465753424,
+      "fees": 2.5385228726145,
+      "funding": 0.0,
+      "gross_closed": 0.4232433763384836,
+      "impact": 1.2692591243380404,
+      "max_drawdown_pct": 0.36178347296089763,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 7.509328358208955,
+      "mean_notional": 1.0917446569235183,
+      "mean_trade_net": -0.025149456011225434,
+      "net_marked": -3.4288112562613833,
+      "open_net": -0.05878415075717491,
+      "open_position": true,
+      "realized_net": -3.3700271055042084,
+      "rejected_entries": 139,
+      "turnover": 2538.5228726144996,
+      "without_best_trade": -3.5268965394415845
+    },
+    "range|LONG|2026|10": {
+      "best_trade": 0.06888572503200102,
+      "closed": 124,
+      "exit_reasons": {
+        "signal": 0,
+        "stop": 63,
+        "stop_gap": 0,
+        "target": 53,
+        "time": 8
+      },
+      "exposure_fraction": 0.1196546052631579,
+      "fees": 2.3799567650383975,
+      "funding": 0.0,
+      "gross_closed": -1.3109769385380596,
+      "impact": 2.3799554540613377,
+      "max_drawdown_pct": 0.6296515008619897,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 7.040322580645161,
+      "mean_notional": 1.1508254275390617,
+      "mean_trade_net": -0.04895878352933709,
+      "net_marked": -6.0708891576385895,
+      "open_net": -7.904787935331115e-13,
+      "open_position": false,
+      "realized_net": -6.070889157637799,
+      "rejected_entries": 129,
+      "turnover": 2379.9567650384006,
+      "without_best_trade": -6.139774882670591
+    },
+    "range|LONG|2026|5": {
+      "best_trade": 0.10366806234150011,
+      "closed": 121,
+      "exit_reasons": {
+        "signal": 0,
+        "stop": 60,
+        "stop_gap": 0,
+        "target": 53,
+        "time": 8
+      },
+      "exposure_fraction": 0.12068256578947369,
+      "fees": 2.3235112741621933,
+      "funding": 0.0,
+      "gross_closed": -1.3174199477800426,
+      "impact": 1.161755307725973,
+      "max_drawdown_pct": 0.5066940396720524,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 7.276859504132232,
+      "mean_notional": 1.1600708705283707,
+      "mean_trade_net": -0.03969162421213396,
+      "net_marked": -4.802686529666744,
+      "open_net": 1.4654943925052066e-12,
+      "open_position": false,
+      "realized_net": -4.802686529668209,
+      "rejected_entries": 122,
+      "turnover": 2323.5112741621942,
+      "without_best_trade": -4.906354592008244
+    },
+    "trend1+range|COMBINED|2024|10": {
+      "best_trade": 1.9743757150012997,
+      "closed": 214,
+      "exit_reasons": {
+        "signal": 83,
+        "stop": 100,
+        "stop_gap": 0,
+        "target": 28,
+        "time": 3
+      },
+      "exposure_fraction": 0.5477857468123861,
+      "fees": 4.144063037651865,
+      "funding": 0.16401701556318862,
+      "gross_closed": -2.264278680413079,
+      "impact": 4.144060773372964,
+      "max_drawdown_pct": 1.1528826984194207,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 22.484813084112147,
+      "mean_notional": 5.345495503124973,
+      "mean_trade_net": -0.048543857363900565,
+      "net_marked": -10.388385475874884,
+      "open_net": -1.6342482922482304e-13,
+      "open_position": false,
+      "realized_net": -10.38838547587472,
+      "rejected_entries": 52,
+      "turnover": 4144.0630376518675,
+      "without_best_trade": -12.362761190876183
+    },
+    "trend1+range|COMBINED|2024|5": {
+      "best_trade": 1.9851816068506496,
+      "closed": 213,
+      "exit_reasons": {
+        "signal": 85,
+        "stop": 95,
+        "stop_gap": 0,
+        "target": 30,
+        "time": 3
+      },
+      "exposure_fraction": 0.5534779143897997,
+      "fees": 4.123245380114057,
+      "funding": 0.16580345611281233,
+      "gross_closed": -1.9960926190325645,
+      "impact": 2.0616221910336545,
+      "max_drawdown_pct": 0.9654514354173164,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 22.825117370892016,
+      "mean_notional": 5.401724069598107,
+      "mean_trade_net": -0.037629843821912985,
+      "net_marked": -8.015156734067773,
+      "open_net": -3.0730973321624333e-13,
+      "open_position": false,
+      "realized_net": -8.015156734067466,
+      "rejected_entries": 51,
+      "turnover": 4123.245380114058,
+      "without_best_trade": -10.000338340918422
+    },
+    "trend1+range|COMBINED|2025|10": {
+      "best_trade": 1.05438889329328,
+      "closed": 205,
+      "exit_reasons": {
+        "signal": 82,
+        "stop": 78,
+        "stop_gap": 0,
+        "target": 38,
+        "time": 7
+      },
+      "exposure_fraction": 0.560074200913242,
+      "fees": 3.894691805241414,
+      "funding": 0.10798339843833651,
+      "gross_closed": -2.3683868029700714,
+      "impact": 3.8946797657346997,
+      "max_drawdown_pct": 1.0606851927021292,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 23.895121951219515,
+      "mean_notional": 5.3031526600684735,
+      "mean_trade_net": -0.0489288929999422,
+      "net_marked": -10.098863442602692,
+      "open_net": -0.06844037761454125,
+      "open_position": true,
+      "realized_net": -10.03042306498815,
+      "rejected_entries": 82,
+      "turnover": 3894.6918052414107,
+      "without_best_trade": -11.153252335895973
+    },
+    "trend1+range|COMBINED|2025|5": {
+      "best_trade": 1.0633734478782788,
+      "closed": 204,
+      "exit_reasons": {
+        "signal": 84,
+        "stop": 75,
+        "stop_gap": 0,
+        "target": 38,
+        "time": 7
+      },
+      "exposure_fraction": 0.5646118721461187,
+      "fees": 3.8724443059537825,
+      "funding": 0.1114104869114834,
+      "gross_closed": -2.269751032445051,
+      "impact": 1.9362191677590002,
+      "max_drawdown_pct": 0.855863150590544,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 24.207107843137255,
+      "mean_notional": 5.346223704728863,
+      "mean_trade_net": -0.03898280639282599,
+      "net_marked": -8.011276654892981,
+      "open_net": -0.05878415075647947,
+      "open_position": true,
+      "realized_net": -7.952492504136502,
+      "rejected_entries": 79,
+      "turnover": 3872.444305953779,
+      "without_best_trade": -9.07465010277126
+    },
+    "trend1+range|COMBINED|2026|10": {
+      "best_trade": 1.9111970435489996,
+      "closed": 168,
+      "exit_reasons": {
+        "signal": 83,
+        "stop": 55,
+        "stop_gap": 0,
+        "target": 28,
+        "time": 2
+      },
+      "exposure_fraction": 0.5532140899122807,
+      "fees": 3.2263589700922135,
+      "funding": 0.06219719771824466,
+      "gross_closed": -0.988001509414037,
+      "impact": 3.2263579820905357,
+      "max_drawdown_pct": 1.006417907210279,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 24.02529761904762,
+      "mean_notional": 5.288071131109499,
+      "mean_trade_net": -0.04391976942784848,
+      "net_marked": -7.378521263878042,
+      "open_net": 5.027089855502709e-13,
+      "open_position": false,
+      "realized_net": -7.378521263878545,
+      "rejected_entries": 66,
+      "turnover": 3226.3589700922157,
+      "without_best_trade": -9.28971830742704
+    },
+    "trend1+range|COMBINED|2026|5": {
+      "best_trade": 1.9217845442745014,
+      "closed": 167,
+      "exit_reasons": {
+        "signal": 85,
+        "stop": 52,
+        "stop_gap": 0,
+        "target": 28,
+        "time": 2
+      },
+      "exposure_fraction": 0.5601356907894737,
+      "fees": 3.207714371949208,
+      "funding": 0.0626655576942677,
+      "gross_closed": -1.1518900803920336,
+      "impact": 1.6038568980018857,
+      "max_drawdown_pct": 0.8712319327633502,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 24.471556886227546,
+      "mean_notional": 5.358159094849902,
+      "mean_trade_net": -0.03533410654280754,
+      "net_marked": -5.900795792647386,
+      "open_net": 1.4725998198628076e-12,
+      "open_position": false,
+      "realized_net": -5.900795792648859,
+      "rejected_entries": 66,
+      "turnover": 3207.7143719492055,
+      "without_best_trade": -7.822580336921888
+    },
+    "trend1|LONG|2024|10": {
+      "best_trade": 2.400620535877201,
+      "closed": 96,
+      "exit_reasons": {
+        "signal": 56,
+        "stop": 39,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 1
+      },
+      "exposure_fraction": 0.3683686247723133,
+      "fees": 1.857022577778694,
+      "funding": 0.0,
+      "gross_closed": 2.85635553422794,
+      "impact": 1.8570254341341232,
+      "max_drawdown_pct": 0.3961257192594419,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 33.705729166666664,
+      "mean_notional": 3.658249891828891,
+      "mean_trade_net": -0.008934296642550799,
+      "net_marked": -0.8576924776847363,
+      "open_net": 1.4033219031261979e-13,
+      "open_position": false,
+      "realized_net": -0.8576924776848767,
+      "rejected_entries": 0,
+      "turnover": 1857.0225777786939,
+      "without_best_trade": -3.258313013561937
+    },
+    "trend1|LONG|2024|5": {
+      "best_trade": 2.411634090738601,
+      "closed": 96,
+      "exit_reasons": {
+        "signal": 57,
+        "stop": 38,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 1
+      },
+      "exposure_fraction": 0.3684540072859745,
+      "fees": 1.8568948398408258,
+      "funding": 0.0,
+      "gross_closed": 2.7271248032279622,
+      "impact": 0.9284481017015157,
+      "max_drawdown_pct": 0.3506733122816304,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 33.713541666666664,
+      "mean_notional": 3.6590449911401386,
+      "mean_trade_net": -0.0006064389407747876,
+      "net_marked": -0.0582181383151692,
+      "open_net": -7.895975540073152e-13,
+      "open_position": false,
+      "realized_net": -0.0582181383143796,
+      "rejected_entries": 0,
+      "turnover": 1856.894839840827,
+      "without_best_trade": -2.46985222905377
+    },
+    "trend1|LONG|2025|10": {
+      "best_trade": 0.9928430959814997,
+      "closed": 97,
+      "exit_reasons": {
+        "signal": 71,
+        "stop": 26,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.336101598173516,
+      "fees": 1.8405438918906165,
+      "funding": 0.0,
+      "gross_closed": -2.7547790884720356,
+      "impact": 1.840541137111426,
+      "max_drawdown_pct": 0.6840225420795347,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 30.353092783505154,
+      "mean_notional": 3.2455176290753203,
+      "mean_trade_net": -0.06634911461313484,
+      "net_marked": -6.435864117475148,
+      "open_net": -1.0693668173189508e-12,
+      "open_position": false,
+      "realized_net": -6.435864117474079,
+      "rejected_entries": 0,
+      "turnover": 1840.543891890616,
+      "without_best_trade": -7.428707213456648
+    },
+    "trend1|LONG|2025|5": {
+      "best_trade": 1.003277438340751,
+      "closed": 95,
+      "exit_reasons": {
+        "signal": 71,
+        "stop": 24,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.33972602739726027,
+      "fees": 1.8029900119891182,
+      "funding": 0.0,
+      "gross_closed": -2.4985386802220164,
+      "impact": 0.901494381359787,
+      "max_drawdown_pct": 0.5637087746550474,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 31.326315789473686,
+      "mean_notional": 3.2797495201512334,
+      "mean_trade_net": -0.05476866393232548,
+      "net_marked": -5.203023073570876,
+      "open_net": 4.529709940470639e-14,
+      "open_position": false,
+      "realized_net": -5.203023073570921,
+      "rejected_entries": 0,
+      "turnover": 1802.9900119891183,
+      "without_best_trade": -6.206300511911627
+    },
+    "trend1|LONG|2026|10": {
+      "best_trade": 2.010097548252,
+      "closed": 77,
+      "exit_reasons": {
+        "signal": 63,
+        "stop": 14,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.33617735745614036,
+      "fees": 1.471375244791314,
+      "funding": 0.0,
+      "gross_closed": -0.6338130217080232,
+      "impact": 1.4713746109782224,
+      "max_drawdown_pct": 0.41999318870036967,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 31.853896103896105,
+      "mean_notional": 3.263819569126944,
+      "mean_trade_net": -0.04644886853866961,
+      "net_marked": -3.5765628774776133,
+      "open_net": -5.284661597215745e-14,
+      "open_position": false,
+      "realized_net": -3.5765628774775604,
+      "rejected_entries": 0,
+      "turnover": 1471.3752447913134,
+      "without_best_trade": -5.5866604257296135
+    },
+    "trend1|LONG|2026|5": {
+      "best_trade": 2.0206356481259995,
+      "closed": 77,
+      "exit_reasons": {
+        "signal": 63,
+        "stop": 14,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.3374794407894737,
+      "fees": 1.4727230834703822,
+      "funding": 0.0,
+      "gross_closed": -0.7134242417390128,
+      "impact": 0.7363613633790536,
+      "max_drawdown_pct": 0.3736554113050334,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 31.977272727272727,
+      "mean_notional": 3.277569659196846,
+      "mean_trade_net": -0.03795465829335647,
+      "net_marked": -2.9225086885882092,
+      "open_net": 2.3936408410918375e-13,
+      "open_position": false,
+      "realized_net": -2.9225086885884486,
+      "rejected_entries": 0,
+      "turnover": 1472.7230834703817,
+      "without_best_trade": -4.943144336714209
+    },
+    "trend1|SHORT|2024|10": {
+      "best_trade": 0.9895124653373598,
+      "closed": 86,
+      "exit_reasons": {
+        "signal": 52,
+        "stop": 34,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.2776923952641166,
+      "fees": 1.6690918411108602,
+      "funding": 0.24624639896080341,
+      "gross_closed": -2.0225505603000036,
+      "impact": 1.6690898185602154,
+      "max_drawdown_pct": 0.5324467482885274,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 28.363372093023255,
+      "mean_notional": 2.640474604906642,
+      "mean_trade_net": -0.059470765360584606,
+      "net_marked": -5.114485821011613,
+      "open_net": -1.3367085216486885e-12,
+      "open_position": false,
+      "realized_net": -5.114485821010276,
+      "rejected_entries": 0,
+      "turnover": 1669.0918411108612,
+      "without_best_trade": -6.103998286348973
+    },
+    "trend1|SHORT|2024|5": {
+      "best_trade": 0.99841597839986,
+      "closed": 85,
+      "exit_reasons": {
+        "signal": 53,
+        "stop": 32,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.2789162112932605,
+      "fees": 1.6474356294825376,
+      "funding": 0.24784431403696208,
+      "gross_closed": -1.9439335157800253,
+      "impact": 0.8237173287578015,
+      "max_drawdown_pct": 0.4762872126476244,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 28.823529411764707,
+      "mean_notional": 2.650766933800084,
+      "mean_trade_net": -0.04902637835274592,
+      "net_marked": -4.167242159984767,
+      "open_net": -1.3633538742396922e-12,
+      "open_position": false,
+      "realized_net": -4.167242159983403,
+      "rejected_entries": 0,
+      "turnover": 1647.4356294825382,
+      "without_best_trade": -5.165658138384627
+    },
+    "trend1|SHORT|2025|10": {
+      "best_trade": 1.05438889329328,
+      "closed": 90,
+      "exit_reasons": {
+        "signal": 61,
+        "stop": 28,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 1
+      },
+      "exposure_fraction": 0.3348458904109589,
+      "fees": 1.7091888310226817,
+      "funding": 0.1558322400718488,
+      "gross_closed": -1.263821201480007,
+      "impact": 1.7091875672013883,
+      "max_drawdown_pct": 0.5657740440246962,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 32.59166666666667,
+      "mean_notional": 3.126150147089047,
+      "mean_trade_net": -0.05029294844035808,
+      "net_marked": -4.526365359631654,
+      "open_net": 5.728750807065808e-13,
+      "open_position": false,
+      "realized_net": -4.526365359632227,
+      "rejected_entries": 0,
+      "turnover": 1709.1888310226811,
+      "without_best_trade": -5.580754252924934
+    },
+    "trend1|SHORT|2025|5": {
+      "best_trade": 1.0633734478782788,
+      "closed": 89,
+      "exit_reasons": {
+        "signal": 62,
+        "stop": 26,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 1
+      },
+      "exposure_fraction": 0.3353310502283105,
+      "fees": 1.6900039153648576,
+      "funding": 0.1559286469576888,
+      "gross_closed": -1.101298715500022,
+      "impact": 0.8450016823576515,
+      "max_drawdown_pct": 0.509921812158253,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 33.00561797752809,
+      "mean_notional": 3.130815963670097,
+      "mean_trade_net": -0.03910534456477352,
+      "net_marked": -3.4803756662648766,
+      "open_net": -3.3306690738754696e-14,
+      "open_position": false,
+      "realized_net": -3.4803756662648433,
+      "rejected_entries": 0,
+      "turnover": 1690.0039153648584,
+      "without_best_trade": -4.543749114143155
+    },
+    "trend1|SHORT|2026|10": {
+      "best_trade": 1.5485464319891977,
+      "closed": 73,
+      "exit_reasons": {
+        "signal": 53,
+        "stop": 20,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.3261033442982456,
+      "fees": 1.4053001793107867,
+      "funding": 0.08389452749382169,
+      "gross_closed": 0.1814152739399964,
+      "impact": 1.4053003607259804,
+      "max_drawdown_pct": 0.5000629654901798,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 32.592465753424655,
+      "mean_notional": 3.064428961348699,
+      "mean_trade_net": -0.034866996419218484,
+      "net_marked": -2.5452907386008974,
+      "open_net": 2.0516921495072893e-12,
+      "open_position": false,
+      "realized_net": -2.545290738602949,
+      "rejected_entries": 0,
+      "turnover": 1405.300179310786,
+      "without_best_trade": -4.0938371705900956
+    },
+    "trend1|SHORT|2026|5": {
+      "best_trade": 1.5573135449411983,
+      "closed": 72,
+      "exit_reasons": {
+        "signal": 55,
+        "stop": 17,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 0
+      },
+      "exposure_fraction": 0.33864446271929827,
+      "fees": 1.3840353261561429,
+      "funding": 0.08525417910611799,
+      "gross_closed": 0.5215390743199891,
+      "impact": 0.6920177934627624,
+      "max_drawdown_pct": 0.3986622188927474,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 34.31597222222222,
+      "mean_notional": 3.1860698578673365,
+      "mean_trade_net": -0.020406387030455535,
+      "net_marked": -1.4692598661914644,
+      "open_net": 1.334043986389588e-12,
+      "open_position": false,
+      "realized_net": -1.4692598661927985,
+      "rejected_entries": 0,
+      "turnover": 1384.0353261561431,
+      "without_best_trade": -3.026573411132663
+    },
+    "trend4+range|COMBINED|2024|10": {
+      "best_trade": 2.3415654688596,
+      "closed": 104,
+      "exit_reasons": {
+        "signal": 6,
+        "stop": 73,
+        "stop_gap": 0,
+        "target": 13,
+        "time": 12
+      },
+      "exposure_fraction": 0.4866518670309654,
+      "fees": 2.0210229102526514,
+      "funding": 0.12038268226371854,
+      "gross_closed": 0.39793596293395306,
+      "impact": 2.0210233081885183,
+      "max_drawdown_pct": 0.6036199386069508,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 41.10336538461539,
+      "mean_notional": 4.7765705336094,
+      "mean_trade_net": -0.0338819958965721,
+      "net_marked": -3.5237275732437183,
+      "open_net": -2.19824158875781e-13,
+      "open_position": false,
+      "realized_net": -3.5237275732434985,
+      "rejected_entries": 40,
+      "turnover": 2021.0229102526503,
+      "without_best_trade": -5.8652930421033185
+    },
+    "trend4+range|COMBINED|2024|5": {
+      "best_trade": 2.352388405429802,
+      "closed": 102,
+      "exit_reasons": {
+        "signal": 7,
+        "stop": 70,
+        "stop_gap": 0,
+        "target": 13,
+        "time": 12
+      },
+      "exposure_fraction": 0.49445013661202186,
+      "fees": 1.9795044937742046,
+      "funding": 0.12108571315656155,
+      "gross_closed": 0.47661018129395955,
+      "impact": 0.9897523660395218,
+      "max_drawdown_pct": 0.5470945611377583,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 42.580882352941174,
+      "mean_notional": 4.845087783526856,
+      "mean_trade_net": -0.023250597699639247,
+      "net_marked": -2.371560965364665,
+      "open_net": -1.4619416788264061e-12,
+      "open_position": false,
+      "realized_net": -2.3715609653632033,
+      "rejected_entries": 40,
+      "turnover": 1979.5044937742039,
+      "without_best_trade": -4.723949370794467
+    },
+    "trend4+range|COMBINED|2025|10": {
+      "best_trade": 1.2191924488877826,
+      "closed": 110,
+      "exit_reasons": {
+        "signal": 12,
+        "stop": 55,
+        "stop_gap": 0,
+        "target": 30,
+        "time": 13
+      },
+      "exposure_fraction": 0.504994292237443,
+      "fees": 2.1003550287651036,
+      "funding": 0.09610103293316245,
+      "gross_closed": -0.942993346864044,
+      "impact": 2.10034441465194,
+      "max_drawdown_pct": 0.5948579710847602,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 40.14545454545455,
+      "mean_notional": 4.76466648890977,
+      "mean_trade_net": -0.04571127133480205,
+      "net_marked": -5.096680224443276,
+      "open_net": -0.06844037761505017,
+      "open_position": true,
+      "realized_net": -5.0282398468282254,
+      "rejected_entries": 70,
+      "turnover": 2100.3550287651015,
+      "without_best_trade": -6.315872673331058
+    },
+    "trend4+range|COMBINED|2025|5": {
+      "best_trade": 1.2282578984977819,
+      "closed": 109,
+      "exit_reasons": {
+        "signal": 12,
+        "stop": 54,
+        "stop_gap": 0,
+        "target": 30,
+        "time": 13
+      },
+      "exposure_fraction": 0.5087328767123288,
+      "fees": 2.0799137363772524,
+      "funding": 0.09696702847724174,
+      "gross_closed": -0.9734007684220377,
+      "impact": 1.0399542070583967,
+      "max_drawdown_pct": 0.5062670344467323,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 40.814220183486235,
+      "mean_notional": 4.800596998807029,
+      "mean_trade_net": -0.03653018503000546,
+      "net_marked": -4.040574319027769,
+      "open_net": -0.05878415075717314,
+      "open_position": true,
+      "realized_net": -3.981790168270596,
+      "rejected_entries": 67,
+      "turnover": 2079.913736377251,
+      "without_best_trade": -5.268832217525551
+    },
+    "trend4+range|COMBINED|2026|10": {
+      "best_trade": 2.119673462847,
+      "closed": 86,
+      "exit_reasons": {
+        "signal": 7,
+        "stop": 54,
+        "stop_gap": 0,
+        "target": 18,
+        "time": 7
+      },
+      "exposure_fraction": 0.5250479714912281,
+      "fees": 1.6681696330609874,
+      "funding": 0.07285118344059109,
+      "gross_closed": -0.2880187479600385,
+      "impact": 1.668178690630154,
+      "max_drawdown_pct": 0.6484389397909545,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 43.98837209302325,
+      "mean_notional": 5.0786666780496255,
+      "mean_trade_net": -0.0411273858622779,
+      "net_marked": -3.527254614922981,
+      "open_net": 0.009700569232918177,
+      "open_position": true,
+      "realized_net": -3.5369551841558993,
+      "rejected_entries": 55,
+      "turnover": 1668.169633060988,
+      "without_best_trade": -5.6469280777699815
+    },
+    "trend4+range|COMBINED|2026|5": {
+      "best_trade": 2.130466306423501,
+      "closed": 85,
+      "exit_reasons": {
+        "signal": 7,
+        "stop": 53,
+        "stop_gap": 0,
+        "target": 18,
+        "time": 7
+      },
+      "exposure_fraction": 0.528405975877193,
+      "fees": 1.6483130584308898,
+      "funding": 0.07320579383729053,
+      "gross_closed": -0.4526691988095454,
+      "impact": 0.8241587524450391,
+      "max_drawdown_pct": 0.6028416512292638,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 44.794117647058826,
+      "mean_notional": 5.110498165666129,
+      "mean_trade_net": -0.033435795682346975,
+      "net_marked": -2.8230179352034384,
+      "open_net": 0.019024697796054646,
+      "open_position": true,
+      "realized_net": -2.842042632999493,
+      "rejected_entries": 56,
+      "turnover": 1648.3130584308892,
+      "without_best_trade": -4.953484241626939
+    },
+    "trend4|LONG|2024|10": {
+      "best_trade": 2.3415654688596,
+      "closed": 39,
+      "exit_reasons": {
+        "signal": 3,
+        "stop": 27,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 9
+      },
+      "exposure_fraction": 0.29622040072859745,
+      "fees": 0.7590773062732132,
+      "funding": 0.0,
+      "gross_closed": 4.53054541863197,
+      "impact": 0.7590818368185953,
+      "max_drawdown_pct": 0.2416743014201554,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 66.71794871794872,
+      "mean_notional": 2.968891460465043,
+      "mean_trade_net": 0.077240673731799,
+      "net_marked": 3.012386275540166,
+      "open_net": 4.884981308350689e-15,
+      "open_position": false,
+      "realized_net": 3.012386275540161,
+      "rejected_entries": 0,
+      "turnover": 759.0773062732136,
+      "without_best_trade": 0.6708208066805659
+    },
+    "trend4|LONG|2024|5": {
+      "best_trade": 2.352388405429802,
+      "closed": 38,
+      "exit_reasons": {
+        "signal": 3,
+        "stop": 26,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 9
+      },
+      "exposure_fraction": 0.2965903916211293,
+      "fees": 0.7397615582037889,
+      "funding": 0.0,
+      "gross_closed": 4.584129468522985,
+      "impact": 0.36988192513421786,
+      "max_drawdown_pct": 0.23677425013017592,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 68.5592105263158,
+      "mean_notional": 2.971958061429865,
+      "mean_trade_net": 0.09143384171539418,
+      "net_marked": 3.4744859851849696,
+      "open_net": -8.881784197001252e-15,
+      "open_position": false,
+      "realized_net": 3.4744859851849785,
+      "rejected_entries": 0,
+      "turnover": 739.7615582037887,
+      "without_best_trade": 1.1220975797551676
+    },
+    "trend4|LONG|2025|10": {
+      "best_trade": 0.7000213226908012,
+      "closed": 29,
+      "exit_reasons": {
+        "signal": 7,
+        "stop": 18,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 4
+      },
+      "exposure_fraction": 0.24434931506849314,
+      "fees": 0.5493762320956715,
+      "funding": 0.0,
+      "gross_closed": -0.7752773817100149,
+      "impact": 0.549375456818267,
+      "max_drawdown_pct": 0.23136853380547076,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 73.8103448275862,
+      "mean_notional": 2.350577520450908,
+      "mean_trade_net": -0.06462169209048113,
+      "net_marked": -1.8740290706239193,
+      "open_net": 3.352873534367973e-14,
+      "open_position": false,
+      "realized_net": -1.8740290706239529,
+      "rejected_entries": 0,
+      "turnover": 549.3762320956715,
+      "without_best_trade": -2.5740503933147205
+    },
+    "trend4|LONG|2025|5": {
+      "best_trade": 0.7099885070453997,
+      "closed": 29,
+      "exit_reasons": {
+        "signal": 7,
+        "stop": 18,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 4
+      },
+      "exposure_fraction": 0.24483447488584476,
+      "fees": 0.5492918470125681,
+      "funding": 0.0,
+      "gross_closed": -0.859316845855011,
+      "impact": 0.2746457086770383,
+      "max_drawdown_pct": 0.21329723844537604,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 73.95689655172413,
+      "mean_notional": 2.3552322872831,
+      "mean_trade_net": -0.05804325522567645,
+      "net_marked": -1.6832544015445592,
+      "open_net": 5.795364188543317e-14,
+      "open_position": false,
+      "realized_net": -1.6832544015446171,
+      "rejected_entries": 0,
+      "turnover": 549.2918470125682,
+      "without_best_trade": -2.3932429085899587
+    },
+    "trend4|LONG|2026|10": {
+      "best_trade": 2.119673462847,
+      "closed": 24,
+      "exit_reasons": {
+        "signal": 4,
+        "stop": 18,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 2
+      },
+      "exposure_fraction": 0.26483689692982454,
+      "fees": 0.4614915856806782,
+      "funding": 0.0,
+      "gross_closed": -0.8319110303520209,
+      "impact": 0.46149075376962356,
+      "max_drawdown_pct": 0.4123286238250798,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 80.51041666666667,
+      "mean_notional": 2.611948785344704,
+      "mean_trade_net": -0.0731205570750968,
+      "net_marked": -1.7548933698025166,
+      "open_net": -1.9340085088970227e-13,
+      "open_position": false,
+      "realized_net": -1.7548933698023232,
+      "rejected_entries": 0,
+      "turnover": 461.4915856806783,
+      "without_best_trade": -3.8745668326495166
+    },
+    "trend4|LONG|2026|5": {
+      "best_trade": 2.130466306423501,
+      "closed": 24,
+      "exit_reasons": {
+        "signal": 4,
+        "stop": 18,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 2
+      },
+      "exposure_fraction": 0.2649054276315789,
+      "fees": 0.4614067071667446,
+      "funding": 0.0,
+      "gross_closed": -0.9164158411760147,
+      "impact": 0.23070312447938285,
+      "max_drawdown_pct": 0.4012369577906903,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 80.53125,
+      "mean_notional": 2.6125909788616997,
+      "mean_trade_net": -0.06702190303425593,
+      "net_marked": -1.6085256728221111,
+      "open_net": 3.108624468950438e-14,
+      "open_position": false,
+      "realized_net": -1.6085256728221422,
+      "rejected_entries": 0,
+      "turnover": 461.4067071667447,
+      "without_best_trade": -3.738991979245612
+    },
+    "trend4|SHORT|2024|10": {
+      "best_trade": 0.44728217166614004,
+      "closed": 32,
+      "exit_reasons": {
+        "signal": 3,
+        "stop": 27,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 2
+      },
+      "exposure_fraction": 0.17788023679417123,
+      "fees": 0.6250063524730904,
+      "funding": 0.1319650736566379,
+      "gross_closed": -3.617822650439998,
+      "impact": 0.6250027346504068,
+      "max_drawdown_pct": 0.5473381961853506,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 48.828125,
+      "mean_notional": 1.686398405908473,
+      "mean_trade_net": -0.14799583324708931,
+      "net_marked": -4.735866663907245,
+      "open_net": -3.872457909892546e-13,
+      "open_position": false,
+      "realized_net": -4.735866663906858,
+      "rejected_entries": 0,
+      "turnover": 625.0063524730903,
+      "without_best_trade": -5.183148835573386
+    },
+    "trend4|SHORT|2024|5": {
+      "best_trade": 0.4564821230461403,
+      "closed": 31,
+      "exit_reasons": {
+        "signal": 4,
+        "stop": 25,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 2
+      },
+      "exposure_fraction": 0.18516621129326047,
+      "fees": 0.6028675282233841,
+      "funding": 0.13266810454948094,
+      "gross_closed": -3.5021111678000127,
+      "impact": 0.30143288858386363,
+      "max_drawdown_pct": 0.5030745216615005,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 52.46774193548387,
+      "mean_notional": 1.7504480202356592,
+      "mean_trade_net": -0.13786269290508968,
+      "net_marked": -4.2737434800591245,
+      "open_net": -1.3447021274259896e-12,
+      "open_position": false,
+      "realized_net": -4.27374348005778,
+      "rejected_entries": 0,
+      "turnover": 602.8675282233837,
+      "without_best_trade": -4.730225603105265
+    },
+    "trend4|SHORT|2025|10": {
+      "best_trade": 1.2191924488877826,
+      "closed": 29,
+      "exit_reasons": {
+        "signal": 6,
+        "stop": 19,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 4
+      },
+      "exposure_fraction": 0.22203196347031964,
+      "fees": 0.5532529797335494,
+      "funding": 0.09860330919708242,
+      "gross_closed": -0.8756440894600044,
+      "impact": 0.553252104089427,
+      "max_drawdown_pct": 0.3795296862491856,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 67.06896551724138,
+      "mean_notional": 2.0451657258561555,
+      "mean_trade_net": -0.06494985738227235,
+      "net_marked": -1.8835458640854768,
+      "open_net": 4.2166270475263445e-13,
+      "open_position": false,
+      "realized_net": -1.8835458640858984,
+      "rejected_entries": 0,
+      "turnover": 553.2529797335495,
+      "without_best_trade": -3.1027383129732593
+    },
+    "trend4|SHORT|2025|5": {
+      "best_trade": 1.2282578984977819,
+      "closed": 28,
+      "exit_reasons": {
+        "signal": 6,
+        "stop": 18,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 4
+      },
+      "exposure_fraction": 0.22508561643835617,
+      "fees": 0.5329882678726264,
+      "funding": 0.09946930474116172,
+      "gross_closed": -0.7721198127200104,
+      "impact": 0.2664939409063325,
+      "max_drawdown_pct": 0.36676120003361673,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 70.41964285714286,
+      "mean_notional": 2.0745925843892583,
+      "mean_trade_net": -0.052576168455635994,
+      "net_marked": -1.4721327167577556,
+      "open_net": 5.218048215738236e-14,
+      "open_position": false,
+      "realized_net": -1.4721327167578078,
+      "rejected_entries": 0,
+      "turnover": 532.9882678726262,
+      "without_best_trade": -2.7003906152555377
+    },
+    "trend4|SHORT|2026|10": {
+      "best_trade": 1.9193876840392996,
+      "closed": 25,
+      "exit_reasons": {
+        "signal": 3,
+        "stop": 17,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 5
+      },
+      "exposure_fraction": 0.23471765350877194,
+      "fees": 0.49084970558709357,
+      "funding": 0.07318015973130812,
+      "gross_closed": 0.7464583665399972,
+      "impact": 0.4908597976334347,
+      "max_drawdown_pct": 0.3126628921747556,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 66.59,
+      "mean_notional": 2.2184407360882665,
+      "mean_trade_net": -0.005900410915781274,
+      "net_marked": -0.13780970366121892,
+      "open_net": 0.009700569233312917,
+      "open_position": true,
+      "realized_net": -0.14751027289453184,
+      "rejected_entries": 0,
+      "turnover": 490.8497055870934,
+      "without_best_trade": -2.0571973877005183
+    },
+    "trend4|SHORT|2026|5": {
+      "best_trade": 1.9277335310873012,
+      "closed": 25,
+      "exit_reasons": {
+        "signal": 3,
+        "stop": 17,
+        "stop_gap": 0,
+        "target": 0,
+        "time": 5
+      },
+      "exposure_fraction": 0.23739035087719298,
+      "fees": 0.49093849541452345,
+      "funding": 0.07353477012800758,
+      "gross_closed": 0.6627564132699811,
+      "impact": 0.24547174979333275,
+      "max_drawdown_pct": 0.3039456559129234,
+      "max_entry_wait_minutes": 15.0,
+      "mean_holding_hours": 67.37,
+      "mean_notional": 2.2442978716077295,
+      "mean_trade_net": 0.00039094084155293974,
+      "net_marked": 0.028798218834481304,
+      "open_net": 0.01902469779565781,
+      "open_position": true,
+      "realized_net": 0.009773521038823493,
+      "rejected_entries": 0,
+      "turnover": 490.93849541452346,
+      "without_best_trade": -1.8989353122528199
+    }
+  }
+}

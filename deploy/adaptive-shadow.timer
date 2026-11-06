@@ -1,0 +1,10 @@
+[Unit]
+Description=Quarter-hour public adaptive shadow snapshots
+
+[Timer]
+OnCalendar=*-*-* *:02,17,32,47:00 UTC
+Persistent=true
+Unit=adaptive-shadow.service
+
+[Install]
+WantedBy=timers.target

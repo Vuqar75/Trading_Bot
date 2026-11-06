@@ -130,6 +130,13 @@ class ReportUpdateGuardTests(unittest.TestCase):
             freeze_report_update(self.shared,self.q,'finalaudit:freeze:test',now=100,namespace='finalaudit')
         self.assertFalse(self.shared.deployment_hold())
 
+    def test_adaptive_shadow_restores_only_previously_enabled_spot(self):
+        frozen=freeze_report_update(self.shared,self.q,'adaptiveshadow:freeze:test',now=100,namespace='adaptiveshadow')
+        self.assertFalse(frozen['paused']['spot']);self.assertTrue(frozen['paused']['futures'])
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            result=release_report_update(self.shared,self.q,'adaptiveshadow:release:test',protection_checked_ms=100000,now=100,namespace='adaptiveshadow')
+        self.assertEqual(result['enabled'],['spot']);self.assertFalse(self.shared.snapshot('spot')['paused']);self.assertTrue(self.shared.snapshot('futures')['paused'])
+
     def test_pair_namespace_requires_and_preserves_all_pauses(self):
         with self.assertRaisesRegex(ValueError,'Spot must remain paused'):
             freeze_report_update(self.shared,self.q,'pair:freeze:test',now=100,namespace='pair')
