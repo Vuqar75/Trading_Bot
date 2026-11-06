@@ -1,8 +1,45 @@
 # Adaptive research study: installation and recovery plan
 
-This is a plan, not proof of installation. Follow the pre-start
+Follow the pre-start
 `ADAPTIVE_CONTINUOUS_PROTOCOL.md`. Never attach the study to trading wallets,
 the Telegram queue, the independent observer or the AI budget database.
+
+## Installed study, 2026-11-06
+
+The installed code tree is GitHub commit `1a1d999bf11621382c1ae84aed36953abcf21771`
+(local equivalent `872ef03cd3c13e0cbc09ecb7bfb29e521ef81cfe`, identical tree).
+The sole `adaptive-study.service` began at 2026-11-06 22:48:12.589 UTC
+(2026-11-07 02:48:12.589 Asia/Baku). Both separate experiments began in cash,
+1,000 USDT each, with no positions. Historical quotes do not authorize entries.
+The first eligible 4-hour decision boundary is 2026-11-07 00:00 UTC; the
+existing AI service has its own permitted collection window and may legitimately
+miss it. A future same-snapshot AI/baseline result is not yet proven.
+
+The local status is `/var/lib/adaptive-study/state/status.json`, readable with
+`sudo -u adaptivestudy cat /var/lib/adaptive-study/state/status.json`. It is
+not currently connected to Telegram. `adaptive-study-publisher.path` passes
+sanitized evidence through a root-owned directory, not the AI credential or
+budget. The executor's evidence opt-in was installed outside its request
+window; the existing timer and budget were retained. An old response cannot be
+retrospectively bound to candles that were not recorded at the time.
+
+`adaptive-study-backup.timer` and `adaptive-study-upload.timer` schedule the
+separate snapshot and readback-verified external upload. The initial actual
+study archive was restored in isolation and verified, SHA-256
+`cfe611800de10e320abffe30839adb1973ce1e5a84af35832fca698668199a9b`.
+The service account used by the uploader has existing bucket-wide authority;
+the research prefix is an application boundary, not an IAM restriction.
+Bucket lifecycle and off-host recovery of unrelated host-bound encrypted AI
+budget backups have not been established here. Backup size caps can require
+operator attention as the research history grows.
+
+Public Spot and USD-M data and funding are research inputs, not a guarantee of
+executable prices. The system assumes complete fills and cannot partially
+close isolated positions; a daily or periodic protective check is not an
+exchange-held stop. Missing or contradictory funding remains unknown, blocks
+entries and may prevent a financially complete close; price-based protection
+is still evaluated where available. The study strategies previously failed
+economic selection and remain research-only.
 
 ## Prepare and rehearse
 

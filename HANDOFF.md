@@ -4278,3 +4278,62 @@ Prospective boundary guard now requires the 4h boundary itself to be later than 
 The real-systemd rehearsal collected current public Spot and USD-M quotes, started separate 1,000-USDT accounts, used about 19 MiB, restored after a service restart without re-seeding, and produced a verified local snapshot while the static-user supervisor remained active. A DynamicUser/static-user rehearsal combination caused systemd to migrate its temporary StateDirectory and stop the rehearsal; the static-user configuration avoided this. This did not touch trading or Donchian services. A live feed probe also showed the original serial candle/filter retrieval took ~8 seconds against a 5-second admission window; the uninstalled source now fetches markets concurrently, caches filters and obtains the execution quote last. This change still requires an actual VM latency rehearsal and final tests before any installation. The rehearsal service is stopped; its independent state and code remain preserved.
 
 Latency follow-up: on the VM under the intended CPU/network limits, the first parallel/cached-filter probe took 4,977 ms before accounting for scheduling or database work, so it was not accepted as adequate evidence for the 5-second window. The next candidate preloads closed signal history and filters before the boundary, then obtains a source-timestamped quote after the boundary and only then the newly closed skip candle. Historical and skip candles retain their distinct first-receipt times. Funding-history background audits are deferred outside the entry window. This remains uninstalled pending a new live latency-only probe and a true boundary check; do not interpret a fast latency probe as a trade or guaranteed execution.
+
+## Adaptive continuous study installed — 2026-11-06
+
+This section supersedes the uninstalled-candidate statements immediately above.
+Installed code is GitHub `1a1d999bf11621382c1ae84aed36953abcf21771` (local
+`872ef03cd3c13e0cbc09ecb7bfb29e521ef81cfe`, identical tree), under
+`/opt/adaptive-study-1a1d999bf11621382c1ae84aed36953abcf21771`; a tar
+comparison passed. One enabled `adaptive-study.service` runs as the dedicated
+`adaptivestudy` user. Actual start is 2026-11-06 22:48:12.589 UTC / 2026-11-07
+02:48:12.589 Asia/Baku. Its AI and baseline experiments each initialized one
+separate 1,000-USDT cash balance, no positions or trades, reconciled ledgers;
+no historic signal is inherited. First eligible 4-hour decision boundary is
+2026-11-07 00:00 UTC. Actual post-start AI and paired baseline decisions remain
+unobserved until a future permitted request succeeds: do not infer them from
+the existing old response or the preliminary live data probe.
+
+The service collects current Spot and USD-M data without trading access. On a
+separate static-user real-systemd rehearsal at the 22:45 UTC 15-minute boundary,
+both event-timestamped quotes were after the boundary, final closed candles
+were retrieved and no data error was reported; the rehearsal had no decision
+or position and was stopped before the production study. A prior latency-only
+probe took 2,094 ms. These do not guarantee an order fill or prove profitability.
+The observer and trading services retained their PIDs throughout installation.
+An operator read-only check after installation reported Spot unpaused and
+isolated, cross and margin paused, matching the known previous configuration.
+Study cgroup limits are 96 MiB / 10% CPU; measured working memory was about
+27 MiB. Metadata access and private paths were denied in a matching transient
+sandbox, while the public USD-M endpoint remained accessible.
+
+Evidence opt-in for `adaptive-ai-regular.service` uses this exact code tree,
+an executor-private capture directory and a separate root-owned sanitized
+publisher. Its original timer was briefly stopped outside the paid request
+window and restored unchanged; the budget and locks were preserved and the
+following timer tick completed without a new request. The old response lacks
+contemporaneous candle evidence, so `evidence:not_ready` for it is expected.
+The budget backup immediately before switching was externally verified;
+the current public aggregate showed 5 attempts, $0.012101 reserved, two
+unknown historical attempts and $0.0012821 estimated known usage; estimates,
+reserves and provider billing are distinct. No additional AI request was made.
+
+Daily snapshot and separate uploader timers are enabled. Initial study backup
+was downloaded and verified in an isolated restore, SHA-256
+`cfe611800de10e320abffe30839adb1973ce1e5a84af35832fca698668199a9b`;
+status later reported it fresh. The uploader's existing cloud service account
+has bucket-wide authority; the prefix is not an IAM boundary. Bucket retention
+and cross-host recovery of host-bound AI credential backups remain unverified.
+The read-only status is `/var/lib/adaptive-study/state/status.json`; Telegram
+integration is deferred. See `ADAPTIVE_STUDY_RUNBOOK.md` for operation and
+recovery. Protective checks and funding recovery were exercised offline, but
+there is no live position on which to claim a production protection cycle.
+Complete paper fills, no isolated partial close, unconfirmed data/funding and
+the previously rejected economic status remain explicit limitations.
+
+After the latest bounded quote retry, 308 adaptive Linux tests passed. The
+historical full run's single skipped case was
+`tests.test_four_market_shadow_gate.ShadowTransitions.test_bench_blocks_ip_and_does_not_inherit_credentials`:
+it requires `FOUR_MARKET_OFFLINE_BENCH`; the separate bench isolation probe
+was run and passed. No full application suite was repeated for this separate
+study implementation.
