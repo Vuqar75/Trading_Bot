@@ -36,6 +36,10 @@ class RegularTests(unittest.TestCase):
   self.assertEqual(self.tick()['reason'],'budget_exhausted');self.assertEqual(self.calls,[])
  def test_changed_or_unavailable_source_never_sends(self):
   self.snap['symbol']='ETHUSDT';self.assertEqual(self.tick()['status'],'source_unavailable_or_stale');self.assertEqual(self.calls,[])
+ def test_startup_publishes_waiting_status_without_fetch_or_send(self):
+  self.now=self.b-PERIOD+120001
+  self.assertEqual(self.tick(fetch=lambda:self.fail('no source'),secret=lambda:self.fail('no credential'))['status'],'waiting')
+  d=json.loads(self.public.read_text());self.assertTrue(d['diagnostic_only']);self.assertIn('ожидание первой границы',d['summary']);self.assertEqual(self.calls,[])
  def test_concurrent_lock_is_rejected(self):
   from research.adaptive_server_once import exclusive
   with exclusive(self.p):
@@ -95,7 +99,7 @@ class RegularTests(unittest.TestCase):
   def fail(*a,**k):raise TimeoutError()
   self.tick(send=fail);target=self.p/'telegram'/'report.json';target.parent.mkdir()
   self.assertTrue(publish(self.public,target,now=self.now/1000,gid=__import__('os').getgid()))
-  text=render(target,self.now/1000);self.assertIn('Состояние запроса:',text);self.assertNotIn('Вывод модели:',text);self.assertIn('uncertain_http',text)
+  text=render(target,self.now/1000);self.assertIn('Состояние запроса:',text);self.assertNotIn('Вывод модели:',text);self.assertIn('неопределённая попытка',text)
  def test_ai_refresh_button_only_reads_and_is_authorized(self):
   from unittest.mock import patch
   from trading_bot.unified_queue import UnifiedQueue

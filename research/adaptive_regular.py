@@ -63,7 +63,12 @@ def publish(db,state,public,now,blocker=None):
   import datetime as dt
   stamp=lambda x:dt.datetime.fromtimestamp(x/1000,dt.timezone.utc).isoformat()
   next_at=dt.datetime.fromtimestamp((now//PERIOD+1)*PERIOD/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%Y-%m-%d %H:%M Баку')
-  d={'schema':1,'data_utc':stamp(now),'answer_utc':stamp(now),'expires_utc':stamp(now+PERIOD),'diagnostic_only':True,'complete':False,'metrics':'Состояние расписания; рыночное решение не обновлено.','coverage':'Проверяйте время данных предыдущего решения.','summary':'ИИ работает в shadow; адаптивные торговые входы запрещены. Состояние расписания: '+blocker+'; следующая граница '+next_at,'risks':('Резерв micro-USD: '+str(total)+'; остаток: '+str(CAP-total)+'; регулярных успешных: '+str(c.get('completed',0))+'; неопределённых: '+str(c.get('uncertain',0))+'; ошибок обработки: '+str(c.get('processing_failed',0))+'; пропущенных: '+str(c.get('missed',0))+'; оценка usage USD: '+str(estimate)+'; счёт провайдера не подтверждён.'),'sources':[]}
+  recent=db.execute('SELECT decision_json FROM adaptive_decisions WHERE decision_json IS NOT NULL ORDER BY rowid DESC LIMIT 1').fetchone();previous='предыдущего ответа нет'
+  if recent:
+   rec=json.loads(recent[0]);decision=rec['response'];label='действует' if now<decision['expires_ms'] else 'устарело'
+   previous='последнее решение '+label+': ИИ '+decision['mode']+', baseline '+rec['baseline']
+  labels={'waiting_for_first_boundary':'ожидание первой границы','source_unavailable_or_stale':'данные отсутствуют или устарели','uncertain_http':'неопределённая попытка, вызовы приостановлены','budget_exhausted':'общий лимит исчерпан','daily_limit':'дневной лимит достигнут','local_recovery_failed':'ошибка локальной обработки, вызовы приостановлены'}
+  d={'schema':1,'data_utc':stamp(now),'answer_utc':stamp(now),'expires_utc':stamp(now+PERIOD),'diagnostic_only':True,'complete':False,'metrics':'Состояние расписания; рыночное решение не обновлено.','coverage':'Предыдущее решение показано с его состоянием свежести.','summary':'ИИ работает в shadow; адаптивные торговые входы запрещены. Состояние расписания: '+labels.get(blocker,'ошибка, требуется проверка')+'; следующая граница '+next_at+'; '+previous,'risks':('Резерв micro-USD: '+str(total)+'; остаток: '+str(CAP-total)+'; регулярных успешных: '+str(c.get('completed',0))+'; неопределённых: '+str(c.get('uncertain',0))+'; ошибок обработки: '+str(c.get('processing_failed',0))+'; пропущенных: '+str(c.get('missed',0))+'; оценка usage USD: '+str(estimate)+'; счёт провайдера не подтверждён.'),'sources':[]}
   from .adaptive_ai_export import write
   return write(path,d)
  candidate=path.with_name('.regular-candidate.json')
@@ -117,7 +122,10 @@ def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=
       db.execute('BEGIN IMMEDIATE');mark(db,pending[0],'processing_failed',now,'local_recovery_failed',pending[1]);setmeta(db,'paused','local_recovery_failed');db.commit();paused='local_recovery_failed'
    else:db.commit()
    if paused:publish(db,state,public,now,paused);return {'status':'paused','reason':paused}
-   if boundary<a['start_ms']:return {'status':'waiting'}
+   if boundary<a['start_ms']:
+    if not status(db,'startup_reported'):
+     publish(db,state,public,now,'waiting_for_first_boundary');setmeta(db,'startup_reported',True)
+    return {'status':'waiting'}
    last=status(db,'last_boundary');start=max(a['start_ms'],last if type(last) is int else a['start_ms'])
    if (boundary-start)//PERIOD>10000:raise ValueError('unbounded_gap_requires_review')
    if last!=boundary:
