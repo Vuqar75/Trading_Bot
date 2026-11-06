@@ -13,7 +13,11 @@ def main():
   Path(tmp,'sitecustomize.py').write_text(SITECUSTOMIZE)
   env={'PATH':os.environ.get('PATH','/usr/bin:/bin'),'HOME':tmp,'TMPDIR':tmp,'LANG':'C.UTF-8',
        'PYTHONDONTWRITEBYTECODE':'1','PYTHONPATH':tmp+os.pathsep+str(ROOT)}
-  args=['discover','-s','tests'] if sys.argv[1:]==['--full'] else list(MODULES)
-  if sys.argv[1:] and sys.argv[1:]!=['--full']:raise SystemExit('Usage: run_adaptive_router_bench.py [--full]')
+  if sys.argv[1:]==['--isolation-probe']:
+   env['FOUR_MARKET_OFFLINE_BENCH']='1'
+   args=['tests.test_four_market_shadow_gate.ShadowTransitions.test_bench_blocks_ip_and_does_not_inherit_credentials']
+  elif sys.argv[1:]==['--full']:args=['discover','-s','tests']
+  elif not sys.argv[1:]:args=list(MODULES)
+  else:raise SystemExit('Usage: run_adaptive_router_bench.py [--full|--isolation-probe]')
   return subprocess.run([sys.executable,'-B','-m','unittest',*args],cwd=ROOT,env=env).returncode
 if __name__=='__main__':raise SystemExit(main())
