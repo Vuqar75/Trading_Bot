@@ -1,6 +1,6 @@
 import unittest
 from decimal import Decimal
-from research.adaptive_funding_tracker import register,advance,covered
+from research.adaptive_funding_tracker import register,advance,covered,audit
 from research.adaptive_funding_evidence import record
 from tests import test_adaptive_atomic_futures as fixture
 
@@ -43,3 +43,16 @@ class FundingTrackerTest(unittest.TestCase):
   advance(f.store,position_id=self.pos['id'],mark_response=mark,received_ms=now,history=self.history(now,[row]))
   with self.assertRaisesRegex(ValueError,'changed_requires_review'):record(f.store.db,{**row,'fundingRate':'0.002'},observed_ms=now+1)
   self.assertEqual(f.store.db.execute('SELECT count(*) FROM funding_conflicts').fetchone()[0],1)
+ def test_audit_missing_event_keeps_evidence_and_blocks(self):
+  f=self.f;now=self.due+10;row={'symbol':'BTCUSDT','fundingTime':self.due+1,'fundingRate':'0.001','markPrice':'100'}
+  advance(f.store,position_id=self.pos['id'],mark_response=self.mark(now,self.due+28800000),received_ms=now,history=self.history(now,[row]))
+  self.assertEqual(audit(f.store,self.history(now,[row]))['checked'],1)
+  with self.assertRaisesRegex(ValueError,'conflict_requires_review'):audit(f.store,self.history(now,[]))
+  self.assertEqual(f.store.db.execute('SELECT count(*) FROM funding_evidence').fetchone()[0],1)
+  self.assertEqual(f.store.db.execute('SELECT count(*) FROM funding_conflicts').fetchone()[0],1)
+ def test_audit_extra_already_covered_event_is_conflict(self):
+  f=self.f;now=self.due+10;row={'symbol':'BTCUSDT','fundingTime':self.due+1,'fundingRate':'0.001','markPrice':'100'}
+  advance(f.store,position_id=self.pos['id'],mark_response=self.mark(now,self.due+28800000),received_ms=now,history=self.history(now,[row]))
+  extra={'symbol':'BTCUSDT','fundingTime':self.f.now+1,'fundingRate':'0.002','markPrice':'100'}
+  history={'source':'binance_usdm_funding_rate','symbol':'BTCUSDT','start_ms':self.f.now,'end_ms':now,'received_ms':now,'rows':[extra,row]}
+  with self.assertRaisesRegex(ValueError,'conflict_requires_review'):audit(f.store,history)

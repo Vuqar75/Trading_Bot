@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily isolated adaptive-study snapshot
+
+[Timer]
+OnCalendar=*-*-* 03:40:00 UTC
+Persistent=true
+RandomizedDelaySec=1min
+Unit=adaptive-study-snapshot.service
+
+[Install]
+WantedBy=timers.target

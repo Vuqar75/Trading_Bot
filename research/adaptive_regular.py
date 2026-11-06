@@ -237,6 +237,10 @@ def main():
     with closing(sqlite3.connect('file:/var/lib/tradingbot-ai-executor/experiment-budget.db?mode=ro',uri=True)) as db:export_latest(db,capture_dir)
     result['evidence']='published_locally'
    except Exception:result['evidence']='not_ready'
+   try:
+    from .adaptive_decision_export import export_budget
+    with closing(sqlite3.connect('file:/var/lib/tradingbot-ai-executor/experiment-budget.db?mode=ro',uri=True)) as db:export_budget(db,capture_dir,now_ms=int(time.time()*1000))
+   except Exception:result['budget_evidence']='not_ready'
  except Exception:result={'status':'data_or_internal_error','network_retry':False}
  print(canonical(result))
 if __name__=='__main__':main()

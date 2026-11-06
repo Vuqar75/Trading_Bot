@@ -17,7 +17,7 @@ class CycleTest(unittest.TestCase):
   self.ai=bind(self.captured,self.decision,self.data_ms+1,model='gpt-6-luna',request_sha256='0'*64)
   self.private=self.root/'published';self.private.mkdir(mode=0o700);self.apath=self.private/'ai.json';self.bpath=self.private/'base.json'
   self.apath.write_text(json.dumps(self.ai));self.apath.chmod(0o600);self.bpath.write_text(json.dumps(self.captured));self.bpath.chmod(0o600)
-  initialize(self.root/'ai',source='AI',start_ms=self.data_ms-1000);initialize(self.root/'baseline',source='baseline',start_ms=self.data_ms-1000)
+  initialize(self.root/'ai',source='AI',start_ms=self.data_ms//PERIOD*PERIOD-1);initialize(self.root/'baseline',source='baseline',start_ms=self.data_ms//PERIOD*PERIOD-1)
   bar=900000;bars=[(i*bar,100.,101.,99.,100.) for i in range(196)];bars[-1]=(195*bar,100.,102.,99.,101.)
   self.markets={'spot':{'candles':{'market':'spot','symbol':'BTCUSDT','source':'binance_spot_klines','bars':bars,'skip_bar':(196*bar,100.,101.,99.,100.)},'quote':{'symbol':'BTCUSDT','source':'binance_spot_trade','price':'100','event_ms':self.now,'received_ms':self.now},'filters':{'market':'spot','symbol':'BTCUSDT','filters':symbol_info(),'received_ms':self.now}}}
  def run_cycle(self,name,path):return cycle(self.root/name,source='AI' if name=='ai' else 'baseline',decision_path=path,publisher_uid=os.getuid(),markets=self.markets,clock=lambda:self.now)
@@ -40,6 +40,14 @@ class CycleTest(unittest.TestCase):
   filters=symbol_info();filters.update(contractType='PERPETUAL',marginAsset='USDT');due=self.now+5000
   self.markets['futures']={'candles':{'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':bars,'skip_bar':(196*bar,100.,101.,99.,100.)},'quote':{'symbol':'BTCUSDT','source':'binance_usdm_mark','price':'100','event_ms':self.now,'received_ms':self.now,'next_due_ms':due},'filters':{'market':'futures','symbol':'BTCUSDT','filters':filters,'received_ms':self.now}}
   opened=self.run_cycle('ai',self.apath);self.assertEqual(opened['result']['status'],'OPEN')
-  self.now=due+10;self.markets['futures']['quote'].update(price='103',event_ms=self.now,received_ms=self.now,next_due_ms=due+28800000)
+  self.now=due+10;self.markets['futures']['quote'].update(price='103',event_ms=self.now-1,received_ms=self.now-1,next_due_ms=due+28800000)
   self.markets['futures']['funding_history']={'source':'binance_usdm_funding_rate','symbol':'BTCUSDT','start_ms':due-1,'end_ms':self.now,'received_ms':self.now,'rows':[{'symbol':'BTCUSDT','fundingTime':due+1,'fundingRate':'0.001','markPrice':'100'}]}
+  self.assertEqual(self.run_cycle('ai',self.private/'missing')['status'],'protection_exit')
+ def test_history_conflict_blocks_entry_but_not_fresh_price_exit(self):
+  self.markets['spot']['entry_conflict']=True
+  self.assertEqual(self.run_cycle('ai',self.apath)['reason'],'market_history_conflict')
+  self.markets['spot']['entry_conflict']=False
+  self.assertEqual(self.run_cycle('ai',self.apath)['result']['status'],'OPEN')
+  self.now+=1000;self.markets['spot']['entry_conflict']=True
+  self.markets['spot']['quote'].update(price='97',event_ms=self.now,received_ms=self.now)
   self.assertEqual(self.run_cycle('ai',self.private/'missing')['status'],'protection_exit')

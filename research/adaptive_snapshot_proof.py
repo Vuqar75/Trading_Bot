@@ -33,15 +33,17 @@ def capture(fetch,*,clock=lambda:int(time.time()*1000),news_fetch):
  raw={k:[r for r in rows if type(r[6]) is int and r[6]<min(observed[k],snapshot['as_of_ms'])] for k,rows in raw.items()}
  return {'snapshot':snapshot,'candles':raw,'observed_ms':observed,'candle_source':'binance_spot_api_v3_klines','baseline':base,'baseline_version':'sma20-4h-1pct-v1','protocol':'regular-regime-horizon-v2'}
 
-def bind(captured,decision,answer_ms,*,model,request_sha256):
+def bind(captured,decision,answer_ms,*,model,request_sha256,usage=None):
  """Prepare an export; transport authentication remains publisher's duty."""
- document={'schema':1,**copy.deepcopy(captured),'decision':copy.deepcopy(decision),'answer_ms':answer_ms,'model':model,'request_sha256':request_sha256}
+ document={'schema':1,**copy.deepcopy(captured),'decision':copy.deepcopy(decision),'answer_ms':answer_ms,'model':model,'request_sha256':request_sha256,'usage':copy.deepcopy(usage)}
  document['sha256']=digest(document);return document
 
 def verify(document,*,now_ms,start_ms):
- if not isinstance(document,dict) or set(document)!={'schema','snapshot','candles','observed_ms','candle_source','baseline','baseline_version','protocol','decision','answer_ms','model','request_sha256','sha256'}:raise ValueError('invalid_export')
+ if not isinstance(document,dict) or set(document)!={'schema','snapshot','candles','observed_ms','candle_source','baseline','baseline_version','protocol','decision','answer_ms','model','request_sha256','usage','sha256'}:raise ValueError('invalid_export')
  if document['schema']!=1 or document['baseline_version']!='sma20-4h-1pct-v1' or document['protocol']!='regular-regime-horizon-v2':raise ValueError('unsupported_version')
  if document['candle_source']!='binance_spot_api_v3_klines' or document['model']!='gpt-6-luna' or not isinstance(document['request_sha256'],str) or len(document['request_sha256'])!=64 or any(c not in '0123456789abcdef' for c in document['request_sha256']):raise ValueError('source_or_model_invalid')
+ usage=document['usage']
+ if usage is not None and (not isinstance(usage,dict) or any(type(usage.get(k)) is not int or usage[k]<0 for k in ('input_tokens','output_tokens')) or usage['output_tokens']>2000):raise ValueError('usage_invalid')
  if digest({k:v for k,v in document.items() if k!='sha256'})!=document['sha256']:raise ValueError('export_hash_mismatch')
  snapshot=document['snapshot'];sources=document['candles'];times=document['observed_ms'];decision=document['decision']
  if not isinstance(snapshot,dict) or not isinstance(sources,dict) or not isinstance(times,dict) or set(sources)!=set(INTERVALS) or set(times)!=set(INTERVALS):raise ValueError('incomplete_input')
@@ -50,6 +52,7 @@ def verify(document,*,now_ms,start_ms):
  if not isinstance(sid,str) or sid!=digest({k:v for k,v in snapshot.items() if k!='snapshot_id'}):raise ValueError('snapshot_hash_mismatch')
  data_ms=snapshot.get('as_of_ms');answer_ms=document['answer_ms']
  if type(data_ms) is not int or type(answer_ms) is not int or type(start_ms) is not int or type(now_ms) is not int or not start_ms<=data_ms<=answer_ms<=now_ms:raise ValueError('not_prospective')
+ if data_ms//PERIOD*PERIOD<=start_ms:raise ValueError('boundary_predates_start')
  if now_ms-data_ms>=PERIOD or data_ms//PERIOD!=answer_ms//PERIOD:raise ValueError('decision_window_invalid')
  validate_model(decision,sid,data_ms,now_ms)
  data={}

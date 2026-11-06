@@ -107,8 +107,8 @@ def exit_on_stop(store,queue_path,*,route_state,job_id,action_id,position_id,quo
   if risk_bar is not None and not risk_bar[0]+900000<=now<=risk_bar[0]+905000:raise ValueError('risk_bar_stale')
   pos=store.get('position')
   if not pos or pos.get('id')!=position_id:raise ValueError('route_position_mismatch')
-  from .adaptive_funding_tracker import covered
-  if not covered(store,pos,now):raise ValueError('funding_coverage_missing')
+  from .adaptive_funding_tracker import cover_through_under_lock
+  cover_through_under_lock(store,pos,now)
   if reason=='SIGNAL' and (not bars or not skip_bar or not skip_bar[0]+900000<=now<=skip_bar[0]+905000):raise ValueError('signal_exit_window_missed')
   return now
  original=store.transaction;store.db.execute('ATTACH DATABASE ? AS route_queue',(str(queue_path.resolve()),))

@@ -1,0 +1,32 @@
+[Unit]
+Description=Create consistent isolated adaptive-study backup
+
+[Service]
+Type=oneshot
+User=adaptivestudy
+Group=adaptivestudy
+SupplementaryGroups=adaptivebackup
+WorkingDirectory=/opt/adaptive-study-current
+Environment=PYTHONPATH=/opt/adaptive-study-current
+Environment=TMPDIR=/var/lib/adaptive-study
+Environment=HOME=/nonexistent
+UnsetEnvironment=TRADING_BOT_AI OPENAI_API_KEY RUNTIME_TELEGRAM_BOT_TOKEN RUNTIME_TELEGRAM_OWNER_ID GOOGLE_APPLICATION_CREDENTIALS CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE
+EnvironmentFile=/etc/adaptive-study/version.env
+ExecStart=/usr/bin/python3 -B -m research.adaptive_study_backup stage --root /var/lib/adaptive-study/state --export-dir /var/lib/adaptive-study-export --version ${STUDY_CODE_VERSION}
+TimeoutStartSec=180
+UMask=0027
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/tradingbot-ai-executor -/etc/credstore.encrypted -/var/lib/donchian-observer
+ReadWritePaths=/var/lib/adaptive-study /var/lib/adaptive-study-export
+MemoryMax=96M
+CPUQuota=10%
+TasksMax=10
+Nice=15

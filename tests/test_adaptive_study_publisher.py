@@ -27,3 +27,9 @@ class PublisherTest(unittest.TestCase):
   with self.assertRaisesRegex(ValueError,'untrusted_publisher_file'):self.pub(source,target,'baseline')
   source.chmod(0o600);changed=copy.deepcopy(self.f.capture);changed['candles']['15m'][-1][1]='99.5';source.write_text(json.dumps(changed))
   with self.assertRaisesRegex(ValueError,'publication_conflict'):self.pub(source,target,'baseline')
+ def test_sanitized_budget_status_keeps_reserve_and_usage_distinct(self):
+  from research.adaptive_study_supervisor import budget_health
+  value={'schema':1,'observed_ms':1000,'cap_micro_usd':250000,'reserved_micro_usd':7718,'attempts':2,'unknown_attempts':1,'known_estimated_usd':'0.0002','provider_bill_confirmed':False}
+  source=self.write('budget',value);target=self.public/'budget-current.json'
+  self.pub(source,target,'budget');out=budget_health(target,owner_uid=os.getuid(),now_ms=1001)
+  self.assertEqual((out['state'],out['unreserved_micro_usd'],out['unknown_attempts']),('fresh',242282,1))

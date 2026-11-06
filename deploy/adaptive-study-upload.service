@@ -1,0 +1,33 @@
+[Unit]
+Description=Upload and restore-check isolated adaptive-study backup
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+User=adaptivebackup
+Group=adaptivebackup
+SupplementaryGroups=adaptivestudy
+WorkingDirectory=/opt/adaptive-study-current
+Environment=PYTHONPATH=/opt/adaptive-study-current
+Environment=HOME=/nonexistent
+UnsetEnvironment=TRADING_BOT_AI OPENAI_API_KEY RUNTIME_TELEGRAM_BOT_TOKEN RUNTIME_TELEGRAM_OWNER_ID GOOGLE_APPLICATION_CREDENTIALS CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE
+ExecStart=/usr/bin/python3 -B -m research.adaptive_study_backup upload --export-dir /var/lib/adaptive-study-export --status-dir /var/lib/adaptive-study-backup-status --status-group adaptivestudy
+TimeoutStartSec=180
+UMask=0027
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/tradingbot-ai-executor -/var/lib/adaptive-study -/etc/credstore.encrypted -/var/lib/donchian-observer
+ReadOnlyPaths=/var/lib/adaptive-study-export
+ReadWritePaths=/var/lib/adaptive-study-backup-status
+MemoryMax=128M
+CPUQuota=10%
+TasksMax=10
+Nice=15

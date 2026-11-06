@@ -1,5 +1,5 @@
 import json,unittest
-from research.adaptive_experiment_recovery import reconcile
+from research.adaptive_experiment_recovery import reconcile,recover_spot
 from research.adaptive_route_state import RouteState
 from research.adaptive_spot_worker import process_entry,process_stop
 from tests import test_adaptive_atomic_spot as fixture
@@ -30,3 +30,21 @@ class RecoveryTest(unittest.TestCase):
   self.assertEqual(reconcile(f.q,self.state,f.fin),{'status':'idle','acknowledged':1})
   self.assertEqual(reconcile(f.q,self.state,f.fin),{'status':'idle','acknowledged':0})
   self.assertEqual(f.store.db.execute('SELECT count(*) FROM runtime_fills').fetchone()[0],2)
+ def test_unsubmitted_preparation_expires_and_pause_is_preserved(self):
+  f=self.f
+  def fault(point):
+   if point=='after_prepare':raise RuntimeError('crash')
+  with self.assertRaises(RuntimeError):process_entry(f.q,f.store,self.state,**self.args,fault=fault)
+  self.assertEqual(recover_spot(f.store)['status'],'recovered')
+  self.assertFalse(f.store.get('paused'))
+  self.assertEqual(reconcile(f.q,self.state,f.fin)['status'],'canceled')
+  self.assertEqual(f.store.db.execute('SELECT count(*) FROM runtime_fills').fetchone()[0],0)
+ def test_claimed_paper_order_recovers_once_and_pause_is_preserved(self):
+  f=self.f
+  def fault(point):
+   if point=='after_claim':raise RuntimeError('crash')
+  with self.assertRaises(RuntimeError):process_entry(f.q,f.store,self.state,**self.args,fault=fault)
+  self.assertEqual(recover_spot(f.store)['status'],'recovered')
+  self.assertFalse(f.store.get('paused'))
+  self.assertEqual(reconcile(f.q,self.state,f.fin)['status'],'open')
+  self.assertEqual(f.store.db.execute('SELECT count(*) FROM runtime_fills').fetchone()[0],1)

@@ -3,6 +3,7 @@
 Funding data are supplied by the public USD-M adapter. This module performs no
 network IO, and cannot infer an unobserved funding schedule after a long outage.
 """
+import json
 from .adaptive_funding_evidence import validate_mark,match_observed_due,record
 from pathlib import Path
 import tempfile
@@ -78,3 +79,49 @@ def covered(store,position,now_ms):
  if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='adaptive_funding_schedule'").fetchone():return False
  row=db.execute('SELECT next_due_ms,observed_ms FROM adaptive_funding_schedule WHERE position_id=?',(position.get('id'),)).fetchone()
  return bool(row and row[0]>now_ms and type(row[1]) is int and 0<=now_ms-row[1]<=5000)
+
+def cover_through_under_lock(store,position,now_ms):
+ """Advance over a proven no-due interval inside the existing close lock."""
+ if not store.db.in_transaction or not covered(store,position,now_ms):raise ValueError('funding_coverage_missing')
+ if position['funding_cursor']<now_ms:store.set('position',{**position,'funding_cursor':now_ms})
+
+def audit(store,history):
+ """Detect revised, missing or extra already-covered events without repair."""
+ _sandbox(store)
+ if (not isinstance(history,dict) or history.get('source')!='binance_usdm_funding_rate' or history.get('symbol')!='BTCUSDT' or
+     type(history.get('start_ms')) is not int or type(history.get('end_ms')) is not int or type(history.get('received_ms')) is not int or
+     not 0<=history['start_ms']<=history['end_ms']<=history['received_ms'] or history['end_ms']-history['start_ms']>7*86400000 or
+     not isinstance(history.get('rows'),list) or len(history['rows'])>=1000):raise ValueError('funding_history_unconfirmed')
+ db=store.db
+ if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='funding_evidence'").fetchone():return {'checked':0}
+ observed={}
+ for row in history['rows']:
+  if not isinstance(row,dict) or row.get('symbol')!='BTCUSDT' or type(row.get('fundingTime')) is not int or row['fundingTime'] in observed:raise ValueError('funding_history_invalid')
+  observed[row['fundingTime']]=row
+ known={r[0]:r[1] for r in db.execute('SELECT event_ms,payload FROM funding_evidence WHERE event_ms>=? AND event_ms<=?',(history['start_ms'],history['end_ms']))}
+ conflicts=[]
+ for stamp,payload in known.items():
+  if stamp not in observed:conflicts.append((stamp,json.dumps({'missing':True},sort_keys=True)))
+  else:
+   try:record(db,observed[stamp],observed_ms=history['received_ms'])
+   except ValueError as exc:
+    if str(exc)=='funding_event_changed_requires_review':conflicts.append((stamp,None))
+    else:raise
+ intervals={}
+ for row in db.execute("SELECT event,payload FROM futures_events WHERE event IN ('OPEN','CLOSE') ORDER BY id"):
+  data=json.loads(row[1]);key=data['id']
+  if row[0]=='OPEN':intervals[key]=[data['opened_ms'],None]
+  elif key in intervals:intervals[key][1]=data['closed_ms']
+ current=store.get('position')
+ if current and current['id'] in intervals:intervals[current['id']][1]=current['funding_cursor']
+ for stamp,row in observed.items():
+  if stamp not in known and any(start<stamp<=end for start,end in intervals.values() if end is not None):conflicts.append((stamp,json.dumps({'unrecorded':row},sort_keys=True)))
+ if conflicts:
+  db.execute('BEGIN IMMEDIATE')
+  try:
+   for stamp,payload in conflicts:
+    if payload is not None:db.execute('INSERT OR IGNORE INTO funding_conflicts VALUES(?,?,?)',(stamp,payload,history['received_ms']))
+   db.commit()
+  except BaseException:db.rollback();raise
+  raise ValueError('funding_history_conflict_requires_review')
+ return {'checked':len(known)}

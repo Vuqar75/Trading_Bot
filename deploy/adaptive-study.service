@@ -1,0 +1,50 @@
+[Unit]
+Description=Isolated adaptive paper research supervisor
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=900
+StartLimitBurst=4
+
+[Service]
+Type=simple
+User=adaptivestudy
+Group=adaptivestudy
+WorkingDirectory=/opt/adaptive-study-current
+Environment=HOME=/nonexistent
+Environment=TZ=UTC
+Environment=PYTHONPATH=/opt/adaptive-study-current
+Environment=TMPDIR=/var/lib/adaptive-study
+UnsetEnvironment=TRADING_BOT_AI OPENAI_API_KEY RUNTIME_TELEGRAM_BOT_TOKEN RUNTIME_TELEGRAM_OWNER_ID GOOGLE_APPLICATION_CREDENTIALS CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE
+EnvironmentFile=/etc/adaptive-study/version.env
+ExecStart=/usr/bin/python3 -B -m research.adaptive_study_supervisor --root /var/lib/adaptive-study/state --ai /var/lib/adaptive-study-public/ai-current.json --baseline /var/lib/adaptive-study-public/baseline-current.json --budget-status /var/lib/adaptive-study-public/budget-current.json --publisher-uid 0 --backup-status /var/lib/adaptive-study-backup-status/last-success.json --backup-user adaptivebackup --version ${STUDY_CODE_VERSION}
+Restart=on-failure
+RestartSec=60s
+TimeoutStopSec=35s
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectHome=yes
+ProtectProc=invisible
+ProcSubset=pid
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=169.254.0.0/16
+IPAddressDeny=fd00::/8
+IPAddressDeny=fe80::/10
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/tradingbot-ai-executor -/var/lib/tradingbot-ai-executor-public -/var/lib/tradingbot-ai-study-export -/var/lib/donchian-observer -/var/lib/donchian-control -/etc/credstore.encrypted -/etc/tradingbot-ai-regular
+ReadOnlyPaths=/var/lib/adaptive-study-public /var/lib/adaptive-study-backup-status
+ReadWritePaths=/var/lib/adaptive-study
+MemoryMax=96M
+CPUQuota=10%
+TasksMax=12
+Nice=15
+LogRateLimitIntervalSec=1min
+LogRateLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target

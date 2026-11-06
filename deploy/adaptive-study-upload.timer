@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily externally verified adaptive-study backup
+
+[Timer]
+OnCalendar=*-*-* 03:45:00 UTC
+Persistent=true
+RandomizedDelaySec=1min
+Unit=adaptive-study-upload.service
+
+[Install]
+WantedBy=timers.target

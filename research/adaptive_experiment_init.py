@@ -33,7 +33,7 @@ def initialize(path,*,source,start_ms,fault=lambda point:None):
    names={row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type='trigger'")}
    if not {'adaptive_spot_fence','adaptive_spot_consume','adaptive_futures_fence','adaptive_futures_consume','adaptive_cross_positions_fence','adaptive_margin_positions_fence'}<=names:raise ValueError('fence_missing')
   finally:db.close()
-  for name in ('queue.db','route.db'):
+  for name in ('queue.db','route.db','observations.db'):
    if (path/name).is_symlink() or not (path/name).is_file():raise ValueError('experiment_state_missing')
   return {**info,'existing':True}
  try:
@@ -60,6 +60,13 @@ def initialize(path,*,source,start_ms,fault=lambda point:None):
   finally:spot_store.close();futures_store.close()
   q=UnifiedQueue(path/'queue.db');q.close()
   route=RouteState(path/'route.db');route.close()
+  observations=sqlite3.connect(path/'observations.db',isolation_level=None)
+  try:
+   observations.execute('PRAGMA synchronous=FULL')
+   observations.execute('CREATE TABLE study_decisions(snapshot_id TEXT PRIMARY KEY,data_ms INTEGER NOT NULL,boundary_ms INTEGER UNIQUE NOT NULL,payload TEXT NOT NULL,evidence TEXT NOT NULL)')
+   observations.execute('CREATE TABLE samples(id INTEGER PRIMARY KEY,stamp_ms INTEGER NOT NULL,status TEXT NOT NULL,payload TEXT NOT NULL)')
+   observations.execute('CREATE INDEX sample_status ON samples(status)')
+  finally:observations.close()
   fault('before_manifest')
   info={'schema':1,'source':source,'start_ms':start_ms,'total_usdt':'1000','spot_initial_usdt':'500','isolated_initial_usdt':'500'}
   with open(path/'manifest.json','x',encoding='utf-8') as stream:

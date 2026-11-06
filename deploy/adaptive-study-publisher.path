@@ -1,0 +1,11 @@
+[Unit]
+Description=Watch sanitized adaptive AI research evidence
+
+[Path]
+PathChanged=/var/lib/tradingbot-ai-study-export/baseline-current.json
+PathChanged=/var/lib/tradingbot-ai-study-export/ai-current.json
+PathChanged=/var/lib/tradingbot-ai-study-export/budget-current.json
+Unit=adaptive-study-publisher.service
+
+[Install]
+WantedBy=multi-user.target

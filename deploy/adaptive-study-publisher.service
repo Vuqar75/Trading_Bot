@@ -1,0 +1,27 @@
+[Unit]
+Description=Publish validated adaptive research input without budget access
+
+[Service]
+Type=oneshot
+User=root
+WorkingDirectory=/opt/adaptive-study-current
+Environment=PYTHONPATH=/opt/adaptive-study-current
+UnsetEnvironment=TRADING_BOT_AI OPENAI_API_KEY RUNTIME_TELEGRAM_BOT_TOKEN RUNTIME_TELEGRAM_OWNER_ID GOOGLE_APPLICATION_CREDENTIALS CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE
+ExecStart=/usr/bin/python3 -B -m research.adaptive_study_publisher --source-dir /var/lib/tradingbot-ai-study-export --target-dir /var/lib/adaptive-study-public --source-user adaptiveai --target-group adaptivestudy
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/tradingbot-ai-executor -/etc/credstore.encrypted -/etc/tradingbot-ai-regular -/var/lib/donchian-observer
+ReadOnlyPaths=/var/lib/tradingbot-ai-study-export
+ReadWritePaths=/var/lib/adaptive-study-public
+MemoryMax=64M
+CPUQuota=10%
+TasksMax=8
+Nice=15

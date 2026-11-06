@@ -3,7 +3,7 @@
 Inputs must come from the trusted publisher and the public feed, never from a
 trade API. This is not a daemon or a production trading adapter.
 """
-import json,time
+import json,sqlite3,time
 from pathlib import Path
 from trading_bot.runtime_store import RuntimeStore
 from trading_bot.futures_store import FuturesStore
@@ -13,17 +13,20 @@ from .adaptive_market_proof import quote as valid_quote
 from .adaptive_snapshot_proof import read_trusted,verify,verify_baseline
 from .adaptive_route_policy import route
 from .adaptive_decision_queue import record,enqueue
-from .adaptive_experiment_recovery import reconcile
+from .adaptive_experiment_recovery import reconcile,recover_spot
 from .adaptive_protection_monitor import observe
 from .adaptive_spot_worker import process_entry,process_short,process_stop,process_short_stop
 
 def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(time.time()*1000)):
  path=Path(path);manifest=json.loads((path/'manifest.json').read_text())
  if source not in ('AI','baseline') or manifest.get('source')!=source:raise ValueError('experiment_identity_conflict')
- start=manifest['start_ms'];q=UnifiedQueue(path/'queue.db');state=RouteState(path/'route.db',clock=clock)
- spot=RuntimeStore(path/'financial.db',{'mode':'paper','symbol':'BTCUSDT'},shared=True)
- future=FuturesStore(path/'financial.db',shared=True,fee_bps='10',slippage_bps='5')
+ start=manifest['start_ms'];q=state=spot=future=None
  try:
+  q=UnifiedQueue(path/'queue.db');state=RouteState(path/'route.db',clock=clock)
+  spot=RuntimeStore(path/'financial.db',{'mode':'paper','symbol':'BTCUSDT'},shared=True)
+  future=FuturesStore(path/'financial.db',shared=True,fee_bps='10',slippage_bps='5')
+  recovered_spot=recover_spot(spot)
+  if recovered_spot['status']=='recovery_requires_review':return {'status':'reconciliation_required','reason':'spot_recovery_requires_review'}
   recovered=reconcile(q,state,path/'financial.db',now_ms=clock());phase=state.status()['phase']
   if recovered['status'] in ('unresolved_entry','unresolved_exit','unresolved_state'):return {'status':'reconciliation_required','reason':recovered['status']}
   if phase in ('OPEN','EXIT_PENDING'):
@@ -61,12 +64,18 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
    else:
     info=verify_baseline(document,now_ms=now,start_ms=start);observed=info['data_ms']
     decision={'mode':info['mode'],'snapshot_id':info['snapshot_id'],'data_ms':info['data_ms'],'expires_ms':info['expires_ms'],'reasons':['local deterministic baseline'],'uncertainties':['not a model decision']}
+   from .adaptive_study_observations import save
+   evidence=sqlite3.connect(path/'observations.db',isolation_level=None,timeout=10)
+   try:evidence.execute('PRAGMA synchronous=FULL');save(evidence,document,source=source,now_ms=now,start_ms=start)
+   finally:evidence.close()
    record(q,decision,source=source,symbol='BTCUSDT',version='regular-regime-horizon-v2',now_ms=now)
   except (OSError,ValueError,KeyError,TypeError):return {'status':'decision_unavailable','protection':protected}
   if state.status()['phase']!='IDLE':return {'status':'position_open','protection':protected,'mode':decision['mode']}
   choice=route(decision,snapshot_id=info['snapshot_id'],data_ms=info['data_ms'],now_ms=clock(),symbol='BTCUSDT',decision_version='regular-regime-horizon-v2',eligible=True,research_sandbox=True)
   if not choice['allowed']:return {'status':'blocked','reason':choice['reason'],'protection':protected}
   market=choice['market'];ctx=markets.get(market,{})
+  if ctx.get('entry_conflict'):return {'status':'entry_blocked','reason':'market_history_conflict','protection':protected}
+  if ctx.get('entry_window') is False:return {'status':'waiting_for_signal_window','protection':protected}
   try:
    candles=ctx['candles'];bars=candles['bars'];skip_bar=candles['skip_bar']
    expected='binance_spot_klines' if market=='spot' else 'binance_usdm_klines'
@@ -92,4 +101,6 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
     pos=future.get('position');register(future,position_id=pos['id'],next_due_ms=funding['next_due_ms'],observed_ms=funding['observed_ms'])
    return {'status':'entry_evaluated','route':choice,'result':result,'protection':protected}
   except (ValueError,KeyError,TypeError,IndexError) as exc:return {'status':'entry_blocked','reason':str(exc)[:120],'protection':protected}
- finally:future.close();spot.close();state.close();q.close()
+ finally:
+  for handle in (future,spot,state,q):
+   if handle is not None:handle.close()

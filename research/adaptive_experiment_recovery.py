@@ -1,8 +1,32 @@
 """No-network reconciliation of already committed research actions."""
-import json
+import json,tempfile
 from pathlib import Path
 from .adaptive_route_state import RouteState
 from trading_bot.unified_queue import UnifiedQueue
+from trading_bot.runtime_store import RuntimeStore
+
+def recover_spot(store):
+ """Reuse paper runtime recovery and preserve an unchanged study pause."""
+ if type(store) is not RuntimeStore or not store.shared:raise ValueError('research_store_required')
+ dbpath=Path(store.db.execute('PRAGMA database_list').fetchone()[2])
+ if dbpath.is_symlink() or not dbpath.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()):raise ValueError('sandbox_path_required')
+ if not store.pending() and store.get('adaptive_recovery_pause') is None:return {'status':'nothing_pending'}
+ with store.transaction():
+  marker=store.get('adaptive_recovery_pause')
+  if marker is None:
+   marker={'paused':store.get('paused'),'commands':store.db.execute('SELECT count(*) FROM runtime_commands').fetchone()[0]}
+   if type(marker['paused']) is not bool:raise ValueError('pause_state_unknown')
+   store.set('adaptive_recovery_pause',marker)
+ from trading_bot.app import Application
+ from trading_bot.runtime_exchange import PaperExchange
+ app=Application(store,PaperExchange(),None);app.recover()
+ with store.transaction():
+  if store.pending() or store.get('blocked'):return {'status':'recovery_requires_review'}
+  current_commands=store.db.execute('SELECT count(*) FROM runtime_commands').fetchone()[0]
+  if current_commands!=marker['commands']:return {'status':'recovery_requires_review'}
+  store.set('paused',marker['paused'])
+  store.set('adaptive_recovery_pause',None)
+ return {'status':'recovered'}
 
 def reconcile(queue,state,financial_path,*,now_ms=None):
  if type(queue) is not UnifiedQueue or type(state) is not RouteState:raise ValueError('research_state_required')

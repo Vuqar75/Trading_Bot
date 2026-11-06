@@ -42,7 +42,9 @@ def verify(bundle):
  if {x['name'] for x in items}!={'financial.db','queue.db','observation.db','route.db'}:raise ValueError('manifest_invalid')
  for item in items:
   path=p/item['name']
-  if path.is_symlink() or hashlib.sha256(path.read_bytes()).hexdigest()!=item['sha256']:raise ValueError('hash_mismatch')
+  if path.is_symlink():raise ValueError('hash_mismatch')
+  with open(path,'rb') as stream:digest=hashlib.file_digest(stream,'sha256').hexdigest()
+  if digest!=item['sha256']:raise ValueError('hash_mismatch')
   with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True)) as db:
    if db.execute('pragma integrity_check').fetchone()[0]!='ok':raise ValueError('integrity_failure')
  return manifest
