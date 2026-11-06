@@ -2,7 +2,7 @@
 import hashlib,io,json,os,sqlite3,subprocess,tarfile,tempfile,time,urllib.parse,urllib.request
 from contextlib import closing
 from pathlib import Path
-from .adaptive_budget_resilience import backup
+from .adaptive_budget_resilience import backup,verify
 BUCKET='tradingbot-paper-backup-101494113814-ew1';PREFIX='paper-backups/daily/adaptive-ai-budget/regular/'
 def pack(folder,state):
  folder=Path(folder);manifest=json.loads((folder/'manifest.json').read_text());names=['manifest.json']+sorted(manifest['sha256'])
@@ -24,7 +24,8 @@ def verify_plain(data):
  with tempfile.TemporaryDirectory(prefix='regular-restore-') as tmp:
   p=Path(tmp)/'restore.db';p.write_bytes(raw)
   with closing(sqlite3.connect(p.as_uri()+'?mode=ro',uri=True)) as db:
-   if db.execute('pragma integrity_check').fetchone()[0]!='ok' or db.execute('select count(*),coalesce(sum(reserved_micro_usd),0) from api_attempts').fetchone()!=(m['attempts'],m['reserved_micro_usd']):raise ValueError('restore_mismatch')
+   rows=verify(db)
+   if (len(rows),sum(x[1] for x in rows))!=(m['attempts'],m['reserved_micro_usd']):raise ValueError('restore_mismatch')
  return m
 def transfer(blob,manifest,transport=None):
  digest=hashlib.sha256(blob).hexdigest();name=PREFIX+str(manifest['created_utc_ms'])+'-'+digest+'.cred'
