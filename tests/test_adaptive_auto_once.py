@@ -55,3 +55,8 @@ class AutoOnceTests(unittest.TestCase):
    return subprocess.CompletedProcess(args,0,b'fake-secret',b'')
   with patch.object(a.shutil,'which',side_effect=lambda name:'/fake/'+name),patch.object(a.subprocess,'run',side_effect=fake):self.assertEqual(a.secret_from_credential_manager(),'fake-secret')
   self.assertTrue(all('fake-secret' not in str(args) for args,kwargs in calls));self.assertTrue(all(kwargs['capture_output'] for args,kwargs in calls))
+ def test_scheduled_code_change_blocks_execution(self):
+  with tempfile.TemporaryDirectory() as tmp:
+   state=Path(tmp);calls=[]
+   with patch.object(a,'STATE',state),patch.object(a.sys,'argv',['runner','14400000','a'*64]),patch.object(a,'code_hash',return_value='b'*64),patch.object(a,'one_shot',side_effect=lambda *x:calls.append('sent')):a.main()
+   self.assertEqual(calls,[]);self.assertEqual(json.loads((state/'adaptive-one-shot-status.json').read_text())['reason'],'scheduled_code_changed')
