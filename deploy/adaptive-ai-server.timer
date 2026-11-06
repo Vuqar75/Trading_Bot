@@ -1,0 +1,11 @@
+[Unit]
+Description=Check the next eligible window for the single authorized AI attempt
+
+[Timer]
+OnCalendar=*-*-* *:*:20
+AccuracySec=1s
+Persistent=false
+Unit=adaptive-ai-server.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,183 @@
+# AI-executor на сервере: прекращение зависимости от Windows/WSL
+
+## Состояние этого изменения
+
+Подготовлен переносимый код, **не установка на VM**. Здесь не было доступа к
+исходному WSL-журналу, SSH agent/авторизованной GCP identity или VM. Наличие
+TRADING_BOT_AI проверено без вывода значения. Платных/metadata-запросов нет.
+
+Реальное переключение выполняет локальный агент через уже работающий
+авторизованный operator-контекст. Повторный `gcloud auth login` для Windows
+Task Scheduler не является частью решения: после переноса Windows, WSL,
+PowerShell и gcloud для работы и публикации не нужны.
+
+## Сначала исключить старую запланированную попытку
+
+На момент подготовки upstream HANDOFF сообщил о Windows task
+`TradingBot-AdaptiveAI-OneShot` на **2026-11-06 12:02 UTC / 16:02 Баку**.
+Локальному агенту отключить этот task, проверить его фактический результат,
+отсутствие процесса и содержимое исходного журнала/одноразовых gates.
+Не исходить из того, что задача ещё не запускалась. Если она уже произвела
+резервирование/HTTP, не переносить разрешение на ещё один запрос: только
+локальная обработка сохранённого ответа либо честный неопределённый статус.
+
+Остановить/отключить все прочие старые executors. Поставляемый source fence
+защищает обновлённый код; **он не останавливает уже работающий старый бинарник**.
+Один активный журнал — требование эксплуатации, не распределённая гарантия
+против копирования каталога администратором.
+
+## Что изменено
+
+- `research.adaptive_ai_executor` больше не импортирует транспорт из
+  соседнего `../ai-market-observer`. Перенесена проверенная HTTP-граница
+  из 9e88e76 в `research.adaptive_api_transport`, без создания бюджета,
+  metadata GET и сетевых повторов.
+- `research.adaptive_budget_move` экспортирует исходный журнал со всеми
+  прежними резервами/locks и устойчивым source fence. Импорт проверяет хеши,
+  application_id, integrity, все строки и locks. Новый бюджет не создаётся.
+- `research.adaptive_server_once` использует systemd credential, private
+  state, взаимное исключение, прежние gates и один разрешённый запрос.
+- Зашифрованный host-bound secret загружается через
+  `LoadCredentialEncrypted`. Ввод с клавиатуры отсутствует.
+- `research.adaptive_server_provision` позволяет один раз передать **уже
+  сохранённый** Windows Credential Manager secret через stdin существующего
+  pinned SSH-соединения прямо в `systemd-creds encrypt`. Секрет не попадает
+  в argv, Git, временный plaintext-файл или сообщения. Helper не логинится,
+  не меняет IAM, не подменяет SSH trust и не перезаписывает имеющийся credential.
+- Отдельный root publisher валидирует несекретный ответ и публикует его в
+  существующий `/var/lib/tradingbot-ai-public/report.json` атомарно. Он не
+  имеет доступа к budget/credential, не вызывает API и не меняет торговлю.
+
+## Перенос состояния
+
+После остановки task/processes, из обновлённого checkout в WSL:
+
+```bash
+python3 -B -m research.adaptive_budget_move freeze-export \
+  --state "$HOME/.local/state/tradingbot-ai" --source-stopped
+```
+
+Команда выдаёт путь проверенного private archive. Передать этот каталог
+штатным шифрованным transport локалки в закрытый staging на VM. Ничего из
+архива не отправлять в GitHub/чат. Сохранить оригинал в WSL отключённым.
+
+На VM сначала подготовить checkout этого коммита в
+`/opt/tradingbot-ai-executor` (root-owned, service user read-only), отдельного
+system user `adaptiveai` и staging **вне** целевого пути состояния. Импорт
+должен выполняться до запуска службы:
+
+```bash
+python3 -B -m research.adaptive_budget_move import-original \
+  --archive /absolute/private/staging/export \
+  --target /var/lib/tradingbot-ai-executor
+```
+
+`--target` обязан отсутствовать. Не создавать пустую SQLite заранее.
+Если импорт прерван, marker `server-owner.json` публикуется последним;
+службу не запускать до проверки целостности. Неполный каталог не очищать
+автоматически: сначала сверить архив и точку сбоя.
+
+После импорта назначить state владельцу `adaptiveai:adaptiveai`, каталог
+0700, файлы 0600. Сверить исходные строки/суммы, все имеющиеся response,
+usage, diagnostics, send claims и hashes locks. Не предполагать, что после
+Windows task осталось ровно две попытки. При уже потреблённом next gate
+сервер только локально обрабатывает сохранённый ответ; без ответа не повторяет.
+
+Внешне резервировать бюджет отдельно от публичного shadow backup, с закрытым
+доступом. Для источника копий использовать существующий verified backup API,
+не копирование открытого SQLite. Archive-only копия не активный писатель.
+
+## Однократная привязка уже сохранённого ключа
+
+На VM подготовить root-owned `/etc/credstore.encrypted` и проверить поддержку
+`systemd-creds`/`LoadCredentialEncrypted` установленной версией systemd.
+Из локального контекста, где доступен сохранённый Windows Credential Manager
+и **уже авторизованный pinned SSH alias**, выполнить:
+
+```bash
+python3 -B -m research.adaptive_server_provision --ssh-target EXISTING_TRUSTED_VM_ALIAS
+```
+
+Alias должен использовать действующий проверенный путь к VM, включая IAP,
+если он необходим. Helper не добавляет ключи/аккаунты, не открывает firewall
+и не требует нового браузерного login. Если локалка использует другой
+поддерживаемый operator transport, передать секрет тем же captured-stdin
+путём напрямую в server encryption без промежуточного plaintext. Никогда
+не вызывать helper чтения секрета отдельно с выводом на экран.
+
+Получается `/etc/credstore.encrypted/tradingbot-ai.cred`, root-only и
+зашифрованный host key. Systemd расшифровывает credential только в runtime
+каталог данной службы. Резервирование host-bound credential требует
+отдельного плана восстановления ключа; нельзя обещать перенос зашифрованного
+файла на произвольную новую VM.
+
+Credential из управляемой среды Codex может быть proxy binding, а не
+экспортируемым ключом. Не копировать неизвестный placeholder на VM;
+предпочтителен уже подтверждённый сохранённый Windows credential.
+
+## Установка служб
+
+1. Не останавливать торговые сервисы, независимый наблюдатель или shadow.
+2. Private state и code — как выше. Создать
+   `/var/lib/tradingbot-ai-executor-public` владельца adaptiveai с private
+   правами; только root publisher читает его, tradingbot к budget не допускается.
+3. Установить четыре файла `deploy/adaptive-ai-server*` в systemd.
+   Сверить **фактические** пути/пользователей и `systemd-analyze verify`.
+4. Проверить decryption через запуск credential-bound preflight без API,
+   не через печать расшифрованного секрета. Проверить чтение imported state
+   именно пользователем adaptiveai, а не только root.
+5. Включить `adaptive-ai-server-publish.path` и выполнить publisher для
+   существующего сохранённого результата, если он есть и ещё действителен.
+6. Разрешение на **одну** новую попытку уже дано. Только если исходный
+   journal/gate доказывает, что она ещё не потреблена, включить
+   `adaptive-ai-server.timer`. Его проверки минутные, но платный запрос
+   допускается только один раз в существующем 2–5 minute window после
+   следующей ещё не использованной 4h boundary. Пользователю выбирать
+   минуту/держать домашний компьютер включённым не нужно.
+
+Timer использует `Persistent=false`: пропущенная граница не исполняется
+задним числом. До gate возможны только сбор/предварительные проверки.
+После gate сеть никогда не повторяется. Устойчивый terminal marker подавляет
+последующие ticks; это **не** расписание регулярных платных анализов.
+
+### Проверка без сети после импорта и LoadCredential
+
+Через временный oneshot unit с теми же User/LoadCredentialEncrypted/sandbox
+выполнить только `owner(state)`, `journal(state)` и `credential()`, выводя
+лишь count/reserved и `credential_present=true`, затем удалить probe unit.
+Не использовать сетевой запрос, GET модели или пробную генерацию как preflight.
+
+### Операционные команды
+
+```bash
+systemctl status adaptive-ai-server.timer adaptive-ai-server.service
+systemctl status adaptive-ai-server-publish.path
+journalctl -u adaptive-ai-server.service -u adaptive-ai-server-publish.service --since today
+```
+
+Private `/var/lib/tradingbot-ai-executor/server-status.json` сообщает итог
+последней проверки. Не публиковать сам журнал/сырые ответы. `/ai` — только
+проверенный публичный report, без Windows/gcloud upload. Проверить render
+как установленный пользователь tradingbot, не отправляя owner messages от
+его имени. После фактического завершения выключить one-shot timer.
+
+Если ответ просрочен, он сохраняется в журнале, но не выдаётся как текущее
+решение. Нельзя делать новый платный запрос только для обновления экрана.
+
+## Проверки и границы доказательства
+
+38 целевых тестов: legacy executor/recovery, настоящий SQLite import,
+сохранение двух прежних попыток и 5 718 micro-USD на синтетической копии,
+frozen source, двойной import, corrupt/traversal archive, single writer,
+отсутствие Windows/sibling dependency, отсутствие ключа, границы времени,
+ровно один fake HTTP, неопределённая попытка, локальная обработка сохранённого
+ответа, публикация/expiry, secret relay только в captured stdin.
+
+`systemd-analyze verify` четырёх unit-файлов прошёл в среде разработки.
+Настоящая расшифровка, source shutdown, импорт **исходной WSL DB**, права на
+VM, startup без домашнего ПК и публикация на VM здесь не проверены.
+Это обязанности завершающей установки, а не основание объявлять её выполненной.
+
+Стратегии, торговые разрешения и API-бюджет не расширяются. Все три adaptive
+правила по-прежнему не прошли отбор; adaptive entries остаются запрещены.
+Прежний Spot Donchian60 и остальные рыночные паузы не менять.

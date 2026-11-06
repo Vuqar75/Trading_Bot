@@ -1,0 +1,9 @@
+[Unit]
+Description=Watch only the AI public result, never the private budget
+
+[Path]
+PathChanged=/var/lib/tradingbot-ai-executor-public/report.json
+Unit=adaptive-ai-server-publish.service
+
+[Install]
+WantedBy=multi-user.target

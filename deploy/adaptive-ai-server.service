@@ -1,0 +1,38 @@
+[Unit]
+Description=Single authorized adaptive AI request with server-owned original budget
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/var/lib/tradingbot-ai-executor/server-owner.json
+ConditionPathExists=/etc/credstore.encrypted/tradingbot-ai.cred
+ConditionPathExists=!/var/lib/tradingbot-ai-executor/server-terminal.json
+
+[Service]
+Type=oneshot
+User=adaptiveai
+Group=adaptiveai
+WorkingDirectory=/opt/tradingbot-ai-executor
+Environment=PYTHONPATH=/opt/tradingbot-ai-executor
+Environment=TZ=UTC
+LoadCredentialEncrypted=TRADING_BOT_AI:/etc/credstore.encrypted/tradingbot-ai.cred
+ExecStart=/usr/bin/python3 -B -m research.adaptive_server_once --state /var/lib/tradingbot-ai-executor --public /var/lib/tradingbot-ai-executor-public/report.json --authorized-next
+TimeoutStartSec=110
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=169.254.169.254
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/donchian-observer -/var/lib/adaptive-shadow
+ReadWritePaths=/var/lib/tradingbot-ai-executor /var/lib/tradingbot-ai-executor-public
+MemoryMax=96M
+CPUQuota=15%
+TasksMax=12
+Nice=15
+StandardOutput=journal
+StandardError=journal
+

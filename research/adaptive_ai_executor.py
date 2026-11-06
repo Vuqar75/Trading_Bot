@@ -9,10 +9,7 @@ from pathlib import Path
 from research.adaptive_shadow import collect, canonical, validate_model, PERIOD
 from research.adaptive_budget_resilience import backup,migrate
 
-ROOT=Path(__file__).resolve().parents[2]/'ai-market-observer'
-package=ROOT/'trading_bot';spec=importlib.util.spec_from_file_location('_adaptive_ai_budget',package/'__init__.py',submodule_search_locations=[str(package)])
-module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module;spec.loader.exec_module(module)
-budget_api=importlib.import_module('_adaptive_ai_budget.research_api_budget')
+from research import adaptive_api_transport as budget_api
 APP_ID,MODEL,_send,ResearchAPIError=budget_api.APP_ID,budget_api.MODEL,budget_api._send,budget_api.ResearchAPIError
 
 SCHEMA={'type':'object','additionalProperties':False,'required':['mode','snapshot_id','data_ms','expires_ms','reasons','uncertainties'],
@@ -27,6 +24,7 @@ def request(snapshot):
 
 def run(snapshot,baseline,state,*,transport=None,clock=lambda:int(time.time()*1000),fault=lambda stage:None,next_authorized=False):
  state=Path(state); path=state/'experiment-budget.db'; lock=state/'interactive-once.lock'
+ if (state/'migration-source-frozen.json').exists():raise ValueError('budget_moved_source_disabled')
  if not path.is_file() or not lock.is_file():raise ValueError('original_budget_or_lock_missing')
  now=clock(); ident=snapshot.get('snapshot_id'); body={k:v for k,v in snapshot.items() if k!='snapshot_id'}
  if not isinstance(ident,str) or hashlib.sha256(canonical(body).encode()).hexdigest()!=ident:raise ValueError('snapshot_hash_mismatch')
@@ -76,6 +74,8 @@ def execute_reserved(db,rid,req,*,transport=None,clock=lambda:int(time.time()*10
   try:db.execute('INSERT INTO adaptive_send_claims VALUES (?)',(rid,))
   except sqlite3.IntegrityError:raise ValueError('attempt_already_claimed_no_retry') from None
   fault('after_reservation')
+  state=Path(db.execute('PRAGMA database_list').fetchone()[2]).parent
+  if (state/'migration-source-frozen.json').exists():raise ValueError('budget_moved_source_disabled')
   response=(transport or _send)(req)
   received_ms=clock();fault('after_response')
   raw=canonical(response)
