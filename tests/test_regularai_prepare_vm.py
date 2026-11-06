@@ -7,6 +7,9 @@ spec=importlib.util.spec_from_file_location('pair_prepare_vm',Path(__file__).res
 prepare=importlib.util.module_from_spec(spec);spec.loader.exec_module(prepare)
 
 class HealthdiagPrepareTrustTests(unittest.TestCase):
+    def test_source_checkout_matches_installed_commit(self):
+        self.assertEqual(prepare.OLD.name,'trading-bot-regularai-'+prepare.INSTALLED[:7])
+
     def test_git_trust_is_exact_idempotent_and_checked_as_service_user(self):
         target='/opt/trading-bot-pair-abcdef1';candidate='a'*40
         for already in (False,True):

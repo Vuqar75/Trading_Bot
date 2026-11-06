@@ -3,7 +3,7 @@ import hashlib,importlib.util,json,os,shutil,sqlite3,subprocess,sys,tempfile,tim
 from contextlib import closing
 from pathlib import Path
 
-HOME=Path('/var/lib/tradingbot');OLD=Path('/opt/trading-bot-adaptivediag-b4f7728')
+HOME=Path('/var/lib/tradingbot');OLD=Path('/opt/trading-bot-regularai-6c6bf56')
 INSTALLED='6c6bf569eb714eed3b0d634ee7a785ccad5ac36d';ARCHIVE=HOME/'regularai-updates/20261106g'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
 
