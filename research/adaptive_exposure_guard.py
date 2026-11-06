@@ -10,6 +10,7 @@ def require_clear(financial,*,own_job_id=None,own_business_key=None):
  if not isinstance(financial,sqlite3.Connection) or not financial.in_transaction:raise ValueError('financial_transaction_required')
  attached={row[1] for row in financial.execute('PRAGMA database_list')}
  if 'route_queue' not in attached:raise ValueError('attached_queue_required')
+ if financial.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='funding_conflicts'").fetchone() and financial.execute('SELECT 1 FROM funding_conflicts LIMIT 1').fetchone():raise ValueError('funding_conflict_requires_review')
  def meta(table,key,*,missing_ok=False):
   row=financial.execute('SELECT value FROM '+table+' WHERE key=?',(key,)).fetchone()
   if not row:

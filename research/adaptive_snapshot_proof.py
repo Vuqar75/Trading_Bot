@@ -30,17 +30,18 @@ def capture(fetch,*,clock=lambda:int(time.time()*1000),news_fetch):
  snapshot,base=collect(instrumented,clock,news_fetch)
  if set(raw)!=set(INTERVALS):raise ValueError('incomplete_capture')
  # Retain only the actual, fully closed source records. No later refetch.
- raw={k:[r for r in rows if type(r[6]) is int and r[6]<observed[k]] for k,rows in raw.items()}
- return {'snapshot':snapshot,'candles':raw,'observed_ms':observed,'baseline':base,'baseline_version':'sma20-4h-v1','protocol':'regular-regime-horizon-v2'}
+ raw={k:[r for r in rows if type(r[6]) is int and r[6]<min(observed[k],snapshot['as_of_ms'])] for k,rows in raw.items()}
+ return {'snapshot':snapshot,'candles':raw,'observed_ms':observed,'candle_source':'binance_spot_api_v3_klines','baseline':base,'baseline_version':'sma20-4h-1pct-v1','protocol':'regular-regime-horizon-v2'}
 
-def bind(captured,decision,answer_ms):
+def bind(captured,decision,answer_ms,*,model,request_sha256):
  """Prepare an export; transport authentication remains publisher's duty."""
- document={'schema':1,**copy.deepcopy(captured),'decision':copy.deepcopy(decision),'answer_ms':answer_ms}
+ document={'schema':1,**copy.deepcopy(captured),'decision':copy.deepcopy(decision),'answer_ms':answer_ms,'model':model,'request_sha256':request_sha256}
  document['sha256']=digest(document);return document
 
 def verify(document,*,now_ms,start_ms):
- if not isinstance(document,dict) or set(document)!={'schema','snapshot','candles','observed_ms','baseline','baseline_version','protocol','decision','answer_ms','sha256'}:raise ValueError('invalid_export')
- if document['schema']!=1 or document['baseline_version']!='sma20-4h-v1' or document['protocol']!='regular-regime-horizon-v2':raise ValueError('unsupported_version')
+ if not isinstance(document,dict) or set(document)!={'schema','snapshot','candles','observed_ms','candle_source','baseline','baseline_version','protocol','decision','answer_ms','model','request_sha256','sha256'}:raise ValueError('invalid_export')
+ if document['schema']!=1 or document['baseline_version']!='sma20-4h-1pct-v1' or document['protocol']!='regular-regime-horizon-v2':raise ValueError('unsupported_version')
+ if document['candle_source']!='binance_spot_api_v3_klines' or document['model']!='gpt-6-luna' or not isinstance(document['request_sha256'],str) or len(document['request_sha256'])!=64 or any(c not in '0123456789abcdef' for c in document['request_sha256']):raise ValueError('source_or_model_invalid')
  if digest({k:v for k,v in document.items() if k!='sha256'})!=document['sha256']:raise ValueError('export_hash_mismatch')
  snapshot=document['snapshot'];sources=document['candles'];times=document['observed_ms'];decision=document['decision']
  if not isinstance(snapshot,dict) or not isinstance(sources,dict) or not isinstance(times,dict) or set(sources)!=set(INTERVALS) or set(times)!=set(INTERVALS):raise ValueError('incomplete_input')
@@ -55,7 +56,7 @@ def verify(document,*,now_ms,start_ms):
  for label,(minutes,count) in INTERVALS.items():
   observed=times[label]
   if type(observed) is not int or not data_ms-30000<=observed<=data_ms+5000:raise ValueError('observation_time_invalid')
-  data[label]=candles(sources[label],observed,minutes,count)
+  data[label]=candles(sources[label],min(observed,data_ms),minutes,count)
   last=data[label][-1]['start_ms']
   if snapshot.get('latest_'+label+'_ms')!=last or last+minutes*60000>observed:raise ValueError('candle_binding_invalid')
  x4,x1,x15=data['4h'],data['1h'],data['15m'];close=x4[-1]['close'];mean=sum(x['close'] for x in x4[-20:])/20
@@ -69,6 +70,19 @@ def verify(document,*,now_ms,start_ms):
  if not isinstance(features,dict) or any(type(features.get(k)) not in (float,int) or not math.isclose(features[k],v,rel_tol=1e-12,abs_tol=1e-12) for k,v in expected.items()):raise ValueError('features_mismatch')
  if document['baseline']!=baseline(x4):raise ValueError('baseline_mismatch')
  return {'snapshot_id':sid,'data_ms':data_ms,'answer_ms':answer_ms,'mode':decision['mode'],'baseline':document['baseline'],'boundary_ms':data_ms//PERIOD*PERIOD}
+
+def verify_baseline(captured,*,now_ms,start_ms):
+ """Validate a trusted capture independently of whether AI replied.
+
+ The synthetic value below is local validation input only; it is never returned
+ or published as a model answer. Authentication of the capture is still required.
+ """
+ snapshot=captured.get('snapshot',{});data_ms=snapshot.get('as_of_ms')
+ if type(data_ms) is not int:raise ValueError('incomplete_input')
+ baseline_decision={'mode':captured.get('baseline'),'snapshot_id':snapshot.get('snapshot_id'),'data_ms':data_ms,'expires_ms':(data_ms//PERIOD+1)*PERIOD,'reasons':['deterministic baseline'],'uncertainties':['not an AI response']}
+ local=bind(captured,baseline_decision,data_ms,model='gpt-6-luna',request_sha256='0'*64)
+ checked=verify(local,now_ms=now_ms,start_ms=start_ms)
+ return {'source':'baseline','snapshot_id':checked['snapshot_id'],'data_ms':data_ms,'mode':checked['baseline'],'expires_ms':baseline_decision['expires_ms'],'boundary_ms':checked['boundary_ms']}
 
 def read_trusted(path,*,owner_uid):
  """Read a file from a publisher-owned, non-writable-by-others directory.

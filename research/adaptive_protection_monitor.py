@@ -37,7 +37,11 @@ def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=
    elif strategy=='range' and (mark>=Decimal(signal['target']) or (risk_data is not None and Decimal(str(risk_data[2]))>=Decimal(signal['target']))):reason='target'
    elif type(opened) is int and now-opened>=(86400000 if strategy=='range' else 604800000):reason='time'
   elif route['market']=='futures' and route['strategy']=='trend1':
-   if p.get('funding_cursor',-1)<now:raise ValueError('funding_coverage_missing')
+   # Continue evaluating price protection even when settlement is blocked by
+   # missing funding. Expose the trigger, but do not create a falsely settled
+   # close until the funding history is confirmed.
+   from .adaptive_funding_tracker import covered
+   if not covered(store,p,now):problem='funding_coverage_missing'
    if mark>=Decimal(p['entry'])*Decimal('1.02') or (risk_data is not None and Decimal(str(risk_data[2]))>=Decimal(p['entry'])*Decimal('1.02')):reason='stop'
    elif type(opened) is int and now-opened>=604800000:reason='time'
   else:raise ValueError('market_policy_absent')

@@ -64,7 +64,10 @@ def enter(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms,decis
    if store.db.execute("SELECT 1 FROM route_queue.unified_state WHERE key='adaptive:decision_conflict'").fetchone():raise ValueError('decision_conflict_requires_review')
    if current.get('sha256')!=decision_digest(decision) or current.get('symbol')!='BTCUSDT' or current.get('version')!=decision_version or current.get('source')!=decision_source:raise ValueError('decision_superseded')
    require_clear(store.db,own_job_id=job_id,own_business_key=action_id if own else None)
-   yield
+   from .adaptive_experiment_fence import authorize,clear
+   authorize(store.db,action_id,'spot')
+   try:yield
+   finally:clear(store.db,action_id,'spot')
  try:
   store.transaction=lambda:locked_check()
   try:client=store.prepare('BUY',quantity,price,action_id,'ADAPTIVE_RESEARCH',expected_symbol='BTCUSDT',expected_pair_version=store.get('pair_selection_version',0))

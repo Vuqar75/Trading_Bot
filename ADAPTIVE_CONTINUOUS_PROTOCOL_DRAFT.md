@@ -9,13 +9,12 @@ rejected. This protocol must be finalized and committed before first collection.
 AI and deterministic baseline use separate financial/queue/route databases,
 each starting once with 1,000 virtual USDT, split into 500 Spot cash and 500
 isolated collateral. Max entry notional 10 USDT; isolated leverage 1x; no more
-than one BTCUSDT exposure per experiment. A transfer is a balanced internal
-ledger movement, not profit. Proposed deterministic allocation: use existing
-available balance first; if insufficient, transfer only the deficit plus 1 USDT
-from unencumbered funds in the other wallet, subject to the existing transfer
-guards. If unavailable, reject the entry. Neither initial credit nor transfer
-can be repeated on restart. This policy is a draft until tested on the actual
-financial stores and fixed in the pre-start protocol.
+than one BTCUSDT exposure per experiment. The proposed deterministic allocation
+is a fixed 500/500 split at initialization, with no automatic inter-wallet
+transfers thereafter; an entry with insufficient funds in its market is rejected.
+If a future explicitly authorized internal transfer occurs it is a balanced
+ledger movement, not profit. Initialization never repeats on restart. This
+policy is a draft until fixed in the pre-start protocol.
 
 Both calculations use the same captured contemporaneous candle/snapshot record,
 same market-specific source, prices, filters, risk and cost rules. The model

@@ -108,6 +108,8 @@ class AtomicFuturesTest(unittest.TestCase):
    self.assertEqual(process_short(self.q,self.store,state,**args)['status'],'OPEN');position=self.store.get('position')
    unavailable=observe(self.q,self.store,state,quote='103',quote_ms=self.now+1000,clock=lambda:self.now+1000)
    self.assertEqual((unavailable['state'],unavailable['reason']),('unavailable','funding_coverage_missing'))
+   self.assertEqual(unavailable['trigger'],'stop')
+   self.assertFalse(any(j['command']=='/research_adaptive_exit' for j in self.q.pending('futures')))
    self.store.apply_funding(position['id'],[{'time':self.now+1000,'rate':'.001','mark':'100'}],self.now+1000)
    self.store.command(2,True,'/pause')
    self.assertEqual(observe(self.q,self.store,state,quote='103',quote_ms=self.now+1000,clock=lambda:self.now+1000)['trigger'],'stop')

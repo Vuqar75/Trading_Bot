@@ -26,6 +26,21 @@ class RegularTests(unittest.TestCase):
  def test_success_same_snapshot_and_idempotent(self):
   out=self.tick();self.assertEqual((out['mode'],out['baseline']),('NO_TRADE','TREND_DOWN'));self.assertEqual(len(self.calls),1);self.assertEqual(self.tick()['status'],'completed');self.assertEqual(len(self.calls),1)
   d=json.loads(self.public.read_text());self.assertIn('baseline того же среза: TREND_DOWN',d['summary']);self.assertIn('входы запрещены',d['risks'])
+ def test_opt_in_capture_is_durable_before_reserved_http_and_builds_export(self):
+  from tests import test_adaptive_shadow as fixture
+  from research.adaptive_snapshot_proof import capture
+  from research.adaptive_decision_export import build
+  source=fixture.ShadowTest();source.setUp();self.addCleanup(source.doCleanups);source.now=self.now
+  captured=capture(source.fetch,clock=lambda:self.now,news_fetch=lambda **kw:([],[]));self.snap=captured['snapshot']
+  directory=self.p/'evidence';directory.mkdir(mode=0o700)
+  def send(db,rid,req,clock):
+   self.assertTrue((directory/(self.snap['snapshot_id']+'.json')).is_file())
+   return self.send(db,rid,req,clock)
+  self.assertEqual(self.tick(capture_fetch=lambda:captured,evidence_dir=directory,send=send)['status'],'completed')
+  with closing(sqlite3.connect(self.p/'experiment-budget.db')) as db:
+   exported=build(db,directory,'regular:'+str(self.b))
+  self.assertEqual((exported['decision']['mode'],exported['baseline']),('NO_TRADE','RANGE'))
+  self.assertEqual(len(self.calls),1)
  def test_request_defines_regime_horizon_without_rewriting_source_or_one_shot(self):
   from research.adaptive_ai_executor import request
   original=canonical(self.snap);one_shot=canonical(request(self.snap))

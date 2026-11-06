@@ -1,5 +1,5 @@
 import sqlite3,unittest
-from research.adaptive_funding_evidence import record
+from research.adaptive_funding_evidence import record,validate_mark,match_observed_due
 
 class FundingEvidenceTest(unittest.TestCase):
  def setUp(self):
@@ -17,3 +17,13 @@ class FundingEvidenceTest(unittest.TestCase):
  def test_wrong_symbol_future_or_nonfinite_rejected(self):
   for change in ({'symbol':'ETHUSDT'},{'fundingTime':28803000},{'markPrice':'NaN'},{'fundingRate':'Infinity'}):
    with self.assertRaises(ValueError):record(self.db,{**self.row,**change},observed_ms=28802000)
+ def test_due_requires_actual_event_and_preserves_millisecond_offset(self):
+  got=match_observed_due([self.row],due_ms=28800000,received_ms=28801000)
+  self.assertEqual(got['time'],28800001);self.assertIsNone(got['publication_ms'])
+  for rows in ([],[self.row,self.row]):
+   with self.assertRaisesRegex(ValueError,'missing_or_ambiguous'):match_observed_due(rows,due_ms=28800000,received_ms=28801000)
+ def test_futures_mark_requires_source_event_freshness(self):
+  mark={'symbol':'BTCUSDT','time':1000,'nextFundingTime':2000,'markPrice':'100'}
+  self.assertEqual(validate_mark(mark,received_ms=1001)['mark'],'100')
+  for changed,received in ((dict(mark,time=1002),1001),(dict(mark,symbol='ETHUSDT'),1001),(mark,6001)):
+   with self.assertRaises(ValueError):validate_mark(changed,received_ms=received)

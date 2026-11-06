@@ -126,7 +126,15 @@ def publish(db,state,public,now,blocker=None):
   from .adaptive_ai_export import write
   return write(path,d)
  return d
-def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=credential,send=execute_reserved):
+def source_snapshot(fetch,capture_fetch,evidence_dir):
+ """Optional opt-in evidence capture; persist before any budget reservation."""
+ if capture_fetch is None:return fetch()
+ if evidence_dir is None:raise ValueError('capture_directory_required')
+ from .adaptive_decision_export import stage,atomic_document
+ captured=capture_fetch();stage(evidence_dir,captured);atomic_document(evidence_dir,'baseline-current.json',captured)
+ return captured['snapshot'],captured['baseline']
+
+def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=credential,send=execute_reserved,capture_fetch=None,evidence_dir=None):
  state=Path(state);now=clock();boundary=now//PERIOD*PERIOD
  with exclusive(state):
   owner(state);a=auth(state)
@@ -178,7 +186,7 @@ def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=
     db.execute('BEGIN IMMEDIATE');mark(db,boundary,'missed',now,'window_expired');db.commit();publish(db,state,public,now,'missed');setmeta(db,'reported_missed',boundary);return {'status':'missed'}
    if now-boundary<120000:return {'status':'waiting'}
    try:
-    snapshot,baseline=fetch();now=clock()
+    snapshot,baseline=source_snapshot(fetch,capture_fetch,evidence_dir);now=clock()
     if not 120000<=now-boundary<=300000 or snapshot.get('latest_4h_ms')!=boundary-PERIOD or not 0<=now-snapshot['received_ms']<=120000 or abs(snapshot['as_of_ms']-snapshot['received_ms'])>5000:raise ValueError('source_stale_or_wrong_boundary')
     if snapshot.get('snapshot_id')!=hashlib.sha256(canonical({k:v for k,v in snapshot.items() if k!='snapshot_id'}).encode()).hexdigest() or baseline not in ('TREND_UP','TREND_DOWN','RANGE','NO_TRADE'):raise ValueError('snapshot_or_baseline_invalid')
    except Exception:
@@ -215,7 +223,20 @@ def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=
    db.execute('BEGIN IMMEDIATE');mark(db,boundary,'completed',clock(),None,rid);db.commit();publish(db,state,public,clock());setmeta(db,'published_boundary',boundary);return {'status':'completed','mode':result['response']['mode'],'baseline':baseline,'reserve':reserve,'usage':result['usage']}
   finally:db.close()
 def main():
- try:result=tick('/var/lib/tradingbot-ai-executor','/var/lib/tradingbot-ai-executor-public/report.json')
+ capture_dir=os.environ.get('ADAPTIVE_EVIDENCE_DIR')
+ if capture_dir:
+  from .adaptive_snapshot_proof import capture
+  from .adaptive_shadow import get,headlines
+  capture_fetch=lambda:capture(get,news_fetch=headlines)
+ else:capture_fetch=None
+ try:
+  result=tick('/var/lib/tradingbot-ai-executor','/var/lib/tradingbot-ai-executor-public/report.json',capture_fetch=capture_fetch,evidence_dir=capture_dir)
+  if capture_dir:
+   try:
+    from .adaptive_decision_export import export_latest
+    with closing(sqlite3.connect('file:/var/lib/tradingbot-ai-executor/experiment-budget.db?mode=ro',uri=True)) as db:export_latest(db,capture_dir)
+    result['evidence']='published_locally'
+   except Exception:result['evidence']='not_ready'
  except Exception:result={'status':'data_or_internal_error','network_retry':False}
  print(canonical(result))
 if __name__=='__main__':main()

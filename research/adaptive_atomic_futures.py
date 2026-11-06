@@ -56,7 +56,10 @@ def enter_short(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms
    if current.get('sha256')!=decision_digest(decision) or current.get('symbol')!='BTCUSDT' or current.get('version')!=decision_version or current.get('source')!=decision_source:raise ValueError('decision_superseded')
    if store.get('leverage')!=1:raise ValueError('isolated_leverage_not_1x')
    require_clear(store.db,own_job_id=job_id)
-   yield
+   from .adaptive_experiment_fence import authorize,clear
+   authorize(store.db,action_id,'futures')
+   try:yield
+   finally:clear(store.db,action_id,'futures')
  try:
   store.margin=margin;store.transaction=lambda:locked_check()
   try:opened=store.open_position('SHORT',mark,clock(),action_id,clock_ms=checked_clock)
@@ -104,7 +107,8 @@ def exit_on_stop(store,queue_path,*,route_state,job_id,action_id,position_id,quo
   if risk_bar is not None and not risk_bar[0]+900000<=now<=risk_bar[0]+905000:raise ValueError('risk_bar_stale')
   pos=store.get('position')
   if not pos or pos.get('id')!=position_id:raise ValueError('route_position_mismatch')
-  if pos.get('funding_cursor',-1)<now:raise ValueError('funding_coverage_missing')
+  from .adaptive_funding_tracker import covered
+  if not covered(store,pos,now):raise ValueError('funding_coverage_missing')
   if reason=='SIGNAL' and (not bars or not skip_bar or not skip_bar[0]+900000<=now<=skip_bar[0]+905000):raise ValueError('signal_exit_window_missed')
   return now
  original=store.transaction;store.db.execute('ATTACH DATABASE ? AS route_queue',(str(queue_path.resolve()),))
@@ -125,7 +129,8 @@ def exit_on_stop(store,queue_path,*,route_state,job_id,action_id,position_id,quo
    if reason=='STOP' and mark<Decimal(pos['entry'])*Decimal('1.02') and (risk_bar is None or Decimal(str(risk_bar[2]))<Decimal(pos['entry'])*Decimal('1.02')):raise ValueError('protective_stop_not_met')
    if reason=='TIME' and (type(entry_ms) is not int or now-entry_ms<604800000):raise ValueError('time_exit_not_due')
    if reason=='SIGNAL' and (not bars or not skip_bar or not skip_bar[0]+900000<=now<=skip_bar[0]+905000):raise ValueError('signal_exit_window_missed')
-   if pos.get('funding_cursor',-1)<now:raise ValueError('funding_coverage_missing')
+   from .adaptive_funding_tracker import covered
+   if not covered(store,pos,now):raise ValueError('funding_coverage_missing')
    yield
  try:
   now=clock();store.transaction=lambda:checked()
