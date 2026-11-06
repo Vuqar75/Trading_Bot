@@ -79,3 +79,8 @@ class ExecutorTests(unittest.TestCase):
    response=self.response(req);response['authorization']='sensitive-value';return response
   with self.assertRaisesRegex(ValueError,'response_unsafe'):run(self.snap,'RANGE',self.p,transport=unsafe,clock=lambda:self.now)
   with closing(sqlite3.connect(self.p/'experiment-budget.db')) as db:self.assertEqual(db.execute('select count(*) from adaptive_responses').fetchone()[0],0)
+ def test_response_with_embedded_authorization_header_is_not_stored(self):
+  def unsafe(req):
+   response=self.response(req);response['output'][0]['content'][0]['text']='Authorization: Bearer sensitive-value';return response
+  with self.assertRaisesRegex(ValueError,'response_unsafe'):run(self.snap,'RANGE',self.p,transport=unsafe,clock=lambda:self.now)
+  with closing(sqlite3.connect(self.p/'experiment-budget.db')) as db:self.assertEqual(db.execute('select count(*) from adaptive_responses').fetchone()[0],0)

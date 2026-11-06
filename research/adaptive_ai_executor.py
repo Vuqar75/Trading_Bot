@@ -3,7 +3,7 @@
 No polling, retries, fallback, orders, or alternate budget. The only public data
 sent is the current shadow collector's snapshot; news is untrusted input.
 """
-import getpass, hashlib, importlib, importlib.util, json, os, sqlite3, sys, time, warnings
+import getpass, hashlib, importlib, importlib.util, json, os, re, sqlite3, sys, time, warnings
 from decimal import Decimal, ROUND_CEILING
 from pathlib import Path
 from research.adaptive_shadow import collect, canonical, validate_model, PERIOD
@@ -81,8 +81,9 @@ def execute_reserved(db,rid,req,*,transport=None,clock=lambda:int(time.time()*10
   raw=canonical(response)
   if len(raw.encode())>1000000 or any(secret and secret in raw for secret in (os.environ.get('TRADING_BOT_AI'),os.environ.get('OPENAI_API_KEY'))):raise ValueError('response_unsafe')
   def unsafe_keys(x):
-   if isinstance(x,dict):return any(str(k).lower() in ('authorization','api_key','access_token') or unsafe_keys(v) for k,v in x.items())
-   return isinstance(x,list) and any(unsafe_keys(v) for v in x)
+   if isinstance(x,dict):return any(str(k).strip().lower() in ('authorization','api_key','access_token') or unsafe_keys(v) for k,v in x.items())
+   if isinstance(x,list):return any(unsafe_keys(v) for v in x)
+   return isinstance(x,str) and re.search(r'(?i)\bauthorization\s*:',x) is not None
   if unsafe_keys(response):raise ValueError('response_unsafe')
   db.execute('BEGIN IMMEDIATE');db.execute('INSERT INTO adaptive_responses VALUES (?,?,?)',(rid,raw,received_ms));db.commit();fault('after_response_saved')
   state=Path(db.execute('PRAGMA database_list').fetchone()[2]).parent;backup(state)
