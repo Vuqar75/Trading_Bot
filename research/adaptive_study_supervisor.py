@@ -65,7 +65,7 @@ def bootstrap(root,*,clock=lambda:int(time.time()*1000)):
  for source,name in (('AI','ai'),('baseline','baseline')):initialize(root/name,source=source,start_ms=info['start_ms'])
  return info
 
-def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed,filter_cache=None,history_cache=None,warm_history=False):
+def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed,filter_cache=None,history_cache=None,warm_history=False,sleeper=time.sleep):
  markets={};errors={}
  if filter_cache is None:filter_cache={}
  if history_cache is None:history_cache={}
@@ -87,8 +87,15 @@ def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),prov
    try:cached=provider.filters(market,clock=clock);filter_cache[market]=cached
    except Exception:cached=None;local_errors[market+'_filters']='unavailable'
   if cached:item['filters']=cached
-  try:item['quote']=provider.spot_quote(clock=clock) if market=='spot' else provider.futures_quote(clock=clock)
-  except Exception:local_errors[market+'_quote']='unavailable'
+  boundary=now//900000*900000
+  for attempt in range(4 if signal_window else 1):
+   try:
+    candidate=provider.spot_quote(clock=clock) if market=='spot' else provider.futures_quote(clock=clock)
+    if not signal_window or (type(candidate.get('event_ms')) is int and candidate['event_ms']>=boundary):item['quote']=candidate;break
+   except Exception:pass
+   if not signal_window or clock()>=boundary+3500:break
+   sleeper(.3)
+  if 'quote' not in item:local_errors[market+'_quote']='unavailable_or_preboundary'
   if signal_window:
    try:
     item['candles']=provider.execution_candles(market,warm,item['quote'],clock=clock)

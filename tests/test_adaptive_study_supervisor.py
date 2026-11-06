@@ -30,7 +30,7 @@ class SupervisorTest(unittest.TestCase):
   serve(self.root,ai_path=self.root/'missing-ai',baseline_path=self.root/'missing-base',publisher_uid=0,version='test',stop=lambda:stopped[0],clock=lambda:1000,sleeper=lambda seconds:stopped.__setitem__(0,True),provider=Unavailable())
   import json
   out=json.loads((self.root/'status.json').read_text())
-  self.assertEqual(out['data_errors']['spot_quote'],'unavailable')
+  self.assertEqual(out['data_errors']['spot_quote'],'unavailable_or_preboundary')
   self.assertEqual(out['cycles']['ai']['status'],'decision_unavailable')
   self.assertEqual(out['experiments']['baseline']['positions'],[])
  def test_baseline_falls_back_after_ai_window_and_is_reused(self):
@@ -65,8 +65,8 @@ class SupervisorTest(unittest.TestCase):
    def execution_candles(self,market,warm,price,**kw):
     calls.append(('candles',market));gate.wait(timeout=2)
     return {'bars':[(0,100,101,99,100)],'skip_bar':(900000,100,101,99,100)}
-   def spot_quote(self,**kw):calls.append(('quote','spot'));return {'received_ms':now}
-   def futures_quote(self,**kw):calls.append(('quote','futures'));return {'received_ms':now}
+   def spot_quote(self,**kw):calls.append(('quote','spot'));return {'event_ms':now,'received_ms':now}
+   def futures_quote(self,**kw):calls.append(('quote','futures'));return {'event_ms':now,'received_ms':now}
    def filters(self,*args,**kw):raise AssertionError('fresh cached filters must be reused')
   cached={k:{'received_ms':now} for k in ('spot','futures')}
   histories={k:{'skip_bar':(1,)} for k in ('spot','futures')}
@@ -91,3 +91,16 @@ class SupervisorTest(unittest.TestCase):
   markets,errors=collect_markets(self.root,signal_window=True,clock=lambda:now[0],provider=p,filter_cache=filters,history_cache=history)
   self.assertFalse(errors)
   for market in ('spot','futures'):self.assertEqual(markets[market]['candles']['skip_bar'][0],boundary-900000)
+ def test_preboundary_public_quote_is_retried_with_strict_bound(self):
+  bootstrap(self.root,clock=lambda:1000);boundary=20000*900000;now=boundary+300;counts={'spot':0,'futures':0}
+  class Provider:
+   def q(self,market):
+    counts[market]+=1;event=boundary-1 if counts[market]==1 else now
+    return {'event_ms':event,'received_ms':now}
+   def spot_quote(self,**kw):return self.q('spot')
+   def futures_quote(self,**kw):return self.q('futures')
+   def execution_candles(self,*args,**kw):return {'bars':[],'skip_bar':(boundary-900000,100,101,99,100)}
+  cached={k:{'received_ms':now} for k in ('spot','futures')};warm={k:{'skip_bar':(1,)} for k in cached}
+  markets,errors=collect_markets(self.root,signal_window=True,clock=lambda:now,provider=Provider(),filter_cache=cached,history_cache=warm,sleeper=lambda _:None)
+  self.assertFalse(errors);self.assertEqual(counts,{'spot':2,'futures':2})
+  self.assertEqual(markets['futures']['quote']['event_ms'],now)
