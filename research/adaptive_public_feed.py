@@ -59,3 +59,22 @@ def closed_15m(market,*,fetch=get,clock=lambda:int(time.time()*1000)):
  rows=[(r[0],float(r[1]),float(r[2]),float(r[3]),float(r[4])) for r in closed]
  if len(rows)!=len(data):raise ValueError('candle_capture_mismatch')
  return {'market':market,'symbol':'BTCUSDT','source':'binance_spot_klines' if market=='spot' else 'binance_usdm_klines','server_ms':server,'received_ms':received,'bars':rows[:-1],'skip_bar':rows[-1]}
+
+def execution_candles(market,warm,price,*,fetch=get,clock=lambda:int(time.time()*1000)):
+ """Complete a pre-boundary history using one post-boundary candle fetch."""
+ if market not in ('spot','futures') or not isinstance(warm,dict) or warm.get('market')!=market or warm.get('symbol')!='BTCUSDT':raise ValueError('warm_history_invalid')
+ source='binance_spot_klines' if market=='spot' else 'binance_usdm_klines'
+ if warm.get('source')!=source:raise ValueError('warm_history_source_invalid')
+ now=clock();q=quote(price,market=market,now_ms=now);boundary=q['event_ms']//900000*900000
+ if not 0<=q['event_ms']-boundary<=5000:raise ValueError('execution_window_missed')
+ if type(warm.get('received_ms')) is not int or not 0<boundary-warm['received_ms']<=120000:raise ValueError('warm_history_stale')
+ bars=warm.get('bars');last=warm.get('skip_bar')
+ if not isinstance(bars,list) or not bars or not isinstance(last,(list,tuple)) or last[0]!=boundary-1800000:raise ValueError('warm_history_gap')
+ host,path=(SPOT,'/api/v3/klines') if market=='spot' else (FUTURES,'/fapi/v1/klines')
+ raw=fetch(host,path,{'symbol':'BTCUSDT','interval':'15m','limit':3});received=clock()
+ data=candles(raw,q['event_ms'],15,1)
+ if data[-1]['start_ms']!=boundary-900000:raise ValueError('execution_candle_gap')
+ matches=[r for r in raw if r[0]==boundary-900000]
+ if len(matches)!=1:raise ValueError('execution_candle_invalid')
+ r=matches[0];skip=(r[0],float(r[1]),float(r[2]),float(r[3]),float(r[4]))
+ return {'market':market,'symbol':'BTCUSDT','source':source,'received_ms':received,'warm_received_ms':warm['received_ms'],'bars':bars+[last],'skip_bar':skip}

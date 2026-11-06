@@ -46,3 +46,11 @@ class PublicFeedTest(unittest.TestCase):
     count[0]+=1;return {'serverTime':now if count[0]==1 else now+900000}
    return [[t,'100','101','99','100','10',t+899999] for t in range(19801*900000,20001*900000,900000)]
   with self.assertRaises(ValueError):f.closed_15m('spot',fetch=fetch,clock=lambda:now)
+ def test_execution_uses_preboundary_history_and_postboundary_price(self):
+  boundary=20000*900000;warm={'market':'spot','symbol':'BTCUSDT','source':'binance_spot_klines','received_ms':boundary-30000,'bars':[(boundary-2700000,100.,101.,99.,100.)],'skip_bar':(boundary-1800000,100.,101.,99.,100.)}
+  price={'symbol':'BTCUSDT','source':'binance_spot_trade','price':'100','event_ms':boundary+300,'received_ms':boundary+400}
+  raw=[[t,'100','101','99','100','10',t+899999] for t in (boundary-1800000,boundary-900000,boundary)]
+  got=f.execution_candles('spot',warm,price,fetch=lambda *x:raw,clock=lambda:boundary+500)
+  self.assertEqual(got['bars'][-1][0],boundary-1800000);self.assertEqual(got['skip_bar'][0],boundary-900000)
+  with self.assertRaisesRegex(ValueError,'warm_history_stale'):f.execution_candles('spot',{**warm,'received_ms':boundary+1},price,fetch=lambda *x:raw,clock=lambda:boundary+500)
+  with self.assertRaisesRegex(ValueError,'execution_window_missed'):f.execution_candles('spot',warm,{**price,'event_ms':boundary+6000,'received_ms':boundary+6000},fetch=lambda *x:raw,clock=lambda:boundary+6000)

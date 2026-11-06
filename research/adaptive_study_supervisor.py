@@ -65,24 +65,35 @@ def bootstrap(root,*,clock=lambda:int(time.time()*1000)):
  for source,name in (('AI','ai'),('baseline','baseline')):initialize(root/name,source=source,start_ms=info['start_ms'])
  return info
 
-def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed,filter_cache=None):
+def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed,filter_cache=None,history_cache=None,warm_history=False):
  markets={};errors={}
  if filter_cache is None:filter_cache={}
+ if history_cache is None:history_cache={}
  def collect_one(market):
   item={'entry_window':signal_window}
   local_errors={};cached=filter_cache.get(market);now=clock()
   need_filter=not cached or type(cached.get('received_ms')) is not int or not 0<=now-cached['received_ms']<=60000
-  if signal_window:
+  # Cache the fully closed signal history before the next boundary. The final
+  # skip bar is fetched only after a source-timestamped post-boundary quote.
+  remaining=900000-now%900000;warm=history_cache.get(market)
+  target=(now//900000+1)*900000
+  previous=warm.get('skip_bar') if isinstance(warm,dict) else None
+  warm_needed=(warm_history or (not signal_window and remaining<=75000)) and (not isinstance(previous,(tuple,list)) or not previous or previous[0]!=target-1800000)
+  if warm_needed:
    try:
-    item['candles']=provider.closed_15m(market,clock=clock);item['bars']=item['candles']['bars'];item['skip_bar']=item['candles']['skip_bar'];item['risk_bar']=item['skip_bar']
-   except Exception:local_errors[market+'_candles']='unavailable'
+    warm=provider.closed_15m(market,clock=clock);history_cache[market]=warm
+   except Exception:local_errors[market+'_warm_history']='unavailable'
   if need_filter:
    try:cached=provider.filters(market,clock=clock);filter_cache[market]=cached
    except Exception:cached=None;local_errors[market+'_filters']='unavailable'
   if cached:item['filters']=cached
-  # The executable quote is sampled after the slower candle/filter calls.
   try:item['quote']=provider.spot_quote(clock=clock) if market=='spot' else provider.futures_quote(clock=clock)
   except Exception:local_errors[market+'_quote']='unavailable'
+  if signal_window:
+   try:
+    item['candles']=provider.execution_candles(market,warm,item['quote'],clock=clock)
+    item['bars']=item['candles']['bars'];item['skip_bar']=item['candles']['skip_bar'];item['risk_bar']=item['skip_bar']
+   except Exception:local_errors[market+'_candles']='unavailable'
   return market,item,local_errors
  with ThreadPoolExecutor(max_workers=2,thread_name_prefix='study-public') as pool:
   for market,item,local_errors in pool.map(collect_one,('spot','futures')):
@@ -103,7 +114,7 @@ def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),prov
   try:prior=json.loads(audit_file.read_text())
   except (OSError,ValueError,TypeError):prior={}
   last=prior.get('attempt_ms',0)
-  if type(last) is not int or not 0<=now-last<3600000:
+  if not signal_window and (type(last) is not int or not 0<=now-last<3600000):
    earliest=[]
    for name in ('ai','baseline'):
     p=Path(root)/name/'financial.db'
@@ -239,14 +250,14 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
  if not stat.S_ISDIR(meta.st_mode) or meta.st_uid!=os.geteuid() or meta.st_mode&0o077:raise ValueError('study_root_untrusted')
  with writer_lock(root):
   identity=bootstrap(root,clock=clock)
-  filter_cache={}
+  filter_cache={};history_cache={}
   if capture_fetch is None:
    from .adaptive_snapshot_proof import capture
    from .adaptive_shadow import get,headlines
    capture_fetch=lambda:capture(get,clock=clock,news_fetch=headlines)
   while not stop():
    before=clock();window=(before%900000)<2000
-   markets,errors=collect_markets(root,signal_window=window,clock=clock,provider=provider,filter_cache=filter_cache)
+   markets,errors=collect_markets(root,signal_window=window,clock=clock,provider=provider,filter_cache=filter_cache,history_cache=history_cache)
    selected,baseline_uid,baseline_origin=select_baseline(root,baseline_path,publisher_uid=publisher_uid,start_ms=identity['start_ms'],clock=clock,capture_fetch=capture_fetch)
    with cycle_lock(root):
     audit_data=markets['futures'].get('funding_audit');audit_attempt=markets['futures'].get('audit_attempt')

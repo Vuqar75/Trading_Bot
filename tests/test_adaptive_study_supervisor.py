@@ -47,7 +47,7 @@ class SupervisorTest(unittest.TestCase):
   import json,sqlite3
   from contextlib import closing
   from research.adaptive_funding_evidence import record
-  bootstrap(self.root,clock=lambda:1000);old=2000;now=15*86400000
+  bootstrap(self.root,clock=lambda:1000);old=2000;now=15*86400000+10000
   row={'symbol':'BTCUSDT','fundingTime':old,'fundingRate':'0.001','markPrice':'100'}
   with closing(sqlite3.connect(self.root/'ai'/'financial.db',isolation_level=None)) as db:record(db,row,observed_ms=old+1)
   class Provider:
@@ -59,17 +59,35 @@ class SupervisorTest(unittest.TestCase):
   serve(self.root,ai_path=self.root/'missing-ai',baseline_path=self.root/'missing-base',publisher_uid=0,version='test',stop=lambda:stopped[0],clock=lambda:now,sleeper=lambda seconds:stopped.__setitem__(0,True),provider=Provider(),capture_fetch=lambda:(_ for _ in ()).throw(ValueError('offline')))
   state=json.loads((self.root/'funding-audit.json').read_text())
   self.assertEqual(state['status'],'checked');self.assertEqual(state['next_start_ms'],old+7*86400000)
- def test_both_markets_collect_concurrently_and_quote_after_candles(self):
+ def test_both_markets_collect_concurrently_and_validate_candle_after_quote(self):
   bootstrap(self.root,clock=lambda:1000);gate=threading.Barrier(2);calls=[];now=9000000
   class Provider:
-   def closed_15m(self,market,**kw):
+   def execution_candles(self,market,warm,price,**kw):
     calls.append(('candles',market));gate.wait(timeout=2)
     return {'bars':[(0,100,101,99,100)],'skip_bar':(900000,100,101,99,100)}
    def spot_quote(self,**kw):calls.append(('quote','spot'));return {'received_ms':now}
    def futures_quote(self,**kw):calls.append(('quote','futures'));return {'received_ms':now}
    def filters(self,*args,**kw):raise AssertionError('fresh cached filters must be reused')
   cached={k:{'received_ms':now} for k in ('spot','futures')}
-  markets,errors=collect_markets(self.root,signal_window=True,clock=lambda:now,provider=Provider(),filter_cache=cached)
+  histories={k:{'skip_bar':(1,)} for k in ('spot','futures')}
+  markets,errors=collect_markets(self.root,signal_window=True,clock=lambda:now,provider=Provider(),filter_cache=cached,history_cache=histories)
   self.assertFalse(errors)
-  for market in ('spot','futures'):self.assertLess(calls.index(('candles',market)),calls.index(('quote',market)))
+  for market in ('spot','futures'):self.assertLess(calls.index(('quote',market)),calls.index(('candles',market)))
   self.assertEqual(set(markets),{'spot','futures'})
+ def test_warm_history_is_collected_before_boundary_and_reused(self):
+  bootstrap(self.root,clock=lambda:1000);boundary=20000*900000;now=[boundary-30000];history={};filters={};calls=[]
+  class Provider:
+   def closed_15m(self,market,**kw):
+    calls.append(('warm',market));return {'market':market,'symbol':'BTCUSDT','source':'binance_spot_klines' if market=='spot' else 'binance_usdm_klines','received_ms':now[0],'bars':[(boundary-2700000,100.,101.,99.,100.)],'skip_bar':(boundary-1800000,100.,101.,99.,100.)}
+   def execution_candles(self,market,warm,price,**kw):
+    from research.adaptive_public_feed import execution_candles
+    raw=[[t,'100','101','99','100','10',t+899999] for t in (boundary-1800000,boundary-900000,boundary)]
+    return execution_candles(market,warm,price,fetch=lambda *x:raw,clock=lambda:now[0])
+   def filters(self,market,**kw):return {'received_ms':now[0]}
+   def spot_quote(self,**kw):return {'symbol':'BTCUSDT','source':'binance_spot_trade','price':'100','event_ms':now[0],'received_ms':now[0]}
+   def futures_quote(self,**kw):return {'symbol':'BTCUSDT','source':'binance_usdm_mark','price':'100','event_ms':now[0],'received_ms':now[0]}
+  p=Provider();collect_markets(self.root,signal_window=False,clock=lambda:now[0],provider=p,filter_cache=filters,history_cache=history)
+  self.assertEqual(len(calls),2);now[0]=boundary+300
+  markets,errors=collect_markets(self.root,signal_window=True,clock=lambda:now[0],provider=p,filter_cache=filters,history_cache=history)
+  self.assertFalse(errors)
+  for market in ('spot','futures'):self.assertEqual(markets[market]['candles']['skip_bar'][0],boundary-900000)
