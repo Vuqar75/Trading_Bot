@@ -17,7 +17,7 @@ def export(budget,target,now_ms=None):
   expiry=snap['as_of_ms']+14400000
   if now_ms>=expiry:raise ValueError('model_diagnostic_expired')
   local=' В исходном журнале отсутствовала таблица usage; статус ответа провайдера неизвестен.' if diagnostic.get('local_reason')=='legacy_budget_missing_usage_table_response_status_unknown' else ''
-  report={'schema':1,'data_utc':stamp(snap['as_of_ms']),'answer_utc':stamp(observed),'expires_utc':stamp(expiry),'metrics':'Данные исходного среза сохранены в журнале.','coverage':str(snap.get('coverage','неизвестно'))[:800],'summary':'ИИ: ответа нет; ошибка '+detail+'; baseline того же среза: '+row[2]+'.','risks':'Резерв сохранён; автоматического повтора нет. Адаптивные входы запрещены.'+local,'sources':[],'complete':False}
+  report={'schema':1,'data_utc':stamp(snap['as_of_ms']),'answer_utc':stamp(observed),'expires_utc':stamp(expiry),'diagnostic_only':True,'metrics':'Данные исходного среза сохранены в журнале.','coverage':str(snap.get('coverage','неизвестно'))[:800],'summary':'ИИ: ответа нет; ошибка '+detail+'; baseline того же среза: '+row[2]+'.','risks':'Резерв сохранён; автоматического повтора нет. Адаптивные входы запрещены.'+local,'sources':[],'complete':False}
   return write(target,report)
  decision=record['response'];expiry=decision['expires_ms']
  if not snap['as_of_ms']<=record['received_ms']<expiry<=snap['as_of_ms']+14400000 or now_ms>=expiry:raise ValueError('model_decision_expired')

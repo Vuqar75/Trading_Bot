@@ -144,6 +144,13 @@ class ReportUpdateGuardTests(unittest.TestCase):
             result=release_report_update(self.shared,self.q,'adaptiveai:release:test',protection_checked_ms=100000,now=100,namespace='adaptiveai')
         self.assertEqual(result['enabled'],['spot']);self.assertFalse(self.shared.snapshot('spot')['paused']);self.assertTrue(self.shared.snapshot('futures')['paused'])
 
+    def test_adaptive_diagnostic_has_its_own_hold(self):
+        frozen=freeze_report_update(self.shared,self.q,'adaptivediag:freeze:test',now=100,namespace='adaptivediag')
+        self.assertFalse(frozen['paused']['spot'])
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            result=release_report_update(self.shared,self.q,'adaptivediag:release:test',protection_checked_ms=100000,now=100,namespace='adaptivediag')
+        self.assertEqual(result['enabled'],['spot']);self.assertTrue(self.shared.snapshot('futures')['paused'])
+
     def test_pair_namespace_requires_and_preserves_all_pauses(self):
         with self.assertRaisesRegex(ValueError,'Spot must remain paused'):
             freeze_report_update(self.shared,self.q,'pair:freeze:test',now=100,namespace='pair')

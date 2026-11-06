@@ -17,3 +17,6 @@ class AIViewTest(unittest.TestCase):
    p=Path(folder)/'report.json';now=1800000000;stamp=dt.datetime.fromtimestamp(now,dt.timezone.utc).isoformat();expiry=dt.datetime.fromtimestamp(now+60,dt.timezone.utc).isoformat()
    d={'schema':1,'data_utc':stamp,'answer_utc':stamp,'expires_utc':expiry,'metrics':'RSI','coverage':'limited','summary':'RANGE','risks':'risk','sources':[],'complete':True};p.write_text(json.dumps(d))
    self.assertNotIn('УСТАРЕЛО',render(p,now+59));self.assertIn('УСТАРЕЛО',render(p,now+60));d['expires_utc']=dt.datetime.fromtimestamp(now+14401,dt.timezone.utc).isoformat();p.write_text(json.dumps(d));self.assertIn('повреждён',render(p,now))
+ def test_diagnostic_is_not_labeled_as_model_output(self):
+  with tempfile.TemporaryDirectory() as folder:
+   p=Path(folder)/'report.json';now=1800000000;stamp=dt.datetime.fromtimestamp(now,dt.timezone.utc).isoformat();d={'schema':1,'data_utc':stamp,'answer_utc':stamp,'metrics':'none','coverage':'limited','summary':'ИИ: ответа нет; baseline RANGE','risks':'unknown','sources':[],'complete':False,'diagnostic_only':True};p.write_text(json.dumps(d));text=render(p,now);self.assertIn('Состояние запроса:',text);self.assertIn('проверка:',text);self.assertNotIn('Вывод модели:',text);self.assertNotIn('; ответ:',text)

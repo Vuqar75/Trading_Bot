@@ -52,7 +52,10 @@ def render(path=REPORT,now=None):
         if stale:labels.append('УСТАРЕЛО')
         if data.get('complete') is not True:labels.append('НЕПОЛНЫЙ ОТВЕТ')
         state=', '.join(labels) if labels else 'подготовлено'
-        lines=['[ИИ-аналитик] '+state,'Данные: '+fmt(stamps[0])+'; ответ: '+fmt(stamps[1])+('; срок решения: '+fmt(expiry) if expiry else ''),'Вычисленные метрики: '+data['metrics'],'Покрытие и пробелы: '+data['coverage'],'Вывод модели: '+data['summary'],'Риски и ограничения: '+data['risks']]
+        diagnostic=data.get('diagnostic_only') is True
+        time_label='проверка' if diagnostic else 'ответ'
+        result_label='Состояние запроса: ' if diagnostic else 'Вывод модели: '
+        lines=['[ИИ-аналитик] '+state,'Данные: '+fmt(stamps[0])+'; '+time_label+': '+fmt(stamps[1])+('; срок данных: '+fmt(expiry) if expiry else ''),'Вычисленные метрики: '+data['metrics'],'Покрытие и пробелы: '+data['coverage'],result_label+data['summary'],'Риски и ограничения: '+data['risks']]
         sources=data.get('sources',[])
         if not isinstance(sources,list) or len(sources)>30:raise ValueError('invalid_sources')
         for x in sources[:3]:
