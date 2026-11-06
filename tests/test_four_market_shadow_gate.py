@@ -4,6 +4,7 @@ from research.adaptive_shadow import PERIOD,gate,validate_model
 
 class ShadowTransitions(unittest.TestCase):
  def test_bench_blocks_ip_and_does_not_inherit_credentials(self):
+  if os.environ.get('FOUR_MARKET_OFFLINE_BENCH')!='1':self.skipTest('requires isolated bench runner')
   with self.assertRaisesRegex(OSError,'IP sockets forbidden'):socket.socket(socket.AF_INET,socket.SOCK_STREAM)
   for key in ('TRADING_BOT_AI','OPENAI_API_KEY','RUNTIME_TELEGRAM_BOT_TOKEN','RUNTIME_TELEGRAM_OWNER_ID'):
    self.assertNotIn(key,os.environ)

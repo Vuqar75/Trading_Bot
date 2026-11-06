@@ -17,7 +17,7 @@ def main():
  with tempfile.TemporaryDirectory(prefix='tradingbot-four-market-') as tmp:
   Path(tmp,'sitecustomize.py').write_text(SITECUSTOMIZE)
   env={'PATH':os.environ.get('PATH','/usr/bin:/bin'),'HOME':tmp,'TMPDIR':tmp,
-       'LANG':'C.UTF-8','PYTHONDONTWRITEBYTECODE':'1','PYTHONPATH':tmp+os.pathsep+str(ROOT)}
+       'LANG':'C.UTF-8','PYTHONDONTWRITEBYTECODE':'1','FOUR_MARKET_OFFLINE_BENCH':'1','PYTHONPATH':tmp+os.pathsep+str(ROOT)}
   result=subprocess.run([sys.executable,'-B','-m','unittest',*MODULES],cwd=ROOT,env=env)
   return result.returncode
 if __name__=='__main__':raise SystemExit(main())
