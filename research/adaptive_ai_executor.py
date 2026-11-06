@@ -53,6 +53,8 @@ def run(snapshot,baseline,state,*,transport=None,clock=lambda:int(time.time()*10
   if prior!=(3630,None):raise ValueError('original_reservation_changed')
   if db.execute("SELECT 1 FROM api_attempts WHERE request_id LIKE 'adaptive:%' LIMIT 1").fetchone():raise ValueError('adaptive_attempt_already_exists_no_retry')
   if db.execute('SELECT COALESCE(SUM(reserved_micro_usd),0) FROM api_attempts').fetchone()[0]+reserve>250000:raise ValueError('budget_exhausted')
+  db.execute('CREATE TABLE IF NOT EXISTS api_usage(request_id TEXT PRIMARY KEY,usage_json TEXT NOT NULL)')
+  db.execute('CREATE TABLE IF NOT EXISTS api_diagnostics(request_id TEXT PRIMARY KEY,details_json TEXT NOT NULL)')
   db.execute('CREATE TABLE IF NOT EXISTS adaptive_decisions(request_id TEXT PRIMARY KEY,snapshot_json TEXT NOT NULL,baseline TEXT NOT NULL,decision_json TEXT)')
   db.execute('INSERT INTO api_attempts VALUES(?,?,?,NULL)',(rid,reserve,time.time()))
   db.execute('INSERT INTO adaptive_decisions VALUES(?,?,?,NULL)',(rid,canonical(snapshot),baseline));db.commit();reserved=True

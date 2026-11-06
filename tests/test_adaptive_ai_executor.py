@@ -47,3 +47,9 @@ class ExecutorTests(unittest.TestCase):
   def fail(req):raise RuntimeError('private provider body')
   with self.assertRaises(RuntimeError):run(self.snap,'RANGE',self.p,transport=fail,clock=lambda:self.now)
   r=export(self.p/'experiment-budget.db',self.p/'report.json',self.now);self.assertFalse(r['complete']);self.assertIn('ответа нет',r['summary']);self.assertNotIn('private',json.dumps(r))
+ def test_legacy_budget_without_auxiliary_tables(self):
+  db=sqlite3.connect(self.p/'experiment-budget.db');db.execute('drop table api_usage');db.execute('drop table api_diagnostics');db.commit()
+  with self.assertRaisesRegex(sqlite3.OperationalError,'no such table: api_usage'):db.execute("insert into api_usage values('fake','{}')")
+  db.close()
+  result=run(self.snap,'RANGE',self.p,transport=self.response,clock=lambda:self.now);self.assertEqual(result['response']['mode'],'TREND_DOWN')
+  db=sqlite3.connect(self.p/'experiment-budget.db');self.assertEqual(db.execute('select count(*) from api_usage').fetchone()[0],1);db.close()

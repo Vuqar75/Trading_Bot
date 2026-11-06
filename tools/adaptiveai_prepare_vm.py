@@ -4,7 +4,7 @@ from contextlib import closing
 from pathlib import Path
 
 HOME=Path('/var/lib/tradingbot');OLD=Path('/opt/trading-bot-adaptiveshadow-54e1341')
-INSTALLED='54e13419c5bf8c13727b4f66c7a5b1caca48ea3b';ARCHIVE=HOME/'adaptiveai-updates/20261106b'
+INSTALLED='54e13419c5bf8c13727b4f66c7a5b1caca48ea3b';ARCHIVE=HOME/'adaptiveai-updates/20261106c'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
 
 def call(*args,timeout=90):return subprocess.check_output(args,text=True,timeout=timeout).strip()
