@@ -7,7 +7,7 @@ import json,os,sqlite3,subprocess,sys
 from contextlib import closing
 from pathlib import Path
 
-HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106g'
+HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106h'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';UNITDIR=Path('/etc/systemd/system')
 MARKER=HOME/'cross-cutovers/service-start-interlock'
 SERVICES=('tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service','tradingbot-margin.service','tradingbot-monitor.service')
@@ -15,7 +15,7 @@ AUX_UNITS=('tradingbot-watchdog.service','tradingbot-external-backup@.service','
 ALL_UNITS=SERVICES+('tradingbot-paper-backup.service',)+AUX_UNITS
 TIMERS=('tradingbot-paper-backup.timer','tradingbot-watchdog.timer','tradingbot-external-hourly.timer','tradingbot-external-daily.timer','tradingbot-heartbeat.timer')
 START=('tradingbot-futures.service','tradingbot-cross.service','tradingbot-margin.service','tradingbot-spot.service','tradingbot-monitor.service')+TIMERS
-INTERLOCK='cross:freeze:regularai-20261106g'
+INTERLOCK='cross:freeze:regularai-20261106h'
 
 def command(*args):return subprocess.run(['systemctl',*args],check=True,capture_output=True,text=True,timeout=120)
 def counts():
@@ -68,7 +68,10 @@ def recover():
             proof=ARCHIVE/'release-proof.json'
             if proof.is_symlink() or not proof.is_file():raise ValueError('Candidate release not proven')
             released=json.loads(proof.read_text())
-            if released.get('operation')!='regularai:release:20261106g' or released.get('enabled')!=[]:
+            enabled=released.get('enabled')
+            if (released.get('operation')!='aiview:release:20261106h' or not isinstance(enabled,list)
+                or len(enabled)!=len(set(enabled)) or any(x!='spot' for x in enabled)
+                or ('spot' in enabled and data.get('paused',{}).get('spot') is not False)):
                 raise ValueError('Unexpected release proof')
             print('REGULARAI_RECOVERY completed deployment; workers unchanged',flush=True);return
         if MARKER.exists() or not identical(old):raise ValueError('Unpaused recovery requires inspection')

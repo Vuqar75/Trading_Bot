@@ -4,7 +4,7 @@ from contextlib import closing
 from pathlib import Path
 
 HOME=Path('/var/lib/tradingbot');OLD=Path('/opt/trading-bot-regularai-6c6bf56')
-INSTALLED='6c6bf569eb714eed3b0d634ee7a785ccad5ac36d';ARCHIVE=HOME/'regularai-updates/20261106g'
+INSTALLED='6c6bf569eb714eed3b0d634ee7a785ccad5ac36d';ARCHIVE=HOME/'regularai-updates/20261106h'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
 
 def call(*args,timeout=90):return subprocess.check_output(args,text=True,timeout=timeout).strip()
@@ -75,12 +75,12 @@ def main():
     # the same on-hold recovery used after a reboot. Never replace old units.
     from trading_bot.cross_unit_switch import _write
     system=Path('/etc/systemd/system')
-    recovery=system/'tradingbot-regularai-recovery-20261106g.service';switch=system/'tradingbot-regularai-switch-20261106g.service'
+    recovery=system/'tradingbot-regularai-recovery-20261106h.service';switch=system/'tradingbot-regularai-switch-20261106h.service'
     if any(p.exists() or p.is_symlink() for p in (recovery,switch)):raise ValueError('Pair unit already exists')
     _write(recovery,('[Unit]\nDescription=Recover interrupted paper pair rollout\nAfter=local-fs.target\n[Service]\nType=oneshot\nExecStart=/usr/bin/python3 -B '+str(target)+'/tools/regularai_recovery_vm.py\n[Install]\nWantedBy=multi-user.target\n').encode(),0o644)
-    _write(switch,('[Unit]\nDescription=Guarded paper pair rollout\nOnFailure=tradingbot-regularai-recovery-20261106g.service\n[Service]\nType=oneshot\nTimeoutStartSec=900\nExecStart=/usr/bin/python3 -B '+str(target)+'/tools/regularai_switch_vm.py\n').encode(),0o644)
+    _write(switch,('[Unit]\nDescription=Guarded paper pair rollout\nOnFailure=tradingbot-regularai-recovery-20261106h.service\n[Service]\nType=oneshot\nTimeoutStartSec=900\nExecStart=/usr/bin/python3 -B '+str(target)+'/tools/regularai_switch_vm.py\n').encode(),0o644)
     subprocess.run(['systemctl','daemon-reload'],check=True,timeout=30)
-    subprocess.run(['systemctl','enable','tradingbot-regularai-recovery-20261106g.service'],check=True,timeout=30,capture_output=True)
+    subprocess.run(['systemctl','enable','tradingbot-regularai-recovery-20261106h.service'],check=True,timeout=30,capture_output=True)
     print(json.dumps({'candidate':candidate,'archive':str(ARCHIVE),'backup_restored':True,'paused':health['paused'],'services_changed':False},sort_keys=True),flush=True)
 
 if __name__=='__main__':main()

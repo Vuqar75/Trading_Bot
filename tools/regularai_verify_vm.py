@@ -3,9 +3,9 @@ import argparse,importlib.util,json,os,shutil,sqlite3,subprocess,sys,tempfile,ti
 from contextlib import closing
 from pathlib import Path
 
-HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106g'
+HOME=Path('/var/lib/tradingbot');ARCHIVE=HOME/'regularai-updates/20261106h'
 FINANCIAL=HOME/'paper-financial/shared-paper.db';QUEUE=HOME/'Trading_Bot_paper_state/unified-commands.db';OBSERVER=HOME/'Trading_Bot_paper_state/monitor/observation.db'
-RELEASE='regularai:release:20261106g'
+RELEASE='aiview:release:20261106h'
 
 
 def main():
@@ -50,7 +50,7 @@ def main():
         current=checked_health(held=True)
         try:
             shared=SharedPaperStore(FINANCIAL);queue=UnifiedQueue(QUEUE)
-            try:result=release_report_update(shared,queue,RELEASE,protection_checked_ms=current['protection_checked_ms'],namespace='regularai')
+            try:result=release_report_update(shared,queue,RELEASE,protection_checked_ms=current['protection_checked_ms'],namespace='aiview')
             finally:queue.close();shared.close()
             _write(ARCHIVE/'release-proof.json',json.dumps(result,sort_keys=True).encode(),0o600)
         except BaseException:

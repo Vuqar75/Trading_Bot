@@ -158,6 +158,18 @@ class ReportUpdateGuardTests(unittest.TestCase):
             result=release_report_update(self.shared,self.q,'regularai:release:test',protection_checked_ms=100000,now=100,namespace='regularai')
         self.assertEqual(result['enabled'],['spot']);self.assertTrue(self.shared.snapshot('futures')['paused'])
 
+    def test_ai_view_does_not_reuse_previous_regular_ai_hold(self):
+        freeze_report_update(self.shared,self.q,'regularai:freeze:test',now=100,namespace='regularai')
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            release_report_update(self.shared,self.q,'regularai:release:test',protection_checked_ms=100000,now=100,namespace='regularai')
+        old=self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='regularai_update_freeze'").fetchone()[0]
+        frozen=freeze_report_update(self.shared,self.q,'aiview:freeze:test',now=100,namespace='aiview')
+        self.assertFalse(frozen['paused']['spot'])
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            result=release_report_update(self.shared,self.q,'aiview:release:test',protection_checked_ms=100000,now=100,namespace='aiview')
+        self.assertEqual(result['enabled'],['spot'])
+        self.assertEqual(old,self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='regularai_update_freeze'").fetchone()[0])
+
     def test_pair_namespace_requires_and_preserves_all_pauses(self):
         with self.assertRaisesRegex(ValueError,'Spot must remain paused'):
             freeze_report_update(self.shared,self.q,'pair:freeze:test',now=100,namespace='pair')

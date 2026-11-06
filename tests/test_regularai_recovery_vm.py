@@ -90,9 +90,16 @@ switch_unit_files(sys.argv[1],sys.argv[2],sys.argv[3],units,assert_safe=lambda:T
     def test_reboot_after_completed_release_does_not_touch_workers(self):
         for name in recovery.ALL_UNITS:(self.units/name).write_bytes((self.stages/name).read_bytes())
         with self.assertRaisesRegex(ValueError,'release not proven'):self.run_recovery(held=False)
-        (self.archive/'release-proof.json').write_text(json.dumps({'operation':'regularai:release:20261106g','enabled':[]}))
+        (self.archive/'release-proof.json').write_text(json.dumps({'operation':'aiview:release:20261106h','enabled':[]}))
         self.run_recovery(held=False)
         self.assertFalse(self.started)
+    def test_reboot_accepts_only_previously_enabled_spot(self):
+        for name in recovery.ALL_UNITS:(self.units/name).write_bytes((self.stages/name).read_bytes())
+        p=self.archive/'prepared.json';prepared=json.loads(p.read_text());prepared['paused']={'spot':False};p.write_text(json.dumps(prepared))
+        proof=self.archive/'release-proof.json';proof.write_text(json.dumps({'operation':'aiview:release:20261106h','enabled':['spot']}))
+        self.run_recovery(held=False);self.assertFalse(self.started)
+        proof.write_text(json.dumps({'operation':'aiview:release:20261106h','enabled':['futures']}))
+        with self.assertRaisesRegex(ValueError,'release proof'):self.run_recovery(held=False)
     def test_unknown_unit_is_refused(self):
         (self.units/recovery.SERVICES[0]).write_text('unexpected')
         with self.assertRaisesRegex(ValueError,'Unexpected unit content'):self.run_recovery()
