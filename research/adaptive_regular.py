@@ -10,6 +10,34 @@ from .adaptive_server_once import owner,exclusive,credential
 from .adaptive_ai_export import export
 
 CAP=250000;MAX_RESERVE=3640;DAY=86400000;PROTOCOL='regular-shadow-v1';AUTH_PATH=Path('/etc/tradingbot-ai-regular/authorization.json')
+DECISION_PROTOCOL='regular-regime-horizon-v2'
+
+def regime_request(snapshot,boundary):
+ """Fix the question's horizon, not the model's confidence or old replies.
+
+ Fiscal authorization stays v1. Each new request records this separate
+ decision-protocol version and the hash of its exact prompt.
+ """
+ if type(boundary) is not int or boundary%PERIOD or snapshot.get('latest_4h_ms')!=boundary-PERIOD:
+  raise ValueError('regime_request_boundary_invalid')
+ from datetime import datetime,timezone
+ review_ms=boundary+PERIOD
+ review_utc=datetime.fromtimestamp(review_ms/1000,timezone.utc).isoformat()
+ req=request(snapshot)
+ req['input'][0]['content']+=(
+  ' Decision protocol: '+DECISION_PROTOCOL+'. Classify the broad market regime on the 4-hour horizon;'
+  ' this is not a 15-minute entry signal and does not authorize an order.'
+  ' The next scheduled review is '+review_utc+'; review_ms='+str(review_ms)+'.'
+  ' For a regime assessment with no specific earlier invalidation, set expires_ms to review_ms.'
+  ' Do not choose a 15-minute expiry merely because supporting 15-minute candles are present.'
+  ' If concrete supplied evidence requires an earlier expiry, retain it and explicitly explain'
+  ' the reason for the shorter horizon in uncertainties. If evidence cannot support a regime,'
+  ' choose NO_TRADE rather than inventing confidence. Never claim that prices or liquidity'
+  ' will stay fresh until the next review. An expiry does not guarantee future price direction.'
+  ' expires_ms must not exceed review_ms. Write every reasons and uncertainties item in plain Russian.'
+  ' Do not infer unseen events or claim complete news coverage.')
+ return req
+
 def auth(state):
  p=AUTH_PATH
  if p.is_symlink() or not p.is_file():raise ValueError('regular_authorization_missing')
@@ -155,8 +183,7 @@ def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=
     if snapshot.get('snapshot_id')!=hashlib.sha256(canonical({k:v for k,v in snapshot.items() if k!='snapshot_id'}).encode()).hexdigest() or baseline not in ('TREND_UP','TREND_DOWN','RANGE','NO_TRADE'):raise ValueError('snapshot_or_baseline_invalid')
    except Exception:
     publish(db,state,public,clock(),'source_unavailable_or_stale');return {'status':'source_unavailable_or_stale'}
-   rid='regular:'+str(boundary);req=request(snapshot)
-   req['input'][0]['content']+=' Write every item of reasons and uncertainties in Russian, using plain language. The decision expires no later than '+str(boundary+PERIOD)+' milliseconds UTC; a shorter expiry is retained, never extended. Do not infer unseen events.'
+   rid='regular:'+str(boundary);req=regime_request(snapshot,boundary)
    reserve=int((Decimal(len(canonical(req).encode())+4096)*Decimal('.1')+Decimal(2000)*Decimal('.5')).to_integral_value(rounding=ROUND_CEILING))
    if reserve>MAX_RESERVE:raise ValueError('reserve_limit')
    db.execute('BEGIN IMMEDIATE');require_schema(db);locked_now=clock()
@@ -169,7 +196,7 @@ def tick(state,public,*,clock=lambda:int(time.time()*1000),fetch=collect,secret=
     if reason=='budget_exhausted':setmeta(db,'paused',reason)
     db.commit();publish(db,state,public,now,reason);return {'status':'paused','reason':reason}
    if db.execute('SELECT 1 FROM regular_windows WHERE boundary_ms=?',(boundary,)).fetchone():db.rollback();return {'status':'already_processed'}
-   db.execute('INSERT INTO api_attempts VALUES(?,?,?,NULL)',(rid,reserve,now/1000));db.execute('INSERT INTO adaptive_decisions VALUES(?,?,?,NULL)',(rid,canonical(snapshot),baseline));db.execute('INSERT INTO regular_versions VALUES (?,?,?,?,?,?)',(boundary,PROTOCOL,MODEL,hashlib.sha256(canonical(req).encode()).hexdigest(),snapshot['snapshot_id'],'sma20-4h-1pct-v1'));mark(db,boundary,'reserved',now,None,rid);db.commit()
+   db.execute('INSERT INTO api_attempts VALUES(?,?,?,NULL)',(rid,reserve,now/1000));db.execute('INSERT INTO adaptive_decisions VALUES(?,?,?,NULL)',(rid,canonical(snapshot),baseline));db.execute('INSERT INTO regular_versions VALUES (?,?,?,?,?,?)',(boundary,DECISION_PROTOCOL,MODEL,hashlib.sha256(canonical(req).encode()).hexdigest(),snapshot['snapshot_id'],'sma20-4h-1pct-v1'));mark(db,boundary,'reserved',now,None,rid);db.commit()
    old={k:os.environ.get(k) for k in ('OPENAI_API_KEY','TRADING_BOT_AI')};os.environ.pop('OPENAI_API_KEY',None);os.environ['TRADING_BOT_AI']=secret()
    try:
     try:result=send(db,rid,req,clock=clock)

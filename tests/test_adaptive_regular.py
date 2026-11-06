@@ -26,6 +26,28 @@ class RegularTests(unittest.TestCase):
  def test_success_same_snapshot_and_idempotent(self):
   out=self.tick();self.assertEqual((out['mode'],out['baseline']),('NO_TRADE','TREND_DOWN'));self.assertEqual(len(self.calls),1);self.assertEqual(self.tick()['status'],'completed');self.assertEqual(len(self.calls),1)
   d=json.loads(self.public.read_text());self.assertIn('baseline того же среза: TREND_DOWN',d['summary']);self.assertIn('входы запрещены',d['risks'])
+ def test_request_defines_regime_horizon_without_rewriting_source_or_one_shot(self):
+  from research.adaptive_ai_executor import request
+  original=canonical(self.snap);one_shot=canonical(request(self.snap))
+  req=r.regime_request(self.snap,self.b);prompt=req['input'][0]['content']
+  self.assertIn('review_ms='+str(self.b+PERIOD),prompt)
+  self.assertIn('not a 15-minute entry signal',prompt)
+  self.assertIn('earlier expiry',prompt);self.assertIn('plain Russian',prompt)
+  self.assertEqual(canonical(self.snap),original)
+  self.assertEqual(canonical(request(self.snap)),one_shot)
+  self.assertEqual(req['text']['format']['schema'],request(self.snap)['text']['format']['schema'])
+ def test_horizon_version_is_recorded_and_short_model_expiry_is_not_extended(self):
+  before=canonical(self.snap);self.assertEqual(self.tick()['status'],'completed')
+  with closing(sqlite3.connect(self.p/'experiment-budget.db')) as db:
+   version,request_sha=db.execute('SELECT protocol,request_sha FROM regular_versions').fetchone()
+   decision=json.loads(db.execute("SELECT decision_json FROM adaptive_decisions WHERE decision_json IS NOT NULL").fetchone()[0])
+  self.assertEqual(version,r.DECISION_PROTOCOL)
+  self.assertEqual(request_sha,hashlib.sha256(canonical(r.regime_request(self.snap,self.b)).encode()).hexdigest())
+  self.assertEqual(decision['response']['expires_ms'],self.now+100000)
+  self.assertEqual(canonical(self.snap),before);self.assertEqual(len(self.calls),1)
+ def test_request_rejects_unaligned_or_wrong_closed_candle(self):
+  with self.assertRaisesRegex(ValueError,'boundary_invalid'):r.regime_request(self.snap,self.b+1)
+  with self.assertRaisesRegex(ValueError,'boundary_invalid'):r.regime_request(self.snap,self.b+PERIOD)
  def test_uncertain_pauses_future_boundaries(self):
   def fail(*a,**k):self.calls.append(1);raise TimeoutError()
   self.assertEqual(self.tick(send=fail)['reason'],'uncertain_http');self.b+=PERIOD;self.now=self.b+120001;self.make_snapshot();self.assertEqual(self.tick()['reason'],'uncertain_http');self.assertEqual(len(self.calls),1)
