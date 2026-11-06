@@ -1,0 +1,8 @@
+[Unit]
+Description=Hourly encrypted backup of AI research budget
+[Timer]
+OnCalendar=*-*-* *:27:00 UTC
+Persistent=true
+Unit=adaptive-ai-regular-backup.service
+[Install]
+WantedBy=timers.target

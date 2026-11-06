@@ -21,8 +21,8 @@ def publish(source=SOURCE, target=TARGET, *, now=None, gid=None):
     with os.fdopen(fd, 'rb') as f: raw = f.read(100001)
     if len(raw)>100000: raise ValueError('report_too_large')
     d = json.loads(raw)
-    if d.get('complete') is not True or d.get('diagnostic_only') is True:
-        raise ValueError('confirmed_comparison_required')
+    diagnostic=d.get('diagnostic_only') is True and d.get('complete') is False
+    if not diagnostic and d.get('complete') is not True:raise ValueError('confirmed_comparison_required')
     # Validate this exact byte snapshot, not another read of mutable source.
     if target.exists() and target.read_bytes() == raw: return False
     parent = target.parent
@@ -32,7 +32,7 @@ def publish(source=SOURCE, target=TARGET, *, now=None, gid=None):
         with os.fdopen(fd, 'wb') as f:
             f.write(raw); f.flush(); os.fsync(f.fileno())
         text = render(tmp, now=now)
-        if 'Вывод модели:' not in text or 'baseline того же среза:' not in text or 'УСТАРЕЛО' in text or 'НЕПОЛНЫЙ' in text:
+        if 'УСТАРЕЛО' in text or (diagnostic and ('Состояние запроса:' not in text or 'Вывод модели:' in text)) or (not diagnostic and ('Вывод модели:' not in text or 'baseline того же среза:' not in text or 'НЕПОЛНЫЙ' in text)):
             raise ValueError('comparison_not_current_or_invalid')
         if target.exists():
             old = json.loads(target.read_bytes())

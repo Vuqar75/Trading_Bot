@@ -180,7 +180,8 @@ class UnifiedQueue:
                     self._notify(render(view),buttons=buttons)
                 elif command == '/ai' and len(parts)==1:
                     from .ai_view import render
-                    self._notify(render())
+                    buttons=[[('Обновить',{'command':'/ai','market':mode,'expires':now+86400,'kind':'view'})]]
+                    self._notify(render(),buttons=buttons)
                 elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
                         mode = parts[1]

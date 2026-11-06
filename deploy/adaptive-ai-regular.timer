@@ -1,0 +1,9 @@
+[Unit]
+Description=Check 4H boundary for regular AI shadow
+[Timer]
+OnCalendar=*-*-* *:*:20
+AccuracySec=1s
+Persistent=false
+Unit=adaptive-ai-regular.service
+[Install]
+WantedBy=timers.target
