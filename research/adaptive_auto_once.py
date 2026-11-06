@@ -40,12 +40,18 @@ def publish_report(report_path,*,runner=subprocess.run):
  script="""import base64,datetime as dt,grp,json,os,shutil,subprocess,time\nfrom pathlib import Path\np=Path('/var/lib/tradingbot-ai-public');q=p/'report.json';root='/opt/trading-bot-adaptivediag-b4f7728'\nif not p.is_dir() or p.is_symlink() or not q.is_file() or q.is_symlink():raise ValueError('existing report unavailable')\nif subprocess.check_output(['git','-C',root,'rev-parse','HEAD'],text=True).strip()!='b4f772895c975e9eae8a53a57606380453a1fff4':raise ValueError('installed version changed')\nraw=base64.b64decode(DATA,validate=True);d=json.loads(raw);now=dt.datetime.now(dt.timezone.utc).timestamp()\nif d.get('complete') is not True or d.get('diagnostic_only') is True or dt.datetime.fromisoformat(d['expires_utc']).timestamp()<=now or 'baseline того же среза:' not in d.get('summary',''):raise ValueError('report unsafe or stale')\nold=json.loads(q.read_text());newtime=dt.datetime.fromisoformat(d['data_utc']);oldtime=dt.datetime.fromisoformat(old['data_utc'])\nif newtime<=oldtime:raise ValueError('report is not newer')\narchive=p/('report-before-'+str(int(time.time()*1000))+'.json');shutil.copyfile(q,archive);gid=grp.getgrnam('tradingbot').gr_gid;os.chown(archive,0,gid);os.chmod(archive,0o640)\nt=p/'report.next';t.write_bytes(raw);os.chown(t,0,gid);os.chmod(t,0o640);os.replace(t,q)\nok=False\ntry:\n r=subprocess.run(['runuser','-u','tradingbot','--','env','PYTHONPATH='+root,'python3','-B','-c','from trading_bot.ai_view import render; print(render())'],capture_output=True,text=True,timeout=20,check=True)\n ok='Вывод модели:' in r.stdout and 'baseline того же среза:' in r.stdout and 'УСТАРЕЛО' not in r.stdout\nfinally:\n if not ok:shutil.copyfile(archive,t);os.chown(t,0,gid);os.chmod(t,0o640);os.replace(t,q)\nif not ok:raise ValueError('display verification failed')\nprint('AI_COMPARISON_DISPLAY_VERIFIED')\n"""
  script='DATA='+repr(data)+'\n'+script
  pwsh=shutil.which('pwsh.exe');wslpath=shutil.which('wslpath')
+ if not pwsh:
+  fallback=Path('/mnt/c/Users/user/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/powershell/pwsh.exe')
+  if fallback.is_file():pwsh=str(fallback)
  if not pwsh or not wslpath:raise ValueError('vm_transport_unavailable')
  path=None
  try:
   with tempfile.NamedTemporaryFile(mode='w',encoding='utf-8',suffix='.py',prefix='adaptive-publish-',dir=WORK,delete=False) as f:path=Path(f.name);f.write(script)
   win=lambda p:subprocess.run([wslpath,'-w',str(p)],capture_output=True,text=True,timeout=10,check=True).stdout.strip()
-  result=runner([pwsh,'-NoProfile','-NonInteractive','-File',win(WORK/'vm_run_pinned.ps1'),'-ScriptPath',win(path)],capture_output=True,text=True,timeout=120)
+  env=dict(os.environ);env.pop('TRADING_BOT_AI',None);env.pop('OPENAI_API_KEY',None);env['CLOUDSDK_CONFIG']=r'C:\Users\user\AppData\Roaming\gcloud'
+  entries=[x for x in env.get('WSLENV','').split(':') if x and x.split('/')[0] not in ('TRADING_BOT_AI','OPENAI_API_KEY','CLOUDSDK_CONFIG')]
+  env['WSLENV']=':'.join(entries+['CLOUDSDK_CONFIG'])
+  result=runner([pwsh,'-NoProfile','-NonInteractive','-File',win(WORK/'vm_run_pinned.ps1'),'-ScriptPath',win(path)],capture_output=True,text=True,timeout=120,env=env)
   if result.returncode or 'AI_COMPARISON_DISPLAY_VERIFIED' not in result.stdout:raise ValueError('vm_publish_not_verified')
  finally:
   if path is not None:path.unlink(missing_ok=True)
