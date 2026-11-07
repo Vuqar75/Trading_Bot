@@ -1,0 +1,398 @@
+{
+  "source_commit": "1dbd5ff337fcecd6b1fc08a1c3b3e3bbc9afccb0",
+  "source_path": "research/usdm_screen_summary.csv.gz",
+  "source_sha256": "1be8d70ac22aa62f3155854eee677fe9862ee719188a64b7d24dbc4ad8ea21b5",
+  "source_rows": 3360,
+  "accounting_max_abs_residual": "6.746988E-12",
+  "short_timeframe_sensitivity": {
+    "base": {
+      "groups": 60,
+      "positive_net": 0,
+      "positive_fixed_path_without_impact": 0,
+      "positive_before_fees_and_impact": 35,
+      "btc_positive_fixed_path_without_impact": 0
+    },
+    "stress": {
+      "groups": 60,
+      "positive_net": 0,
+      "positive_fixed_path_without_impact": 0,
+      "positive_before_fees_and_impact": 31,
+      "btc_positive_fixed_path_without_impact": 0
+    }
+  },
+  "primary_btc_table": [
+    {
+      "timeframe": "5m",
+      "family": "A",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "-4.32915330749285284",
+      "fees": "25.0721208442463985",
+      "impact": "25.072119761955218",
+      "funding": "-0.0409326949336889107",
+      "net": "-54.514326608626789",
+      "closed": "2625",
+      "entries": "2626",
+      "turnover": "50144.241688492726",
+      "fixed_path_net_without_impact": "-29.4422068466729402507",
+      "before_costs_including_funding": "-4.3700860024265417507"
+    },
+    {
+      "timeframe": "15m",
+      "family": "A",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "0.0487867408959539",
+      "fees": "24.3572371367719785",
+      "impact": "24.357237148965994",
+      "funding": "-0.0342896946967036656",
+      "net": "-48.699977239538271",
+      "closed": "2550",
+      "entries": "2551",
+      "turnover": "48714.474273543923",
+      "fixed_path_net_without_impact": "-24.3427400905727282656",
+      "before_costs_including_funding": "0.0144970461992502344"
+    },
+    {
+      "timeframe": "5m",
+      "family": "C",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "-0.51860532180377212",
+      "fees": "8.9082892309841048",
+      "impact": "8.9082891013317821",
+      "funding": "0.012596542360234395",
+      "net": "-18.3225871117581394",
+      "closed": "936",
+      "entries": "936",
+      "turnover": "17816.5784619682012",
+      "fixed_path_net_without_impact": "-9.414298010427642525",
+      "before_costs_including_funding": "-0.506008779443537725"
+    },
+    {
+      "timeframe": "15m",
+      "family": "C",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "-0.29087807862503090",
+      "fees": "5.3802461204655249",
+      "impact": "5.3802460477453947",
+      "funding": "0.0056527269492427441",
+      "net": "-11.0457175198864661",
+      "closed": "565",
+      "entries": "565",
+      "turnover": "10760.4922409310541",
+      "fixed_path_net_without_impact": "-5.6654714721413130559",
+      "before_costs_including_funding": "-0.2852253516757881559"
+    },
+    {
+      "timeframe": "1h",
+      "family": "A",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "-1.03016338626768501",
+      "fees": "4.4127386960836657",
+      "impact": "4.4127384385423494",
+      "funding": "-0.0258433196992778153",
+      "net": "-9.8814838405926367",
+      "closed": "463",
+      "entries": "463",
+      "turnover": "8825.4773921673336",
+      "fixed_path_net_without_impact": "-5.4687454020506285253",
+      "before_costs_including_funding": "-1.0560067059669628253"
+    },
+    {
+      "timeframe": "1h",
+      "family": "B",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "0.0150911998211976",
+      "fees": "2.7378516726025514",
+      "impact": "2.73785167637504044",
+      "funding": "-0.0025439837383611051",
+      "net": "-5.46315613289505124",
+      "closed": "286",
+      "entries": "287",
+      "turnover": "5475.7033452051014",
+      "fixed_path_net_without_impact": "-2.7253044565197149051",
+      "before_costs_including_funding": "0.0125472160828364949"
+    },
+    {
+      "timeframe": "4h",
+      "family": "A",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "-0.20829379893769211",
+      "fees": "3.8671764778393373",
+      "impact": "3.8671764257654591",
+      "funding": "-0.026052787821510835",
+      "net": "-7.9686994903657932",
+      "closed": "405",
+      "entries": "405",
+      "turnover": "7734.3529556786772",
+      "fixed_path_net_without_impact": "-4.101523064598540245",
+      "before_costs_including_funding": "-0.234346586759202945"
+    },
+    {
+      "timeframe": "4h",
+      "family": "B",
+      "symbol": "BTCUSDT",
+      "side": "BOTH",
+      "scenario": "base",
+      "gross": "-0.5913143399412786",
+      "fees": "1.17807132829612056",
+      "impact": "1.17807118046742124",
+      "funding": "-0.0195518932542275575",
+      "net": "-2.9670087419602851",
+      "closed": "122",
+      "entries": "123",
+      "turnover": "2356.1426565922416",
+      "fixed_path_net_without_impact": "-1.7889375614916267175",
+      "before_costs_including_funding": "-0.6108662331955061575"
+    }
+  ],
+  "positive_8h_short_exception": {
+    "base": {
+      "assets": {
+        "BTCUSDT": {
+          "gross": "0.14853951211746145",
+          "fees": "0.390717760109063276",
+          "impact": "0.39071779724389604",
+          "funding": "0.0409823111243821226",
+          "net": "-0.591913734110903526",
+          "closed": "41",
+          "entries": "41",
+          "turnover": "781.43552021812652",
+          "fixed_path_net_without_impact": "-0.2011959368672197034",
+          "before_costs_including_funding": "0.1895218232418435726",
+          "positive_segments": 2,
+          "max_wait_hours": "1296.0",
+          "segments": [
+            {
+              "segment": "2025H1",
+              "net": "-0.037497180651826056",
+              "closed": 16
+            },
+            {
+              "segment": "2025H2",
+              "net": "-0.9100904474461231",
+              "closed": 12
+            },
+            {
+              "segment": "2026A",
+              "net": "0.09868479797989949",
+              "closed": 5
+            },
+            {
+              "segment": "2026B",
+              "net": "0.25698909600714614",
+              "closed": 8
+            }
+          ]
+        },
+        "ETHUSDT": {
+          "gross": "1.77793208540745403",
+          "fees": "0.42284280847427499",
+          "impact": "0.42284325295725111",
+          "funding": "0.0058789544870056649",
+          "net": "0.938124978462951744",
+          "closed": "43",
+          "entries": "43",
+          "turnover": "845.68561694854986",
+          "fixed_path_net_without_impact": "1.3609682314201847049",
+          "before_costs_including_funding": "1.7838110398944596949",
+          "positive_segments": 3,
+          "max_wait_hours": "1152.0",
+          "segments": [
+            {
+              "segment": "2025H1",
+              "net": "0.1920643851379964",
+              "closed": 13
+            },
+            {
+              "segment": "2025H2",
+              "net": "0.008276440412259944",
+              "closed": 13
+            },
+            {
+              "segment": "2026A",
+              "net": "1.3905055696193358",
+              "closed": 8
+            },
+            {
+              "segment": "2026B",
+              "net": "-0.6527214167066404",
+              "closed": 9
+            }
+          ]
+        },
+        "SOLUSDT": {
+          "gross": "2.83084468697496763",
+          "fees": "0.37655792994534081",
+          "impact": "0.37655863765647208",
+          "funding": "-0.0274805679533998605",
+          "net": "2.05024755141926111",
+          "closed": "38",
+          "entries": "38",
+          "turnover": "753.11585989068164",
+          "fixed_path_net_without_impact": "2.4268061890762269595",
+          "before_costs_including_funding": "2.8033641190215677695",
+          "positive_segments": 3,
+          "max_wait_hours": "1120.0",
+          "segments": [
+            {
+              "segment": "2025H1",
+              "net": "-0.17791174632372986",
+              "closed": 11
+            },
+            {
+              "segment": "2025H2",
+              "net": "1.5184955833847198",
+              "closed": 10
+            },
+            {
+              "segment": "2026A",
+              "net": "0.6584191517439422",
+              "closed": 9
+            },
+            {
+              "segment": "2026B",
+              "net": "0.05124456261432897",
+              "closed": 8
+            }
+          ]
+        }
+      },
+      "total_net": "2.396458795771309328",
+      "without_best_asset": "0.346211244352048218"
+    },
+    "stress": {
+      "assets": {
+        "BTCUSDT": {
+          "gross": "0.21636770554247854",
+          "fees": "0.390046592963376056",
+          "impact": "0.78009340229441705",
+          "funding": "0.0300461300486140865",
+          "net": "-0.92372615966655758",
+          "closed": "41",
+          "entries": "41",
+          "turnover": "780.09318592675204",
+          "fixed_path_net_without_impact": "-0.1436327573722834295",
+          "before_costs_including_funding": "0.2464138355910926265",
+          "positive_segments": 2,
+          "max_wait_hours": "1296.0",
+          "segments": [
+            {
+              "segment": "2025H1",
+              "net": "-0.26080599729027654",
+              "closed": 16
+            },
+            {
+              "segment": "2025H2",
+              "net": "-0.9521264279795787",
+              "closed": 12
+            },
+            {
+              "segment": "2026A",
+              "net": "0.07245234831054859",
+              "closed": 5
+            },
+            {
+              "segment": "2026B",
+              "net": "0.21675391729274907",
+              "closed": 8
+            }
+          ]
+        },
+        "ETHUSDT": {
+          "gross": "1.75226474747248012",
+          "fees": "0.42398853749389004",
+          "impact": "0.84797882725248143",
+          "funding": "0.0000383635355474585",
+          "net": "0.4803357462609482",
+          "closed": "43",
+          "entries": "43",
+          "turnover": "847.97707498778018",
+          "fixed_path_net_without_impact": "1.3283145735141375385",
+          "before_costs_including_funding": "1.7523031110080275785",
+          "positive_segments": 2,
+          "max_wait_hours": "1152.0",
+          "segments": [
+            {
+              "segment": "2025H1",
+              "net": "0.0738158005067362",
+              "closed": 13
+            },
+            {
+              "segment": "2025H2",
+              "net": "-0.1188682995293675",
+              "closed": 13
+            },
+            {
+              "segment": "2026A",
+              "net": "1.160106538455011",
+              "closed": 8
+            },
+            {
+              "segment": "2026B",
+              "net": "-0.6347182931714315",
+              "closed": 9
+            }
+          ]
+        },
+        "SOLUSDT": {
+          "gross": "4.88583995284998816",
+          "fees": "0.37571844710359856",
+          "impact": "0.75144178004711215",
+          "funding": "-0.025796407066691285",
+          "net": "3.732883318632730084",
+          "closed": "38",
+          "entries": "38",
+          "turnover": "751.43689420719724",
+          "fixed_path_net_without_impact": "4.484325098679698315",
+          "before_costs_including_funding": "4.860043545783296875",
+          "positive_segments": 3,
+          "max_wait_hours": "1120.0",
+          "segments": [
+            {
+              "segment": "2025H1",
+              "net": "1.752014631272118",
+              "closed": 11
+            },
+            {
+              "segment": "2025H2",
+              "net": "1.4681020939805194",
+              "closed": 10
+            },
+            {
+              "segment": "2026A",
+              "net": "0.5234670953057048",
+              "closed": 9
+            },
+            {
+              "segment": "2026B",
+              "net": "-0.010700501925612116",
+              "closed": 8
+            }
+          ]
+        }
+      },
+      "total_net": "3.289492905227120704",
+      "without_best_asset": "-0.443390413405609380"
+    }
+  },
+  "limits": [
+    "Fixed-path attribution, not a new simulation",
+    "Separate accounts and reset segments; sums are not one account return",
+    "LONG, SHORT, BOTH, base and stress are related simulations, not independent evidence",
+    "Saved results use hypothetical historical steps and 10-USDT size; current executable filters differ",
+    "No trade-level replay or independent future sample is performed by this review"
+  ]
+}
