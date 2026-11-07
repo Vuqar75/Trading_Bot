@@ -18,4 +18,11 @@ class UsdmRiskTests(unittest.TestCase):
   x=liquidation('LONG','.1',100,100,2)
   self.assertEqual(x['initial_margin'],Decimal('5'))
   self.assertEqual(x['isolated_equity'],Decimal('4.99500'))
+ def test_fixed_notional_changes_margin_and_liquidation_not_price_pnl(self):
+  cases=[liquidation('LONG',1,100,60,lev) for lev in (1,2,3)]
+  self.assertEqual(cases[0]['initial_margin'],Decimal('100'))
+  self.assertEqual(cases[1]['initial_margin'],Decimal('50'))
+  self.assertAlmostEqual(float(cases[2]['initial_margin']),100/3)
+  self.assertEqual([x['liquidated'] for x in cases],[False,False,True])
+  self.assertEqual(Decimal('1')*(Decimal('60')-Decimal('100')),Decimal('-40'))
 if __name__=='__main__':unittest.main()

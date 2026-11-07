@@ -1,0 +1,60 @@
+{
+  "cache_key": "2b4288b00fa6eb57452b9d83db3fb2f096e8a9dbdcf5a1b409dccae5a7f5b188",
+  "code_sha256": "0cbb9ea292f33eebfdce984beb3d034e66208444c2e2730025e2d3f91df5457c",
+  "created_utc": "2026-11-07T08:22:46.238698+00:00",
+  "d_correction_from_sha256": "1e72418aa7e2210ac79ab11209dad378dfa98f41ed97cd9a15f699134a2538f8",
+  "full_result_sha256": "e334bc19e2297f3a9bd774e605f827598c7f0aa1d8bf8d2a3977b6db59fce01a",
+  "input_manifest_sha256": "033cd201b6c9235c841dc6115d949115a7a5d57fa814eab07948456f29b5dcca",
+  "plan_sha256": "d5957d9b1980fc060c8c37d8e92d38fbf7ec0d893039f3ef408e913499a9e107",
+  "quality": {
+    "BTCUSDT|1m": {
+      "first_ms": 1733011200000,
+      "funding_records": 2100,
+      "funding_slot_gaps": 0,
+      "last_ms": 1793491140000,
+      "mark_bars": 1008000,
+      "trade_bars": 1008000
+    },
+    "BTCUSDT|5m": {
+      "first_ms": 1733011200000,
+      "funding_records": 2100,
+      "funding_slot_gaps": 0,
+      "last_ms": 1793490900000,
+      "mark_bars": 201600,
+      "trade_bars": 201600
+    },
+    "ETHUSDT|1m": {
+      "first_ms": 1733011200000,
+      "funding_records": 2100,
+      "funding_slot_gaps": 0,
+      "last_ms": 1793491140000,
+      "mark_bars": 1008000,
+      "trade_bars": 1008000
+    },
+    "ETHUSDT|5m": {
+      "first_ms": 1733011200000,
+      "funding_records": 2100,
+      "funding_slot_gaps": 0,
+      "last_ms": 1793490900000,
+      "mark_bars": 201600,
+      "trade_bars": 201600
+    },
+    "SOLUSDT|1m": {
+      "first_ms": 1733011200000,
+      "funding_records": 2100,
+      "funding_slot_gaps": 0,
+      "last_ms": 1793491140000,
+      "mark_bars": 1008000,
+      "trade_bars": 1008000
+    },
+    "SOLUSDT|5m": {
+      "first_ms": 1733011200000,
+      "funding_records": 2100,
+      "funding_slot_gaps": 0,
+      "last_ms": 1793490900000,
+      "mark_bars": 201600,
+      "trade_bars": 201600
+    }
+  },
+  "rows": 3360
+}

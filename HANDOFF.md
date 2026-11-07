@@ -4524,3 +4524,49 @@ of results and the original result hash are explicitly recorded in the report.
 Ten targeted tests pass. No app code, VM, working pilot, positions, pauses,
 observers, schedules or AI budget were changed during this research.
 
+## 2026-11-07 — expanded USD-M timeframe screening complete
+
+The owner's replacement request was completed as one offline research stage;
+the prior BTC Spot pilot, all market pauses, independent Donchian observation
+and disabled paid AI schedule were not accessed or changed. No trade, new
+experiment, permanent process, paid resource or API call was activated.
+
+Plans `USDM_INTRADAY_PLAN.md` and `USDM_TIMEFRAME_MATRIX_PLAN.md` were committed
+before screening, including the discovered current exchange filter gate.
+`USDM_TIMEFRAME_REPORT.md` gives all 15 official kline intervals, fixed A–D
+rules, inapplicable E maker cells, 46 screened cells, LONG/SHORT/BOTH, 3360
+per-asset/period/scenario records in `research/usdm_screen_summary.csv.gz`,
+and source/fee/leverage/limitations. Of the 46 cells, 33 failed numerical
+criteria and 13 lacked sufficient observations; no eligible finalist or
+candidate was found. Positive 3d breakout net was insufficient and depended
+on the best asset. 1M lacks warmup in the fixed 23-month source window.
+This is not an independent test and the $10 hypothetical fee results do not
+pass actual current BTC min-notional 50 USDT / market step 0.001 BTC; ETH
+current minimum is 20 USDT. Never increase the user's cap to pass a filter.
+
+Verified and pinned 207 5m, 138 1m official USD-M archives, 24 explicit REST
+gap fills and 6300 funding records. Each asset has 1,008,000 1m and 201,600
+5m trade bars with matching mark coverage. The manifest hashes and source
+snapshots are in `research/usdm_*manifest.json` and audit JSON; raw public
+archives remain in `/tmp/tradingbot-usdm-intraday` (disposable, not Git).
+BTC 5m aggregation vs saved 15m showed 2 trade OHLC differences in 67200
+bars and zero mark differences; 1m-to-5m trade/mark differences also exist
+for all assets and are disclosed exactly. Repeated official REST snapshots
+resolve one old archive difference but show a 0.1 open discrepancy across
+intervals on another. The older live conflict involved closes, so its cause
+remains unknown and no live block was cleared.
+
+The initial D computation used the wrong average-volume window; only D was
+corrected and recalculated, and A/B/C results were confirmed identical. Both
+result hashes and before/after D values are in the report. Funding coinciding
+with a stop has unresolved order; the conservative bound is flagged in the
+CSV, not treated as known actual receipt. Twenty-four focused tests passed;
+financial reconciliation error was below 7e-12 USDT. No full application
+suite was needed because trading code was unchanged.
+
+`research/usdm_book_capture.py` is a bounded unscheduled public BTC USD-M
+research capture reusing the existing public research host. One test snapshot
+was saved; a depth event was later than local receipt, so event freshness is
+unverified. No maker fill probability, queue position or executable scalping
+edge may be inferred from it. The tool does not use keys or private endpoints.
+

@@ -18,7 +18,7 @@ def aggregates(rows,step,span,anchor=0):
   yield (t,r[0][1],max(x[2] for x in r),min(x[3] for x in r),r[-1][4],sum(x[5] for x in r))
 def signals(rows,step,tf):
  span,n6,n3,n12=FRAMES[tf];anchor=4*24*H if tf=='1w' else 0
- qmax=deque();qmin=deque();qexitmax=deque();qexitmin=deque();qhi=deque();qlo=deque();closes=deque();volumes=deque();sumc=sumv=0.;previous=None;prevmean=None;prevflags={k:False for k in ('al','as','cl','cs')};out={}
+ qmax=deque();qmin=deque();qexitmax=deque();qexitmin=deque();qhi=deque();qlo=deque();closes=deque();volumes=deque();volume_entry=deque();sumc=sumv=sum_entry_volume=0.;previous=None;prevmean=None;prevflags={k:False for k in ('al','as','cl','cs')};out={}
  def add(q,i,x,maximise):
   while q and (q[-1][1]<=x if maximise else q[-1][1]>=x):q.pop()
   q.append((i,x))
@@ -29,7 +29,7 @@ def signals(rows,step,tf):
    mean=sumc/n12;high=qhi[0][1];low=qlo[0][1];mid=(high+low)/2;width=high-low
    al=c>qmax[0][1];ash=c<qmin[0][1];inside=width/mid<=.02
    cl=inside and low<=c<=low+.2*width;cs=inside and high-.2*width<=c<=high
-   av=sumv/n12
+   av=sum_entry_volume/n6
    event={'A':(al and not prevflags['al'],ash and not prevflags['as'],c<qexitmin[0][1],c>qexitmax[0][1]),
     'B':(mean>prevmean and previous<=prevmean and c>mean,mean<prevmean and previous>=prevmean and c<mean,c<mean,c>mean),
     'C':(cl and not prevflags['cl'],cs and not prevflags['cs'],False,False),
@@ -40,6 +40,8 @@ def signals(rows,step,tf):
    prevflags.update(al=al,**{'as':ash},cl=cl,cs=cs);prevmean=mean
   elif len(closes)>=n12:prevmean=sumc/n12
   if len(closes)==n12:sumc-=closes.popleft();sumv-=volumes.popleft()
+  if len(volume_entry)==n6:sum_entry_volume-=volume_entry.popleft()
+  volume_entry.append(v);sum_entry_volume+=v
   closes.append(c);sumc+=c;volumes.append(v);sumv+=v;previous=c;prev_h=h;prev_l=l
   add(qmax,i,c,True);add(qmin,i,c,False);add(qexitmax,i,c,True);add(qexitmin,i,c,False);add(qhi,i,h,True);add(qlo,i,l,False)
  return out
@@ -128,10 +130,12 @@ def simulate(rows,marks,funding,events,symbol,tf,family,side,start,end,*,impact=
  return {'net':cash-1000,'gross':sum(x['gross'] for x in trades),'funding':funding_net,'fees':fees,'impact':friction,'turnover':turn,'entries':len(entries),'closed':n,'open_mark_net':open_result,'exposure_pct':100*exposed/(finish-begin),'max_dd_pct':100*maxdd,'loss_streak':worststreak,'liquidations':liquidations,'ambiguous_funding':ambiguous,'mean_trade':sum(x['net'] for x in completed)/n if n else None,'mean_bps':sum(x['net']/x['entry_notional']*10000 for x in completed)/n if n else None,'mean_gross_bps':sum(x['gross']/x['entry_notional']*10000 for x in completed)/n if n else None,'mean_cost_bps':sum((x['gross']+x['funding']-x['net'])/x['entry_notional']*10000 for x in completed)/n if n else None,'best_trade':max((x['net'] for x in trades),default=0),'without_best_trade':sum(x['net'] for x in trades)-max((x['net'] for x in trades),default=0),'max_wait_h':max(wait) if wait else None,'mean_wait_h':sum(wait)/len(wait) if wait else None,'rejections':dict(reject),'exit_reasons':dict(reasons)}
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--data',required=True);p.add_argument('--cache',required=True);p.add_argument('--output',required=True);args=p.parse_args();root=Path(args.data);cache=Path(args.cache);cache.mkdir(parents=True,exist_ok=True)
+ p=argparse.ArgumentParser();p.add_argument('--data',required=True);p.add_argument('--cache',required=True);p.add_argument('--output',required=True);p.add_argument('--refresh-d-from',help='Recompute only D after correcting its volume window');args=p.parse_args();root=Path(args.data);cache=Path(args.cache);cache.mkdir(parents=True,exist_ok=True)
  manifest=json.loads((root/'manifest.json').read_text());minute=json.loads((root/'minute-manifest.json').read_text())
- code=hashlib.sha256(Path(__file__).read_bytes()).hexdigest();plan=hashlib.sha256(Path('USDM_TIMEFRAME_MATRIX_PLAN.md').read_bytes()).hexdigest();inputs=hashlib.sha256(json.dumps([manifest,minute],sort_keys=True).encode()).hexdigest();version=hashlib.sha256((code+plan+inputs).encode()).hexdigest()
- out={};quality={}
+ code=hashlib.sha256(b''.join(Path(p).read_bytes() for p in (__file__,'research/usdm_intraday_data.py','research/intraday_spot.py','research/usdm_risk.py'))).hexdigest();plan=hashlib.sha256(Path('USDM_TIMEFRAME_MATRIX_PLAN.md').read_bytes()+Path('USDM_INTRADAY_PLAN.md').read_bytes()).hexdigest();inputs=hashlib.sha256(json.dumps([manifest,minute],sort_keys=True).encode()).hexdigest();version=hashlib.sha256((code+plan+inputs).encode()).hexdigest()
+ prior=json.loads(Path(args.refresh_d_from).read_text()) if args.refresh_d_from else None
+ if prior and (prior['plan_sha256']!=plan or prior['input_manifest_sha256']!=inputs):raise ValueError('prior parameters or source differ')
+ out={k:v for k,v in prior['results'].items() if '|D|' not in k} if prior else {};quality=prior['quality'] if prior else {}
  for symbol in SYMBOLS:
   funding_rows=read(root,manifest,symbol,'fundingRate');slots=[x[0]//(8*H) for x in funding_rows]
   if any(b!=a+1 for a,b in zip(slots,slots[1:])):raise ValueError('unconfirmed funding coverage '+symbol)
@@ -143,11 +147,12 @@ def main():
    for t,_,rate in funding_rows:fund.setdefault((t-rows[0][0])//step,[]).append((t,rate))
    quality[symbol+'|'+interval]={'trade_bars':len(rows),'mark_bars':len(marks),'funding_records':len(funding_rows),'funding_slot_gaps':0,'first_ms':rows[0][0],'last_ms':rows[-1][0]}
    for tf in frames:
+    if prior and 'D' not in allowed(tf):continue
     name=f'{symbol}-{tf}-{version}.json';path=cache/name
     if path.exists():
      item=json.loads(path.read_text());out.update(item['results']);print('cached',symbol,tf,flush=True);continue
     ev=signals(rows,step,tf);item={}
-    for family in allowed(tf):
+    for family in (('D',) if prior else allowed(tf)):
      for side in ('LONG','SHORT','BOTH'):
       for segment,begin,end in SEGMENTS:
        for scenario,impact,delay in (('base',5,0),('stress',10,1)):
@@ -160,5 +165,6 @@ def main():
     print('completed',symbol,tf,'results',len(item),flush=True)
    del rows,marks,fund;gc.collect()
  result={'created_utc':dt.datetime.now(dt.timezone.utc).isoformat(),'cache_key':version,'code_sha256':code,'plan_sha256':plan,'input_manifest_sha256':inputs,'quality':quality,'results':out}
+ if prior:result['d_correction_from_sha256']=hashlib.sha256(Path(args.refresh_d_from).read_bytes()).hexdigest()
  Path(args.output).write_text(json.dumps(result),encoding='utf8')
 if __name__=='__main__':main()

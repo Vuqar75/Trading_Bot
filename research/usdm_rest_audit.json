@@ -1,0 +1,86 @@
+[
+  {
+    "url": "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&startTime=1738114200000&endTime=1738115099999&limit=3",
+    "file": "BTCUSDT-klines-5m-1738114200000.json",
+    "sha256": "400b49b1af4be5e6642ea85b9f42083a30c32c736a2a96f94c7506ec0db1add1",
+    "received_utc": "2026-11-07T08:08:20.079553+00:00",
+    "rows": 3,
+    "ohlc": [
+      [
+        "101627.40",
+        "101639.40",
+        "101500.00",
+        "101520.00"
+      ],
+      [
+        "101520.00",
+        "101666.40",
+        "101422.20",
+        "101613.50"
+      ],
+      [
+        "101613.50",
+        "101700.00",
+        "101610.60",
+        "101675.00"
+      ]
+    ]
+  },
+  {
+    "url": "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&startTime=1738114200000&endTime=1738115099999&limit=1",
+    "file": "BTCUSDT-klines-15m-1738114200000.json",
+    "sha256": "cdbf56ce0c490fdb57ef97bc1d126228104fa50dc23889d819fd18de606345d0",
+    "received_utc": "2026-11-07T08:08:20.448507+00:00",
+    "rows": 1,
+    "ohlc": [
+      [
+        "101627.40",
+        "101700.00",
+        "101422.20",
+        "101675.00"
+      ]
+    ]
+  },
+  {
+    "url": "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=5m&startTime=1756449000000&endTime=1756449899999&limit=3",
+    "file": "BTCUSDT-klines-5m-1756449000000.json",
+    "sha256": "b0f51d5b5a807e1ae4695826d76e5ffab81beb2391f78fd385123bfbc388d87b",
+    "received_utc": "2026-11-07T08:08:20.841818+00:00",
+    "rows": 3,
+    "ohlc": [
+      [
+        "110966.40",
+        "110966.40",
+        "110966.40",
+        "110966.40"
+      ],
+      [
+        "110966.30",
+        "111133.20",
+        "110850.00",
+        "110959.20"
+      ],
+      [
+        "110959.20",
+        "111280.00",
+        "110959.20",
+        "111246.60"
+      ]
+    ]
+  },
+  {
+    "url": "https://fapi.binance.com/fapi/v1/klines?symbol=BTCUSDT&interval=15m&startTime=1756449000000&endTime=1756449899999&limit=1",
+    "file": "BTCUSDT-klines-15m-1756449000000.json",
+    "sha256": "b13ca97d6fc51aff28a6b84f68b3b5e85a352aa744ae001413caf222b2e5dd06",
+    "received_utc": "2026-11-07T08:08:21.219421+00:00",
+    "rows": 1,
+    "ohlc": [
+      [
+        "110966.30",
+        "111280.00",
+        "110850.00",
+        "111246.60"
+      ]
+    ]
+  }
+]

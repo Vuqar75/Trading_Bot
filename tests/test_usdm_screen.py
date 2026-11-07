@@ -11,6 +11,10 @@ class UsdmScreenTests(unittest.TestCase):
   changed=rows.copy();changed[150]=candle(150,100,110,99,105)
   a=signals(rows,STEP,'5m');b=signals(changed,STEP,'5m')
   self.assertEqual({k:v for k,v in a.items() if k<150},{k:v for k,v in b.items() if k<150})
+ def test_momentum_volume_uses_entry_window_not_range_window(self):
+  rows=[candle(i,v=100 if i<73 else 1) for i in range(145)]
+  rows.append(candle(145,100,101,99.9,100.5,5))
+  self.assertTrue(signals(rows,STEP,'5m')[145]['D'][0])
  def test_short_funding_and_fee_from_full_notional(self):
   rows=[candle(0),candle(1),candle(2,99.5,99.8,99.2,99.5),candle(3,99,99.2,98.8,99),candle(4,99,99.2,98.8,99)]
   marks=list(rows);ev={0:event(short=True),2:event(exitshort=True)};fund={1:[(STEP+1,.001)]}
@@ -26,4 +30,12 @@ class UsdmScreenTests(unittest.TestCase):
   marks=[candle(0),candle(1,100,101,.001,99),candle(2)]
   x=simulate(rows,marks,{}, {0:event(long=True)},'BTCUSDT','5m','A','LONG',0,3*STEP,impact=0)
   self.assertEqual(x['liquidations'],1);self.assertEqual(x['exit_reasons'],{'liquidation':1});self.assertGreater(x['fees'],.09)
+ def test_funding_at_close_is_excluded(self):
+  rows=[candle(0),candle(1),candle(2),candle(3),candle(4)]
+  x=simulate(rows,rows,{3:[(3*STEP,.001)]},{0:event(short=True),2:event(exitshort=True)},'BTCUSDT','5m','A','SHORT',0,5*STEP,impact=0)
+  self.assertEqual(x['closed'],1);self.assertEqual(x['funding'],0)
+ def test_ambiguous_favorable_funding_is_flagged_not_asserted(self):
+  rows=[candle(0),candle(1,100,102,99,100),candle(2)]
+  x=simulate(rows,rows,{1:[(STEP+1,.001)]},{0:event(short=True)},'BTCUSDT','5m','A','SHORT',0,3*STEP,impact=0)
+  self.assertEqual(x['ambiguous_funding'],1);self.assertEqual(x['funding'],0);self.assertEqual(x['exit_reasons'],{'stop':1})
 if __name__=='__main__':unittest.main()
