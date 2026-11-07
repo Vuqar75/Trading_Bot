@@ -8,10 +8,11 @@ class AppViewTest(unittest.TestCase):
  def test_render_and_callbacks_without_financial_actions(self):
   with tempfile.TemporaryDirectory() as tmp:
    now=int(time.time());p=Path(tmp)/'snapshot.json'
-   account={'positions':[],'route':{'phase':'IDLE','decision_fresh':True},'cycle':{'status':'entry_blocked','reason':'market_history_conflict'},'decision':{'mode':'TREND_DOWN'},'net_pnl_usdt':'0','ledger_balanced':True,'closed_trades':0}
+   account={'positions':[],'route':{'phase':'IDLE','decision_fresh':True},'cycle':{'status':'entry_blocked','reason':'market_history_conflict','protection':{'state':'no_position'}},'decision':{'mode':'TREND_DOWN'},'net_pnl_usdt':'0','ledger_balanced':True,'closed_trades':0}
    data={'schema':1,'start_ms':(now-100)*1000,'checked_ms':now*1000,'generated_ms':now*1000,'experiments':{'ai':account,'baseline':account},'data_errors':{'futures_history':'conflict'},'watermarks':{}}
    p.write_text(json.dumps(data));msg=render(path=p,now=now)
-   self.assertIn('расхождение истории рынка',msg);self.assertIn('AI:',msg);self.assertIn('Baseline:',msg)
+   self.assertIn('расхождение истории рынка',msg);self.assertIn('AI:',msg);self.assertIn('Baseline:',msg);self.assertIn('isolated • тренд SHORT',msg)
+   self.assertIn('Сопровождение: позиции нет',render('health',path=p,now=now))
    q=UnifiedQueue(Path(tmp)/'queue.db')
    try:
     with patch('trading_bot.adaptive_view.render',return_value=msg):
