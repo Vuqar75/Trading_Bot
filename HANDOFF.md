@@ -4560,7 +4560,7 @@ The initial D computation used the wrong average-volume window; only D was
 corrected and recalculated, and A/B/C results were confirmed identical. Both
 result hashes and before/after D values are in the report. Funding coinciding
 with a stop has unresolved order; the conservative bound is flagged in the
-CSV, not treated as known actual receipt. Twenty-five focused tests passed;
+CSV, not treated as known actual receipt. Twenty-six focused tests passed;
 financial reconciliation error was below 7e-12 USDT. No full application
 suite was needed because trading code was unchanged.
 

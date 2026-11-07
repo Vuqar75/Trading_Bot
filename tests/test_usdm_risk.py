@@ -25,4 +25,9 @@ class UsdmRiskTests(unittest.TestCase):
   self.assertAlmostEqual(float(cases[2]['initial_margin']),100/3)
   self.assertEqual([x['liquidated'] for x in cases],[False,False,True])
   self.assertEqual(Decimal('1')*(Decimal('60')-Decimal('100')),Decimal('-40'))
+ def test_two_x_mark_thresholds_bracketed(self):
+  self.assertTrue(liquidation('LONG',1,100,'50.30',2)['liquidated'])
+  self.assertFalse(liquidation('LONG',1,100,'50.31',2)['liquidated'])
+  self.assertFalse(liquidation('SHORT',1,100,'149.20',2)['liquidated'])
+  self.assertTrue(liquidation('SHORT',1,100,'149.21',2)['liquidated'])
 if __name__=='__main__':unittest.main()
