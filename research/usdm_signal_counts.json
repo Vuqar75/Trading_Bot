@@ -1,0 +1,3317 @@
+{
+  "counts": {
+    "12h|A|BTCUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 51,
+      "short_signals": 52,
+      "simultaneous": 0
+    },
+    "12h|A|BTCUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 47,
+      "short_signals": 55,
+      "simultaneous": 0
+    },
+    "12h|A|BTCUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 43,
+      "short_signals": 35,
+      "simultaneous": 0
+    },
+    "12h|A|BTCUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 39,
+      "short_signals": 43,
+      "simultaneous": 0
+    },
+    "12h|A|ETHUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 54,
+      "short_signals": 51,
+      "simultaneous": 0
+    },
+    "12h|A|ETHUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 52,
+      "short_signals": 49,
+      "simultaneous": 0
+    },
+    "12h|A|ETHUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 38,
+      "short_signals": 38,
+      "simultaneous": 0
+    },
+    "12h|A|ETHUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 41,
+      "short_signals": 44,
+      "simultaneous": 0
+    },
+    "12h|A|SOLUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 51,
+      "short_signals": 52,
+      "simultaneous": 0
+    },
+    "12h|A|SOLUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 51,
+      "short_signals": 51,
+      "simultaneous": 0
+    },
+    "12h|A|SOLUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 40,
+      "short_signals": 39,
+      "simultaneous": 0
+    },
+    "12h|A|SOLUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 38,
+      "short_signals": 47,
+      "simultaneous": 0
+    },
+    "12h|B|BTCUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 11,
+      "short_signals": 9,
+      "simultaneous": 0
+    },
+    "12h|B|BTCUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 7,
+      "short_signals": 5,
+      "simultaneous": 0
+    },
+    "12h|B|BTCUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 4,
+      "short_signals": 8,
+      "simultaneous": 0
+    },
+    "12h|B|BTCUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 5,
+      "short_signals": 6,
+      "simultaneous": 0
+    },
+    "12h|B|ETHUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 12,
+      "short_signals": 6,
+      "simultaneous": 0
+    },
+    "12h|B|ETHUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 7,
+      "short_signals": 9,
+      "simultaneous": 0
+    },
+    "12h|B|ETHUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 3,
+      "short_signals": 9,
+      "simultaneous": 0
+    },
+    "12h|B|ETHUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 6,
+      "short_signals": 7,
+      "simultaneous": 0
+    },
+    "12h|B|SOLUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 8,
+      "short_signals": 11,
+      "simultaneous": 0
+    },
+    "12h|B|SOLUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 7,
+      "short_signals": 7,
+      "simultaneous": 0
+    },
+    "12h|B|SOLUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 6,
+      "short_signals": 6,
+      "simultaneous": 0
+    },
+    "12h|B|SOLUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 3,
+      "short_signals": 6,
+      "simultaneous": 0
+    },
+    "12h|C|BTCUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "12h|C|BTCUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|BTCUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|BTCUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|ETHUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|ETHUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|ETHUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|ETHUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|SOLUSDT|2025H1": {
+      "eligible_closes": 362,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|SOLUSDT|2025H2": {
+      "eligible_closes": 368,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|SOLUSDT|2026A": {
+      "eligible_closes": 302,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "12h|C|SOLUSDT|2026B": {
+      "eligible_closes": 306,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "15m|A|BTCUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 968,
+      "short_signals": 887,
+      "simultaneous": 0
+    },
+    "15m|A|BTCUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 972,
+      "short_signals": 956,
+      "simultaneous": 0
+    },
+    "15m|A|BTCUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 709,
+      "short_signals": 745,
+      "simultaneous": 0
+    },
+    "15m|A|BTCUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 796,
+      "short_signals": 719,
+      "simultaneous": 0
+    },
+    "15m|A|ETHUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 989,
+      "short_signals": 882,
+      "simultaneous": 0
+    },
+    "15m|A|ETHUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 989,
+      "short_signals": 838,
+      "simultaneous": 0
+    },
+    "15m|A|ETHUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 725,
+      "short_signals": 735,
+      "simultaneous": 0
+    },
+    "15m|A|ETHUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 774,
+      "short_signals": 702,
+      "simultaneous": 0
+    },
+    "15m|A|SOLUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 968,
+      "short_signals": 951,
+      "simultaneous": 0
+    },
+    "15m|A|SOLUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 1006,
+      "short_signals": 908,
+      "simultaneous": 0
+    },
+    "15m|A|SOLUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 752,
+      "short_signals": 785,
+      "simultaneous": 0
+    },
+    "15m|A|SOLUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 754,
+      "short_signals": 728,
+      "simultaneous": 0
+    },
+    "15m|B|BTCUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 228,
+      "short_signals": 229,
+      "simultaneous": 0
+    },
+    "15m|B|BTCUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 243,
+      "short_signals": 237,
+      "simultaneous": 0
+    },
+    "15m|B|BTCUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 201,
+      "short_signals": 191,
+      "simultaneous": 0
+    },
+    "15m|B|BTCUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 219,
+      "short_signals": 193,
+      "simultaneous": 0
+    },
+    "15m|B|ETHUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 214,
+      "short_signals": 214,
+      "simultaneous": 0
+    },
+    "15m|B|ETHUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 298,
+      "short_signals": 228,
+      "simultaneous": 0
+    },
+    "15m|B|ETHUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 175,
+      "short_signals": 198,
+      "simultaneous": 0
+    },
+    "15m|B|ETHUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 216,
+      "short_signals": 177,
+      "simultaneous": 0
+    },
+    "15m|B|SOLUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 198,
+      "short_signals": 205,
+      "simultaneous": 0
+    },
+    "15m|B|SOLUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 246,
+      "short_signals": 223,
+      "simultaneous": 0
+    },
+    "15m|B|SOLUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 156,
+      "short_signals": 221,
+      "simultaneous": 0
+    },
+    "15m|B|SOLUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 185,
+      "short_signals": 195,
+      "simultaneous": 0
+    },
+    "15m|C|BTCUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 472,
+      "short_signals": 434,
+      "simultaneous": 0
+    },
+    "15m|C|BTCUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 499,
+      "short_signals": 646,
+      "simultaneous": 0
+    },
+    "15m|C|BTCUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 325,
+      "short_signals": 335,
+      "simultaneous": 0
+    },
+    "15m|C|BTCUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 405,
+      "short_signals": 510,
+      "simultaneous": 0
+    },
+    "15m|C|ETHUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 126,
+      "short_signals": 114,
+      "simultaneous": 0
+    },
+    "15m|C|ETHUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 119,
+      "short_signals": 181,
+      "simultaneous": 0
+    },
+    "15m|C|ETHUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 154,
+      "short_signals": 230,
+      "simultaneous": 0
+    },
+    "15m|C|ETHUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 178,
+      "short_signals": 329,
+      "simultaneous": 0
+    },
+    "15m|C|SOLUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 56,
+      "short_signals": 32,
+      "simultaneous": 0
+    },
+    "15m|C|SOLUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 87,
+      "short_signals": 115,
+      "simultaneous": 0
+    },
+    "15m|C|SOLUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 175,
+      "short_signals": 177,
+      "simultaneous": 0
+    },
+    "15m|C|SOLUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 178,
+      "short_signals": 240,
+      "simultaneous": 0
+    },
+    "15m|D|BTCUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 568,
+      "short_signals": 601,
+      "simultaneous": 0
+    },
+    "15m|D|BTCUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 494,
+      "short_signals": 570,
+      "simultaneous": 0
+    },
+    "15m|D|BTCUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 521,
+      "short_signals": 582,
+      "simultaneous": 0
+    },
+    "15m|D|BTCUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 448,
+      "short_signals": 466,
+      "simultaneous": 0
+    },
+    "15m|D|ETHUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 774,
+      "short_signals": 914,
+      "simultaneous": 0
+    },
+    "15m|D|ETHUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 757,
+      "short_signals": 905,
+      "simultaneous": 0
+    },
+    "15m|D|ETHUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 617,
+      "short_signals": 696,
+      "simultaneous": 0
+    },
+    "15m|D|ETHUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 566,
+      "short_signals": 569,
+      "simultaneous": 0
+    },
+    "15m|D|SOLUSDT|2025H1": {
+      "eligible_closes": 17376,
+      "long_signals": 804,
+      "short_signals": 961,
+      "simultaneous": 0
+    },
+    "15m|D|SOLUSDT|2025H2": {
+      "eligible_closes": 17664,
+      "long_signals": 783,
+      "short_signals": 956,
+      "simultaneous": 0
+    },
+    "15m|D|SOLUSDT|2026A": {
+      "eligible_closes": 14496,
+      "long_signals": 613,
+      "short_signals": 688,
+      "simultaneous": 0
+    },
+    "15m|D|SOLUSDT|2026B": {
+      "eligible_closes": 14688,
+      "long_signals": 609,
+      "short_signals": 643,
+      "simultaneous": 0
+    },
+    "1d|A|BTCUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 7,
+      "short_signals": 4,
+      "simultaneous": 0
+    },
+    "1d|A|BTCUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 5,
+      "short_signals": 6,
+      "simultaneous": 0
+    },
+    "1d|A|BTCUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 7,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "1d|A|BTCUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 5,
+      "short_signals": 4,
+      "simultaneous": 0
+    },
+    "1d|A|ETHUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 4,
+      "short_signals": 12,
+      "simultaneous": 0
+    },
+    "1d|A|ETHUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 6,
+      "short_signals": 5,
+      "simultaneous": 0
+    },
+    "1d|A|ETHUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 3,
+      "short_signals": 3,
+      "simultaneous": 0
+    },
+    "1d|A|ETHUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 3,
+      "short_signals": 3,
+      "simultaneous": 0
+    },
+    "1d|A|SOLUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 2,
+      "short_signals": 9,
+      "simultaneous": 0
+    },
+    "1d|A|SOLUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 5,
+      "short_signals": 6,
+      "simultaneous": 0
+    },
+    "1d|A|SOLUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 2,
+      "short_signals": 4,
+      "simultaneous": 0
+    },
+    "1d|A|SOLUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 5,
+      "short_signals": 3,
+      "simultaneous": 0
+    },
+    "1d|B|BTCUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 1,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|B|BTCUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 2,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "1d|B|BTCUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1d|B|BTCUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 0,
+      "short_signals": 3,
+      "simultaneous": 0
+    },
+    "1d|B|ETHUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 1,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1d|B|ETHUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 2,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|B|ETHUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "1d|B|ETHUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 1,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|B|SOLUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 1,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1d|B|SOLUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 2,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|B|SOLUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 3,
+      "short_signals": 5,
+      "simultaneous": 0
+    },
+    "1d|B|SOLUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 2,
+      "short_signals": 7,
+      "simultaneous": 0
+    },
+    "1d|C|BTCUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|BTCUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|BTCUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|BTCUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|ETHUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|ETHUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|ETHUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|ETHUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|SOLUSDT|2025H1": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|SOLUSDT|2025H2": {
+      "eligible_closes": 184,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|SOLUSDT|2026A": {
+      "eligible_closes": 151,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1d|C|SOLUSDT|2026B": {
+      "eligible_closes": 153,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|A|BTCUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 158,
+      "short_signals": 130,
+      "simultaneous": 0
+    },
+    "1h|A|BTCUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 169,
+      "short_signals": 155,
+      "simultaneous": 0
+    },
+    "1h|A|BTCUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 115,
+      "short_signals": 122,
+      "simultaneous": 0
+    },
+    "1h|A|BTCUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 145,
+      "short_signals": 118,
+      "simultaneous": 0
+    },
+    "1h|A|ETHUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 128,
+      "short_signals": 134,
+      "simultaneous": 0
+    },
+    "1h|A|ETHUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 172,
+      "short_signals": 133,
+      "simultaneous": 0
+    },
+    "1h|A|ETHUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 114,
+      "short_signals": 120,
+      "simultaneous": 0
+    },
+    "1h|A|ETHUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 118,
+      "short_signals": 108,
+      "simultaneous": 0
+    },
+    "1h|A|SOLUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 162,
+      "short_signals": 173,
+      "simultaneous": 0
+    },
+    "1h|A|SOLUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 175,
+      "short_signals": 157,
+      "simultaneous": 0
+    },
+    "1h|A|SOLUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 120,
+      "short_signals": 137,
+      "simultaneous": 0
+    },
+    "1h|A|SOLUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 128,
+      "short_signals": 131,
+      "simultaneous": 0
+    },
+    "1h|B|BTCUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 57,
+      "short_signals": 42,
+      "simultaneous": 0
+    },
+    "1h|B|BTCUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 42,
+      "short_signals": 40,
+      "simultaneous": 0
+    },
+    "1h|B|BTCUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 31,
+      "short_signals": 39,
+      "simultaneous": 0
+    },
+    "1h|B|BTCUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 21,
+      "short_signals": 31,
+      "simultaneous": 0
+    },
+    "1h|B|ETHUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 49,
+      "short_signals": 42,
+      "simultaneous": 0
+    },
+    "1h|B|ETHUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 32,
+      "short_signals": 48,
+      "simultaneous": 0
+    },
+    "1h|B|ETHUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 18,
+      "short_signals": 38,
+      "simultaneous": 0
+    },
+    "1h|B|ETHUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 49,
+      "short_signals": 40,
+      "simultaneous": 0
+    },
+    "1h|B|SOLUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 37,
+      "short_signals": 47,
+      "simultaneous": 0
+    },
+    "1h|B|SOLUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 34,
+      "short_signals": 37,
+      "simultaneous": 0
+    },
+    "1h|B|SOLUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 39,
+      "short_signals": 32,
+      "simultaneous": 0
+    },
+    "1h|B|SOLUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 39,
+      "short_signals": 47,
+      "simultaneous": 0
+    },
+    "1h|C|BTCUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 0,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "1h|C|BTCUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|BTCUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|BTCUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1h|C|ETHUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|ETHUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|ETHUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|ETHUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|SOLUSDT|2025H1": {
+      "eligible_closes": 4344,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|SOLUSDT|2025H2": {
+      "eligible_closes": 4416,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|SOLUSDT|2026A": {
+      "eligible_closes": 3624,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1h|C|SOLUSDT|2026B": {
+      "eligible_closes": 3672,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1m|A|BTCUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 2965,
+      "short_signals": 2943,
+      "simultaneous": 0
+    },
+    "1m|A|BTCUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 2859,
+      "short_signals": 3081,
+      "simultaneous": 0
+    },
+    "1m|A|BTCUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 1970,
+      "short_signals": 2038,
+      "simultaneous": 0
+    },
+    "1m|A|BTCUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 2156,
+      "short_signals": 2252,
+      "simultaneous": 0
+    },
+    "1m|A|ETHUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 2596,
+      "short_signals": 2632,
+      "simultaneous": 0
+    },
+    "1m|A|ETHUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 2766,
+      "short_signals": 2521,
+      "simultaneous": 0
+    },
+    "1m|A|ETHUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 1747,
+      "short_signals": 1937,
+      "simultaneous": 0
+    },
+    "1m|A|ETHUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 1940,
+      "short_signals": 2033,
+      "simultaneous": 0
+    },
+    "1m|A|SOLUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 2907,
+      "short_signals": 3230,
+      "simultaneous": 0
+    },
+    "1m|A|SOLUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 3036,
+      "short_signals": 2828,
+      "simultaneous": 0
+    },
+    "1m|A|SOLUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 1996,
+      "short_signals": 2065,
+      "simultaneous": 0
+    },
+    "1m|A|SOLUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 2035,
+      "short_signals": 2199,
+      "simultaneous": 0
+    },
+    "1m|B|BTCUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 1192,
+      "short_signals": 1143,
+      "simultaneous": 0
+    },
+    "1m|B|BTCUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 1129,
+      "short_signals": 1128,
+      "simultaneous": 0
+    },
+    "1m|B|BTCUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 942,
+      "short_signals": 970,
+      "simultaneous": 0
+    },
+    "1m|B|BTCUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 999,
+      "short_signals": 983,
+      "simultaneous": 0
+    },
+    "1m|B|ETHUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 1146,
+      "short_signals": 987,
+      "simultaneous": 0
+    },
+    "1m|B|ETHUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 1395,
+      "short_signals": 1133,
+      "simultaneous": 0
+    },
+    "1m|B|ETHUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 971,
+      "short_signals": 969,
+      "simultaneous": 0
+    },
+    "1m|B|ETHUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 1125,
+      "short_signals": 985,
+      "simultaneous": 0
+    },
+    "1m|B|SOLUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 995,
+      "short_signals": 1005,
+      "simultaneous": 0
+    },
+    "1m|B|SOLUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 1198,
+      "short_signals": 1097,
+      "simultaneous": 0
+    },
+    "1m|B|SOLUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 823,
+      "short_signals": 1058,
+      "simultaneous": 0
+    },
+    "1m|B|SOLUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 1006,
+      "short_signals": 973,
+      "simultaneous": 0
+    },
+    "1m|C|BTCUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 2010,
+      "short_signals": 1770,
+      "simultaneous": 0
+    },
+    "1m|C|BTCUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 2142,
+      "short_signals": 2525,
+      "simultaneous": 0
+    },
+    "1m|C|BTCUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 1378,
+      "short_signals": 1403,
+      "simultaneous": 0
+    },
+    "1m|C|BTCUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 1634,
+      "short_signals": 2067,
+      "simultaneous": 0
+    },
+    "1m|C|ETHUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 492,
+      "short_signals": 476,
+      "simultaneous": 0
+    },
+    "1m|C|ETHUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 567,
+      "short_signals": 753,
+      "simultaneous": 0
+    },
+    "1m|C|ETHUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 652,
+      "short_signals": 959,
+      "simultaneous": 0
+    },
+    "1m|C|ETHUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 775,
+      "short_signals": 1383,
+      "simultaneous": 0
+    },
+    "1m|C|SOLUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 190,
+      "short_signals": 146,
+      "simultaneous": 0
+    },
+    "1m|C|SOLUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 366,
+      "short_signals": 480,
+      "simultaneous": 0
+    },
+    "1m|C|SOLUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 724,
+      "short_signals": 740,
+      "simultaneous": 0
+    },
+    "1m|C|SOLUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 744,
+      "short_signals": 1022,
+      "simultaneous": 0
+    },
+    "1m|D|BTCUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 917,
+      "short_signals": 879,
+      "simultaneous": 0
+    },
+    "1m|D|BTCUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 496,
+      "short_signals": 463,
+      "simultaneous": 0
+    },
+    "1m|D|BTCUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 782,
+      "short_signals": 781,
+      "simultaneous": 0
+    },
+    "1m|D|BTCUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 459,
+      "short_signals": 400,
+      "simultaneous": 0
+    },
+    "1m|D|ETHUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 2387,
+      "short_signals": 2492,
+      "simultaneous": 0
+    },
+    "1m|D|ETHUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 2050,
+      "short_signals": 1973,
+      "simultaneous": 0
+    },
+    "1m|D|ETHUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 1588,
+      "short_signals": 1573,
+      "simultaneous": 0
+    },
+    "1m|D|ETHUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 982,
+      "short_signals": 899,
+      "simultaneous": 0
+    },
+    "1m|D|SOLUSDT|2025H1": {
+      "eligible_closes": 260640,
+      "long_signals": 3356,
+      "short_signals": 3294,
+      "simultaneous": 0
+    },
+    "1m|D|SOLUSDT|2025H2": {
+      "eligible_closes": 264960,
+      "long_signals": 2373,
+      "short_signals": 2486,
+      "simultaneous": 0
+    },
+    "1m|D|SOLUSDT|2026A": {
+      "eligible_closes": 217440,
+      "long_signals": 1744,
+      "short_signals": 1681,
+      "simultaneous": 0
+    },
+    "1m|D|SOLUSDT|2026B": {
+      "eligible_closes": 220320,
+      "long_signals": 1353,
+      "short_signals": 1259,
+      "simultaneous": 0
+    },
+    "1w|A|BTCUSDT|2025H1": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|A|BTCUSDT|2025H2": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|A|BTCUSDT|2026A": {
+      "eligible_closes": 17,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1w|A|BTCUSDT|2026B": {
+      "eligible_closes": 21,
+      "long_signals": 0,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "1w|A|ETHUSDT|2025H1": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|A|ETHUSDT|2025H2": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|A|ETHUSDT|2026A": {
+      "eligible_closes": 17,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|A|ETHUSDT|2026B": {
+      "eligible_closes": 21,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1w|A|SOLUSDT|2025H1": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|A|SOLUSDT|2025H2": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|A|SOLUSDT|2026A": {
+      "eligible_closes": 17,
+      "long_signals": 0,
+      "short_signals": 3,
+      "simultaneous": 0
+    },
+    "1w|A|SOLUSDT|2026B": {
+      "eligible_closes": 21,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1w|B|BTCUSDT|2025H1": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|BTCUSDT|2025H2": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|BTCUSDT|2026A": {
+      "eligible_closes": 17,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|BTCUSDT|2026B": {
+      "eligible_closes": 21,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "1w|B|ETHUSDT|2025H1": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|ETHUSDT|2025H2": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|ETHUSDT|2026A": {
+      "eligible_closes": 17,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|ETHUSDT|2026B": {
+      "eligible_closes": 21,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|SOLUSDT|2025H1": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|SOLUSDT|2025H2": {
+      "eligible_closes": 0,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|SOLUSDT|2026A": {
+      "eligible_closes": 17,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "1w|B|SOLUSDT|2026B": {
+      "eligible_closes": 21,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "2h|A|BTCUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 110,
+      "short_signals": 109,
+      "simultaneous": 0
+    },
+    "2h|A|BTCUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 124,
+      "short_signals": 120,
+      "simultaneous": 0
+    },
+    "2h|A|BTCUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 86,
+      "short_signals": 89,
+      "simultaneous": 0
+    },
+    "2h|A|BTCUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 111,
+      "short_signals": 94,
+      "simultaneous": 0
+    },
+    "2h|A|ETHUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 103,
+      "short_signals": 102,
+      "simultaneous": 0
+    },
+    "2h|A|ETHUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 121,
+      "short_signals": 96,
+      "simultaneous": 0
+    },
+    "2h|A|ETHUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 84,
+      "short_signals": 97,
+      "simultaneous": 0
+    },
+    "2h|A|ETHUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 93,
+      "short_signals": 89,
+      "simultaneous": 0
+    },
+    "2h|A|SOLUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 117,
+      "short_signals": 126,
+      "simultaneous": 0
+    },
+    "2h|A|SOLUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 120,
+      "short_signals": 121,
+      "simultaneous": 0
+    },
+    "2h|A|SOLUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 86,
+      "short_signals": 99,
+      "simultaneous": 0
+    },
+    "2h|A|SOLUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 101,
+      "short_signals": 104,
+      "simultaneous": 0
+    },
+    "2h|B|BTCUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 34,
+      "short_signals": 27,
+      "simultaneous": 0
+    },
+    "2h|B|BTCUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 24,
+      "short_signals": 29,
+      "simultaneous": 0
+    },
+    "2h|B|BTCUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 18,
+      "short_signals": 23,
+      "simultaneous": 0
+    },
+    "2h|B|BTCUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 15,
+      "short_signals": 18,
+      "simultaneous": 0
+    },
+    "2h|B|ETHUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 36,
+      "short_signals": 30,
+      "simultaneous": 0
+    },
+    "2h|B|ETHUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 24,
+      "short_signals": 37,
+      "simultaneous": 0
+    },
+    "2h|B|ETHUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 9,
+      "short_signals": 23,
+      "simultaneous": 0
+    },
+    "2h|B|ETHUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 32,
+      "short_signals": 26,
+      "simultaneous": 0
+    },
+    "2h|B|SOLUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 26,
+      "short_signals": 32,
+      "simultaneous": 0
+    },
+    "2h|B|SOLUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 22,
+      "short_signals": 24,
+      "simultaneous": 0
+    },
+    "2h|B|SOLUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 24,
+      "short_signals": 19,
+      "simultaneous": 0
+    },
+    "2h|B|SOLUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 24,
+      "short_signals": 24,
+      "simultaneous": 0
+    },
+    "2h|C|BTCUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|BTCUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|BTCUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|BTCUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "2h|C|ETHUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|ETHUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|ETHUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|ETHUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|SOLUSDT|2025H1": {
+      "eligible_closes": 2172,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|SOLUSDT|2025H2": {
+      "eligible_closes": 2208,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|SOLUSDT|2026A": {
+      "eligible_closes": 1812,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "2h|C|SOLUSDT|2026B": {
+      "eligible_closes": 1836,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "30m|A|BTCUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 698,
+      "short_signals": 641,
+      "simultaneous": 0
+    },
+    "30m|A|BTCUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 685,
+      "short_signals": 686,
+      "simultaneous": 0
+    },
+    "30m|A|BTCUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 544,
+      "short_signals": 556,
+      "simultaneous": 0
+    },
+    "30m|A|BTCUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 573,
+      "short_signals": 543,
+      "simultaneous": 0
+    },
+    "30m|A|ETHUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 693,
+      "short_signals": 650,
+      "simultaneous": 0
+    },
+    "30m|A|ETHUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 732,
+      "short_signals": 628,
+      "simultaneous": 0
+    },
+    "30m|A|ETHUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 553,
+      "short_signals": 551,
+      "simultaneous": 0
+    },
+    "30m|A|ETHUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 589,
+      "short_signals": 527,
+      "simultaneous": 0
+    },
+    "30m|A|SOLUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 710,
+      "short_signals": 693,
+      "simultaneous": 0
+    },
+    "30m|A|SOLUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 729,
+      "short_signals": 667,
+      "simultaneous": 0
+    },
+    "30m|A|SOLUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 551,
+      "short_signals": 563,
+      "simultaneous": 0
+    },
+    "30m|A|SOLUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 565,
+      "short_signals": 542,
+      "simultaneous": 0
+    },
+    "30m|B|BTCUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 143,
+      "short_signals": 157,
+      "simultaneous": 0
+    },
+    "30m|B|BTCUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 133,
+      "short_signals": 142,
+      "simultaneous": 0
+    },
+    "30m|B|BTCUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 127,
+      "short_signals": 126,
+      "simultaneous": 0
+    },
+    "30m|B|BTCUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 125,
+      "short_signals": 126,
+      "simultaneous": 0
+    },
+    "30m|B|ETHUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 137,
+      "short_signals": 138,
+      "simultaneous": 0
+    },
+    "30m|B|ETHUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 167,
+      "short_signals": 139,
+      "simultaneous": 0
+    },
+    "30m|B|ETHUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 110,
+      "short_signals": 126,
+      "simultaneous": 0
+    },
+    "30m|B|ETHUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 141,
+      "short_signals": 95,
+      "simultaneous": 0
+    },
+    "30m|B|SOLUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 124,
+      "short_signals": 119,
+      "simultaneous": 0
+    },
+    "30m|B|SOLUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 153,
+      "short_signals": 148,
+      "simultaneous": 0
+    },
+    "30m|B|SOLUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 93,
+      "short_signals": 125,
+      "simultaneous": 0
+    },
+    "30m|B|SOLUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 116,
+      "short_signals": 107,
+      "simultaneous": 0
+    },
+    "30m|C|BTCUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 293,
+      "short_signals": 261,
+      "simultaneous": 0
+    },
+    "30m|C|BTCUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 296,
+      "short_signals": 408,
+      "simultaneous": 0
+    },
+    "30m|C|BTCUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 190,
+      "short_signals": 204,
+      "simultaneous": 0
+    },
+    "30m|C|BTCUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 239,
+      "short_signals": 320,
+      "simultaneous": 0
+    },
+    "30m|C|ETHUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 70,
+      "short_signals": 73,
+      "simultaneous": 0
+    },
+    "30m|C|ETHUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 76,
+      "short_signals": 112,
+      "simultaneous": 0
+    },
+    "30m|C|ETHUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 98,
+      "short_signals": 149,
+      "simultaneous": 0
+    },
+    "30m|C|ETHUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 124,
+      "short_signals": 203,
+      "simultaneous": 0
+    },
+    "30m|C|SOLUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 29,
+      "short_signals": 17,
+      "simultaneous": 0
+    },
+    "30m|C|SOLUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 56,
+      "short_signals": 76,
+      "simultaneous": 0
+    },
+    "30m|C|SOLUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 107,
+      "short_signals": 100,
+      "simultaneous": 0
+    },
+    "30m|C|SOLUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 114,
+      "short_signals": 145,
+      "simultaneous": 0
+    },
+    "30m|D|BTCUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 383,
+      "short_signals": 421,
+      "simultaneous": 0
+    },
+    "30m|D|BTCUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 351,
+      "short_signals": 413,
+      "simultaneous": 0
+    },
+    "30m|D|BTCUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 353,
+      "short_signals": 377,
+      "simultaneous": 0
+    },
+    "30m|D|BTCUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 318,
+      "short_signals": 325,
+      "simultaneous": 0
+    },
+    "30m|D|ETHUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 457,
+      "short_signals": 560,
+      "simultaneous": 0
+    },
+    "30m|D|ETHUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 455,
+      "short_signals": 553,
+      "simultaneous": 0
+    },
+    "30m|D|ETHUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 366,
+      "short_signals": 438,
+      "simultaneous": 0
+    },
+    "30m|D|ETHUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 372,
+      "short_signals": 373,
+      "simultaneous": 0
+    },
+    "30m|D|SOLUSDT|2025H1": {
+      "eligible_closes": 8688,
+      "long_signals": 448,
+      "short_signals": 535,
+      "simultaneous": 0
+    },
+    "30m|D|SOLUSDT|2025H2": {
+      "eligible_closes": 8832,
+      "long_signals": 444,
+      "short_signals": 563,
+      "simultaneous": 0
+    },
+    "30m|D|SOLUSDT|2026A": {
+      "eligible_closes": 7248,
+      "long_signals": 356,
+      "short_signals": 408,
+      "simultaneous": 0
+    },
+    "30m|D|SOLUSDT|2026B": {
+      "eligible_closes": 7344,
+      "long_signals": 366,
+      "short_signals": 389,
+      "simultaneous": 0
+    },
+    "3d|A|BTCUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 1,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|A|BTCUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 4,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "3d|A|BTCUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "3d|A|BTCUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 1,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "3d|A|ETHUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|A|ETHUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 4,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|A|ETHUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "3d|A|ETHUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 3,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "3d|A|SOLUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|A|SOLUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 3,
+      "short_signals": 3,
+      "simultaneous": 0
+    },
+    "3d|A|SOLUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "3d|A|SOLUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 4,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "3d|B|BTCUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|BTCUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 2,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|BTCUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "3d|B|BTCUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|ETHUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 2,
+      "simultaneous": 0
+    },
+    "3d|B|ETHUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 1,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|ETHUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|ETHUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|SOLUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|SOLUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 1,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|SOLUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|B|SOLUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|BTCUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|BTCUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|BTCUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|BTCUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|ETHUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|ETHUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|ETHUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|ETHUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|SOLUSDT|2025H1": {
+      "eligible_closes": 9,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|SOLUSDT|2025H2": {
+      "eligible_closes": 62,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|SOLUSDT|2026A": {
+      "eligible_closes": 50,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3d|C|SOLUSDT|2026B": {
+      "eligible_closes": 51,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "3m|A|BTCUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 1824,
+      "short_signals": 1771,
+      "simultaneous": 0
+    },
+    "3m|A|BTCUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 1812,
+      "short_signals": 1864,
+      "simultaneous": 0
+    },
+    "3m|A|BTCUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 1329,
+      "short_signals": 1337,
+      "simultaneous": 0
+    },
+    "3m|A|BTCUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 1465,
+      "short_signals": 1451,
+      "simultaneous": 0
+    },
+    "3m|A|ETHUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 1781,
+      "short_signals": 1706,
+      "simultaneous": 0
+    },
+    "3m|A|ETHUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 1793,
+      "short_signals": 1661,
+      "simultaneous": 0
+    },
+    "3m|A|ETHUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 1233,
+      "short_signals": 1334,
+      "simultaneous": 0
+    },
+    "3m|A|ETHUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 1328,
+      "short_signals": 1344,
+      "simultaneous": 0
+    },
+    "3m|A|SOLUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 1859,
+      "short_signals": 1992,
+      "simultaneous": 0
+    },
+    "3m|A|SOLUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 1966,
+      "short_signals": 1831,
+      "simultaneous": 0
+    },
+    "3m|A|SOLUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 1373,
+      "short_signals": 1400,
+      "simultaneous": 0
+    },
+    "3m|A|SOLUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 1355,
+      "short_signals": 1450,
+      "simultaneous": 0
+    },
+    "3m|B|BTCUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 631,
+      "short_signals": 633,
+      "simultaneous": 0
+    },
+    "3m|B|BTCUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 642,
+      "short_signals": 605,
+      "simultaneous": 0
+    },
+    "3m|B|BTCUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 518,
+      "short_signals": 514,
+      "simultaneous": 0
+    },
+    "3m|B|BTCUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 556,
+      "short_signals": 527,
+      "simultaneous": 0
+    },
+    "3m|B|ETHUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 624,
+      "short_signals": 519,
+      "simultaneous": 0
+    },
+    "3m|B|ETHUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 742,
+      "short_signals": 603,
+      "simultaneous": 0
+    },
+    "3m|B|ETHUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 514,
+      "short_signals": 541,
+      "simultaneous": 0
+    },
+    "3m|B|ETHUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 594,
+      "short_signals": 514,
+      "simultaneous": 0
+    },
+    "3m|B|SOLUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 533,
+      "short_signals": 535,
+      "simultaneous": 0
+    },
+    "3m|B|SOLUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 633,
+      "short_signals": 597,
+      "simultaneous": 0
+    },
+    "3m|B|SOLUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 463,
+      "short_signals": 579,
+      "simultaneous": 0
+    },
+    "3m|B|SOLUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 529,
+      "short_signals": 533,
+      "simultaneous": 0
+    },
+    "3m|C|BTCUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 1202,
+      "short_signals": 1050,
+      "simultaneous": 0
+    },
+    "3m|C|BTCUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 1255,
+      "short_signals": 1506,
+      "simultaneous": 0
+    },
+    "3m|C|BTCUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 819,
+      "short_signals": 827,
+      "simultaneous": 0
+    },
+    "3m|C|BTCUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 958,
+      "short_signals": 1216,
+      "simultaneous": 0
+    },
+    "3m|C|ETHUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 294,
+      "short_signals": 284,
+      "simultaneous": 0
+    },
+    "3m|C|ETHUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 321,
+      "short_signals": 429,
+      "simultaneous": 0
+    },
+    "3m|C|ETHUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 382,
+      "short_signals": 559,
+      "simultaneous": 0
+    },
+    "3m|C|ETHUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 444,
+      "short_signals": 794,
+      "simultaneous": 0
+    },
+    "3m|C|SOLUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 118,
+      "short_signals": 84,
+      "simultaneous": 0
+    },
+    "3m|C|SOLUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 216,
+      "short_signals": 278,
+      "simultaneous": 0
+    },
+    "3m|C|SOLUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 422,
+      "short_signals": 447,
+      "simultaneous": 0
+    },
+    "3m|C|SOLUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 435,
+      "short_signals": 589,
+      "simultaneous": 0
+    },
+    "3m|D|BTCUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 1013,
+      "short_signals": 1009,
+      "simultaneous": 0
+    },
+    "3m|D|BTCUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 702,
+      "short_signals": 698,
+      "simultaneous": 0
+    },
+    "3m|D|BTCUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 827,
+      "short_signals": 901,
+      "simultaneous": 0
+    },
+    "3m|D|BTCUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 621,
+      "short_signals": 540,
+      "simultaneous": 0
+    },
+    "3m|D|ETHUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 1948,
+      "short_signals": 2108,
+      "simultaneous": 0
+    },
+    "3m|D|ETHUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 1843,
+      "short_signals": 1902,
+      "simultaneous": 0
+    },
+    "3m|D|ETHUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 1284,
+      "short_signals": 1448,
+      "simultaneous": 0
+    },
+    "3m|D|ETHUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 1000,
+      "short_signals": 991,
+      "simultaneous": 0
+    },
+    "3m|D|SOLUSDT|2025H1": {
+      "eligible_closes": 86880,
+      "long_signals": 2365,
+      "short_signals": 2540,
+      "simultaneous": 0
+    },
+    "3m|D|SOLUSDT|2025H2": {
+      "eligible_closes": 88320,
+      "long_signals": 2086,
+      "short_signals": 2306,
+      "simultaneous": 0
+    },
+    "3m|D|SOLUSDT|2026A": {
+      "eligible_closes": 72480,
+      "long_signals": 1477,
+      "short_signals": 1538,
+      "simultaneous": 0
+    },
+    "3m|D|SOLUSDT|2026B": {
+      "eligible_closes": 73440,
+      "long_signals": 1286,
+      "short_signals": 1269,
+      "simultaneous": 0
+    },
+    "4h|A|BTCUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 87,
+      "short_signals": 80,
+      "simultaneous": 0
+    },
+    "4h|A|BTCUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 86,
+      "short_signals": 84,
+      "simultaneous": 0
+    },
+    "4h|A|BTCUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 64,
+      "short_signals": 66,
+      "simultaneous": 0
+    },
+    "4h|A|BTCUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 75,
+      "short_signals": 66,
+      "simultaneous": 0
+    },
+    "4h|A|ETHUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 82,
+      "short_signals": 71,
+      "simultaneous": 0
+    },
+    "4h|A|ETHUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 88,
+      "short_signals": 71,
+      "simultaneous": 0
+    },
+    "4h|A|ETHUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 56,
+      "short_signals": 71,
+      "simultaneous": 0
+    },
+    "4h|A|ETHUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 73,
+      "short_signals": 73,
+      "simultaneous": 0
+    },
+    "4h|A|SOLUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 89,
+      "short_signals": 83,
+      "simultaneous": 0
+    },
+    "4h|A|SOLUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 94,
+      "short_signals": 80,
+      "simultaneous": 0
+    },
+    "4h|A|SOLUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 63,
+      "short_signals": 80,
+      "simultaneous": 0
+    },
+    "4h|A|SOLUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 78,
+      "short_signals": 73,
+      "simultaneous": 0
+    },
+    "4h|B|BTCUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 22,
+      "short_signals": 16,
+      "simultaneous": 0
+    },
+    "4h|B|BTCUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 20,
+      "short_signals": 15,
+      "simultaneous": 0
+    },
+    "4h|B|BTCUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 17,
+      "short_signals": 15,
+      "simultaneous": 0
+    },
+    "4h|B|BTCUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 11,
+      "short_signals": 10,
+      "simultaneous": 0
+    },
+    "4h|B|ETHUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 19,
+      "short_signals": 21,
+      "simultaneous": 0
+    },
+    "4h|B|ETHUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 13,
+      "short_signals": 25,
+      "simultaneous": 0
+    },
+    "4h|B|ETHUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 5,
+      "short_signals": 16,
+      "simultaneous": 0
+    },
+    "4h|B|ETHUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 18,
+      "short_signals": 17,
+      "simultaneous": 0
+    },
+    "4h|B|SOLUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 16,
+      "short_signals": 17,
+      "simultaneous": 0
+    },
+    "4h|B|SOLUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 11,
+      "short_signals": 11,
+      "simultaneous": 0
+    },
+    "4h|B|SOLUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 13,
+      "short_signals": 13,
+      "simultaneous": 0
+    },
+    "4h|B|SOLUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 18,
+      "short_signals": 13,
+      "simultaneous": 0
+    },
+    "4h|C|BTCUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|BTCUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|BTCUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|BTCUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "4h|C|ETHUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|ETHUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|ETHUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|ETHUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|SOLUSDT|2025H1": {
+      "eligible_closes": 1086,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|SOLUSDT|2025H2": {
+      "eligible_closes": 1104,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|SOLUSDT|2026A": {
+      "eligible_closes": 906,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "4h|C|SOLUSDT|2026B": {
+      "eligible_closes": 918,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "5m|A|BTCUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 1482,
+      "short_signals": 1455,
+      "simultaneous": 0
+    },
+    "5m|A|BTCUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 1503,
+      "short_signals": 1485,
+      "simultaneous": 0
+    },
+    "5m|A|BTCUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 1057,
+      "short_signals": 1111,
+      "simultaneous": 0
+    },
+    "5m|A|BTCUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 1231,
+      "short_signals": 1180,
+      "simultaneous": 0
+    },
+    "5m|A|ETHUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 1482,
+      "short_signals": 1356,
+      "simultaneous": 0
+    },
+    "5m|A|ETHUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 1512,
+      "short_signals": 1319,
+      "simultaneous": 0
+    },
+    "5m|A|ETHUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 1018,
+      "short_signals": 1091,
+      "simultaneous": 0
+    },
+    "5m|A|ETHUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 1149,
+      "short_signals": 1085,
+      "simultaneous": 0
+    },
+    "5m|A|SOLUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 1499,
+      "short_signals": 1572,
+      "simultaneous": 0
+    },
+    "5m|A|SOLUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 1584,
+      "short_signals": 1469,
+      "simultaneous": 0
+    },
+    "5m|A|SOLUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 1114,
+      "short_signals": 1161,
+      "simultaneous": 0
+    },
+    "5m|A|SOLUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 1138,
+      "short_signals": 1137,
+      "simultaneous": 0
+    },
+    "5m|B|BTCUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 477,
+      "short_signals": 465,
+      "simultaneous": 0
+    },
+    "5m|B|BTCUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 482,
+      "short_signals": 453,
+      "simultaneous": 0
+    },
+    "5m|B|BTCUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 375,
+      "short_signals": 374,
+      "simultaneous": 0
+    },
+    "5m|B|BTCUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 432,
+      "short_signals": 399,
+      "simultaneous": 0
+    },
+    "5m|B|ETHUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 441,
+      "short_signals": 379,
+      "simultaneous": 0
+    },
+    "5m|B|ETHUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 571,
+      "short_signals": 459,
+      "simultaneous": 0
+    },
+    "5m|B|ETHUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 388,
+      "short_signals": 389,
+      "simultaneous": 0
+    },
+    "5m|B|ETHUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 459,
+      "short_signals": 372,
+      "simultaneous": 0
+    },
+    "5m|B|SOLUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 414,
+      "short_signals": 392,
+      "simultaneous": 0
+    },
+    "5m|B|SOLUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 484,
+      "short_signals": 427,
+      "simultaneous": 0
+    },
+    "5m|B|SOLUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 315,
+      "short_signals": 422,
+      "simultaneous": 0
+    },
+    "5m|B|SOLUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 414,
+      "short_signals": 362,
+      "simultaneous": 0
+    },
+    "5m|C|BTCUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 890,
+      "short_signals": 802,
+      "simultaneous": 0
+    },
+    "5m|C|BTCUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 943,
+      "short_signals": 1147,
+      "simultaneous": 0
+    },
+    "5m|C|BTCUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 606,
+      "short_signals": 647,
+      "simultaneous": 0
+    },
+    "5m|C|BTCUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 745,
+      "short_signals": 960,
+      "simultaneous": 0
+    },
+    "5m|C|ETHUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 229,
+      "short_signals": 205,
+      "simultaneous": 0
+    },
+    "5m|C|ETHUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 241,
+      "short_signals": 337,
+      "simultaneous": 0
+    },
+    "5m|C|ETHUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 290,
+      "short_signals": 411,
+      "simultaneous": 0
+    },
+    "5m|C|ETHUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 331,
+      "short_signals": 627,
+      "simultaneous": 0
+    },
+    "5m|C|SOLUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 92,
+      "short_signals": 63,
+      "simultaneous": 0
+    },
+    "5m|C|SOLUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 176,
+      "short_signals": 208,
+      "simultaneous": 0
+    },
+    "5m|C|SOLUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 325,
+      "short_signals": 326,
+      "simultaneous": 0
+    },
+    "5m|C|SOLUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 340,
+      "short_signals": 453,
+      "simultaneous": 0
+    },
+    "5m|D|BTCUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 890,
+      "short_signals": 949,
+      "simultaneous": 0
+    },
+    "5m|D|BTCUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 682,
+      "short_signals": 741,
+      "simultaneous": 0
+    },
+    "5m|D|BTCUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 795,
+      "short_signals": 867,
+      "simultaneous": 0
+    },
+    "5m|D|BTCUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 627,
+      "short_signals": 560,
+      "simultaneous": 0
+    },
+    "5m|D|ETHUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 1518,
+      "short_signals": 1735,
+      "simultaneous": 0
+    },
+    "5m|D|ETHUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 1485,
+      "short_signals": 1664,
+      "simultaneous": 0
+    },
+    "5m|D|ETHUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 1113,
+      "short_signals": 1217,
+      "simultaneous": 0
+    },
+    "5m|D|ETHUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 947,
+      "short_signals": 886,
+      "simultaneous": 0
+    },
+    "5m|D|SOLUSDT|2025H1": {
+      "eligible_closes": 52128,
+      "long_signals": 1809,
+      "short_signals": 2068,
+      "simultaneous": 0
+    },
+    "5m|D|SOLUSDT|2025H2": {
+      "eligible_closes": 52992,
+      "long_signals": 1664,
+      "short_signals": 1890,
+      "simultaneous": 0
+    },
+    "5m|D|SOLUSDT|2026A": {
+      "eligible_closes": 43488,
+      "long_signals": 1198,
+      "short_signals": 1292,
+      "simultaneous": 0
+    },
+    "5m|D|SOLUSDT|2026B": {
+      "eligible_closes": 44064,
+      "long_signals": 1152,
+      "short_signals": 1079,
+      "simultaneous": 0
+    },
+    "6h|A|BTCUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 71,
+      "short_signals": 70,
+      "simultaneous": 0
+    },
+    "6h|A|BTCUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 74,
+      "short_signals": 66,
+      "simultaneous": 0
+    },
+    "6h|A|BTCUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 62,
+      "short_signals": 56,
+      "simultaneous": 0
+    },
+    "6h|A|BTCUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 60,
+      "short_signals": 55,
+      "simultaneous": 0
+    },
+    "6h|A|ETHUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 67,
+      "short_signals": 67,
+      "simultaneous": 0
+    },
+    "6h|A|ETHUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 73,
+      "short_signals": 66,
+      "simultaneous": 0
+    },
+    "6h|A|ETHUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 56,
+      "short_signals": 59,
+      "simultaneous": 0
+    },
+    "6h|A|ETHUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 57,
+      "short_signals": 52,
+      "simultaneous": 0
+    },
+    "6h|A|SOLUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 67,
+      "short_signals": 65,
+      "simultaneous": 0
+    },
+    "6h|A|SOLUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 76,
+      "short_signals": 71,
+      "simultaneous": 0
+    },
+    "6h|A|SOLUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 52,
+      "short_signals": 61,
+      "simultaneous": 0
+    },
+    "6h|A|SOLUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 60,
+      "short_signals": 55,
+      "simultaneous": 0
+    },
+    "6h|B|BTCUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 16,
+      "short_signals": 10,
+      "simultaneous": 0
+    },
+    "6h|B|BTCUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 13,
+      "short_signals": 11,
+      "simultaneous": 0
+    },
+    "6h|B|BTCUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 13,
+      "short_signals": 16,
+      "simultaneous": 0
+    },
+    "6h|B|BTCUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 8,
+      "short_signals": 10,
+      "simultaneous": 0
+    },
+    "6h|B|ETHUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 16,
+      "short_signals": 7,
+      "simultaneous": 0
+    },
+    "6h|B|ETHUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 13,
+      "short_signals": 18,
+      "simultaneous": 0
+    },
+    "6h|B|ETHUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 2,
+      "short_signals": 15,
+      "simultaneous": 0
+    },
+    "6h|B|ETHUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 9,
+      "short_signals": 14,
+      "simultaneous": 0
+    },
+    "6h|B|SOLUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 11,
+      "short_signals": 15,
+      "simultaneous": 0
+    },
+    "6h|B|SOLUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 11,
+      "short_signals": 9,
+      "simultaneous": 0
+    },
+    "6h|B|SOLUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 9,
+      "short_signals": 10,
+      "simultaneous": 0
+    },
+    "6h|B|SOLUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 5,
+      "short_signals": 11,
+      "simultaneous": 0
+    },
+    "6h|C|BTCUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|BTCUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|BTCUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|BTCUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|ETHUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|ETHUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|ETHUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|ETHUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 0,
+      "short_signals": 1,
+      "simultaneous": 0
+    },
+    "6h|C|SOLUSDT|2025H1": {
+      "eligible_closes": 724,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|SOLUSDT|2025H2": {
+      "eligible_closes": 736,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|SOLUSDT|2026A": {
+      "eligible_closes": 604,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "6h|C|SOLUSDT|2026B": {
+      "eligible_closes": 612,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|A|BTCUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 60,
+      "short_signals": 55,
+      "simultaneous": 0
+    },
+    "8h|A|BTCUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 64,
+      "short_signals": 60,
+      "simultaneous": 0
+    },
+    "8h|A|BTCUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 47,
+      "short_signals": 47,
+      "simultaneous": 0
+    },
+    "8h|A|BTCUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 57,
+      "short_signals": 55,
+      "simultaneous": 0
+    },
+    "8h|A|ETHUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 60,
+      "short_signals": 55,
+      "simultaneous": 0
+    },
+    "8h|A|ETHUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 60,
+      "short_signals": 60,
+      "simultaneous": 0
+    },
+    "8h|A|ETHUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 41,
+      "short_signals": 49,
+      "simultaneous": 0
+    },
+    "8h|A|ETHUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 52,
+      "short_signals": 46,
+      "simultaneous": 0
+    },
+    "8h|A|SOLUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 57,
+      "short_signals": 66,
+      "simultaneous": 0
+    },
+    "8h|A|SOLUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 61,
+      "short_signals": 60,
+      "simultaneous": 0
+    },
+    "8h|A|SOLUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 48,
+      "short_signals": 52,
+      "simultaneous": 0
+    },
+    "8h|A|SOLUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 56,
+      "short_signals": 50,
+      "simultaneous": 0
+    },
+    "8h|B|BTCUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 14,
+      "short_signals": 16,
+      "simultaneous": 0
+    },
+    "8h|B|BTCUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 12,
+      "short_signals": 12,
+      "simultaneous": 0
+    },
+    "8h|B|BTCUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 9,
+      "short_signals": 5,
+      "simultaneous": 0
+    },
+    "8h|B|BTCUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 7,
+      "short_signals": 8,
+      "simultaneous": 0
+    },
+    "8h|B|ETHUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 14,
+      "short_signals": 13,
+      "simultaneous": 0
+    },
+    "8h|B|ETHUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 12,
+      "short_signals": 13,
+      "simultaneous": 0
+    },
+    "8h|B|ETHUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 4,
+      "short_signals": 8,
+      "simultaneous": 0
+    },
+    "8h|B|ETHUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 11,
+      "short_signals": 9,
+      "simultaneous": 0
+    },
+    "8h|B|SOLUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 9,
+      "short_signals": 11,
+      "simultaneous": 0
+    },
+    "8h|B|SOLUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 8,
+      "short_signals": 10,
+      "simultaneous": 0
+    },
+    "8h|B|SOLUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 9,
+      "short_signals": 9,
+      "simultaneous": 0
+    },
+    "8h|B|SOLUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 13,
+      "short_signals": 8,
+      "simultaneous": 0
+    },
+    "8h|C|BTCUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|BTCUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|BTCUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|BTCUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|ETHUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|ETHUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|ETHUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|ETHUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|SOLUSDT|2025H1": {
+      "eligible_closes": 543,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|SOLUSDT|2025H2": {
+      "eligible_closes": 552,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|SOLUSDT|2026A": {
+      "eligible_closes": 453,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    },
+    "8h|C|SOLUSDT|2026B": {
+      "eligible_closes": 459,
+      "long_signals": 0,
+      "short_signals": 0,
+      "simultaneous": 0
+    }
+  },
+  "input_manifest_sha256": "033cd201b6c9235c841dc6115d949115a7a5d57fa814eab07948456f29b5dcca"
+}

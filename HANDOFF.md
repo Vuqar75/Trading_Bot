@@ -4560,7 +4560,7 @@ The initial D computation used the wrong average-volume window; only D was
 corrected and recalculated, and A/B/C results were confirmed identical. Both
 result hashes and before/after D values are in the report. Funding coinciding
 with a stop has unresolved order; the conservative bound is flagged in the
-CSV, not treated as known actual receipt. Twenty-four focused tests passed;
+CSV, not treated as known actual receipt. Twenty-five focused tests passed;
 financial reconciliation error was below 7e-12 USDT. No full application
 suite was needed because trading code was unchanged.
 
@@ -4569,4 +4569,7 @@ research capture reusing the existing public research host. One test snapshot
 was saved; a depth event was later than local receipt, so event freshness is
 unverified. No maker fill probability, queue position or executable scalping
 edge may be inferred from it. The tool does not use keys or private endpoints.
+Raw closed-bar LONG and SHORT signal frequencies are separately recorded in
+`research/usdm_signal_counts.json`, covering 552 timeframe/family/asset/period
+cells; they are not conflated with the number of accepted or filled entries.
 

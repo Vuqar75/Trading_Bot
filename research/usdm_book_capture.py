@@ -19,7 +19,10 @@ def capture(fetch=public,clock=lambda:int(time.time()*1000)):
  for label,path,params in (('book','/fapi/v1/ticker/bookTicker',{'symbol':'BTCUSDT'}),('depth','/fapi/v1/depth',{'symbol':'BTCUSDT','limit':20}),('trades','/fapi/v1/aggTrades',{'symbol':'BTCUSDT','limit':20})):
   start=clock();data=fetch(path,params);end=clock()
   if end<start or end-start>10000:raise ValueError('capture latency invalid')
-  event=data.get('E') if isinstance(data,dict) else None
+  if label=='book' and isinstance(data,dict):event=data.get('time')
+  elif label=='depth' and isinstance(data,dict):event=data.get('E')
+  elif label=='trades' and isinstance(data,list):event=max((x['T'] for x in data if isinstance(x,dict) and type(x.get('T')) is int),default=None)
+  else:event=None
   source_time='absent' if type(event) is not int else 'future_vs_receipt' if event>end else 'reported_unverified'
   out[label]={'request_ms':start,'received_ms':end,'source_event_ms':event if type(event) is int else None,'source_time_status':source_time,'data':data}
  book=out['book']['data'];depth=out['depth']['data'];trades=out['trades']['data']
