@@ -26,7 +26,7 @@ class V2AtomicStudyTests(unittest.TestCase):
   d=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);self.addCleanup(d.close);ingest_epoch(d,market='futures',candles=candles,observed_ms=self.now)
   from research.adaptive_candle_confirmation import compare,record_event
   def warm(t):return {'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','raw_bars':candles['raw_bars'][:-1],'received_ms':t,'server_ms':t-1,'bars':self.bars[:-1],'skip_bar':self.bars[-1]}
-  confirmation=compare(warm(self.now-45000),warm(self.now-30000));record_event(d,1,{'state':'accepted','sample':confirmation['second'],'comparison':confirmation})
+  confirmation=compare(warm(self.now-45000),warm(self.now-30000));record_event(d,1,{'state':'accepted','sample':confirmation['second'],'comparison':confirmation},clock=lambda:self.now-29000)
   self.decision={'mode':'TREND_DOWN','snapshot_id':'s','data_ms':self.now-1000,'expires_ms':self.now+10000,'reasons':['x'],'uncertainties':['x']}
   self.funding={'symbol':'BTCUSDT','complete':True,'observed_ms':self.now,'next_due_ms':self.now+28800000,'source':'synthetic'}
   self.job=enqueue(self.q,self.decision,source='AI',symbol='BTCUSDT',version='regular-regime-horizon-v2',now_ms=self.now,bars=self.bars,skip_bar=self.skip,funding_evidence=self.funding)
@@ -50,6 +50,13 @@ class V2AtomicStudyTests(unittest.TestCase):
   d=sqlite3.connect(self.root/'market-evidence.db');d.execute("INSERT INTO epoch_conflicts VALUES(1,0,'conflict',?)",(self.now,));d.commit();d.close()
   with self.assertRaisesRegex(ValueError,'v2_epoch_conflict'):self.call()
   self.assertIsNone(self.store.get('position'))
+ def test_confirmation_must_be_durable_before_signal(self):
+  d=sqlite3.connect(self.root/'market-evidence.db')
+  d.execute('UPDATE candle_confirmations SET recorded_ms=NULL');d.commit()
+  with self.assertRaisesRegex(ValueError,'v2_warm_confirmation_missing'):self.call()
+  d.execute('UPDATE candle_confirmations SET recorded_ms=?',(self.now+1,));d.commit()
+  with self.assertRaisesRegex(ValueError,'v2_warm_confirmation_missing'):self.call()
+  self.assertIsNone(self.store.get('position'));d.close()
  def test_stale_trade_after_financial_lock_wait_cannot_fill(self):
   held=threading.Event();release=threading.Event()
   def lock():

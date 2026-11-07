@@ -92,7 +92,7 @@ def enter_short(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms
       confirmed_raw.append(json.loads(raw_row[1]))
      from .adaptive_candle_confirmation import digest_raw
      warm_digest=digest_raw(confirmed_raw)
-     if not store.db.execute("SELECT 1 FROM route_market.sqlite_master WHERE type='table' AND name='candle_confirmations'").fetchone() or not store.db.execute('SELECT 1 FROM route_market.candle_confirmations WHERE epoch_id=? AND signal_open_ms=? AND digest=? AND accepted_ms<=? AND accepted_ms<? LIMIT 1',(epoch['id'],bars[-1][0],warm_digest,signal_fixed_ms,skip_bar[0]+900000)).fetchone():raise ValueError('v2_warm_confirmation_missing')
+     if not store.db.execute("SELECT 1 FROM route_market.sqlite_master WHERE type='table' AND name='candle_confirmations'").fetchone() or 'recorded_ms' not in {r[1] for r in store.db.execute('PRAGMA route_market.table_info(candle_confirmations)')} or not store.db.execute('SELECT 1 FROM route_market.candle_confirmations WHERE epoch_id=? AND signal_open_ms=? AND digest=? AND accepted_ms<=? AND recorded_ms<=? AND recorded_ms<? LIMIT 1',(epoch['id'],bars[-1][0],warm_digest,signal_fixed_ms,signal_fixed_ms,skip_bar[0]+900000)).fetchone():raise ValueError('v2_warm_confirmation_missing')
      skip_digest=hashlib.sha256(json.dumps(list(skip_bar),separators=(',',':'),allow_nan=False).encode()).hexdigest()
      saved=store.db.execute("SELECT 1 FROM route_market.epoch_provisional WHERE epoch_id=? AND start_ms=? AND sha256=? AND raw_sha256!='' AND received_ms<=? LIMIT 1",(epoch['id'],skip_bar[0],skip_digest,signal_fixed_ms)).fetchone()
      if not saved:raise ValueError('v2_provisional_candle_proof_missing')

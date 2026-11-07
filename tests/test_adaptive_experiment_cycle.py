@@ -58,7 +58,7 @@ class CycleTest(unittest.TestCase):
   db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);_schema(db);db.execute("INSERT INTO market_epochs(market,start_ms,created_ms,proof,source) VALUES('futures',?,?,?,?)",(194*bar,194*bar,'{}','binance_usdm_klines_v2'));ingest_epoch(db,market='futures',candles=candles,observed_ms=self.now)
   from research.adaptive_candle_confirmation import compare,record_event
   def warm(t):return {'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','raw_bars':candles['raw_bars'][:-1],'received_ms':t,'server_ms':t-1,'bars':bars[:-1],'skip_bar':bars[-1]}
-  proof=compare(warm(self.now-45000),warm(self.now-30000));record_event(db,1,{'state':'accepted','sample':proof['second'],'comparison':proof});db.close()
+  proof=compare(warm(self.now-45000),warm(self.now-30000));record_event(db,1,{'state':'accepted','sample':proof['second'],'comparison':proof},clock=lambda:self.now-29000);db.close()
   filters=symbol_info();filters.update(contractType='PERPETUAL',marginAsset='USDT',marketTakeBound='0.03')
   for r in filters['filters']:
    if r['filterType']=='MIN_NOTIONAL':r['minNotional']='50'

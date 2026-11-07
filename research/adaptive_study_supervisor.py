@@ -331,12 +331,12 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
       if market=='futures' and epoch_row and item.get('warm_event'):
        try:
         from .adaptive_candle_confirmation import record_event
-        record_event(evidence,epoch_row[0],item['warm_event'])
+        record_event(evidence,epoch_row[0],item['warm_event'],clock=clock)
        except (ValueError,TypeError,KeyError,sqlite3.Error):item['confirmation_error']=True;errors['futures_confirmation']='record_unavailable'
       if market=='futures' and epoch_row and item.get('postclose_sample'):
        try:
         from .adaptive_candle_confirmation import record_postclose
-        post=record_postclose(evidence,epoch_row[0],item['postclose_sample']);item['postclose_state']=post
+        post=record_postclose(evidence,epoch_row[0],item['postclose_sample'],clock=clock);item['postclose_state']=post
         if post['state']=='accepted':history_cache['_post_accepted']=(post['open_ms']+900000)
         if post['state']=='contradiction_after_acceptance':errors['futures_postclose']='contradiction_after_acceptance'
        except (ValueError,TypeError,KeyError,sqlite3.Error):errors['futures_postclose']='invalid_or_unavailable'
@@ -367,7 +367,7 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
        try:
         from .adaptive_candle_confirmation import record_event
         boundary=(before//900000)*900000
-        record_event(evidence,epoch_row[0],{'state':'gap','sample':{'signal_open_ms':boundary-1800000,'received_ms':before,'digest':'unavailable'},'reason':'warm_confirmation_unavailable'})
+        record_event(evidence,epoch_row[0],{'state':'gap','sample':{'signal_open_ms':boundary-1800000,'received_ms':before,'digest':'unavailable'},'reason':'warm_confirmation_unavailable'},clock=clock)
        except (ValueError,TypeError,sqlite3.Error):errors['futures_confirmation']='record_unavailable'
      legacy_conflicts=(evidence.execute("SELECT count(*) FROM market_conflicts WHERE market='futures'").fetchone()[0] if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() else 0)
      epoch_conflicts=(evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0] if epoch_row else 0)
@@ -383,12 +383,13 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
       if has_close:opens.update(x[0] for x in evidence.execute('SELECT DISTINCT open_ms FROM candle_close_observations WHERE epoch_id=? ORDER BY open_ms DESC LIMIT 3',(epoch_row[0],)))
       opens=sorted(opens,reverse=True)[:3]
       for opened in opens:
-       records=evidence.execute('SELECT state,received_ms,server_ms,raw_sha256 FROM candle_close_observations WHERE epoch_id=? AND open_ms=? ORDER BY received_ms',(epoch_row[0],opened)).fetchall() if has_close else []
+       has_recorded=has_close and 'recorded_ms' in {r[1] for r in evidence.execute('PRAGMA table_info(candle_close_observations)')}
+       records=evidence.execute('SELECT state,received_ms,server_ms,raw_sha256,'+('recorded_ms' if has_recorded else 'NULL')+' FROM candle_close_observations WHERE epoch_id=? AND open_ms=? ORDER BY received_ms',(epoch_row[0],opened)).fetchall() if has_close else []
        if not records:
         provisional=evidence.execute('SELECT received_ms,raw_sha256 FROM epoch_provisional WHERE epoch_id=? AND start_ms=? ORDER BY received_ms DESC LIMIT 1',(epoch_row[0],opened)).fetchone()
-        if provisional:records=[('preliminary',provisional[0],None,provisional[1])]
+        if provisional:records=[('preliminary',provisional[0],None,provisional[1],None)]
        if not records:continue
-       lifecycle.append({'open_ms':opened,'close_ms':opened+899999,'state':records[-1][0],'preliminary_ms':next((x[1] for x in records if x[0]=='preliminary'),None),'accepted_ms':next((x[1] for x in records if x[0]=='accepted'),None),'last_received_ms':records[-1][1],'last_server_ms':records[-1][2],'last_sha256':records[-1][3],'observations':len(records)})
+       lifecycle.append({'open_ms':opened,'close_ms':opened+899999,'state':records[-1][0],'preliminary_ms':next((x[1] for x in records if x[0]=='preliminary'),None),'accepted_ms':next((x[4] for x in records if x[0]=='accepted' and x[4] is not None),None),'last_received_ms':records[-1][1],'last_server_ms':records[-1][2],'last_sha256':records[-1][3],'observations':len(records)})
      has_window=evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_windows'").fetchone()
      last_window=evidence.execute('SELECT active_conflicts FROM epoch_windows WHERE epoch_id=?',(epoch_row[0],)).fetchone() if has_window and epoch_row else None
      active_epoch_conflicts=last_window[0] if last_window else epoch_conflicts

@@ -17,19 +17,21 @@ class ConfirmationTests(unittest.TestCase):
  def test_persist_acceptance_replay_and_changed_after_acceptance(self):
   db=sqlite3.connect(':memory:',isolation_level=None);db.execute('CREATE TABLE epoch_conflicts(epoch_id INTEGER,start_ms INTEGER,payload TEXT,observed_ms INTEGER,UNIQUE(epoch_id,start_ms,payload))')
   a=sample();b=sample(a['received_ms']+10000);c=compare(a,b);event={'state':'accepted','sample':c['second'],'comparison':c}
-  record_event(db,1,event);record_event(db,1,event);self.assertEqual(db.execute('select count(*) from candle_confirmations').fetchone()[0],1)
+  record_event(db,1,event,clock=lambda:c['accepted_ms']);record_event(db,1,event,clock=lambda:c['accepted_ms']);self.assertEqual(db.execute('select count(*) from candle_confirmations').fetchone()[0],1)
   d=copy.deepcopy(b);d['raw_bars'][0][4]='1.1';d['bars'][0]=(d['bars'][0][0],1.,2.,1.,1.1);d['received_ms']+=10000;d['server_ms']+=10000;e=copy.deepcopy(d);e['received_ms']+=10000;e['server_ms']+=10000
-  revised=compare(d,e);record_event(db,1,{'state':'accepted','sample':revised['second'],'comparison':revised})
+  revised=compare(d,e);record_event(db,1,{'state':'accepted','sample':revised['second'],'comparison':revised},clock=lambda:revised['accepted_ms'])
   self.assertEqual(db.execute("select count(*) from candle_lifecycle where state='contradiction_after_acceptance'").fetchone()[0],1)
   self.assertEqual(db.execute('select count(*) from epoch_conflicts').fetchone()[0],1);db.close()
  def test_confirmation_must_exist_before_signal_and_match_raw(self):
-  db=sqlite3.connect(':memory:',isolation_level=None);a=sample();b=sample(a['received_ms']+10000);c=compare(a,b);record_event(db,1,{'state':'accepted','sample':c['second'],'comparison':c})
+  db=sqlite3.connect(':memory:',isolation_level=None);a=sample();b=sample(a['received_ms']+10000);c=compare(a,b);record_event(db,1,{'state':'accepted','sample':c['second'],'comparison':c},clock=lambda:c['accepted_ms'])
   last=b['raw_bars'][-1][0];skip=[last+PERIOD,1.,2.,1.,1.];bars=[(x[0],1.,2.,1.,1.) for x in b['raw_bars']]
   row=[skip[0],'1','2','1','1','3',skip[0]+PERIOD-1]
   payload={'warm_confirmation':c,'bars':bars,'skip_bar':skip,'raw_bars':b['raw_bars']+[row]}
   # Move the synthetic decision boundary after its confirmation.
   payload['skip_bar'][0]=c['accepted_ms']//PERIOD*PERIOD
   self.assertTrue(confirmed_for_decision(db,1,payload))
+  db.execute('UPDATE candle_confirmations SET recorded_ms=?',(payload['skip_bar'][0]+PERIOD,))
+  self.assertFalse(confirmed_for_decision(db,1,payload))
   payload['raw_bars'][0][4]='1.1';self.assertFalse(confirmed_for_decision(db,1,payload));db.close()
  def test_postclose_revisions_before_and_after_acceptance(self):
   db=sqlite3.connect(':memory:',isolation_level=None);db.execute('CREATE TABLE epoch_conflicts(epoch_id INTEGER,start_ms INTEGER,payload TEXT,observed_ms INTEGER,UNIQUE(epoch_id,start_ms,payload))');db.execute('CREATE TABLE epoch_provisional(epoch_id INTEGER,start_ms INTEGER,payload TEXT,sha256 TEXT,raw_payload TEXT,raw_sha256 TEXT,received_ms INTEGER)')
