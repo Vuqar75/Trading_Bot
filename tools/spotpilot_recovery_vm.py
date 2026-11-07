@@ -69,9 +69,7 @@ def recover():
             if proof.is_symlink() or not proof.is_file():raise ValueError('Candidate release not proven')
             released=json.loads(proof.read_text())
             enabled=released.get('enabled')
-            if (released.get('operation')!='spotpilot:release:20261107c' or not isinstance(enabled,list)
-                or len(enabled)!=len(set(enabled)) or any(x!='spot' for x in enabled)
-                or ('spot' in enabled and data.get('paused',{}).get('spot') is not False)):
+            if released.get('operation')!='spotpilot:release:20261107c' or enabled!=[]:
                 raise ValueError('Unexpected release proof')
             print('REGULARAI_RECOVERY completed deployment; workers unchanged',flush=True);return
         if MARKER.exists() or not identical(old):raise ValueError('Unpaused recovery requires inspection')
