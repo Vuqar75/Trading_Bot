@@ -4424,3 +4424,23 @@ isolated directory, SHA-256
 Paper full-fill assumptions, unsupported isolated partial closes, unknown
 publication time for funding, previously rejected strategy economics and
 bucket-wide uploader permission remain limitations.
+
+## BTC Spot pilot — preparation checkpoint, 2026-11-07
+
+The owner confirmed the `/adaptive` display. The next assignment explicitly
+authorizes one tagged paper BUY/SELL check and a bounded BTC Spot 1-hour pilot,
+but neither has yet been executed or installed. `adaptive-ai-regular.timer`
+was disabled at 05:00 UTC with its service inactive; the sole journal,
+reservations, credential and backups were not changed. The sanitized `/ai`
+public report now states the owner stopped paid scheduling; the original
+source and prior public report were preserved. Main and costs screens were
+rendered as the bot user and show the owner-stop explanation.
+
+Current installed Spot is `13fc8f641a576262da5087ccb772b0be66c1c594`, using
+paper `DonchianSpotApplication`. At 00:00 UTC its recorded action was HOLD;
+the latest 2026-11-06 close and prior 60-day maximum were reconstructed from
+public candles as 75,844 and 86,620 USDT. There were no Spot orders during
+the queried last 24 hours. The current research rule, prior economic results,
+initial state and safety gap for a check trade are documented in
+`BTC_SPOT_PILOT_PLAN.md`. Recheck all positions, pending jobs and filters
+before action; initial probe is not authorization to act on stale data.
