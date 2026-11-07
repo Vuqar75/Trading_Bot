@@ -64,7 +64,7 @@ def process_stop(queue,store,state,*,quote,quote_ms,clock,bars=None,skip_bar=Non
  queue.acknowledge(job['id'],'research exit filled',notify=False)
  return {'status':'IDLE'}
 
-def process_short(queue,store,state,*,decision,signal,data_ms,decision_version,bars,skip_bar,quote,quote_ms,filters,filters_ms,funding_evidence,clock,fault=lambda stage:None):
+def process_short(queue,store,state,*,decision,signal,data_ms,decision_version,bars,skip_bar,quote,quote_ms,filters,filters_ms,funding_evidence,clock,fault=lambda stage:None,execution_fetch=None,filter_mark_proof=None):
  from trading_bot.futures_store import FuturesStore
  if type(queue) is not UnifiedQueue or type(store) is not FuturesStore or type(state) is not RouteState:raise ValueError('offline_types_required')
  jobs=[j for j in queue.pending('futures') if j['command']=='/research_adaptive_entry']
@@ -83,15 +83,27 @@ def process_short(queue,store,state,*,decision,signal,data_ms,decision_version,b
  if result['phase']=='CLOSED':
   if not state.db.execute('SELECT 1 FROM route_exits WHERE entry_action=?',(action,)).fetchone():raise ValueError('closed_receipt_missing')
   queue.acknowledge(job['id'],'research entry already closed',notify=False);return {'status':'IDLE'}
+ if result['phase']=='OPEN':
+  state.confirm_open(action,Path(store.db.execute('PRAGMA database_list').fetchone()[2]));queue.acknowledge(job['id'],'research short entry reconciled',notify=False);return {'status':'OPEN'}
  if result['phase'] not in ('ENTRY_PENDING','OPEN'):return {'status':'reconciliation_required'}
  fault('after_route_commit')
- result=enter_short(store,Path(queue.db.execute('PRAGMA database_list').fetchone()[2]),job_id=job['id'],action_id=action,decision=decision,snapshot_id=snap,data_ms=data_ms,decision_version=decision_version,bars=bars,skip_bar=skip_bar,quote=quote,quote_ms=quote_ms,filters=filters,filters_ms=filters_ms,funding_evidence=funding_evidence,decision_source=signal['source'],clock=clock,fault=fault)
+ proof=None;fixed_ms=None
+ if execution_fetch is not None:
+  fixed_ms=clock() # sampled after the route intent committed
+  try:
+   proof=execution_fetch(not_before_ms=fixed_ms);quote=proof['price'];quote_ms=proof['event_ms']
+  except (ValueError,KeyError,TypeError,OSError):
+   try:state.confirm_futures_not_filled_v2(action,Path(store.db.execute('PRAGMA database_list').fetchone()[2]))
+   except ValueError:return {'status':'reconciliation_required','reason':'execution_quote_unavailable'}
+   queue.acknowledge(job['id'],'fresh post-signal trade unavailable',applied=False,notify=False)
+   return {'status':'CANCELED','reason':'execution_quote_unavailable'}
+ result=enter_short(store,Path(queue.db.execute('PRAGMA database_list').fetchone()[2]),job_id=job['id'],action_id=action,decision=decision,snapshot_id=snap,data_ms=data_ms,decision_version=decision_version,bars=bars,skip_bar=skip_bar,quote=quote,quote_ms=quote_ms,filters=filters,filters_ms=filters_ms,funding_evidence=funding_evidence,decision_source=signal['source'],clock=clock,fault=fault,execution_proof=proof,signal_fixed_ms=fixed_ms,filter_mark_proof=filter_mark_proof)
  if result['status'] not in ('filled','filled_existing'):return result
  fault('before_confirm_open');state.confirm_open(action,Path(store.db.execute('PRAGMA database_list').fetchone()[2]));fault('before_queue_ack')
  queue.acknowledge(job['id'],'research short filled',notify=False)
  return {'status':'OPEN'}
 
-def process_short_stop(queue,store,state,*,quote,quote_ms,clock,bars=None,skip_bar=None,fault=lambda stage:None):
+def process_short_stop(queue,store,state,*,quote,quote_ms,clock,bars=None,skip_bar=None,fault=lambda stage:None,execution_fetch=None,current_mark_proof=None,execution_filters=None,filters_ms=None):
  jobs=[j for j in queue.pending('futures') if j['command']=='/research_adaptive_exit']
  if len(jobs)!=1:raise ValueError('exactly_one_exit_job_required')
  job=jobs[0];payload=json.loads(job['payload']);entry=payload['entry_action'];action=payload['action_id'];pos=state.status()['position_id']
@@ -99,7 +111,16 @@ def process_short_stop(queue,store,state,*,quote,quote_ms,clock,bars=None,skip_b
  if payload.get('bars') is not None:
   if bars is not None and candle_digest(bars,skip_bar)!=candle_digest(payload['bars'],payload['skip_bar']):raise ValueError('exit_candle_identity_conflict')
   bars,skip_bar=payload['bars'],payload['skip_bar']
- result=exit_short_on_stop(store,Path(queue.db.execute('PRAGMA database_list').fetchone()[2]),route_state=state,job_id=job['id'],action_id=action,position_id=pos,quote=quote,quote_ms=quote_ms,bars=bars,skip_bar=skip_bar,risk_bar=payload.get('risk_bar'),clock=clock,fault=fault)
+ proof=None;fixed_ms=None
+ if execution_fetch is not None:
+  fixed_ms=clock() # protective intent has already committed
+  try:proof=execution_fetch(not_before_ms=fixed_ms);quote=proof['price'];quote_ms=proof['event_ms']
+  except (ValueError,KeyError,TypeError,OSError):return {'status':'EXIT_PENDING','reason':'execution_quote_unavailable'}
+ try:
+  result=exit_short_on_stop(store,Path(queue.db.execute('PRAGMA database_list').fetchone()[2]),route_state=state,job_id=job['id'],action_id=action,position_id=pos,quote=quote,quote_ms=quote_ms,bars=bars,skip_bar=skip_bar,risk_bar=payload.get('risk_bar'),clock=clock,fault=fault,execution_proof=proof,trigger_fixed_ms=fixed_ms,mark_proof=payload.get('trigger_mark'),mark_checked_ms=payload.get('trigger_checked_ms'),current_mark_proof=current_mark_proof,execution_filters=execution_filters,filters_ms=filters_ms)
+ except ValueError as exc:
+  if execution_fetch is not None and str(exc) in ('market_take_bound_unavailable','market_take_bound_invalid','market_take_bound_exceeded','stale_filters','quote_invalid','quote_stale_or_future'):return {'status':'EXIT_PENDING','reason':str(exc)}
+  raise
  if result['status'] not in ('filled','filled_existing'):return result
  fault('before_confirm_exit');state.confirm_futures_closed(entry,action,Path(store.db.execute('PRAGMA database_list').fetchone()[2]));fault('before_queue_ack')
  queue.acknowledge(job['id'],'research short exit filled',notify=False)

@@ -6,7 +6,7 @@ from .adaptive_route_state import RouteState
 from .adaptive_route_policy import closed_bar_signal
 from trading_bot.unified_queue import UnifiedQueue
 
-def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=None,clock=lambda:int(time.time()*1000)):
+def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=None,clock=lambda:int(time.time()*1000),source_mark=None):
  if type(queue) is not UnifiedQueue or type(state) is not RouteState:raise ValueError('offline_types_required')
  paths=[Path(queue.db.execute('PRAGMA database_list').fetchone()[2]),Path(store.db.execute('PRAGMA database_list').fetchone()[2]),state.path]
  root=Path(tempfile.gettempdir()).resolve()
@@ -65,11 +65,17 @@ def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=
   if route.get('market')=='futures' and problem=='funding_coverage_missing' and reason:
    if not prior_wait:
     wait={'position_id':route.get('position_id'),'entry_action':route.get('action_id'),'trigger':reason,'first_seen_ms':now,'reason':'funding_coverage_missing'}
+    if source_mark is not None:wait.update({'trigger_mark':source_mark,'risk_bar':risk_data,'bars':bars if reason=='signal' else None,'skip_bar':skip_bar if reason=='signal' else None})
     queue.db.execute('INSERT INTO unified_state VALUES(?,?)',(wait_key,json.dumps(wait,sort_keys=True)))
    else:wait=json.loads(prior_wait[0])
    summary['funding_wait']=wait
   elif prior_wait and route.get('phase') in ('OPEN','EXIT_PENDING'):
    summary['funding_wait']=json.loads(prior_wait[0])
+   # Once a v2 protective condition was observed, later funding recovery does
+   # not erase it merely because the market price subsequently moved back.
+   wait=summary['funding_wait']
+   if route.get('market')=='futures' and not problem and not reason and wait.get('trigger_mark'):
+    reason=wait['trigger'];source_mark=wait['trigger_mark'];risk_data=wait.get('risk_bar');bars=wait.get('bars');skip_bar=wait.get('skip_bar');summary['trigger']=reason
   queue.db.execute("INSERT OR REPLACE INTO unified_state VALUES('adaptive:protection',?)",(json.dumps(summary,sort_keys=True),))
   if route['phase']=='EXIT_PENDING':
    pending=state.db.execute('SELECT exit_action FROM route_exit_pending WHERE entry_action=?',(route['action_id'],)).fetchone()
@@ -81,7 +87,10 @@ def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=
    if prior:return dict(summary,job_id=int(prior[0]),replayed=True)
    update_id=int(hashlib.sha256(action_id.encode()).hexdigest()[:15],16)
    if queue.db.execute('SELECT 1 FROM unified_updates WHERE id=?',(update_id,)).fetchone():raise ValueError('synthetic_update_collision')
-   market=route['market'];payload=json.dumps({'action_id':action_id,'entry_action':route['action_id'],'risk_bar':risk_data,'bars':bars if reason=='signal' else None,'skip_bar':skip_bar if reason=='signal' else None},sort_keys=True,allow_nan=False)
+   market=route['market'];detail={'action_id':action_id,'entry_action':route['action_id'],'risk_bar':risk_data,'bars':bars if reason=='signal' else None,'skip_bar':skip_bar if reason=='signal' else None}
+   if market=='futures' and source_mark is not None:
+    wait=summary.get('funding_wait') or {};detail.update({'trigger':reason,'trigger_mark':source_mark,'trigger_checked_ms':wait.get('first_seen_ms',now) if wait.get('trigger_mark')==source_mark else now})
+   payload=json.dumps(detail,sort_keys=True,allow_nan=False)
    queue.db.execute('INSERT INTO unified_updates VALUES(?,?,?,?)',(update_id,'offline:'+action_id,'/research_adaptive_exit',market))
    job=queue.db.execute("INSERT INTO unified_jobs(update_id,market,command,payload) VALUES(?,?,'/research_adaptive_exit',?)",(update_id,market,payload)).lastrowid
    queue.db.execute('INSERT INTO unified_state VALUES(?,?)',(key,str(job)))

@@ -8,7 +8,7 @@ from .adaptive_study_supervisor import cycle_lock
 BUCKET='tradingbot-paper-backup-101494113814-ew1'
 PREFIX='paper-backups/daily/adaptive-continuous/'
 FILES=('financial.db','queue.db','observation.db','route.db','manifest.json')
-ROOT_OPTIONAL=('market-watermarks.json','baseline-current.json','baseline-attempt.json','funding-audit.json')
+ROOT_OPTIONAL=('market-watermarks.json','baseline-current.json','baseline-attempt.json','funding-audit.json','usdm-capture-summary.json')
 
 def create(root,*,version,clock=lambda:int(time.time()*1000)):
  root=Path(root);start=json.loads((root/'study-start.json').read_text());captured=clock();bundles=[]

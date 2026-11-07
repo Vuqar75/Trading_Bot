@@ -1,5 +1,6 @@
 """No-network reconciliation of already committed research actions."""
-import json,tempfile
+import json,sqlite3,tempfile
+from contextlib import closing
 from pathlib import Path
 from .adaptive_route_state import RouteState
 from trading_bot.unified_queue import UnifiedQueue
@@ -60,20 +61,44 @@ def reconcile(queue,state,financial_path,*,now_ms=None):
     if len(jobs)>1:raise ValueError('ambiguous_entry_queue')
     if jobs:queue.acknowledge(jobs[0]['id'],'recovered unfilled entry',applied=False,notify=False)
     return {'status':'canceled'}
+   if market=='futures' and phase=='ENTRY_PENDING':
+    evidence=financial_path.parent.parent/'market-evidence.db'
+    if evidence.is_file() and not evidence.is_symlink():
+     with closing(sqlite3.connect(evidence.resolve().as_uri()+'?mode=ro',uri=True)) as check:
+      active=check.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_epochs'").fetchone() and check.execute("SELECT 1 FROM market_epochs WHERE market='futures' LIMIT 1").fetchone()
+     if active:
+      try:state.confirm_futures_not_filled_v2(action,financial_path)
+      except ValueError:return {'status':'unresolved_entry'}
+      jobs=[j for j in queue.pending(market) if j['command']=='/research_adaptive_entry' and json.loads(j['payload']).get('action_id')==action]
+      if len(jobs)>1:raise ValueError('ambiguous_entry_queue')
+      if jobs:queue.acknowledge(jobs[0]['id'],'recovered unfilled v2 entry',applied=False,notify=False)
+      return {'status':'canceled'}
    return {'status':'unresolved_entry'}
   jobs=[j for j in queue.pending(market) if j['command']=='/research_adaptive_entry' and json.loads(j['payload']).get('action_id')==action]
   if len(jobs)>1:raise ValueError('ambiguous_entry_queue')
   if jobs:queue.acknowledge(jobs[0]['id'],'recovered committed entry',notify=False)
   return {'status':'open','position_id':result['position_id']}
  if phase=='EXIT_PENDING':
-  pending=state.db.execute('SELECT exit_action FROM route_exit_pending WHERE entry_action=?',(action,)).fetchone()
+  pending=state.db.execute('SELECT exit_action,position_id FROM route_exit_pending WHERE entry_action=?',(action,)).fetchone()
   if not pending:return {'status':'unresolved_exit'}
   exit_action=pending[0]
   try:
    if market=='spot':state.confirm_spot_closed(action,exit_action,financial_path)
    elif market=='futures':state.confirm_futures_closed(action,exit_action,financial_path)
    else:raise ValueError('market_policy_absent')
-  except ValueError:return {'status':'unresolved_exit'}
+  except ValueError:
+   if market=='futures':
+    evidence=financial_path.parent.parent/'market-evidence.db'
+    if evidence.is_file() and not evidence.is_symlink():
+     with closing(sqlite3.connect(evidence.resolve().as_uri()+'?mode=ro',uri=True)) as check:
+      active=check.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_epochs'").fetchone() and check.execute("SELECT 1 FROM market_epochs WHERE market='futures' LIMIT 1").fetchone()
+     if active:
+      with closing(sqlite3.connect(financial_path.resolve().as_uri()+'?mode=ro',uri=True)) as financial:
+       event=financial.execute('SELECT 1 FROM futures_events WHERE business_key=?',(exit_action,)).fetchone()
+       row=financial.execute("SELECT value FROM futures_meta WHERE key='position'").fetchone();position=json.loads(row[0]) if row else None
+      jobs=[j for j in queue.pending(market) if j['command']=='/research_adaptive_exit' and json.loads(j['payload']).get('action_id')==exit_action]
+      if not event and position and position.get('id')==pending['position_id'] and len(jobs)==1:return {'status':'exit_pending'}
+   return {'status':'unresolved_exit'}
   jobs=[j for j in queue.pending(market) if j['command']=='/research_adaptive_exit' and json.loads(j['payload']).get('action_id')==exit_action]
   if len(jobs)>1:raise ValueError('ambiguous_exit_queue')
   if jobs:queue.acknowledge(jobs[0]['id'],'recovered committed exit',notify=False)

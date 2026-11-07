@@ -51,6 +51,25 @@ class AtomicFuturesTest(unittest.TestCase):
   self.assertGreater(Decimal(self.store.get('position')['funding']),0)
   self.store.close_position(Decimal('98'),self.now+1000,'exit','TEST',p['id'])
   self.assertTrue(self.store.shared.ledger.reconcile()['balanced']);self.assertEqual(self.store.db.execute("select count(*) from futures_events where event='OPEN'").fetchone()[0],1)
+ def test_v2_minimum_order_and_receipt_are_atomic(self):
+  import copy
+  filters=copy.deepcopy(self.filters)
+  filters['marketTakeBound']='0.03'
+  for item in filters['filters']:
+   if item['filterType']=='MIN_NOTIONAL':item['minNotional']='50'
+  evidence={'symbol':'BTCUSDT','source':'binance_usdm_trade','trade_id':5,'price':'100','event_ms':self.now,'received_ms':self.now}
+  mark={'symbol':'BTCUSDT','source':'binance_usdm_mark','price':'100','event_ms':self.now,'received_ms':self.now}
+  result=self.call(filters=filters,execution_proof=evidence,signal_fixed_ms=self.now,filter_mark_proof=mark)
+  self.assertEqual(result['status'],'filled');p=self.store.get('position')
+  notional=Decimal(p['quantity'])*Decimal(p['entry']);self.assertGreaterEqual(Decimal(p['quantity'])*Decimal('100'),50);self.assertLessEqual(notional,100)
+  self.assertEqual(self.store.db.execute('select count(*) from adaptive_execution_proofs').fetchone()[0],1)
+  self.assertEqual(self.call(filters=filters,execution_proof=evidence,signal_fixed_ms=self.now,filter_mark_proof=mark)['status'],'filled_existing')
+ def test_v2_rejects_mark_and_pre_signal_trade(self):
+  proof={'symbol':'BTCUSDT','source':'binance_usdm_mark','trade_id':5,'price':'100','event_ms':self.now,'received_ms':self.now}
+  with self.assertRaisesRegex(ValueError,'trade_source_invalid'):self.call(execution_proof=proof,signal_fixed_ms=self.now)
+  proof['source']='binance_usdm_trade';proof['event_ms']-=1
+  with self.assertRaisesRegex(ValueError,'predates'):self.call(execution_proof=proof,signal_fixed_ms=self.now)
+  self.assertIsNone(self.store.get('position'))
  def test_decision_producer_short_job_uses_saved_evidence(self):
   with self.q.transaction():self.q.db.execute('DELETE FROM unified_jobs');self.q.db.execute('DELETE FROM unified_updates')
   skip=(196*900000,100.,101.,99.,100.)

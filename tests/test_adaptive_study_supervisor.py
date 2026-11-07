@@ -62,8 +62,16 @@ class SupervisorTest(unittest.TestCase):
   result=json.loads((self.root/'status.json').read_text())
   self.assertEqual(result['data_errors']['futures_history'],'epoch_data_unavailable')
   self.assertEqual(result['usdm_research']['epoch_start_ms'],2000)
-  self.assertEqual(result['usdm_research']['limits_status'],'preview_only_not_installed_in_execution')
+  self.assertEqual(result['usdm_research']['limits_status'],'enforced_v2_research_only')
   for name in ('ai','baseline'):self.assertEqual(result['experiments'][name]['cash_usdt'],'1000')
+ def test_capture_coverage_is_explicit_and_rejects_untrusted_data(self):
+  import json,os
+  from research.adaptive_study_supervisor import capture_coverage
+  self.root.mkdir(mode=0o700);p=self.root/'usdm-capture-summary.json'
+  self.assertEqual(capture_coverage(self.root)['status'],'unavailable')
+  p.write_text(json.dumps({'sha256':'a'*64,'start_ms':1,'end_ms':2,'snapshots':360,'trade_gaps':86,'unusable_time':2}));p.chmod(0o600)
+  self.assertEqual(capture_coverage(self.root)['sequence'],'incomplete')
+  p.chmod(0o644);self.assertEqual(capture_coverage(self.root)['status'],'invalid')
  def test_baseline_falls_back_after_ai_window_and_is_reused(self):
   import os
   now=20000*PERIOD+360001;self.root.mkdir(mode=0o700)

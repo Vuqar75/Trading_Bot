@@ -3,7 +3,7 @@
 This is an uninstalled prototype. A privileged publisher must supply read-only
 evidence, and an external backup mechanism must be verified before deployment.
 """
-import argparse,fcntl,json,os,pwd,signal,sqlite3,stat,tempfile,time
+import argparse,fcntl,json,os,pwd,re,signal,sqlite3,stat,tempfile,time
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing,contextmanager
 from pathlib import Path
@@ -12,6 +12,17 @@ from .adaptive_experiment_cycle import cycle
 from .adaptive_experiment_init import initialize
 from .adaptive_study_status import snapshot
 from .adaptive_snapshot_proof import PERIOD,read_trusted,verify_baseline
+
+def capture_coverage(root):
+ p=Path(root)/'usdm-capture-summary.json'
+ if not p.exists():return {'status':'unavailable'}
+ try:
+  meta=p.lstat()
+  if not stat.S_ISREG(meta.st_mode) or meta.st_uid!=os.geteuid() or meta.st_mode&0o077 or meta.st_size>65536:raise ValueError('untrusted')
+  value=json.loads(p.read_text());keys=('sha256','start_ms','end_ms','snapshots','trade_gaps','unusable_time')
+  if set(value)!=set(keys) or not isinstance(value['sha256'],str) or not re.fullmatch('[0-9a-f]{64}',value['sha256']) or any(type(value[k]) is not int or value[k]<0 for k in keys[1:]) or value['end_ms']<value['start_ms']:raise ValueError('invalid')
+  return {'status':'completed','depth':'independent_rest_snapshots','sequence':'incomplete' if value['trade_gaps'] else 'not_proven',**value}
+ except (ValueError,OSError,TypeError):return {'status':'invalid'}
 
 @contextmanager
 def writer_lock(root):
@@ -142,12 +153,12 @@ def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),prov
   elif prior.get('status') in ('unavailable','pending','received'):errors['funding_audit']=prior['status']
  return markets,errors
 
-def run_once(root,*,ai_path,baseline_path,publisher_uid,markets,baseline_uid=None,clock=lambda:int(time.time()*1000)):
+def run_once(root,*,ai_path,baseline_path,publisher_uid,markets,baseline_uid=None,clock=lambda:int(time.time()*1000),execution_fetch=None):
  root=Path(root);results={};views={}
  # Same market objects are supplied to both experiments; only the decision
  # source differs. Decision freshness and signal timing are rechecked by cycle.
  for name,source,decision in (('ai','AI',ai_path),('baseline','baseline',baseline_path)):
-  try:results[name]=cycle(root/name,source=source,decision_path=decision,publisher_uid=(baseline_uid if name=='baseline' and baseline_uid is not None else publisher_uid),markets=markets,clock=clock)
+  try:results[name]=cycle(root/name,source=source,decision_path=decision,publisher_uid=(baseline_uid if name=='baseline' and baseline_uid is not None else publisher_uid),markets=markets,clock=clock,execution_fetch=execution_fetch)
   except Exception:results[name]={'status':'internal_error_requires_review'}
   stamp=clock();journal=root/name/'observations.db'
   with closing(sqlite3.connect(journal,timeout=10)) as db:
@@ -309,7 +320,9 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
          proof=ingest_epoch(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
         else:proof=ingest(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
         if proof['entry_blocked']:
-         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='epoch_wait_for_new_signal' if market=='futures' and epoch_row and not proof.get('conflict') else 'conflict';item['entry_conflict_reason']=errors[market+'_history']
+         reason='conflict'
+         if market=='futures' and epoch_row and not proof.get('conflict'):reason='epoch_raw_unavailable' if not proof.get('raw_available') else 'epoch_wait_for_new_signal'
+         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']=reason;item['entry_conflict_reason']=reason
        except (ValueError,TypeError,KeyError):
         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='invalid'
       elif market=='futures' and epoch_row:
@@ -318,10 +331,11 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
      legacy_conflicts=(evidence.execute("SELECT count(*) FROM market_conflicts WHERE market='futures'").fetchone()[0] if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() else 0)
      epoch_conflicts=(evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0] if epoch_row else 0)
     finally:evidence.close()
-    result=run_once(root,ai_path=ai_path,baseline_path=selected,publisher_uid=publisher_uid,baseline_uid=baseline_uid,markets=markets,clock=clock)
+    def trade_fetch(*,not_before_ms):return provider.futures_execution_trade(not_before_ms=not_before_ms,clock=clock)
+    result=run_once(root,ai_path=ai_path,baseline_path=selected,publisher_uid=publisher_uid,baseline_uid=baseline_uid,markets=markets,clock=clock,execution_fetch=trade_fetch)
     watermarks=update_watermarks(root,markets,now_ms=before,start_ms=identity['start_ms'],signal_window=window)
     result.update({'schema':1,'process_pid':os.getpid(),'start_ms':identity['start_ms'],'code_version':version,'data_errors':errors,'signal_window':window,'market_watermarks':watermarks,'next_signal_boundary_ms':(clock()//900000+1)*900000,'baseline_origin':baseline_origin,'backup':backup_health(backup_path,owner_uid=backup_uid,now_ms=clock()),'global_ai_budget':budget_health(budget_path,owner_uid=publisher_uid,now_ms=clock())})
-    result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'preview_only_not_installed_in_execution','execution_gate':'futures_trade_execution_price_unverified','economic_status':'rejected','sizing':None}
+    result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'enforced_v2_research_only' if epoch_row else 'legacy_10_v2_inactive','execution_gate':'fresh_post_signal_trade_and_funding_required','economic_status':'rejected','capture':capture_coverage(root),'sizing':None}
     try:
      from .usdm_study_sizing import minimum_futures_size
      ctx=markets['futures'];result['usdm_research']['sizing']=minimum_futures_size(ctx['filters']['filters'],ctx['quote']['price'],stop_distance='.02',fee_bps='10',slippage_bps='5')

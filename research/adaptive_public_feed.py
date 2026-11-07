@@ -7,7 +7,7 @@ from .adaptive_shadow import candles
 SPOT='https://data-api.binance.vision'
 FUTURES='https://fapi.binance.com'
 PATHS={(SPOT,'/api/v3/aggTrades'),(SPOT,'/api/v3/klines'),(SPOT,'/api/v3/exchangeInfo'),(SPOT,'/api/v3/time'),
-       (FUTURES,'/fapi/v1/premiumIndex'),(FUTURES,'/fapi/v1/fundingRate'),(FUTURES,'/fapi/v1/exchangeInfo'),(FUTURES,'/fapi/v1/time'),(FUTURES,'/fapi/v1/klines')}
+       (FUTURES,'/fapi/v1/premiumIndex'),(FUTURES,'/fapi/v1/aggTrades'),(FUTURES,'/fapi/v1/fundingRate'),(FUTURES,'/fapi/v1/exchangeInfo'),(FUTURES,'/fapi/v1/time'),(FUTURES,'/fapi/v1/klines')}
 
 def get(host,path,params):
  if (host,path) not in PATHS or not isinstance(params,dict) or (path not in ('/api/v3/time','/fapi/v1/time') and params.get('symbol')!='BTCUSDT') or (path in ('/api/v3/time','/fapi/v1/time') and params):raise ValueError('public_endpoint_denied')
@@ -29,6 +29,12 @@ def futures_quote(*,fetch=get,clock=lambda:int(time.time()*1000)):
  raw=fetch(FUTURES,'/fapi/v1/premiumIndex',{'symbol':'BTCUSDT'});received=clock()
  result=validate_mark(raw,received_ms=received)
  return {**quote({'symbol':'BTCUSDT','source':'binance_usdm_mark','price':result['mark'],'event_ms':result['event_ms'],'received_ms':received},market='futures',now_ms=received),'next_due_ms':result['next_due_ms']}
+
+def futures_execution_trade(*,not_before_ms,fetch=get,clock=lambda:int(time.time()*1000)):
+ from .adaptive_market_proof import futures_trade_quote
+ rows=fetch(FUTURES,'/fapi/v1/aggTrades',{'symbol':'BTCUSDT','limit':1});received=clock()
+ if not isinstance(rows,list) or len(rows)!=1 or not isinstance(rows[0],dict):raise ValueError('public_trade_invalid')
+ return futures_trade_quote({'symbol':'BTCUSDT','source':'binance_usdm_trade','trade_id':rows[0].get('a'),'price':rows[0].get('p'),'event_ms':rows[0].get('T'),'received_ms':received},now_ms=received,not_before_ms=not_before_ms)
 
 def funding_history(start_ms,end_ms,*,fetch=get,clock=lambda:int(time.time()*1000)):
  if type(start_ms) is not int or type(end_ms) is not int or not 0<=start_ms<=end_ms or end_ms-start_ms>7*86400000:raise ValueError('funding_window_invalid')
@@ -58,7 +64,7 @@ def closed_15m(market,*,fetch=get,clock=lambda:int(time.time()*1000)):
  closed=[r for r in raw if type(r[6]) is int and r[6]<server]
  rows=[(r[0],float(r[1]),float(r[2]),float(r[3]),float(r[4])) for r in closed]
  if len(rows)!=len(data):raise ValueError('candle_capture_mismatch')
- return {'market':market,'symbol':'BTCUSDT','source':'binance_spot_klines' if market=='spot' else 'binance_usdm_klines','server_ms':server,'received_ms':received,'bars':rows[:-1],'skip_bar':rows[-1]}
+ return {'market':market,'symbol':'BTCUSDT','source':'binance_spot_klines' if market=='spot' else 'binance_usdm_klines','server_ms':server,'received_ms':received,'bars':rows[:-1],'skip_bar':rows[-1],'raw_bars':closed}
 
 def execution_candles(market,warm,price,*,fetch=get,clock=lambda:int(time.time()*1000)):
  """Complete a pre-boundary history using one post-boundary candle fetch."""
@@ -77,4 +83,6 @@ def execution_candles(market,warm,price,*,fetch=get,clock=lambda:int(time.time()
  matches=[r for r in raw if r[0]==boundary-900000]
  if len(matches)!=1:raise ValueError('execution_candle_invalid')
  r=matches[0];skip=(r[0],float(r[1]),float(r[2]),float(r[3]),float(r[4]))
- return {'market':market,'symbol':'BTCUSDT','source':source,'received_ms':received,'warm_received_ms':warm['received_ms'],'bars':bars+[last],'skip_bar':skip}
+ result={'market':market,'symbol':'BTCUSDT','source':source,'received_ms':received,'warm_received_ms':warm['received_ms'],'bars':bars+[last],'skip_bar':skip}
+ if isinstance(warm.get('raw_bars'),list):result['raw_bars']=warm['raw_bars']+[r]
+ return result

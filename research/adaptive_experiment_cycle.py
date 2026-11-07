@@ -17,7 +17,7 @@ from .adaptive_experiment_recovery import reconcile,recover_spot
 from .adaptive_protection_monitor import observe
 from .adaptive_spot_worker import process_entry,process_short,process_stop,process_short_stop
 
-def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(time.time()*1000)):
+def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(time.time()*1000),execution_fetch=None):
  path=Path(path);manifest=json.loads((path/'manifest.json').read_text())
  if source not in ('AI','baseline') or manifest.get('source')!=source:raise ValueError('experiment_identity_conflict')
  start=manifest['start_ms'];q=state=spot=future=None
@@ -48,11 +48,13 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
       raw={'symbol':'BTCUSDT','time':price['event_ms'],'markPrice':price['price'],'nextFundingTime':ctx['quote']['next_due_ms']}
       advance(future,position_id=pos['id'],mark_response=raw,received_ms=price['received_ms'],history=ctx.get('funding_history'))
      except (ValueError,KeyError,TypeError) as exc:funding_problem=str(exc)[:120]
-    summary=observe(q,spot if market=='spot' else future,state,quote=price['price'],quote_ms=price['event_ms'],bars=ctx.get('bars'),skip_bar=ctx.get('skip_bar'),risk_bar=ctx.get('risk_bar'),clock=clock)
+    summary=observe(q,spot if market=='spot' else future,state,quote=price['price'],quote_ms=price['event_ms'],bars=ctx.get('bars'),skip_bar=ctx.get('skip_bar'),risk_bar=ctx.get('risk_bar'),clock=clock,source_mark=price if market=='futures' and ctx.get('epoch_v2') else None)
     if funding_problem:summary['funding_error']=funding_problem
     if summary.get('job_id') and not summary.get('reason'):
      worker=process_stop if market=='spot' else process_short_stop
-     outcome=worker(q,spot if market=='spot' else future,state,quote=price['price'],quote_ms=price['event_ms'],clock=clock)
+     data=ctx.get('filters') or {}
+     kwargs={'execution_fetch':execution_fetch,'current_mark_proof':price,'execution_filters':data.get('filters'),'filters_ms':data.get('received_ms')} if market=='futures' and ctx.get('epoch_v2') else {}
+     outcome=worker(q,spot if market=='spot' else future,state,quote=price['price'],quote_ms=price['event_ms'],clock=clock,**kwargs)
      return {'status':'protection_exit','result':outcome,'protection':summary}
     protected=summary
    except (ValueError,KeyError,TypeError) as exc:protected={'state':'unavailable','reason':str(exc)[:120]}
@@ -78,7 +80,7 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
   # The existing USD-M quote is a mark, not an executable trade.  Until the
   # entry/exit path carries a source-timestamped trade quote after signal
   # fixation, the larger research notional must not turn that mark into a fill.
-  if market=='futures' and ctx.get('epoch_v2'):return {'status':'entry_blocked','reason':'futures_trade_execution_price_unverified','protection':protected}
+  if market=='futures' and ctx.get('epoch_v2') and execution_fetch is None:return {'status':'entry_blocked','reason':'futures_trade_execution_price_unverified','protection':protected}
   if ctx.get('entry_window') is False:return {'status':'waiting_for_signal_window','protection':protected}
   try:
    candles=ctx['candles'];bars=candles['bars'];skip_bar=candles['skip_bar']
@@ -99,6 +101,7 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
    signal={'source':source,'symbol':'BTCUSDT','snapshot_id':info['snapshot_id'],'strategy':choice['strategy'],'direction':choice['direction']}
    args={'decision':decision,'signal':signal,'data_ms':info['data_ms'],'decision_version':'regular-regime-horizon-v2','bars':bars,'skip_bar':skip_bar,'quote':price['price'],'quote_ms':price['event_ms'],'filters':filters['filters'],'filters_ms':filters['received_ms'],'clock':clock}
    if market=='futures':args['funding_evidence']=funding
+   if market=='futures' and ctx.get('epoch_v2'):args.update(execution_fetch=execution_fetch,filter_mark_proof=price)
    result=(process_entry(q,spot,state,**args) if market=='spot' else process_short(q,future,state,**args))
    if market=='futures' and result.get('status')=='OPEN':
     from .adaptive_funding_tracker import register

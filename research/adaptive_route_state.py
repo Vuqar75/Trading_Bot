@@ -74,6 +74,27 @@ class RouteState:
    raise
   finally:
    if financial is not None:financial.close()
+ def confirm_futures_not_filled_v2(self,action_id,financial_path):
+  """Cancel only under the same route+financial locks used by v2 entry."""
+  p=Path(financial_path)
+  if p.is_symlink() or not p.is_file():raise ValueError('invalid_financial_fixture')
+  p=p.resolve()
+  if not p.is_relative_to(Path(tempfile.gettempdir()).resolve()) or p.parent!=self.path.resolve().parent:raise ValueError('fixture_outside_sandbox')
+  self.db.execute('ATTACH DATABASE ? AS financial_guard',(str(p),))
+  try:
+   self.db.execute('BEGIN IMMEDIATE')
+   state=self.db.execute('SELECT phase,action_id,market FROM route_state WHERE id=1').fetchone()
+   if not state or tuple(state)!=('ENTRY_PENDING',action_id,'futures'):raise ValueError('action_state_mismatch')
+   if self.db.execute('SELECT 1 FROM financial_guard.futures_events WHERE business_key=?',(action_id,)).fetchone():raise ValueError('financial_event_exists')
+   row=self.db.execute("SELECT value FROM financial_guard.futures_meta WHERE key='position'").fetchone()
+   if row and json.loads(row[0]) is not None:raise ValueError('position_exists')
+   self.db.execute("UPDATE route_actions SET phase='CANCELED' WHERE action_id=?",(action_id,))
+   self.db.execute("UPDATE route_state SET phase='IDLE',action_id=NULL,strategy=NULL,market=NULL,direction=NULL,position_id=NULL WHERE id=1")
+   self.db.commit();return {'phase':'IDLE'}
+  except BaseException:
+   if self.db.in_transaction:self.db.rollback()
+   raise
+  finally:self.db.execute('DETACH DATABASE financial_guard')
  def confirm_open(self,action_id,financial_path):
   """Advance only after observing a matching real paper ledger commit.
 

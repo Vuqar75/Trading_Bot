@@ -10,6 +10,7 @@ from trading_bot.paper_wallet_ledger import PaperWalletLedger
 def _schema(db):
  db.execute('CREATE TABLE IF NOT EXISTS market_epochs(id INTEGER PRIMARY KEY,market TEXT NOT NULL,start_ms INTEGER NOT NULL,created_ms INTEGER NOT NULL,proof TEXT NOT NULL,source TEXT NOT NULL)')
  db.execute('CREATE TABLE IF NOT EXISTS epoch_candles(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,sha256 TEXT NOT NULL,first_received_ms INTEGER NOT NULL,PRIMARY KEY(epoch_id,start_ms))')
+ db.execute('CREATE TABLE IF NOT EXISTS epoch_raw_candles(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,sha256 TEXT NOT NULL,first_received_ms INTEGER NOT NULL,PRIMARY KEY(epoch_id,start_ms))')
  db.execute('CREATE TABLE IF NOT EXISTS epoch_conflicts(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,observed_ms INTEGER NOT NULL,UNIQUE(epoch_id,start_ms,payload))')
 
 def start_epoch(root,*,market,clock=lambda:int(time.time()*1000)):
@@ -50,6 +51,13 @@ def ingest_epoch(db,*,market,candles,observed_ms):
  if market!='futures' or candles.get('market')!=market or candles.get('symbol')!='BTCUSDT' or candles.get('source')!='binance_usdm_klines':raise ValueError('invalid_market')
  rows=candles.get('bars',[])+[candles.get('skip_bar')];warm=candles.get('warm_received_ms',observed_ms)
  if type(observed_ms) is not int or type(warm) is not int or warm>observed_ms or not rows or any(not isinstance(x,(tuple,list)) or len(x)!=5 or type(x[0]) is not int or x[0]%900000 or x[0]+900000>(observed_ms if i==len(rows)-1 else warm) for i,x in enumerate(rows)) or any(b[0]-a[0]!=900000 for a,b in zip(rows,rows[1:])):raise ValueError('invalid_candles')
+ raw_rows=candles.get('raw_bars')
+ if raw_rows is not None:
+  if not isinstance(raw_rows,list) or len(raw_rows)!=len(rows):raise ValueError('raw_candle_count_mismatch')
+  try:
+   for raw,row in zip(raw_rows,rows):
+    if not isinstance(raw,list) or len(raw)<7 or raw[0]!=row[0] or raw[6]!=row[0]+899999 or any(float(raw[j])!=row[j] for j in range(1,5)) or not Decimal(str(raw[5])).is_finite() or Decimal(str(raw[5]))<0:raise ValueError('raw_candle_mismatch')
+  except (TypeError,ArithmeticError,IndexError):raise ValueError('raw_candle_mismatch') from None
  db.execute('BEGIN IMMEDIATE')
  try:
   _schema(db);epoch=db.execute('SELECT id,start_ms FROM market_epochs WHERE market=? ORDER BY id DESC LIMIT 1',(market,)).fetchone()
@@ -59,6 +67,11 @@ def ingest_epoch(db,*,market,candles,observed_ms):
    raw=json.dumps(list(row),separators=(',',':'),allow_nan=False);digest=hashlib.sha256(raw.encode()).hexdigest();old=db.execute('SELECT sha256 FROM epoch_candles WHERE epoch_id=? AND start_ms=?',(eid,row[0])).fetchone()
    if old and old[0]!=digest:db.execute('INSERT OR IGNORE INTO epoch_conflicts VALUES(?,?,?,?)',(eid,row[0],raw,observed_ms))
    elif not old:db.execute('INSERT INTO epoch_candles VALUES(?,?,?,?,?)',(eid,row[0],raw,digest,observed_ms if i==len(rows)-1 else warm))
+   if raw_rows is not None:
+    source=json.dumps(raw_rows[i],separators=(',',':'),allow_nan=False);source_sha=hashlib.sha256(source.encode()).hexdigest()
+    prior=db.execute('SELECT sha256 FROM epoch_raw_candles WHERE epoch_id=? AND start_ms=?',(eid,row[0])).fetchone()
+    if prior and prior[0]!=source_sha:db.execute('INSERT OR IGNORE INTO epoch_conflicts VALUES(?,?,?,?)',(eid,row[0],json.dumps({'raw':raw_rows[i]},separators=(',',':')),observed_ms))
+    elif not prior:db.execute('INSERT INTO epoch_raw_candles VALUES(?,?,?,?,?)',(eid,row[0],source,source_sha,observed_ms if i==len(rows)-1 else warm))
   conflict=bool(db.execute('SELECT 1 FROM epoch_conflicts WHERE epoch_id=? LIMIT 1',(eid,)).fetchone())
-  db.commit();return {'epoch_id':eid,'start_ms':start,'conflict':conflict,'new_signal':len(rows)>1 and rows[-2][0]+900000>start,'entry_blocked':conflict or len(rows)<2 or rows[-2][0]+900000<=start}
+  db.commit();return {'epoch_id':eid,'start_ms':start,'conflict':conflict,'raw_available':raw_rows is not None,'new_signal':len(rows)>1 and rows[-2][0]+900000>start,'entry_blocked':conflict or raw_rows is None or len(rows)<2 or rows[-2][0]+900000<=start}
  except BaseException:db.rollback();raise

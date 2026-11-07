@@ -48,6 +48,24 @@ class CycleTest(unittest.TestCase):
   self.markets['futures']={'epoch_v2':True}
   result=self.run_cycle('ai',self.apath)
   self.assertEqual((result['status'],result['reason']),('entry_blocked','futures_trade_execution_price_unverified'))
+ def test_v2_full_cycle_uses_trade_and_local_exit_when_ai_missing(self):
+  import sqlite3
+  from research.adaptive_market_epoch import _schema,ingest_epoch
+  self.decision['mode']='TREND_DOWN';self.ai=bind(self.captured,self.decision,self.data_ms+1,model='gpt-6-luna',request_sha256='0'*64);self.apath.write_text(json.dumps(self.ai))
+  bar=900000;bars=[(i*bar,100.,101.,99.,100.) for i in range(196)];bars[-1]=(195*bar,100.,101.,98.,99.)
+  candles={'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':bars,'skip_bar':(196*bar,100.,101.,99.,100.)}
+  candles['raw_bars']=[[r[0],str(r[1]),str(r[2]),str(r[3]),str(r[4]),'10',r[0]+899999] for r in bars+[candles['skip_bar']]]
+  db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);_schema(db);db.execute("INSERT INTO market_epochs(market,start_ms,created_ms,proof,source) VALUES('futures',?,?,?,?)",(194*bar,194*bar,'{}','binance_usdm_klines_v2'));ingest_epoch(db,market='futures',candles=candles,observed_ms=self.now);db.close()
+  filters=symbol_info();filters.update(contractType='PERPETUAL',marginAsset='USDT',marketTakeBound='0.03')
+  for r in filters['filters']:
+   if r['filterType']=='MIN_NOTIONAL':r['minNotional']='50'
+  self.markets['futures']={'epoch_v2':True,'candles':candles,'quote':{'symbol':'BTCUSDT','source':'binance_usdm_mark','price':'100','event_ms':self.now,'received_ms':self.now,'next_due_ms':self.now+28800000},'filters':{'market':'futures','symbol':'BTCUSDT','filters':filters,'received_ms':self.now}}
+  def trade(**kw):return {'symbol':'BTCUSDT','source':'binance_usdm_trade','trade_id':1,'price':self.markets['futures']['quote']['price'],'event_ms':self.now,'received_ms':self.now}
+  result=cycle(self.root/'ai',source='AI',decision_path=self.apath,publisher_uid=os.getuid(),markets=self.markets,clock=lambda:self.now,execution_fetch=trade)
+  self.assertEqual(result['result']['status'],'OPEN')
+  self.now+=1000;self.markets['futures']['quote'].update(price='103',event_ms=self.now,received_ms=self.now)
+  result=cycle(self.root/'ai',source='AI',decision_path=self.private/'missing',publisher_uid=os.getuid(),markets=self.markets,clock=lambda:self.now,execution_fetch=trade)
+  self.assertEqual(result['status'],'protection_exit');self.assertEqual(result['result']['status'],'IDLE')
  def test_history_conflict_blocks_entry_but_not_fresh_price_exit(self):
   self.markets['spot']['entry_conflict']=True
   self.assertEqual(self.run_cycle('ai',self.apath)['reason'],'market_history_conflict')
