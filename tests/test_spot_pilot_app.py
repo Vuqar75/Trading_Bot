@@ -77,6 +77,7 @@ class PilotApplicationTest(unittest.TestCase):
    if path=='/api/v3/ticker/price':return {'symbol':'BTCUSDT','price':market[0]}
    if path=='/api/v3/exchangeInfo':return {'symbols':[symbol_info()]}
    if path=='/api/v3/klines':
+    if market[0]=='97':raise RuntimeError('candles unavailable')
     rows=[[i*BAR,'100','101','99','100','1',(i+1)*BAR-1] for i in range(1,201)]
     rows[-2][2]='103';rows[-2][4]='102';return rows
    raise AssertionError(path)
@@ -88,7 +89,7 @@ class PilotApplicationTest(unittest.TestCase):
    self.assertEqual(len(self.store.get('spot_pilot')['entries']),1)
    self.assertGreater(Decimal(self.store.get('position')['quantity']),0)
    with self.store.transaction():self.store.set('paused',True)
-   market[0]='97';self.app.tick()
+   market[0]='97';clock[0]=(start+4*BAR)/1000;self.app.tick()
   self.assertEqual(Decimal(self.store.get('position')['quantity']),0)
   self.assertTrue(self.store.get('paused'))
   self.assertLess(Decimal(self.store.get('spot_pilot')['realized_usdt']),0)

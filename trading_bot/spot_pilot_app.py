@@ -104,7 +104,7 @@ class SpotPilotApplication(Application):
   if self.manual_close():return
   state=self.store.get('spot_pilot');boundary=state.get('next_execution_ms');now=int(self.clock()*1000)
   due=state.get('phase')=='active' and type(boundary) is int and boundary<=now<=boundary+5000
-  inputs=None;protection=None
+  inputs=None;protection=None;position=self.store.get('position')
   if due:
    # All pre-decision inputs are public and independent. The execution quote
    # is still obtained after the decision is durably committed.
@@ -113,9 +113,16 @@ class SpotPilotApplication(Application):
     server=pool.submit(self.reader.get,'/api/v3/time')
     candles=pool.submit(self.reader.get,'/api/v3/klines',{'symbol':'BTCUSDT','interval':'15m','limit':200})
     filters=pool.submit(self.reader.get,'/api/v3/exchangeInfo',{'symbol':self.symbol})
-    position=self.store.get('position')
     protect=pool.submit(_fresh,self.reader,self.clock) if number(position['quantity']) else None
-    quote=ticker.result();inputs=(server.result(),candles.result(),filters.result());protection=protect.result() if protect else None
+    if protect:
+     protection=protect.result();raw,event,received=protection
+     self.last_protection_at=received/1000;self.last_protection_position=position['id']
+     reason='PILOT1H_STOP' if raw<=number(position['entry_price'])*Decimal('.98') else 'PILOT1H_TIME' if int(self.clock()*1000)-int(position['opened_at']*1000)>=168*HOUR else None
+     if reason:
+      self._exit(position,reason,raw=raw,event=event,received=received,info=filters.result()['symbols'][0]);return
+    quote=ticker.result();inputs=(server.result(),candles.result(),filters.result())
+  elif state.get('phase')=='active' and number(position['quantity']):
+   protection=_fresh(self.reader,self.clock);quote={'symbol':self.symbol,'price':str(protection[0])}
   else:quote=self.reader.get('/api/v3/ticker/price',{'symbol':self.symbol})
   at=self.clock()
   if quote.get('symbol')!=self.symbol or not number(quote.get('price')):raise ObservationError('Spot mark unavailable')

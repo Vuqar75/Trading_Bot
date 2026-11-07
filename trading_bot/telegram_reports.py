@@ -10,6 +10,7 @@ def when(stamp):
     return datetime.fromtimestamp(stamp, timezone(timedelta(hours=4))).strftime('%d.%m %H:%M:%S') + ' (Баку)'
 
 def pilot_lines(store):
+    import json
     from .spot_pilot_limits import entry_allowed
     state=store.get('spot_pilot')
     if not isinstance(state,dict):return None
@@ -21,6 +22,18 @@ def pilot_lines(store):
     state_time=lambda key: when(state[key]/1000) if state.get(key) else 'ещё нет'
     close=state.get('last_close');threshold=state.get('entry_high')
     result=state.get('realized_usdt') if not state.get('realized_unconfirmed') else None
+    entries=state.get('entries',[]);closes=state.get('close_fills',{})
+    fills=[];complete=True
+    for client in entries:
+        rows=store.db.execute('SELECT payload FROM runtime_fills WHERE client_id=?',(client,)).fetchall()
+        if not rows:complete=False
+        fills.extend(json.loads(r[0]) for r in rows)
+    for trade_id in closes:
+        row=store.db.execute('SELECT payload FROM runtime_fills WHERE trade_id=?',(trade_id,)).fetchone()
+        if row:fills.append(json.loads(row[0]))
+        else:complete=False
+    fee=(sum((Decimal(f['commission']) for f in fills),Decimal(0)) if complete and all(f.get('commissionAsset')=='USDT' for f in fills) else None)
+    quantity=Decimal(store.get('position')['quantity'])
     return ['Spot • PAPER • BTCUSDT • тренд 1H (btc-trend1-48-24-v1)',
       'Экспериментальный paper-пилот; преимущество не доказано.',
       'Входы: '+('разрешены' if allowed else 'запрещены')+' — '+reasons.get(reason,reason),
@@ -30,6 +43,7 @@ def pilot_lines(store):
       'Последний сигнал / результат: '+str(state.get('last_action') or 'ожидание')+' / '+str(state.get('last_result') or 'ожидание'),
       'Выход: минимум 24 часов, стоп 2% или 168 часов; точная цена стопа не гарантирована.',
       'Входы пилота: '+str(len(state.get('entries',[])))+' из 3; реализованный net: '+(fmt(result,signed=True)+' USDT' if result is not None else 'не подтверждён')+'; предел убытка 1 USDT.',
+      'Позиция пилота: '+(fmt(quantity,'BTC')+' BTC' if quantity and state.get('open_position_id')==store.get('position')['id'] else 'нет' if not quantity else 'требуется сверка')+'; комиссии пилота: '+(fmt(fee)+' USDT' if fee is not None else 'не подтверждены'),
       'Проверочный цикл и прежняя история не входят в результат пилота.']
 
 
