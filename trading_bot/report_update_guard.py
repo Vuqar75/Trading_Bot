@@ -5,7 +5,7 @@ financial posting, database restore or service operation is performed here.
 """
 import json
 import time
-from decimal import localcontext
+from decimal import Decimal,localcontext
 
 from .cross_paper_book import CrossPaperBook
 from .cross_rollout import _queue_anchor
@@ -42,7 +42,7 @@ def _pending(q):
 
 
 def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
-    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2') or not isinstance(operation,str) or not operation.startswith(namespace+':freeze:'):raise ValueError('Explicit operation required')
+    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2','spotpilot') or not isinstance(operation,str) or not operation.startswith(namespace+':freeze:'):raise ValueError('Explicit operation required')
     freeze_key=namespace+'_update_freeze'
     q=queue.db
     try:
@@ -62,6 +62,12 @@ def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
                 if shared._get(market,'error') or shared._get(market,'blocked') or not 0<=now-quote.get('time',0)<=120:
                     raise ValueError('Market health requires inspection')
             if not states['spot']['position'].get('fees_known') or shared.db.execute("SELECT 1 FROM runtime_orders WHERE phase!='SETTLED' LIMIT 1").fetchone():raise ValueError('Spot requires recovery')
+            if namespace=='spotpilot':
+                if Decimal(states['spot']['position']['quantity'])!=0:raise ValueError('Spot position must be empty for pilot')
+                assets=[r[0] for r in shared.db.execute("SELECT DISTINCT asset FROM ledger_postings WHERE account='spot:reserved'")]
+                if any(shared.ledger.balance('spot:reserved',asset)!=0 for asset in assets):raise ValueError('Spot reserve requires review')
+                if q.execute("SELECT 1 FROM unified_proposals WHERE status='OPEN' AND expires>? LIMIT 1",(now,)).fetchone():raise ValueError('Open confirmation requires review')
+                if any(p.get('status')=='OPEN' and p.get('expires',0)>now for p in queue.pair_proposals()):raise ValueError('Open pair proposal requires review')
             position=states['futures']['position'];quote=shared._get('futures','quote') or {}
             if position and (type(quote.get('server_ms')) is not int or type(position.get('funding_cursor')) is not int or position['funding_cursor']<quote['server_ms']):raise ValueError('Isolated funding requires reconciliation')
             paused={m:states[m]['paused'] for m in states}
@@ -69,9 +75,9 @@ def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
                 row=shared.db.execute('SELECT paused FROM wallet_state WHERE wallet=?',(market,)).fetchone()
                 if not row or row[0] not in (0,1):raise ValueError('Unknown market pause')
                 paused[market]=bool(row[0])
-            if namespace in ('diagnostics','resilience','boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2') and (not paused['futures_cross'] or not paused['margin_cross']):
+            if namespace in ('diagnostics','resilience','boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2','spotpilot') and (not paused['futures_cross'] or not paused['margin_cross']):
                 raise ValueError('Diagnostics require margin and cross paused')
-            if namespace in ('boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2') and not paused['futures']:
+            if namespace in ('boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2','spotpilot') and not paused['futures']:
                 raise ValueError('Boundary update requires isolated futures paused')
             if namespace in ('startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot') and not paused['spot']:
                 raise ValueError('Spot must remain paused')
@@ -87,7 +93,7 @@ def freeze_report_update(shared,queue,operation,*,now=None,namespace='reports'):
 
 
 def release_report_update(shared,queue,operation,*,protection_checked_ms,now=None,namespace='reports'):
-    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2') or not isinstance(operation,str) or not operation.startswith(namespace+':release:') or type(protection_checked_ms) is not int:raise ValueError('Explicit release and protection time required')
+    if namespace not in ('reports','diagnostics','resilience','boundary','finalaudit','helpguide','startguide','pair','inline','pairfix','healthdiag','donchianview','donchianspot','adaptiveshadow','adaptiveai','adaptivediag','regularai','aiview','adaptiveview','adaptiveview2','spotpilot') or not isinstance(operation,str) or not operation.startswith(namespace+':release:') or type(protection_checked_ms) is not int:raise ValueError('Explicit release and protection time required')
     freeze_key=namespace+'_update_freeze';release_key=namespace+'_update_release'
     q=queue.db
     try:
@@ -119,7 +125,7 @@ def release_report_update(shared,queue,operation,*,protection_checked_ms,now=Non
             shared.db.execute("UPDATE ledger_meta SET value='false' WHERE key='deployment_hold'")
             enabled=[]
             for market in ('spot','futures'):
-                if frozen['paused'][market] is False and market not in manual:shared._set(market,'paused',False);enabled.append(market)
+                if frozen['paused'][market] is False and market not in manual and not (namespace=='spotpilot' and market=='spot'):shared._set(market,'paused',False);enabled.append(market)
             if frozen['paused']['margin_cross'] is False and 'margin_cross' not in manual:
                 shared.db.execute("UPDATE wallet_state SET paused=0 WHERE wallet='margin_cross'");enabled.append('margin_cross')
             result={'operation':operation,'enabled':enabled,'manual_pauses':sorted(manual),'released_at':now}

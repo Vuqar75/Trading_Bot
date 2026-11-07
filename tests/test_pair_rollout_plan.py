@@ -66,6 +66,15 @@ class PairRolloutPlanTests(unittest.TestCase):
             data=(next_stage/name).read_text()
             self.assertEqual(data.count('--experimental-pair'),int(name in TRADING))
 
+    def test_pilot_replaces_only_installed_spot_strategy(self):
+        for name in TRADING:
+            path=self.units/name;data=path.read_text()
+            path.write_text(data.rstrip()+' --experimental-pair'+(' --donchian-paper' if name=='tradingbot-spot.service' else '')+'\n')
+        stage_units(self.units,self.stage,installed_root=self.old,candidate_root=self.new,pair_already_enabled=True,spot_pilot=True)
+        spot=(self.stage/'tradingbot-spot.service').read_text()
+        self.assertIn('--spot-pilot',spot);self.assertNotIn('--donchian-paper',spot)
+        for name in TRADING-{'tradingbot-spot.service'}:self.assertNotIn('--spot-pilot',(self.stage/name).read_text())
+
     def test_staging_accepts_repository_service_templates(self):
         deploy=Path(__file__).resolve().parents[1]/'deploy'
         names={'tradingbot-spot.service':'vm-cross-spot-paper.service',

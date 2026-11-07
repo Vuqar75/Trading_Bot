@@ -9,6 +9,43 @@ from .display_amount import display_amount as fmt
 def when(stamp):
     return datetime.fromtimestamp(stamp, timezone(timedelta(hours=4))).strftime('%d.%m %H:%M:%S') + ' (Баку)'
 
+def pilot_lines(store):
+    import json
+    from .spot_pilot_limits import entry_allowed
+    state=store.get('spot_pilot')
+    if not isinstance(state,dict):return None
+    allowed,reason=entry_allowed(state)
+    if store.get('paused'):allowed,reason=False,'ручная или защитная пауза'
+    if store.get('blocked'):allowed,reason=False,'требуется финансовая сверка'
+    if Decimal(store.get('position')['quantity']):allowed,reason=False,'позиция уже открыта'
+    reasons={'allowed':'лимиты соблюдены','pilot_not_active':'ожидание запуска','pilot_entry_limit':'достигнут лимит трёх входов','pilot_loss_limit':'достигнут лимит убытка','pilot_realized_unconfirmed':'результат требует сверки'}
+    state_time=lambda key: when(state[key]/1000) if state.get(key) else 'ещё нет'
+    close=state.get('last_close');threshold=state.get('entry_high')
+    result=state.get('realized_usdt') if not state.get('realized_unconfirmed') else None
+    entries=state.get('entries',[]);closes=state.get('close_fills',{})
+    fills=[];complete=True
+    for client in entries:
+        rows=store.db.execute('SELECT payload FROM runtime_fills WHERE client_id=?',(client,)).fetchall()
+        if not rows:complete=False
+        fills.extend(json.loads(r[0]) for r in rows)
+    for trade_id in closes:
+        row=store.db.execute('SELECT payload FROM runtime_fills WHERE trade_id=?',(trade_id,)).fetchone()
+        if row:fills.append(json.loads(row[0]))
+        else:complete=False
+    fee=(sum((Decimal(f['commission']) for f in fills),Decimal(0)) if complete and all(f.get('commissionAsset')=='USDT' for f in fills) else None)
+    quantity=Decimal(store.get('position')['quantity'])
+    return ['Spot • PAPER • BTCUSDT • тренд 1H (btc-trend1-48-24-v1)',
+      'Экспериментальный paper-пилот; преимущество не доказано.',
+      'Входы: '+('разрешены' if allowed else 'запрещены')+' — '+reasons.get(reason,reason),
+      'Начало: '+state_time('start_ms')+'; последняя свеча: '+state_time('last_candle_ms'),
+      'Следующий расчёт: '+state_time('next_execution_ms'),
+      'Вход: закрытие выше максимума 48 предыдущих часов; закрытие / максимум: '+(fmt(close)+' / '+fmt(threshold)+' USDT' if close is not None and threshold is not None else 'ещё не рассчитаны'),
+      'Последний сигнал / результат: '+str(state.get('last_action') or 'ожидание')+' / '+str(state.get('last_result') or 'ожидание'),
+      'Выход: минимум 24 часов, стоп 2% или 168 часов; точная цена стопа не гарантирована.',
+      'Входы пилота: '+str(len(state.get('entries',[])))+' из 3; реализованный net: '+(fmt(result,signed=True)+' USDT' if result is not None else 'не подтверждён')+'; предел убытка 1 USDT.',
+      'Позиция пилота: '+(fmt(quantity,'BTC')+' BTC' if quantity and state.get('open_position_id')==store.get('position')['id'] else 'нет' if not quantity else 'требуется сверка')+'; комиссии пилота: '+(fmt(fee)+' USDT' if fee is not None else 'не подтверждены'),
+      'Проверочный цикл и прежняя история не входят в результат пилота.']
+
 
 def status(store):
     identity = store.get('identity')
@@ -21,7 +58,9 @@ def status(store):
              'Таймфрейм: ' + store.get('selected_interval', identity.get('interval', '15m')),
              'Размер входа: до ' + fmt(identity.get('amount', '10')) + ' USDT',
              'Новые входы: ' + ('на паузе' if store.get('paused') else 'разрешены')]
-    donchian=store.get('donchian60')
+    pilot=pilot_lines(store)
+    if pilot:lines=pilot
+    donchian=None if pilot else store.get('donchian60')
     if isinstance(donchian,dict):
         lines[2]='Стратегия: Donchian60 • дневные свечи UTC; вход до 10 USDT'
         lines += ['Новый paper-этап: '+when(donchian['start_ms']/1000),
@@ -46,10 +85,10 @@ def status(store):
     if quote:
         age = max(0, int(time.time()-quote['time']))
         lines.append(f"Котировка: {fmt(quote['price'])} USDT\nПолучена: {when(quote['time'])}, {age} сек. назад" + (' — УСТАРЕЛА' if age > 120 else ''))
-        if qty and (not donchian or age<=120):
-            estimate = qty*Decimal(quote['price'])*Decimal('.999')*(Decimal('.9995') if donchian else Decimal(1))-Decimal(pos['cost'])
+        if qty and (not (donchian or pilot) or age<=120):
+            estimate = qty*Decimal(quote['price'])*Decimal('.999')*(Decimal('.9995') if donchian or pilot else Decimal(1))-Decimal(pos['cost'])
             lines.append(f'Оценка результата закрытия с комиссией 0,1%: {fmt(estimate,signed=True)} USDT')
-        elif qty and donchian:lines.append('Открытый PnL неизвестен: котировка устарела.')
+        elif qty and (donchian or pilot):lines.append('Открытый PnL неизвестен: котировка устарела.')
     else:
         lines.append('Котировка: ещё не получена')
     lines += [f"Накопленный реализованный PnL: {fmt(store.get('pnl'),signed=True)} USDT",
@@ -64,6 +103,8 @@ def status(store):
 
 
 def signal_report(store):
+    pilot=pilot_lines(store)
+    if pilot:return '\n'.join(pilot)
     state=store.get('donchian60')
     if isinstance(state,dict):
         return '\n'.join(['Spot • PAPER • Donchian60 • BTCUSDT • дневные свечи UTC',
@@ -139,6 +180,8 @@ def history(store):
 
 def daily_report(store, now=None):
     now = time.time() if now is None else now
+    pilot=pilot_lines(store)
+    if pilot:return '\n'.join(pilot+['Позиция и оценка: /status spot. Отдельное наблюдение: /donchian.'])
     local = datetime.fromtimestamp(now, timezone(timedelta(hours=4)))
     start = local.replace(hour=0, minute=0, second=0, microsecond=0).timestamp()
     rows = store.db.execute('SELECT client_id,pnl,known FROM runtime_closes WHERE ts>=? AND ts<=?', (start, now)).fetchall()

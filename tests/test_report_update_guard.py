@@ -47,6 +47,14 @@ class ReportUpdateGuardTests(unittest.TestCase):
         with self.shared.transaction():self.shared._set('spot','paused',True)
         self.assertTrue(self.release()['replayed']);self.assertTrue(self.shared.snapshot('spot')['paused'])
 
+    def test_spot_pilot_rollout_stays_paused_until_separate_activation(self):
+        frozen=freeze_report_update(self.shared,self.q,'spotpilot:freeze:test',now=100,namespace='spotpilot')
+        self.assertFalse(frozen['paused']['spot'])
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            done=release_report_update(self.shared,self.q,'spotpilot:release:test',protection_checked_ms=100000,now=100,namespace='spotpilot')
+        self.assertNotIn('spot',done['enabled']);self.assertTrue(self.shared.snapshot('spot')['paused'])
+        self.assertFalse(self.shared.deployment_hold());self.assertTrue(self.shared.ledger.reconcile()['balanced'])
+
     def test_manual_pause_after_freeze_and_expired_protection(self):
         self.freeze()
         with self.assertRaisesRegex(ValueError,'protection stale'):self.release(checked=-30000)
