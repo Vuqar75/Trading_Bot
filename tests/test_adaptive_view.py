@@ -1,4 +1,4 @@
-import json,tempfile,time,unittest
+import json,sqlite3,tempfile,time,unittest
 from pathlib import Path
 from unittest.mock import patch
 from trading_bot import adaptive_view
@@ -53,3 +53,21 @@ class AdaptiveViewTest(unittest.TestCase):
    token=tokens[0][0].split(':',1)[1];q.receive(3,False,'',callback_data=token,now=self.now)
    q.receive(4,True,'',callback_data=token,now=self.now);q.receive(4,True,'',callback_data=token,now=self.now)
    self.assertEqual(q.db.execute('select count(*) from unified_jobs').fetchone()[0],0)
+ def test_actual_hourly_short_result_is_displayed_without_writing_state(self):
+  from research.adaptive_route_policy import candle_digest
+  signal_close=(self.now*1000//3600000-1)*3600000;boundary=signal_close+900000
+  bars=[[signal_close-900000-(195-i)*900000,100.,102.,99.,100.] for i in range(196)]
+  bars[-1][4]=101.;skip=[signal_close,100.,102.,99.,100.]
+  data={'bars':bars,'skip_bar':skip,'candles_sha256':candle_digest(bars,skip)}
+  q=sqlite3.connect(self.study/'baseline'/'queue.db');q.execute("INSERT INTO unified_updates VALUES(1,'fixture','/research_adaptive_entry','futures')")
+  q.execute("INSERT INTO unified_jobs(update_id,market,command,payload,status) VALUES(1,'futures','/research_adaptive_entry',?,'FAILED')",(json.dumps(data),));q.commit();q.close()
+  o=sqlite3.connect(self.study/'baseline'/'observations.db');result={'status':'entry_evaluated','route':{'market':'futures','direction':'SHORT','strategy':'trend1'},'result':{'status':'NO_SIGNAL'}}
+  o.execute('INSERT INTO samples(stamp_ms,status,payload) VALUES(?,?,?)',(boundary+1000,'entry_evaluated',json.dumps(result)));o.commit();o.close()
+  status=json.loads((self.study/'status.json').read_text());status['experiments']['baseline']['route'].update(phase='IDLE',decision_fresh=True);status['experiments']['baseline']['latest_decision']={'mode':'TREND_DOWN'};status['cycles']['baseline']={'status':'waiting_for_signal_window'}
+  write_status(self.study,status);publish(self.study,self.out,clock=lambda:self.now*1000)
+  snapshot=json.loads(self.path.read_text());view=snapshot['experiments']['baseline'];self.assertEqual(view['last_hourly_signal']['close'],101.);self.assertEqual(view['last_hourly_signal']['threshold'],100.)
+  self.assertEqual(view['cycle']['operational_status'],'waiting_for_signal_window');self.assertIn('101.0 ≥ 100.0',adaptive_view.render(path=self.path,now=self.now));self.assertIn('SHORT нет',adaptive_view.render('why',path=self.path,now=self.now))
+  q=sqlite3.connect(self.study/'baseline'/'queue.db');self.assertEqual(q.execute('select count(*) from unified_jobs').fetchone()[0],1)
+  data['candles_sha256']='tampered';q.execute('UPDATE unified_jobs SET payload=?',(json.dumps(data),));q.commit();q.close()
+  publish(self.study,self.out,clock=lambda:self.now*1000)
+  self.assertNotIn('last_hourly_signal',json.loads(self.path.read_text())['experiments']['baseline'])

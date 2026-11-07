@@ -1,8 +1,32 @@
 """Publish a narrow, atomic read-only view of the isolated study; no network."""
-import argparse,fcntl,json,os,sqlite3,stat,tempfile,time
+import argparse,datetime,fcntl,json,os,sqlite3,stat,tempfile,time,math
 from contextlib import closing
 from decimal import Decimal
 from pathlib import Path
+
+def last_hourly_short(root,*,now_ms):
+ """Read an actually evaluated hourly SHORT; never submit or amend a job."""
+ from .adaptive_route_policy import closed_bar_signal,candle_digest
+ root=Path(root)
+ try:
+  with closing(sqlite3.connect((root/'baseline'/'queue.db').resolve(strict=True).as_uri()+'?mode=ro',uri=True)) as q,closing(sqlite3.connect((root/'baseline'/'observations.db').resolve(strict=True).as_uri()+'?mode=ro',uri=True)) as o:
+   jobs=q.execute("SELECT id,status,payload FROM unified_jobs WHERE command='/research_adaptive_entry' AND market='futures' ORDER BY id DESC LIMIT 32").fetchall()
+   for jid,state,payload in jobs:
+    data=json.loads(payload);bars=data['bars'];skip=data['skip_bar'];boundary=skip[0]+900000
+    if state!='FAILED' or type(boundary) is not int or not 0<boundary<=now_ms or not bars or bars[-1][0]+900000!=skip[0]:continue
+    same_boundary=sum(1 for _,_,other in jobs if (json.loads(other).get('skip_bar') or [None])[0]==skip[0])
+    if same_boundary!=1:continue
+    if candle_digest(bars,skip)!=data.get('candles_sha256'):continue
+    sig=closed_bar_signal(bars,'trend1',now_ms=bars[-1][0]+900000)
+    if not sig or sig[0]!='TREND':continue
+    samples=o.execute("SELECT stamp_ms,payload FROM samples WHERE status='entry_evaluated' AND stamp_ms BETWEEN ? AND ? ORDER BY stamp_ms LIMIT 3",(boundary,boundary+15000)).fetchall()
+    for stamp,raw in samples:
+     sample=json.loads(raw);route=sample.get('route') or {};outcome=(sample.get('result') or {}).get('status')
+     if route.get('market')!='futures' or route.get('direction')!='SHORT' or route.get('strategy')!='trend1' or outcome!='NO_SIGNAL' or sig[1]<sig[3]:continue
+     if not all(isinstance(x,(int,float)) and math.isfinite(x) and x>0 for x in (sig[1],sig[3])):continue
+     return {'signal_close_ms':bars[-1][0]+900000,'evaluated_ms':stamp,'close':sig[1],'threshold':sig[3],'result':'no_short_signal','job_id':jid,'candles_sha256':data['candles_sha256']}
+ except (OSError,sqlite3.Error,ValueError,KeyError,TypeError,IndexError,json.JSONDecodeError):pass
+ return None
 
 def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
  root=Path(root);directory=Path(directory)
@@ -37,6 +61,17 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
      factor=Decimal('1.02') if market=='futures' and strategy=='trend1' else Decimal('.98') if market=='spot' and strategy=='trend1' else Decimal('.99') if market=='spot' and strategy=='range' else None
      positions.append({'market':market,'direction':position.get('direction'),'quantity':qty,'entry':str(entry),'strategy':strategy,'protective_level':str(price*factor) if factor is not None else None})
    clean['positions']=positions;result['experiments'][name]=clean
+  baseline=result['experiments']['baseline'];signal=last_hourly_short(root,now_ms=status['checked_ms'])
+  if signal:
+   baseline['last_hourly_signal']=signal
+   # Compatibility with the deployed read-only renderer: preserve the
+   # canonical values separately and render only while flat and waiting.
+   route=baseline['route'];cycle=baseline['cycle']
+   if route.get('phase')=='IDLE' and not baseline['positions'] and cycle.get('status')=='waiting_for_signal_window' and not status.get('data_errors'):
+    when=datetime.datetime.fromtimestamp(signal['signal_close_ms']/1000,datetime.timezone(datetime.timedelta(hours=4))).strftime('%d.%m %H:%M')
+    detail=f"посл. {when} Баку: {signal['close']} ≥ {signal['threshold']}; SHORT нет"
+    route['operational_strategy']=route.get('strategy');route['strategy']='тренд SHORT · '+detail
+    cycle['operational_status']=cycle['status'];cycle['status']=detail
   raw=(json.dumps(result,sort_keys=True,separators=(',',':'),ensure_ascii=False)+'\n').encode()
   if len(raw)>100000:raise ValueError('snapshot_too_large')
   out,tmp=tempfile.mkstemp(prefix='.adaptive-',dir=directory)
