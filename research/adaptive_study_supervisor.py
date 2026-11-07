@@ -372,8 +372,11 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
        has_window=evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_windows'").fetchone()
        epoch_window=evidence.execute('SELECT active_conflicts FROM epoch_windows WHERE epoch_id=?',(epoch_row[0],)).fetchone() if has_window else None
        active=epoch_window[0] if epoch_window else evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0]
-       reason='conflict' if active else 'epoch_data_unavailable'
-       item['entry_conflict']=True;errors[market+'_history']=reason;item['entry_conflict_reason']=reason
+       # Between decision windows the absence of a newly assembled candle
+       # bundle is expected, not a data failure. Existing conflicts still
+       # remain visible and block; a missing bundle during the window blocks.
+       reason='conflict' if active else 'epoch_data_unavailable' if window else None
+       if reason:item['entry_conflict']=True;errors[market+'_history']=reason;item['entry_conflict_reason']=reason
       elif evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() and evidence.execute('SELECT 1 FROM market_conflicts WHERE market=? LIMIT 1',(market,)).fetchone():item['entry_conflict']=True;errors[market+'_history']='conflict'
       if market=='futures' and epoch_row and window and (not item.get('candles') or not item['candles'].get('warm_confirmation')):
        try:

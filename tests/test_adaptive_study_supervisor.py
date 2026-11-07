@@ -60,7 +60,7 @@ class SupervisorTest(unittest.TestCase):
   stopped=[False]
   serve(self.root,ai_path=self.root/'missing-ai',baseline_path=self.root/'missing-base',publisher_uid=0,version='test',stop=lambda:stopped[0],clock=lambda:3000,sleeper=lambda seconds:stopped.__setitem__(0,True),provider=Offline())
   result=json.loads((self.root/'status.json').read_text())
-  self.assertEqual(result['data_errors']['futures_history'],'epoch_data_unavailable')
+  self.assertNotIn('futures_history',result['data_errors'])
   self.assertEqual(result['usdm_research']['epoch_start_ms'],2000)
   self.assertEqual(result['usdm_research']['limits_status'],'enforced_v2_research_only')
   for name in ('ai','baseline'):self.assertEqual(result['experiments'][name]['cash_usdt'],'1000')
