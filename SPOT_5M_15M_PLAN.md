@@ -52,6 +52,9 @@ base spread/slippage 5 bps per side, stress 10 bps per side; stress also adds
 5m latency. Quantity rounded down using prior research assumptions BTC .00001,
 ETH .0001, SOL .001; assumed minimum 5 USDT and no depth/partial fills. These
 are assumptions, not historical exchange-filter or liquidity evidence.
+For attribution, compute two additional execution sensitivities for these same
+four rules: raised costs alone (10 bps, zero extra delay), and 5m extra delay
+alone (5 bps). These are cost/delay scenarios, not strategy configurations.
 Cash and 10-USDT buy-and-hold use the same initial account and costs. Mark
 open positions at last close; report hypothetical liquidation with exit costs.
 
