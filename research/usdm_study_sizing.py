@@ -5,6 +5,9 @@ from trading_bot.paper_pair_catalog import usd_m_perpetual_candidate
 
 MAX_NOTIONAL=Decimal('100')
 MAX_RISK=Decimal('5')
+# Stress reserve, not a prediction: 21 eight-hour events over maximum 7-day hold,
+# at 10 bps each. Actual rates/timing and gap loss can exceed this estimate.
+FUNDING_STRESS_BPS=Decimal('210')
 
 def validate_market_take_bound(info,execution_price,mark_price):
  if not isinstance(info,dict) or info.get('symbol')!='BTCUSDT' or info.get('contractType')!='PERPETUAL' or info.get('marginAsset')!='USDT':raise ValueError('invalid_contract')
@@ -38,8 +41,8 @@ def minimum_futures_size(info, price, *, stop_distance, fee_bps, slippage_bps,fi
   preview=usd_m_perpetual_candidate(info,'BTCUSDT',quantity,filter_price)
   notional=quantity*price
   # Short stop and its exit fees have a larger notional than the entry.
-  risk=notional*stop+notional*((fee+slip)/Decimal(10000))*(2+stop)
+  risk=notional*stop+notional*((fee+slip)/Decimal(10000))*(2+stop)+notional*FUNDING_STRESS_BPS/Decimal(10000)
   if notional>MAX_NOTIONAL:raise ValueError('notional_limit')
   if risk>MAX_RISK:raise ValueError('risk_limit')
-  return {**preview,'execution_notional_usdt':str(notional),'market_take_bound':str(take_bound),'max_notional_usdt':str(MAX_NOTIONAL),'risk_usdt':str(risk),'max_risk_usdt':str(MAX_RISK),'leverage':1,'method':'minimum_valid_market_quantity_v1'}
+  return {**preview,'execution_notional_usdt':str(notional),'market_take_bound':str(take_bound),'funding_stress_bps':str(FUNDING_STRESS_BPS),'max_notional_usdt':str(MAX_NOTIONAL),'risk_usdt':str(risk),'max_risk_usdt':str(MAX_RISK),'leverage':1,'method':'minimum_valid_market_quantity_v1'}
  except (KeyError,TypeError,ArithmeticError) as exc:raise ValueError('invalid_filters') from exc

@@ -5,6 +5,7 @@ def size(info=INFO,price='76000',stop='0.02'):return minimum_futures_size(info,p
 class SizingTests(unittest.TestCase):
  def test_minimal(self):
   v=size();self.assertEqual(v['quantity'],'0.001');self.assertEqual(v['reference_notional'],'76.000');self.assertLess(float(v['risk_usdt']),5)
+  self.assertEqual(v['funding_stress_bps'],'210');self.assertGreater(float(v['risk_usdt']),3)
  def test_notional_cap(self):
   with self.assertRaisesRegex(ValueError,'notional_limit'):size(price='101000')
  def test_market_minimum_uses_mark_not_trade_price(self):
