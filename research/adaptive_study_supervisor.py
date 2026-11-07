@@ -76,7 +76,7 @@ def bootstrap(root,*,clock=lambda:int(time.time()*1000)):
  for source,name in (('AI','ai'),('baseline','baseline')):initialize(root/name,source=source,start_ms=info['start_ms'])
  return info
 
-def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed,filter_cache=None,history_cache=None,warm_history=False,sleeper=time.sleep):
+def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),provider=feed,filter_cache=None,history_cache=None,warm_history=False,sleeper=time.sleep,confirm_futures=False):
  markets={};errors={}
  if filter_cache is None:filter_cache={}
  if history_cache is None:history_cache={}
@@ -93,12 +93,26 @@ def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),prov
   if warm_needed:
    try:
     warm=provider.closed_15m(market,clock=clock);history_cache[market]=warm
+    if market=='futures' and confirm_futures:
+     from .adaptive_candle_confirmation import describe
+     item['warm_event']={'state':'preliminary','sample':describe(warm)}
    except Exception:local_errors[market+'_warm_history']='unavailable'
+  elif market=='futures' and confirm_futures and not signal_window and remaining<=75000 and isinstance(warm,dict) and not warm.get('confirmation') and type(warm.get('received_ms')) is int and now-warm['received_ms']>=10000:
+   try:
+    from .adaptive_candle_confirmation import compare
+    fresh=provider.closed_15m(market,clock=clock);confirmation=compare(warm,fresh)
+    item['warm_event']={'state':confirmation['state'],'sample':confirmation['second'],'comparison':confirmation}
+    if confirmation['state']=='accepted':fresh['confirmation']=confirmation
+    warm=fresh;history_cache[market]=warm
+   except Exception:local_errors['futures_warm_confirmation']='unavailable_or_invalid'
   if need_filter:
    try:cached=provider.filters(market,clock=clock);filter_cache[market]=cached
    except Exception:cached=None;local_errors[market+'_filters']='unavailable'
   if cached:item['filters']=cached
   boundary=now//900000*900000
+  if market=='futures' and confirm_futures and not signal_window and 10000<=now-boundary<=110000 and history_cache.get('_post_accepted')!=boundary:
+   try:item['postclose_sample']=provider.closed_15m(market,clock=clock)
+   except Exception:local_errors['futures_postclose']='unavailable'
   for attempt in range(4 if signal_window else 1):
    try:
     candidate=provider.spot_quote(clock=clock) if market=='spot' else provider.futures_quote(clock=clock)
@@ -278,6 +292,7 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
  if not stat.S_ISDIR(meta.st_mode) or meta.st_uid!=os.geteuid() or meta.st_mode&0o077:raise ValueError('study_root_untrusted')
  with writer_lock(root):
   identity=bootstrap(root,clock=clock)
+  process_started_ms=clock()
   filter_cache={};history_cache={}
   if capture_fetch is None:
    from .adaptive_snapshot_proof import capture
@@ -285,7 +300,7 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
    capture_fetch=lambda:capture(get,clock=clock,news_fetch=headlines)
   while not stop():
    before=clock();window=(before%900000)<2000
-   markets,errors=collect_markets(root,signal_window=window,clock=clock,provider=provider,filter_cache=filter_cache,history_cache=history_cache)
+   markets,errors=collect_markets(root,signal_window=window,clock=clock,provider=provider,filter_cache=filter_cache,history_cache=history_cache,confirm_futures=True)
    selected,baseline_uid,baseline_origin=select_baseline(root,baseline_path,publisher_uid=publisher_uid,start_ms=identity['start_ms'],clock=clock,capture_fetch=capture_fetch)
    with cycle_lock(root):
     audit_data=markets['futures'].get('funding_audit');audit_attempt=markets['futures'].get('audit_attempt')
@@ -313,12 +328,28 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
      for market in ('spot','futures'):
       item=markets[market]
       if market=='futures' and epoch_row:item['epoch_v2']=True
+      if market=='futures' and epoch_row and item.get('warm_event'):
+       try:
+        from .adaptive_candle_confirmation import record_event
+        record_event(evidence,epoch_row[0],item['warm_event'])
+       except (ValueError,TypeError,KeyError,sqlite3.Error):item['confirmation_error']=True;errors['futures_confirmation']='record_unavailable'
+      if market=='futures' and epoch_row and item.get('postclose_sample'):
+       try:
+        from .adaptive_candle_confirmation import record_postclose
+        post=record_postclose(evidence,epoch_row[0],item['postclose_sample']);item['postclose_state']=post
+        if post['state']=='accepted':history_cache['_post_accepted']=(post['open_ms']+900000)
+        if post['state']=='contradiction_after_acceptance':errors['futures_postclose']='contradiction_after_acceptance'
+       except (ValueError,TypeError,KeyError,sqlite3.Error):errors['futures_postclose']='invalid_or_unavailable'
       if item.get('candles'):
        try:
         if market=='futures' and epoch_row:
          from .adaptive_market_epoch import ingest_epoch
          proof=ingest_epoch(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
         else:proof=ingest(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
+        if market=='futures' and epoch_row:
+         from .adaptive_candle_confirmation import confirmed_for_decision
+         if item.get('confirmation_error') or not confirmed_for_decision(evidence,epoch_row[0],item['candles']):
+          item['entry_conflict']=True;item['entry_conflict_reason']='confirmation_unavailable';errors['futures_confirmation']='pending_or_unavailable'
         if proof['entry_blocked']:
          reason='conflict'
          if market=='futures' and epoch_row and not proof.get('conflict'):reason='epoch_raw_unavailable' if not proof.get('raw_available') else 'epoch_candle_not_mature' if not proof.get('mature') else 'epoch_wait_for_new_signal'
@@ -327,13 +358,37 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='invalid'
       elif market=='futures' and epoch_row:
        has_window=evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_windows'").fetchone()
-       window=evidence.execute('SELECT active_conflicts FROM epoch_windows WHERE epoch_id=?',(epoch_row[0],)).fetchone() if has_window else None
-       active=window[0] if window else evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0]
+       epoch_window=evidence.execute('SELECT active_conflicts FROM epoch_windows WHERE epoch_id=?',(epoch_row[0],)).fetchone() if has_window else None
+       active=epoch_window[0] if epoch_window else evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0]
        reason='conflict' if active else 'epoch_data_unavailable'
        item['entry_conflict']=True;errors[market+'_history']=reason;item['entry_conflict_reason']=reason
       elif evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() and evidence.execute('SELECT 1 FROM market_conflicts WHERE market=? LIMIT 1',(market,)).fetchone():item['entry_conflict']=True;errors[market+'_history']='conflict'
+      if market=='futures' and epoch_row and window and (not item.get('candles') or not item['candles'].get('warm_confirmation')):
+       try:
+        from .adaptive_candle_confirmation import record_event
+        boundary=(before//900000)*900000
+        record_event(evidence,epoch_row[0],{'state':'gap','sample':{'signal_open_ms':boundary-1800000,'received_ms':before,'digest':'unavailable'},'reason':'warm_confirmation_unavailable'})
+       except (ValueError,TypeError,sqlite3.Error):errors['futures_confirmation']='record_unavailable'
      legacy_conflicts=(evidence.execute("SELECT count(*) FROM market_conflicts WHERE market='futures'").fetchone()[0] if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() else 0)
      epoch_conflicts=(evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0] if epoch_row else 0)
+     if epoch_row and before//900000*900000>=process_started_ms and before%900000>=120000 and history_cache.get('_gap_checked')!=before//900000*900000:
+      try:
+       from .adaptive_candle_confirmation import record_postclose_gap
+       record_postclose_gap(evidence,epoch_row[0],(before//900000-1)*900000,before,'confirmation_window_expired');history_cache['_gap_checked']=before//900000*900000
+      except (ValueError,sqlite3.Error):errors['futures_postclose']='gap_record_unavailable'
+     lifecycle=[]
+     if epoch_row:
+      has_close=evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='candle_close_observations'").fetchone()
+      opens={x[0] for x in evidence.execute('SELECT DISTINCT start_ms FROM epoch_provisional WHERE epoch_id=? ORDER BY start_ms DESC LIMIT 3',(epoch_row[0],))}
+      if has_close:opens.update(x[0] for x in evidence.execute('SELECT DISTINCT open_ms FROM candle_close_observations WHERE epoch_id=? ORDER BY open_ms DESC LIMIT 3',(epoch_row[0],)))
+      opens=sorted(opens,reverse=True)[:3]
+      for opened in opens:
+       records=evidence.execute('SELECT state,received_ms,server_ms,raw_sha256 FROM candle_close_observations WHERE epoch_id=? AND open_ms=? ORDER BY received_ms',(epoch_row[0],opened)).fetchall() if has_close else []
+       if not records:
+        provisional=evidence.execute('SELECT received_ms,raw_sha256 FROM epoch_provisional WHERE epoch_id=? AND start_ms=? ORDER BY received_ms DESC LIMIT 1',(epoch_row[0],opened)).fetchone()
+        if provisional:records=[('preliminary',provisional[0],None,provisional[1])]
+       if not records:continue
+       lifecycle.append({'open_ms':opened,'close_ms':opened+899999,'state':records[-1][0],'preliminary_ms':next((x[1] for x in records if x[0]=='preliminary'),None),'accepted_ms':next((x[1] for x in records if x[0]=='accepted'),None),'last_received_ms':records[-1][1],'last_server_ms':records[-1][2],'last_sha256':records[-1][3],'observations':len(records)})
      has_window=evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_windows'").fetchone()
      last_window=evidence.execute('SELECT active_conflicts FROM epoch_windows WHERE epoch_id=?',(epoch_row[0],)).fetchone() if has_window and epoch_row else None
      active_epoch_conflicts=last_window[0] if last_window else epoch_conflicts
@@ -342,7 +397,7 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
     result=run_once(root,ai_path=ai_path,baseline_path=selected,publisher_uid=publisher_uid,baseline_uid=baseline_uid,markets=markets,clock=clock,execution_fetch=trade_fetch)
     watermarks=update_watermarks(root,markets,now_ms=before,start_ms=identity['start_ms'],signal_window=window)
     result.update({'schema':1,'process_pid':os.getpid(),'start_ms':identity['start_ms'],'code_version':version,'data_errors':errors,'signal_window':window,'market_watermarks':watermarks,'next_signal_boundary_ms':(clock()//900000+1)*900000,'baseline_origin':baseline_origin,'backup':backup_health(backup_path,owner_uid=backup_uid,now_ms=clock()),'global_ai_budget':budget_health(budget_path,owner_uid=publisher_uid,now_ms=clock())})
-    result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'active_epoch_conflicts':active_epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'enforced_v2_research_only' if epoch_row else 'legacy_10_v2_inactive','execution_gate':'fresh_post_signal_trade_and_funding_required','economic_status':'rejected','capture':capture_coverage(root),'sizing':None}
+    result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'active_epoch_conflicts':active_epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'enforced_v2_research_only' if epoch_row else 'legacy_10_v2_inactive','execution_gate':'fresh_post_signal_trade_and_funding_required','economic_status':'rejected','capture':capture_coverage(root),'candle_lifecycle':lifecycle,'sizing':None}
     try:
      from .usdm_study_sizing import minimum_futures_size
      ctx=markets['futures'];result['usdm_research']['sizing']=minimum_futures_size(ctx['filters']['filters'],ctx['quote']['price'],stop_distance='.02',fee_bps='10',slippage_bps='5')

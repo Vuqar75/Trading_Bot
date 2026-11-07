@@ -24,6 +24,9 @@ class V2AtomicStudyTests(unittest.TestCase):
   candles={'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':self.bars,'skip_bar':self.skip}
   candles['raw_bars']=[[r[0],str(r[1]),str(r[2]),str(r[3]),str(r[4]),'10',r[0]+899999] for r in self.bars+[self.skip]]
   d=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);self.addCleanup(d.close);ingest_epoch(d,market='futures',candles=candles,observed_ms=self.now)
+  from research.adaptive_candle_confirmation import compare,record_event
+  def warm(t):return {'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','raw_bars':candles['raw_bars'][:-1],'received_ms':t,'server_ms':t-1,'bars':self.bars[:-1],'skip_bar':self.bars[-1]}
+  confirmation=compare(warm(self.now-45000),warm(self.now-30000));record_event(d,1,{'state':'accepted','sample':confirmation['second'],'comparison':confirmation})
   self.decision={'mode':'TREND_DOWN','snapshot_id':'s','data_ms':self.now-1000,'expires_ms':self.now+10000,'reasons':['x'],'uncertainties':['x']}
   self.funding={'symbol':'BTCUSDT','complete':True,'observed_ms':self.now,'next_due_ms':self.now+28800000,'source':'synthetic'}
   self.job=enqueue(self.q,self.decision,source='AI',symbol='BTCUSDT',version='regular-regime-horizon-v2',now_ms=self.now,bars=self.bars,skip_bar=self.skip,funding_evidence=self.funding)

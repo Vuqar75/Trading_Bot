@@ -85,4 +85,5 @@ def execution_candles(market,warm,price,*,fetch=get,clock=lambda:int(time.time()
  r=matches[0];skip=(r[0],float(r[1]),float(r[2]),float(r[3]),float(r[4]))
  result={'market':market,'symbol':'BTCUSDT','source':source,'received_ms':received,'warm_received_ms':warm['received_ms'],'bars':bars+[last],'skip_bar':skip}
  if isinstance(warm.get('raw_bars'),list):result['raw_bars']=warm['raw_bars']+[r]
+ if market=='futures' and isinstance(warm.get('confirmation'),dict):result['warm_confirmation']=warm['confirmation']
  return result

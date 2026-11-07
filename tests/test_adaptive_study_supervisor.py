@@ -134,6 +134,20 @@ class SupervisorTest(unittest.TestCase):
   markets,errors=collect_markets(self.root,signal_window=True,clock=lambda:now[0],provider=p,filter_cache=filters,history_cache=history)
   self.assertFalse(errors)
   for market in ('spot','futures'):self.assertEqual(markets[market]['candles']['skip_bar'][0],boundary-900000)
+ def test_futures_warm_confirmation_requires_two_timed_matching_rest_reads(self):
+  bootstrap(self.root,clock=lambda:1000);boundary=20000*900000;now=[boundary-74000];history={};filters={}
+  class Provider:
+   def closed_15m(self,market,**kw):
+    last=boundary-1800000;rows=[[last-(198-i)*900000,'100','101','99','100','10',last-(198-i)*900000+899999] for i in range(199)]
+    converted=[(r[0],100.,101.,99.,100.) for r in rows]
+    return {'market':market,'symbol':'BTCUSDT','source':'binance_spot_klines' if market=='spot' else 'binance_usdm_klines','server_ms':now[0]-1,'received_ms':now[0],'bars':converted[:-1],'skip_bar':converted[-1],'raw_bars':rows}
+   def filters(self,market,**kw):return {'received_ms':now[0]}
+   def spot_quote(self,**kw):raise ValueError('offline')
+   def futures_quote(self,**kw):raise ValueError('offline')
+  first,_=collect_markets(self.root,signal_window=False,clock=lambda:now[0],provider=Provider(),filter_cache=filters,history_cache=history,confirm_futures=True)
+  self.assertEqual(first['futures']['warm_event']['state'],'preliminary')
+  now[0]+=30000;second,_=collect_markets(self.root,signal_window=False,clock=lambda:now[0],provider=Provider(),filter_cache=filters,history_cache=history,confirm_futures=True)
+  self.assertEqual(second['futures']['warm_event']['state'],'accepted');self.assertEqual(history['futures']['confirmation']['state'],'accepted')
  def test_preboundary_public_quote_is_retried_with_strict_bound(self):
   bootstrap(self.root,clock=lambda:1000);boundary=20000*900000;now=boundary+300;counts={'spot':0,'futures':0}
   class Provider:

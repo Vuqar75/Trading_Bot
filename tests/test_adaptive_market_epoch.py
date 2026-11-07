@@ -32,6 +32,17 @@ class EpochTests(unittest.TestCase):
  def test_route_or_reserve_blocks(self):
   p=self.root/'ai'/'route.db';db=sqlite3.connect(p);db.execute("UPDATE route_state SET phase='RECONCILE' WHERE id=1");db.commit();db.close()
   with self.assertRaisesRegex(ValueError,'route_not_flat'):start_epoch(self.root,market='futures',clock=lambda:1800000)
+ def test_revision_after_accepted_remains_a_financial_block(self):
+  import hashlib,json
+  start_epoch(self.root,market='futures',clock=lambda:1000);db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None)
+  db.execute('CREATE TABLE candle_close_observations(event_sha256 TEXT PRIMARY KEY,epoch_id INTEGER,open_ms INTEGER,state TEXT,received_ms INTEGER,server_ms INTEGER,raw_sha256 TEXT,raw_payload TEXT)')
+  raw=[0,'1','2','1','1','10',899999];data=json.dumps(raw,separators=(',',':'));sha=hashlib.sha256(data.encode()).hexdigest()
+  db.execute('INSERT INTO candle_close_observations VALUES(?,?,?,?,?,?,?,?)',('first',1,0,'accepted',910000,910000,sha,data))
+  revised=[0,'1','2','1','1','11',899999];skip=[900000,'1','2','1','1','10',1799999]
+  c={'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':[[0,1,2,1,1]],'skip_bar':[900000,1,2,1,1],'raw_bars':[revised,skip]}
+  self.assertTrue(ingest_epoch(db,market='futures',candles=c,observed_ms=1800000)['entry_blocked'])
+  self.assertEqual(db.execute("select count(*) from candle_close_observations where state='contradiction_after_acceptance'").fetchone()[0],1)
+  self.assertEqual(db.execute('select raw_payload from candle_close_observations where state=\'accepted\'').fetchone()[0],data);db.close()
  def test_second_epoch_without_conflict_is_rejected(self):
   start_epoch(self.root,market='futures',clock=lambda:1800000)
   with self.assertRaisesRegex(ValueError,'epoch_already_active'):start_epoch(self.root,market='futures',clock=lambda:1800001)

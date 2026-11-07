@@ -81,13 +81,18 @@ def enter_short(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms
      if not route_state or tuple(route_state)!=('ENTRY_PENDING',action_id,'futures'):raise ValueError('v2_route_not_pending')
      if store.db.execute('SELECT 1 FROM route_market.epoch_conflicts WHERE epoch_id=? AND start_ms>=? AND start_ms<=? LIMIT 1',(epoch['id'],bars[0][0],bars[-1][0])).fetchone():raise ValueError('v2_epoch_conflict')
      if bars[-1][0]+900000<=epoch['start_ms']:raise ValueError('signal_predates_epoch')
+     confirmed_raw=[]
      for row in bars:
       digest=hashlib.sha256(json.dumps(list(row),separators=(',',':'),allow_nan=False).encode()).hexdigest()
       saved=store.db.execute('SELECT sha256 FROM route_market.epoch_candles WHERE epoch_id=? AND start_ms=?',(epoch['id'],row[0])).fetchone()
       if not saved or saved[0]!=digest:raise ValueError('v2_candle_proof_mismatch')
-      raw_row=store.db.execute('SELECT first_received_ms FROM route_market.epoch_raw_candles WHERE epoch_id=? AND start_ms=?',(epoch['id'],row[0])).fetchone()
+      raw_row=store.db.execute('SELECT first_received_ms,payload FROM route_market.epoch_raw_candles WHERE epoch_id=? AND start_ms=?',(epoch['id'],row[0])).fetchone()
       if not raw_row:raise ValueError('v2_raw_candle_proof_missing')
       if row[0]==bars[-1][0] and raw_row[0]-(row[0]+900000)<600000:raise ValueError('v2_signal_candle_not_mature')
+      confirmed_raw.append(json.loads(raw_row[1]))
+     from .adaptive_candle_confirmation import digest_raw
+     warm_digest=digest_raw(confirmed_raw)
+     if not store.db.execute("SELECT 1 FROM route_market.sqlite_master WHERE type='table' AND name='candle_confirmations'").fetchone() or not store.db.execute('SELECT 1 FROM route_market.candle_confirmations WHERE epoch_id=? AND signal_open_ms=? AND digest=? AND accepted_ms<=? AND accepted_ms<? LIMIT 1',(epoch['id'],bars[-1][0],warm_digest,signal_fixed_ms,skip_bar[0]+900000)).fetchone():raise ValueError('v2_warm_confirmation_missing')
      skip_digest=hashlib.sha256(json.dumps(list(skip_bar),separators=(',',':'),allow_nan=False).encode()).hexdigest()
      saved=store.db.execute("SELECT 1 FROM route_market.epoch_provisional WHERE epoch_id=? AND start_ms=? AND sha256=? AND raw_sha256!='' AND received_ms<=? LIMIT 1",(epoch['id'],skip_bar[0],skip_digest,signal_fixed_ms)).fetchone()
      if not saved:raise ValueError('v2_provisional_candle_proof_missing')

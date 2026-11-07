@@ -55,7 +55,10 @@ class CycleTest(unittest.TestCase):
   bar=900000;bars=[(i*bar,100.,101.,99.,100.) for i in range(196)];bars[-1]=(195*bar,100.,101.,98.,99.)
   candles={'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':bars,'skip_bar':(196*bar,100.,101.,99.,100.)}
   candles['raw_bars']=[[r[0],str(r[1]),str(r[2]),str(r[3]),str(r[4]),'10',r[0]+899999] for r in bars+[candles['skip_bar']]]
-  db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);_schema(db);db.execute("INSERT INTO market_epochs(market,start_ms,created_ms,proof,source) VALUES('futures',?,?,?,?)",(194*bar,194*bar,'{}','binance_usdm_klines_v2'));ingest_epoch(db,market='futures',candles=candles,observed_ms=self.now);db.close()
+  db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);_schema(db);db.execute("INSERT INTO market_epochs(market,start_ms,created_ms,proof,source) VALUES('futures',?,?,?,?)",(194*bar,194*bar,'{}','binance_usdm_klines_v2'));ingest_epoch(db,market='futures',candles=candles,observed_ms=self.now)
+  from research.adaptive_candle_confirmation import compare,record_event
+  def warm(t):return {'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','raw_bars':candles['raw_bars'][:-1],'received_ms':t,'server_ms':t-1,'bars':bars[:-1],'skip_bar':bars[-1]}
+  proof=compare(warm(self.now-45000),warm(self.now-30000));record_event(db,1,{'state':'accepted','sample':proof['second'],'comparison':proof});db.close()
   filters=symbol_info();filters.update(contractType='PERPETUAL',marginAsset='USDT',marketTakeBound='0.03')
   for r in filters['filters']:
    if r['filterType']=='MIN_NOTIONAL':r['minNotional']='50'

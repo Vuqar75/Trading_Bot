@@ -77,6 +77,14 @@ def ingest_epoch(db,*,market,candles,observed_ms):
    if raw_rows is not None:
     source=json.dumps(raw_rows[i],separators=(',',':'),allow_nan=False);source_sha=hashlib.sha256(source.encode()).hexdigest()
     prior=db.execute('SELECT sha256 FROM epoch_raw_candles WHERE epoch_id=? AND start_ms=?',(eid,row[0])).fetchone()
+    # A previously accepted post-close version is immutable evidence even when
+    # the subsequent revision arrives outside the short confirmation window.
+    if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='candle_close_observations'").fetchone():
+     accepted=db.execute("SELECT raw_sha256 FROM candle_close_observations WHERE epoch_id=? AND open_ms=? AND state='accepted' ORDER BY received_ms LIMIT 1",(eid,row[0])).fetchone()
+     if accepted and accepted[0]!=source_sha:
+      key=hashlib.sha256(json.dumps([eid,row[0],'contradiction_after_acceptance',warm,source_sha],separators=(',',':')).encode()).hexdigest()
+      db.execute('INSERT OR IGNORE INTO candle_close_observations VALUES(?,?,?,?,?,?,?,?)',(key,eid,row[0],'contradiction_after_acceptance',warm,None,source_sha,source))
+      db.execute('INSERT OR IGNORE INTO epoch_conflicts VALUES(?,?,?,?)',(eid,row[0],json.dumps({'accepted_raw_revision':raw_rows[i]},sort_keys=True),warm))
     if prior and prior[0]!=source_sha:db.execute('INSERT OR IGNORE INTO epoch_conflicts VALUES(?,?,?,?)',(eid,row[0],json.dumps({'raw':raw_rows[i]},separators=(',',':')),observed_ms))
     elif not prior:db.execute('INSERT INTO epoch_raw_candles VALUES(?,?,?,?,?)',(eid,row[0],source,source_sha,observed_ms if i==len(rows)-1 else warm))
   active=db.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=? AND start_ms>=? AND start_ms<=?',(eid,rows[0][0],rows[-2][0] if len(rows)>1 else rows[0][0])).fetchone()[0]
