@@ -4444,3 +4444,24 @@ the queried last 24 hours. The current research rule, prior economic results,
 initial state and safety gap for a check trade are documented in
 `BTC_SPOT_PILOT_PLAN.md`. Recheck all positions, pending jobs and filters
 before action; initial probe is not authorization to act on stale data.
+# 2026-11-07 — BTC paper pilot in preparation (NOT installed)
+
+- Paid `adaptive-ai-regular.timer` was stopped and disabled at about 05:00 UTC
+  with its service inactive. The public `/ai` report states the owner's pause;
+  the budget, credentials, previous reports and backups remain in place.
+- Installed Spot at the observed inventory was `13fc8f641a576262da5087ccb772b0be66c1c594`,
+  Donchian60; last stored daily signal was HOLD and no Spot order was recorded
+  in the preceding 24 hours. Re-fetched 2026-11-06 close was 75844 versus a
+  prior 60-day maximum of 86620; this re-fetch is not contemporaneous evidence.
+- No working BUY/SELL was executed, no pilot was installed, and no market pause
+  was changed at this checkpoint. The owner authorizes one marked test cycle and
+  the bounded pilot; do not ask again. The active Spot worker must remain the
+  only writer while the test uses its normal prepare/claim/fill path.
+- Candidate primitives and tests are being developed for the fixed 1h 48/24
+  breakout, 2% stop, 168h timeout, 15m delay, three-entry and 1 USDT limits.
+  Shared-SQLite fixtures exercise a test BUY/SELL and restoration. The rollout
+  must keep Spot paused until reconciliation and separately preserve manual
+  pauses observed after the original queue anchor. **Not a deployable claim:**
+  finish integration, full Linux suite, unit rehearsal, fresh coordinated
+  backup and safe switch before arming the root-owned test request.
+

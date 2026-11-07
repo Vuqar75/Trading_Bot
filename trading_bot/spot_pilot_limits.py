@@ -34,8 +34,25 @@ def validate_intent(state,*,quote_at,now_ms):
  start=state.get('start_ms');signal=intent.get('signal_boundary_ms');boundary=intent.get('execution_boundary_ms')
  committed=intent.get('committed_ms');event=intent.get('quote_event_ms');received=intent.get('quote_received_ms')
  if any(type(x) is not int for x in (start,signal,boundary,committed,event,received,now_ms)):raise ValueError('pilot_time_invalid')
- if signal%HOUR or signal<=start or boundary!=signal+BAR or not signal<=committed<=boundary or not committed<event<=received<=now_ms or not boundary<=event or not 0<=now_ms-event<=5000 or not 0<=now_ms-received<=5000 or now_ms>boundary+5000:raise ValueError('pilot_intent_stale')
+ if signal%HOUR or signal<=start or boundary!=signal+BAR or not signal<=committed<=boundary+5000 or not committed<event<=received<=now_ms or not boundary<=event or not 0<=now_ms-event<=5000 or not 0<=now_ms-received<=5000 or now_ms>boundary+5000:raise ValueError('pilot_intent_stale')
  if isinstance(quote_at,bool) or not isinstance(quote_at,(int,float)) or abs(int(quote_at*1000)-received)>2:raise ValueError('pilot_quote_invalid')
+ return True
+
+def validate_exit(state,position,*,reason,price,quote_at,now_ms):
+ if not isinstance(state,dict) or state.get('phase')!='active' or not isinstance(position,dict) or state.get('open_position_id')!=position.get('id'):raise ValueError('pilot_position_mismatch')
+ intent=state.get('exit_intent')
+ if not isinstance(intent,dict) or intent.get('reason')!=reason or intent.get('position_id')!=position.get('id'):raise ValueError('pilot_exit_intent_missing')
+ event=intent.get('quote_event_ms');received=intent.get('quote_received_ms')
+ if any(type(x) is not int for x in (event,received,now_ms)) or not 0<=now_ms-event<=5000 or not 0<=now_ms-received<=5000 or not event<=received<=now_ms:raise ValueError('pilot_exit_quote_stale')
+ if isinstance(quote_at,bool) or not isinstance(quote_at,(float,int)) or abs(int(quote_at*1000)-received)>2:raise ValueError('pilot_exit_quote_invalid')
+ raw=_amount(intent.get('raw_price'));executed=_amount(price);entry=_amount(position.get('entry_price'))
+ if raw<=0 or entry<=0 or executed!=raw*Decimal('.9995'):raise ValueError('pilot_exit_price_invalid')
+ if reason=='PILOT1H_STOP' and raw>entry*Decimal('.98'):raise ValueError('pilot_stop_not_met')
+ if reason=='PILOT1H_TIME' and (not isinstance(position.get('opened_at'),(float,int)) or now_ms-position['opened_at']*1000<168*HOUR):raise ValueError('pilot_time_exit_not_due')
+ if reason=='PILOT1H_SIGNAL':
+  signal=intent.get('signal_boundary_ms');boundary=intent.get('execution_boundary_ms')
+  if type(signal) is not int or signal%HOUR or type(boundary) is not int or boundary!=signal+BAR or not boundary<=event<=now_ms<=boundary+5000:raise ValueError('pilot_exit_signal_stale')
+ if reason not in ('PILOT1H_STOP','PILOT1H_TIME','PILOT1H_SIGNAL'):raise ValueError('pilot_exit_reason_invalid')
  return True
 
 def record_entry(state,*,client_id,position_id):

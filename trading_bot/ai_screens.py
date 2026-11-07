@@ -45,7 +45,7 @@ def render_screen(screen='main',path=REPORT,now=None):
             if reason!='Причина недоступна.' and not re.search('[А-Яа-яЁё]',reason):reason='Сохранённый исходный текст на английском — см. подробности.'
             data_time=details.get('previous_data_utc',d.get('data_utc')) if mode else None
             answer_time=details.get('previous_answer_utc',d.get('answer_utc')) if mode else None
-            text='[ИИ • BTCUSDT • shadow-наблюдение]\n'+state+result+'\nПричина: '+reason+'\nАлгоритмический baseline: '+(MODES[base] if base else 'нет данных того же среза')+'\nДанные: '+_when(data_time)+'; ответ: '+_when(answer_time)+'\nДействует до: '+('срок истёк' if stale else _when(expiry))+'\n'+_bounded(schedule,180)+'\nLONG/SHORT — режим, не позиция и не приказ.\nИИ не управляет рабочими сделками. Spot: Donchian60.'
+            text='[ИИ • BTCUSDT • shadow-наблюдение]\n'+state+result+'\nПричина: '+reason+'\nАлгоритмический baseline: '+(MODES[base] if base else 'нет данных того же среза')+'\nДанные: '+_when(data_time)+'; ответ: '+_when(answer_time)+'\nДействует до: '+('срок истёк' if stale else _when(expiry))+'\n'+_bounded(schedule,180)+'\nLONG/SHORT — режим, не позиция и не приказ.\nИИ не управляет рабочими сделками. Рабочий Spot: /status spot.'
         elif screen=='why':
             reasons=details.get('reasons',[]);uncertainties=details.get('uncertainties',[])
             if not isinstance(reasons,list) or not isinstance(uncertainties,list):raise ValueError('invalid')
@@ -72,4 +72,4 @@ def render_screen(screen='main',path=REPORT,now=None):
         else:raise ValueError('screen')
         return text[:3400]
     except (OSError,ValueError,TypeError,KeyError,OverflowError,json.JSONDecodeError):
-        return '[ИИ • BTCUSDT • shadow-наблюдение]\nОтчёт отсутствует или повреждён; модельный результат не подтверждён. ИИ не управляет сделками. Spot: Donchian60.'
+        return '[ИИ • BTCUSDT • shadow-наблюдение]\nОтчёт отсутствует или повреждён; модельный результат не подтверждён. ИИ не управляет сделками. Рабочий Spot: /status spot.'

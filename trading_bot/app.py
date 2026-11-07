@@ -419,9 +419,12 @@ def main():
     parser.add_argument('--once', action='store_true')
     parser.add_argument('--allow-paper-signal', action='store_true', help='Allow explicit SIGUSR1 activation of paper entries')
     parser.add_argument('--donchian-paper',action='store_true',help='Use BTCUSDT daily Donchian60 in paper mode')
+    parser.add_argument('--spot-pilot',action='store_true',help='Use the bounded BTCUSDT paper-only 1h pilot')
     args = parser.parse_args()
     if args.donchian_paper and (args.mode!='paper' or not args.experimental_pair or not args.shared_paper):
         raise ObservationError('Donchian requires the shared experimental paper runtime')
+    if args.spot_pilot and (args.donchian_paper or args.mode!='paper' or not args.experimental_pair or not args.shared_paper or args.enable_testnet_orders):
+        raise ObservationError('Pilot requires the exclusive shared BTCUSDT paper runtime')
     if args.demo:
         demo()
         return
@@ -444,7 +447,7 @@ def main():
     key = os.getenv('BINANCE_TESTNET_API_KEY') if args.mode == 'testnet' else None
     secret = os.getenv('BINANCE_TESTNET_API_SECRET') if args.mode == 'testnet' else None
     exchange = TestnetExchange(key, secret, enabled=True) if args.mode == 'testnet' else PaperExchange()
-    if args.donchian_paper:
+    if args.donchian_paper or args.spot_pilot:
         from .spot_public_data import SpotPublicData
         reader=SpotPublicData()
     else:reader = exchange if args.mode == 'testnet' else SpotTestnetReader()
@@ -483,7 +486,7 @@ def main():
                     raise ObservationError('Unified control requires paper mode, Telegram and futures relay')
                 from .unified_queue import UnifiedQueue
                 from .unified_receiver import MarketReceiver
-                unified = UnifiedQueue(unified_path,allow_pair_experiment=args.experimental_pair,donchian_spot=args.donchian_paper)
+                unified = UnifiedQueue(unified_path,allow_pair_experiment=args.experimental_pair,donchian_spot=args.donchian_paper,spot_pilot=args.spot_pilot)
                 unified.seed_offset(store.get('offset'))
                 receiver = MarketReceiver(args.db, 'spot')
                 store.delivery_label = '[Spot paper]'
@@ -500,7 +503,7 @@ def main():
                 if not unified:raise ObservationError('Pair experiment requires unified queue')
                 from .paper_pair_runtime_offline import ExperimentalSpotRunner
                 if args.donchian_paper and args.mode!='paper':raise ObservationError('Donchian restricted to paper')
-                pair_runner=ExperimentalSpotRunner(store,unified,reader,amount=args.amount,interval=args.interval,donchian=args.donchian_paper)
+                pair_runner=ExperimentalSpotRunner(store,unified,reader,amount=args.amount,interval=args.interval,donchian=args.donchian_paper,pilot=args.spot_pilot)
                 app=pair_runner.app
             else:app = Application(store, exchange, reader, interval=args.interval, amount=args.amount)
             while running:
@@ -567,6 +570,13 @@ def main():
                 for _ in range(args.poll_seconds):
                     if not running:
                         break
+                    if args.spot_pilot:
+                        wake=app.next_wake_ms()
+                        if type(wake) is int:
+                            remaining=(wake-time.time()*1000)/1000
+                            if remaining<=1:
+                                if remaining>0:time.sleep(remaining)
+                                break
                     time.sleep(1)
         finally:
             if relay:

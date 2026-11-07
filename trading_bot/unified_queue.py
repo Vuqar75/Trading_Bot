@@ -16,9 +16,10 @@ def market_label(market):
 
 class UnifiedQueue:
     outbox_table = 'unified_outbox'
-    def __init__(self, path, fault=lambda point: None, *, allow_pair_experiment=False, donchian_spot=False):
+    def __init__(self, path, fault=lambda point: None, *, allow_pair_experiment=False, donchian_spot=False, spot_pilot=False):
         self.allow_pair_experiment=allow_pair_experiment
         self.donchian_spot=donchian_spot
+        self.spot_pilot=spot_pilot
         self.db = sqlite3.connect(path, isolation_level=None, timeout=5)
         self.db.row_factory = sqlite3.Row
         self.fault = fault
@@ -206,8 +207,8 @@ class UnifiedQueue:
                     market = parts[1]; jobs = [(market, '/status')]
                 elif command == '/pair' and self.allow_pair_experiment:
                     snapshot=(pairs or {}).get(market)
-                    if self.donchian_spot and market=='spot':
-                        self._notify('[SPOT] Donchian60: BTCUSDT. Смена пары недоступна в этом режиме.')
+                    if (self.donchian_spot or self.spot_pilot) and market=='spot':
+                        self._notify('[SPOT] '+('1H paper-пилот' if self.spot_pilot else 'Donchian60')+': BTCUSDT. Смена пары недоступна в этом режиме.')
                     elif len(parts)==1:
                         jobs=[(market,'/pair_status')]
                         if isinstance(snapshot,dict):

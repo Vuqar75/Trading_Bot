@@ -7,7 +7,10 @@ from .display_amount import display_amount as fmt
 REASONS = {'SIGNAL': 'Пересечение SMA 10/30', 'STOP': 'Стоп-лосс', 'TAKE': 'Тейк-профит',
            'MANUAL': 'Команда /close', 'REVERSAL': 'Обратное пересечение SMA',
            'MODEL_LIQUIDATION': 'Модельная ликвидация', 'TEST': 'Проверка', 'DEMO': 'Демонстрация',
-           'DONCHIAN60_ENTRY': 'Дневной пробой Donchian60', 'DONCHIAN60_EXIT': 'Дневной выход Donchian60'}
+           'DONCHIAN60_ENTRY': 'Дневной пробой Donchian60', 'DONCHIAN60_EXIT': 'Дневной выход Donchian60',
+           'SPOT_CHECK_BUY': 'ПРОВЕРОЧНЫЙ paper-цикл', 'SPOT_CHECK_SELL': 'ПРОВЕРОЧНЫЙ paper-цикл',
+           'PILOT1H_ENTRY': 'Экспериментальный пилот: пробой 48 часов', 'PILOT1H_SIGNAL': 'Пилот: выход ниже минимума 24 часов',
+           'PILOT1H_STOP': 'Пилот: защитный выход 2%', 'PILOT1H_TIME': 'Пилот: предел удержания 168 часов'}
 STATUSES = {'PARTIALLY_FILLED': 'частично исполнен', 'NEW': 'принят', 'PENDING_CANCEL': 'ожидает отмены', 'FILLED': 'исполнен полностью', 'CANCELED': 'отменён', 'REJECTED': 'отклонён',
             'EXPIRED': 'истёк', 'EXPIRED_IN_MATCH': 'истёк при сопоставлении'}
 
