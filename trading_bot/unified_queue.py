@@ -171,12 +171,17 @@ class UnifiedQueue:
                 elif command == '/help' and len(parts) == 1:
                     messages=unified_help_messages(market_label(mode),experimental_pair=self.allow_pair_experiment)
                     for index,message in enumerate(messages):
-                        buttons=[[('Наблюдение Donchian60',{'command':'/donchian','market':mode,'expires':now+86400,'kind':'view'})]] if index==len(messages)-1 else None
+                        buttons=[[('Наблюдение Donchian60',{'command':'/donchian','market':mode,'expires':now+86400,'kind':'view'})],[('Адаптивный стенд',{'command':'/adaptive','market':mode,'expires':now+86400,'kind':'view'})]] if index==len(messages)-1 else None
                         self._notify(message,buttons=buttons)
                 elif command == '/donchian' and len(parts)<=2 and (len(parts)==1 or parts[1] in ('assets','baseline','health')):
                     from .donchian_view import render
                     view=parts[1] if len(parts)==2 else 'summary'
                     buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('По активам','/donchian assets'),('Сравнение с baseline','/donchian baseline'),('Данные и здоровье','/donchian health'),('Обновить','/donchian'))]
+                    self._notify(render(view),buttons=buttons)
+                elif command == '/adaptive' and len(parts)<=2 and (len(parts)==1 or parts[1] in ('positions','results','why','health')):
+                    from .adaptive_view import render
+                    view=parts[1] if len(parts)==2 else 'summary'
+                    buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('Позиции и действия','/adaptive positions'),('Результаты и издержки','/adaptive results'),('Почему нет сделки','/adaptive why'),('Данные и здоровье','/adaptive health'),('Обновить','/adaptive'))]
                     self._notify(render(view),buttons=buttons)
                 elif command == '/ai' and len(parts)<=2 and (len(parts)==1 or parts[1] in ('why','metrics','sources','costs')):
                     from .ai_screens import render_screen
