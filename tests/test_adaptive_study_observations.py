@@ -18,3 +18,10 @@ class ObservationTest(unittest.TestCase):
  def test_unknown_usage_never_becomes_zero(self):
   f=self.f;doc=bind(f.capture,f.decision,f.now+1,model='gpt-6-luna',request_sha256='0'*64)
   self.assertIsNone(save(self.ai,doc,source='AI',now_ms=f.now+2,start_ms=f.now//14400000*14400000-1)['estimated_api_usd'])
+ def test_new_epoch_retains_old_decision_and_requires_new_timestamp(self):
+  f=self.f;start=f.now//14400000*14400000-1
+  save(self.base,f.capture,source='baseline',now_ms=f.now+2,start_ms=start)
+  with self.assertRaisesRegex(ValueError,'predates_continuation'):save(self.base,f.capture,source='baseline',now_ms=f.now+2,start_ms=start,epoch_start=f.now)
+  x=save(self.base,f.capture,source='baseline',now_ms=f.now+2,start_ms=start,epoch_start=f.now-1)
+  self.assertFalse(x['replayed']);self.assertEqual(self.base.execute('select count(*) from study_decisions').fetchone()[0],1)
+  self.assertEqual(self.base.execute('select count(*) from study_epoch_decisions').fetchone()[0],1)

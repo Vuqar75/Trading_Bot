@@ -66,9 +66,11 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
    else:
     info=verify_baseline(document,now_ms=now,start_ms=start);observed=info['data_ms']
     decision={'mode':info['mode'],'snapshot_id':info['snapshot_id'],'data_ms':info['data_ms'],'expires_ms':info['expires_ms'],'reasons':['local deterministic baseline'],'uncertainties':['not a model decision']}
+   continuation_start=markets.get('futures',{}).get('continuation_start_ms')
+   if type(continuation_start) is int and (observed<=continuation_start or info['data_ms']<=continuation_start):return {'status':'decision_unavailable','reason':'decision_predates_continuation','protection':protected}
    from .adaptive_study_observations import save
    evidence=sqlite3.connect(path/'observations.db',isolation_level=None,timeout=10)
-   try:evidence.execute('PRAGMA synchronous=FULL');save(evidence,document,source=source,now_ms=now,start_ms=start)
+   try:evidence.execute('PRAGMA synchronous=FULL');save(evidence,document,source=source,now_ms=now,start_ms=start,epoch_start=continuation_start)
    finally:evidence.close()
    record(q,decision,source=source,symbol='BTCUSDT',version='regular-regime-horizon-v2',now_ms=now)
   except (OSError,ValueError,KeyError,TypeError):return {'status':'decision_unavailable','protection':protected}

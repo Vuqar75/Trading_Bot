@@ -15,8 +15,13 @@ def _schema(db):
  db.execute('CREATE TABLE IF NOT EXISTS epoch_provisional(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,sha256 TEXT NOT NULL,raw_payload TEXT,raw_sha256 TEXT NOT NULL,received_ms INTEGER NOT NULL,UNIQUE(epoch_id,start_ms,sha256,raw_sha256))')
  db.execute('CREATE TABLE IF NOT EXISTS epoch_windows(epoch_id INTEGER PRIMARY KEY,first_ms INTEGER NOT NULL,last_ms INTEGER NOT NULL,active_conflicts INTEGER NOT NULL,observed_ms INTEGER NOT NULL)')
 
-def start_epoch(root,*,market,clock=lambda:int(time.time()*1000)):
+def start_epoch(root,*,market,clock=lambda:int(time.time()*1000),continuation=None):
  if market!='futures':raise ValueError('only_futures_epoch_supported')
+ if continuation is not None:
+  from .adaptive_candle_confirmation import compare
+  if not isinstance(continuation,dict) or set(continuation)!={'id','previous_epoch','first','second'} or continuation['id']!='usdm-continuation-20261107-v1' or type(continuation['previous_epoch']) is not int:raise ValueError('continuation_identity_invalid')
+  checked=compare(continuation['first'],continuation['second'])
+  if checked['state']!='accepted':raise ValueError('continuation_window_unconfirmed')
  root=Path(root)
  if root.is_symlink() or not root.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()):raise ValueError('sandbox_root_required')
  info=root.stat()
@@ -43,10 +48,27 @@ def start_epoch(root,*,market,clock=lambda:int(time.time()*1000)):
   stamp=clock()
   if type(stamp) is not int:raise ValueError('invalid_time')
   e=stack.enter_context(closing(sqlite3.connect((root/'market-evidence.db').resolve(strict=True).as_uri()+'?mode=rw',uri=True,isolation_level=None,timeout=5)));e.execute('BEGIN IMMEDIATE');_schema(e)
+  if continuation is not None:
+   e.execute('CREATE TABLE IF NOT EXISTS epoch_continuations(id TEXT PRIMARY KEY,epoch_id INTEGER UNIQUE NOT NULL,previous_epoch INTEGER NOT NULL,window_sha256 TEXT NOT NULL,accepted_ms INTEGER NOT NULL,details TEXT NOT NULL)')
+   existing=e.execute('SELECT epoch_id,previous_epoch,window_sha256 FROM epoch_continuations WHERE id=?',(continuation['id'],)).fetchone()
+   if existing:
+    if existing[1]!=continuation['previous_epoch'] or existing[2]!=checked['digest']:raise ValueError('continuation_replay_mismatch')
+    e.rollback();return {'epoch_id':existing[0],'replayed':True,'window_sha256':existing[2]}
+   if not 0<=stamp-checked['accepted_ms']<=60000:raise ValueError('continuation_window_stale')
   prior=e.execute('SELECT id,start_ms FROM market_epochs WHERE market=? ORDER BY id DESC LIMIT 1',(market,)).fetchone()
+  if continuation is not None and (not prior or prior[0]!=continuation['previous_epoch']):raise ValueError('continuation_previous_epoch_mismatch')
   if prior and (stamp<=prior[1] or not e.execute('SELECT 1 FROM epoch_conflicts WHERE epoch_id=? LIMIT 1',(prior[0],)).fetchone()):raise ValueError('epoch_already_active')
   data=json.dumps(proof,sort_keys=True,separators=(',',':'));source='binance_usdm_klines_v2'
-  e.execute('INSERT INTO market_epochs(market,start_ms,created_ms,proof,source) VALUES(?,?,?,?,?)',(market,stamp,stamp,data,source));e.commit()
+  cursor=e.execute('INSERT INTO market_epochs(market,start_ms,created_ms,proof,source) VALUES(?,?,?,?,?)',(market,stamp,stamp,data,source))
+  if continuation is not None:
+   eid=cursor.lastrowid;second=continuation['second'];rows=second['bars']+[second['skip_bar']]
+   for row,raw in zip(rows,second['raw_bars']):
+    encoded=json.dumps(list(row),separators=(',',':'),allow_nan=False);raw_encoded=json.dumps(raw,separators=(',',':'),allow_nan=False)
+    e.execute('INSERT INTO epoch_candles VALUES(?,?,?,?,?)',(eid,row[0],encoded,hashlib.sha256(encoded.encode()).hexdigest(),checked['accepted_ms']))
+    e.execute('INSERT INTO epoch_raw_candles VALUES(?,?,?,?,?)',(eid,row[0],raw_encoded,hashlib.sha256(raw_encoded.encode()).hexdigest(),checked['accepted_ms']))
+   detail={'first_received_ms':checked['first']['received_ms'],'second_received_ms':checked['second']['received_ms'],'first_server_ms':checked['first']['server_ms'],'second_server_ms':checked['second']['server_ms'],'original_publication':'unknown','first_raw':continuation['first']['raw_bars'],'second_raw':second['raw_bars'],'financial_proof':proof}
+   e.execute('INSERT INTO epoch_continuations VALUES(?,?,?,?,?,?)',(continuation['id'],eid,prior[0],checked['digest'],stamp,json.dumps(detail,sort_keys=True,separators=(',',':'),allow_nan=False)))
+  e.commit()
   return {'start_ms':stamp,'market':market,'source':source,'financial_proof_sha256':hashlib.sha256(data.encode()).hexdigest(),'proof':proof}
 
 def ingest_epoch(db,*,market,candles,observed_ms):

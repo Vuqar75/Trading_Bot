@@ -86,6 +86,24 @@ class SupervisorTest(unittest.TestCase):
   self.assertEqual((uid,origin),(os.getuid(),'independent_baseline'));self.assertTrue(path.is_file())
   select_baseline(self.root,self.root/'missing',publisher_uid=0,start_ms=now//PERIOD*PERIOD-1,clock=lambda:now+1,capture_fetch=collect)
   self.assertEqual(len(calls),1)
+ def test_continuation_rejects_old_baseline_and_saves_fresh_capture(self):
+  import sqlite3,json
+  from research.adaptive_decision_export import atomic_document
+  from research.adaptive_study_observations import save
+  now=20000*PERIOD+400000;start=now//PERIOD*PERIOD-1;bootstrap(self.root,clock=lambda:start)
+  f=shadow_fixture.ShadowTest();f.setUp();self.addCleanup(f.doCleanups);f.now=now-20000
+  old=capture(f.fetch,clock=lambda:f.now,news_fetch=lambda **kw:([],[]));atomic_document(self.root,'baseline-current.json',old)
+  with sqlite3.connect(self.root/'baseline'/'observations.db',isolation_level=None) as db:save(db,old,source='baseline',now_ms=now,start_ms=start)
+  with sqlite3.connect(self.root/'market-evidence.db') as db:
+   db.execute('CREATE TABLE market_epochs(id INTEGER PRIMARY KEY,start_ms INTEGER)');db.execute('INSERT INTO market_epochs VALUES(2,?)',(now-10000,))
+   db.execute('CREATE TABLE epoch_continuations(id TEXT,epoch_id INTEGER)');db.execute("INSERT INTO epoch_continuations VALUES('test',2)")
+  f.now=now;calls=[]
+  def collect():calls.append(1);return capture(f.fetch,clock=lambda:now,news_fetch=lambda **kw:([],[]))
+  path,uid,origin=select_baseline(self.root,self.root/'missing',publisher_uid=0,start_ms=start,clock=lambda:now,capture_fetch=collect)
+  self.assertEqual(origin,'independent_baseline');self.assertEqual(len(calls),1)
+  fresh=json.loads(path.read_text());self.assertGreater(fresh['snapshot']['as_of_ms'],now-10000)
+  with sqlite3.connect(self.root/'baseline'/'observations.db',isolation_level=None) as db:save(db,fresh,source='baseline',now_ms=now,start_ms=start,epoch_start=now-10000)
+  self.assertEqual(select_baseline(self.root,self.root/'missing',publisher_uid=0,start_ms=start,clock=lambda:now+1,capture_fetch=collect)[2],'independent_baseline');self.assertEqual(len(calls),1)
  def test_funding_audit_rotates_bounded_history_without_discarding_old(self):
   import json,sqlite3
   from contextlib import closing

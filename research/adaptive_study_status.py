@@ -60,6 +60,9 @@ def snapshot(path,*,quotes,now_ms):
   if conflicts:valuation_known=False
  with closing(sqlite3.connect((path/'observations.db').resolve().as_uri()+'?mode=ro',uri=True)) as obs:
   observations=[json.loads(r[0]) for r in obs.execute('SELECT payload FROM study_decisions ORDER BY data_ms')]
+  if obs.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='study_epoch_decisions'").fetchone():
+   observations.extend(json.loads(r[0]) for r in obs.execute('SELECT payload FROM study_epoch_decisions ORDER BY data_ms'))
+   observations.sort(key=lambda item:item['data_ms'])
   blocked_count=obs.execute("SELECT count(*) FROM samples WHERE status IN ('blocked','entry_blocked','decision_unavailable')").fetchone()[0]
   last_blocked=obs.execute("SELECT payload FROM samples WHERE status IN ('blocked','entry_blocked','decision_unavailable') ORDER BY id DESC LIMIT 1").fetchone()
  known=[Decimal(x['estimated_api_usd']) for x in observations if x.get('estimated_api_usd') is not None]

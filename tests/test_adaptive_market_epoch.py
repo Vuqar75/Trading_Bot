@@ -46,6 +46,43 @@ class EpochTests(unittest.TestCase):
  def test_second_epoch_without_conflict_is_rejected(self):
   start_epoch(self.root,market='futures',clock=lambda:1800000)
   with self.assertRaisesRegex(ValueError,'epoch_already_active'):start_epoch(self.root,market='futures',clock=lambda:1800001)
+ def test_verified_continuation_preserves_accounts_and_is_idempotent(self):
+  from tests.test_adaptive_candle_confirmation import sample
+  initial=start_epoch(self.root,market='futures',clock=lambda:1800000)
+  db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);db.execute("INSERT INTO epoch_conflicts VALUES(1,0,'old',1800001)")
+  before={n:(self.root/n/'financial.db').read_bytes() for n in ('ai','baseline')}
+  first=sample();second=sample(first['received_ms']+10000)
+  c={'id':'usdm-continuation-20261107-v1','previous_epoch':1,'first':first,'second':second}
+  result=start_epoch(self.root,market='futures',clock=lambda:second['received_ms']+1000,continuation=c)
+  self.assertEqual(db.execute('SELECT count(*) FROM market_epochs').fetchone()[0],2)
+  self.assertEqual(db.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=1').fetchone()[0],1)
+  self.assertEqual(db.execute('SELECT count(*) FROM epoch_raw_candles WHERE epoch_id=2').fetchone()[0],199)
+  self.assertTrue(start_epoch(self.root,market='futures',clock=lambda:second['received_ms']+2000,continuation=c)['replayed'])
+  self.assertEqual(before,{n:(self.root/n/'financial.db').read_bytes() for n in ('ai','baseline')})
+  self.assertEqual(db.execute('SELECT previous_epoch FROM epoch_continuations').fetchone()[0],1)
+  # Old conflict does not block the independent confirmed version; a later
+  # genuine revision of this version does block the new epoch.
+  raw=[r[:] for r in second['raw_bars']]
+  for i in range(199,203):raw.append([i*900000,'1','2','1','1','3',i*900000+899999])
+  bars=[[x[0],float(x[1]),float(x[2]),float(x[3]),float(x[4])] for x in raw]
+  candles={'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':bars[:-1],'skip_bar':bars[-1],'raw_bars':raw}
+  self.assertFalse(ingest_epoch(db,market='futures',candles=candles,observed_ms=203*900000)['entry_blocked'])
+  candles['bars'][10][4]=1.1;candles['raw_bars'][10][4]='1.1'
+  self.assertTrue(ingest_epoch(db,market='futures',candles=candles,observed_ms=203*900000+1)['entry_blocked']);db.close()
+ def test_bounded_operator_replay_does_not_fetch_or_reseed(self):
+  from tests.test_adaptive_candle_confirmation import sample
+  from research.usdm_baseline_continue import run
+  start_epoch(self.root,market='futures',clock=lambda:1800000)
+  db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);db.execute("INSERT INTO epoch_conflicts VALUES(1,0,'old',1800001)")
+  now=[200*900000+610000];calls=[]
+  def clock():return now[0]
+  def sleep(seconds):now[0]+=int(seconds*1000)
+  def fetch(market,clock):
+   calls.append(market);x=sample(clock());x['server_ms']=clock()-1;return x
+  first=run(self.root,previous_epoch=1,clock=clock,sleeper=sleep,fetch=fetch)
+  self.assertEqual(calls,['futures','futures']);self.assertFalse(first.get('replayed',False))
+  result=run(self.root,previous_epoch=1,clock=clock,sleeper=sleep,fetch=lambda *a,**k:self.fail('replay must not fetch'))
+  self.assertTrue(result['replayed']);self.assertEqual(db.execute('select count(*) from market_epochs').fetchone()[0],2);db.close()
  def test_volume_revision_is_retained_and_blocks(self):
   start_epoch(self.root,market='futures',clock=lambda:1000);db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None)
   rows=[[0,1,2,1,1],[900000,1,2,1,1]]

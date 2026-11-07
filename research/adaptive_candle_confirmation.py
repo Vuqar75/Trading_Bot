@@ -1,5 +1,6 @@
 """Confirmation of independently received, closed USD-M REST histories."""
-import hashlib,json,time
+import hashlib,json,time,math
+from decimal import Decimal,InvalidOperation
 PERIOD=900000
 MIN_SEPARATION_MS=10000
 MIN_MATURITY_MS=600000
@@ -17,7 +18,10 @@ def describe(sample):
  if not isinstance(bars,list) or len(bars)+1!=len(rows):raise ValueError('parsed_candles_missing')
  try:
   if any(len(parsed)!=5 or parsed[0]!=raw[0] or any(float(raw[j])!=parsed[j] for j in range(1,5)) for parsed,raw in zip(bars+[sample['skip_bar']],rows)):raise ValueError('parsed_candle_mismatch')
- except (TypeError,IndexError):raise ValueError('parsed_candle_mismatch') from None
+  for raw in rows:
+   o,h,l,c=(float(raw[j]) for j in range(1,5));v=Decimal(str(raw[5]))
+   if not all(math.isfinite(x) for x in (o,h,l,c)) or not 0<l<=min(o,c)<=max(o,c)<=h or not v.is_finite() or v<0:raise ValueError('candle_values_invalid')
+ except (TypeError,IndexError,InvalidOperation,OverflowError):raise ValueError('parsed_candle_mismatch') from None
  return {'digest':digest_raw(rows),'received_ms':received,'server_ms':server,'signal_open_ms':rows[-1][0],'signal_raw':rows[-1]}
 
 def compare(first,second):

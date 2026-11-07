@@ -237,16 +237,24 @@ def next_delay(before,after):
 def select_baseline(root,published,*,publisher_uid,start_ms,clock,capture_fetch):
  """Prefer the AI input; collect independent baseline only after its window."""
  root=Path(root);now=clock();fallback=root/'baseline-current.json'
+ continuation_start=None;market=root/'market-evidence.db'
+ if market.is_file() and not market.is_symlink():
+  with closing(sqlite3.connect(market.resolve().as_uri()+'?mode=ro',uri=True)) as db:
+   if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_continuations'").fetchone():
+    row=db.execute('SELECT m.start_ms FROM market_epochs m JOIN epoch_continuations c ON c.epoch_id=m.id ORDER BY m.id DESC LIMIT 1').fetchone()
+    if row:continuation_start=row[0]
  if now//PERIOD*PERIOD<=start_ms:return Path(published),publisher_uid,'waiting_for_first_future_boundary'
  accepted=None;obs=root/'baseline'/'observations.db'
  if obs.is_file() and not obs.is_symlink():
   with closing(sqlite3.connect(obs.resolve().as_uri()+'?mode=ro',uri=True)) as db:
-   row=db.execute('SELECT snapshot_id FROM study_decisions WHERE boundary_ms=?',(now//PERIOD*PERIOD,)).fetchone()
+   if continuation_start is not None and db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='study_epoch_decisions'").fetchone():row=db.execute('SELECT snapshot_id FROM study_epoch_decisions WHERE epoch_start=? AND boundary_ms=?',(continuation_start,now//PERIOD*PERIOD)).fetchone()
+   elif continuation_start is not None:row=None
+   else:row=db.execute('SELECT snapshot_id FROM study_decisions WHERE boundary_ms=?',(now//PERIOD*PERIOD,)).fetchone()
    if row:accepted=row[0]
  for path,uid,label in ((Path(published),publisher_uid,'shared_snapshot'),(fallback,os.geteuid(),'independent_baseline')):
   try:
    captured=read_trusted(path,owner_uid=uid);view=verify_baseline(captured,now_ms=now,start_ms=start_ms)
-   if view['boundary_ms']==now//PERIOD*PERIOD and (accepted is None or accepted==view['snapshot_id']):return path,uid,label
+   if view['boundary_ms']==now//PERIOD*PERIOD and (continuation_start is None or view['data_ms']>continuation_start) and (accepted is None or accepted==view['snapshot_id']):return path,uid,label
   except (OSError,ValueError,KeyError,TypeError):pass
  if accepted is not None:return Path(published),publisher_uid,'accepted_baseline_snapshot_unavailable'
  if now%PERIOD<360000:return Path(published),publisher_uid,'waiting_for_shared_snapshot'
@@ -262,7 +270,8 @@ def select_baseline(root,published,*,publisher_uid,start_ms,clock,capture_fetch)
  finally:
   if os.path.exists(tmp):os.unlink(tmp)
  try:
-  captured=capture_fetch();verify_baseline(captured,now_ms=clock(),start_ms=start_ms)
+  captured=capture_fetch();view=verify_baseline(captured,now_ms=clock(),start_ms=start_ms)
+  if continuation_start is not None and view['data_ms']<=continuation_start:raise ValueError('decision_predates_continuation')
   from .adaptive_decision_export import atomic_document
   atomic_document(root,'baseline-current.json',captured)
   return fallback,os.geteuid(),'independent_baseline'
@@ -325,6 +334,9 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
     evidence=sqlite3.connect(root/'market-evidence.db',timeout=10,isolation_level=None)
     try:
      epoch_row=(evidence.execute("SELECT id,start_ms FROM market_epochs WHERE market='futures' ORDER BY id DESC LIMIT 1").fetchone() if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_epochs'").fetchone() else None)
+     continued=(evidence.execute('SELECT epoch_id FROM epoch_continuations WHERE epoch_id=?',(epoch_row[0],)).fetchone() if epoch_row and evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_continuations'").fetchone() else None)
+     if continued:
+      for item in markets.values():item['continuation_start_ms']=epoch_row[1]
      for market in ('spot','futures'):
       item=markets[market]
       if market=='futures' and epoch_row:item['epoch_v2']=True
