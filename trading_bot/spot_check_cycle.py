@@ -26,10 +26,10 @@ def read_request(path,*,owner_uid=0,now=None):
  return request
 
 def _fresh(reader,clock):
- before=int(reader.get('/api/v3/time')['serverTime']);trades=reader.get('/api/v3/trades',{'symbol':'BTCUSDT','limit':1});after=int(reader.get('/api/v3/time')['serverTime']);received=int(clock()*1000)
+ trades=reader.get('/api/v3/trades',{'symbol':'BTCUSDT','limit':1});after=int(reader.get('/api/v3/time')['serverTime']);received=int(clock()*1000)
  if not isinstance(trades,list) or len(trades)!=1 or type(trades[0].get('time')) is not int or type(trades[0].get('id')) is not int:raise ObservationError('Check quote unavailable')
  event=trades[0]['time']
- if not 0<=received-event<=5000 or abs(before-received)>5000 or abs(after-received)>5000 or after<before or event>after:raise ObservationError('Check quote stale or clock mismatch')
+ if not 0<=received-event<=5000 or abs(after-received)>5000 or event>after:raise ObservationError('Check quote stale or clock mismatch')
  return number(trades[0]['price']),event,received
 
 def _no_conflicting_commands(queue,now):
@@ -38,12 +38,12 @@ def _no_conflicting_commands(queue,now):
  if any(p.get('status')=='OPEN' and p.get('expires',0)>now for p in queue.pair_proposals()):raise ObservationError('Pending pair proposal requires review')
 
 def expire_unsent_check(store):
- """A PREPARED paper-check order has no submit claim and can be expired.
+ """A PREPARED pilot or check order has no submit claim and can be expired.
 
  Never alter a claimed/unknown order: normal recovery must reconcile it.
  """
  with store.transaction():
-  store.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE phase='PREPARED' AND reason IN ('SPOT_CHECK_BUY','SPOT_CHECK_SELL')")
+  store.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE phase='PREPARED' AND reason IN ('SPOT_CHECK_BUY','SPOT_CHECK_SELL','PILOT1H_ENTRY','PILOT1H_STOP','PILOT1H_TIME','PILOT1H_SIGNAL')")
 
 def step(app,queue,request_path,*,clock=time.time,owner_uid=0):
  if type(app.exchange) is not PaperExchange or app.store.get('identity').get('mode')!='paper' or app.symbol!='BTCUSDT':raise ObservationError('Check requires exact paper adapter and BTCUSDT')

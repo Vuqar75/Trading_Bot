@@ -54,6 +54,9 @@ class PilotApplicationTest(unittest.TestCase):
   with self.store.transaction():self.store.set('paused',False)
   with self.assertRaisesRegex(Exception,'requires shared'):SpotPilotApplication(self.store,object(),self.reader,self.queue,owner_uid=os.getuid())
   self.assertFalse(self.store.get('paused'))
+ def test_predecision_quote_cannot_be_used_for_execution(self):
+  with patch('trading_bot.spot_pilot_app._fresh',return_value=(Decimal('100'),99,101)),patch('trading_bot.spot_pilot_app.time.sleep'):
+   with self.assertRaisesRegex(Exception,'after decision'):self.app._quote_after(100)
  def test_status_does_not_confuse_historical_donchian_and_pilot(self):
   from trading_bot.telegram_reports import status,daily_report,signal_report
   with self.store.transaction():

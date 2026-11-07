@@ -62,3 +62,10 @@ class CheckCycleTest(unittest.TestCase):
   self.cycle();self.assertEqual(self.store.get('spot_test_cycle')['phase'],'BUY_FILLED')
   self.cycle();self.assertEqual(self.store.get('spot_test_cycle')['phase'],'COMPLETE')
   self.assertEqual(self.store.db.execute('select count(*) from runtime_fills').fetchone()[0],2)
+ def test_unknown_claim_reconciles_without_second_submission(self):
+  with patch.object(self.app.exchange,'submit',side_effect=RuntimeError('injected after claim')) as submit:
+   self.cycle();self.assertEqual(submit.call_count,1)
+   self.assertEqual(self.store.db.execute('select phase from runtime_orders').fetchone()[0],'UNKNOWN')
+  self.cycle();self.assertEqual(self.store.get('spot_test_cycle')['phase'],'COMPLETE')
+  self.assertEqual(self.store.db.execute('select count(*) from runtime_orders').fetchone()[0],2)
+  self.assertEqual(self.store.db.execute('select count(*) from runtime_fills').fetchone()[0],2)

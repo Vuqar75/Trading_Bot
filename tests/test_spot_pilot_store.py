@@ -37,6 +37,14 @@ class PilotStoreTest(unittest.TestCase):
   with patch('trading_bot.runtime_store.time.time',return_value=4506):self.assertIsNone(self.store.claim(client))
   self.assertEqual(self.store.db.execute('select status from runtime_orders where client_id=?',(client,)).fetchone()[0],'EXPIRED')
   self.assertEqual(self.store.get('spot_pilot')['entries'],[])
+ def test_unclaimed_pilot_after_exception_is_expired_without_fill(self):
+  from trading_bot.spot_check_cycle import expire_unsent_check
+  with patch('trading_bot.runtime_store.time.time',return_value=4500.3):
+   client=self.store.prepare('BUY','.1',Decimal('100'),'pilot:1','PILOT1H_ENTRY',quote_at=4500.2)
+  expire_unsent_check(self.store);self.app.recover()
+  self.assertEqual(self.store.db.execute('select status from runtime_orders where client_id=?',(client,)).fetchone()[0],'EXPIRED')
+  self.assertEqual(self.store.db.execute('select count(*) from runtime_fills').fetchone()[0],0)
+  self.assertEqual(self.store.get('spot_pilot')['entries'],[])
  def test_owner_check_uses_normal_paper_fills_and_does_not_count_pilot(self):
   self.state['phase']='awaiting_check'
   check={'schema':1,'authorization':'owner_local_once','id':'case1','phase':'BUY_ARMED','quote_event_ms':4500100,'quote_received_ms':4500200}

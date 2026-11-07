@@ -3,6 +3,7 @@
 The pilot begins in an inactive state. This module cannot place real orders.
 """
 import time
+from concurrent.futures import ThreadPoolExecutor
 from decimal import Decimal
 from pathlib import Path
 from .app import Application
@@ -77,8 +78,8 @@ class SpotPilotApplication(Application):
    time.sleep(.3)
   raise ObservationError('No fresh public trade after decision')
 
- def _exit(self,pos,reason,*,raw,event,received,signal=None):
-  price=raw*Decimal('.9995');info=self.reader.get('/api/v3/exchangeInfo',{'symbol':self.symbol})['symbols'][0]
+ def _exit(self,pos,reason,*,raw,event,received,signal=None,info=None):
+  price=raw*Decimal('.9995');info=info or self.reader.get('/api/v3/exchangeInfo',{'symbol':self.symbol})['symbols'][0]
   qty=number(self._quantity(info,number(pos['quantity']),price))
   if qty!=number(pos['quantity']):raise ObservationError('Pilot exit would leave untradeable residual')
   with self.store.transaction():
@@ -101,7 +102,22 @@ class SpotPilotApplication(Application):
   expire_unsent_check(self.store)
   self.recover()
   if self.manual_close():return
-  quote=self.reader.get('/api/v3/ticker/price',{'symbol':self.symbol});at=self.clock()
+  state=self.store.get('spot_pilot');boundary=state.get('next_execution_ms');now=int(self.clock()*1000)
+  due=state.get('phase')=='active' and type(boundary) is int and boundary<=now<=boundary+5000
+  inputs=None;protection=None
+  if due:
+   # All pre-decision inputs are public and independent. The execution quote
+   # is still obtained after the decision is durably committed.
+   with ThreadPoolExecutor(max_workers=5) as pool:
+    ticker=pool.submit(self.reader.get,'/api/v3/ticker/price',{'symbol':self.symbol})
+    server=pool.submit(self.reader.get,'/api/v3/time')
+    candles=pool.submit(self.reader.get,'/api/v3/klines',{'symbol':'BTCUSDT','interval':'15m','limit':200})
+    filters=pool.submit(self.reader.get,'/api/v3/exchangeInfo',{'symbol':self.symbol})
+    position=self.store.get('position')
+    protect=pool.submit(_fresh,self.reader,self.clock) if number(position['quantity']) else None
+    quote=ticker.result();inputs=(server.result(),candles.result(),filters.result());protection=protect.result() if protect else None
+  else:quote=self.reader.get('/api/v3/ticker/price',{'symbol':self.symbol})
+  at=self.clock()
   if quote.get('symbol')!=self.symbol or not number(quote.get('price')):raise ObservationError('Spot mark unavailable')
   with self.store.transaction():self.store.set('quote',{'price':str(number(quote['price'])),'time':at});self.store.set('error',None)
   control=Path(self.control_dir)
@@ -116,16 +132,17 @@ class SpotPilotApplication(Application):
   pos=self.store.get('position');quantity=number(pos['quantity'])
   if quantity:
    if state.get('open_position_id')!=pos['id']:raise ObservationError('Pilot position ownership unknown')
-   raw,event,received=_fresh(self.reader,self.clock);self.last_protection_at=received/1000;self.last_protection_position=pos['id']
+   raw,event,received=protection or _fresh(self.reader,self.clock);self.last_protection_at=received/1000;self.last_protection_position=pos['id']
    with self.store.transaction():self.store.set('quote',{'price':str(raw),'time':received/1000});self.store.set('error',None)
    reason='PILOT1H_STOP' if raw<=number(pos['entry_price'])*Decimal('.98') else 'PILOT1H_TIME' if int(self.clock()*1000)-int(pos['opened_at']*1000)>=168*HOUR else None
-   if reason:self._exit(pos,reason,raw=raw,event=event,received=received);return
+   if reason:self._exit(pos,reason,raw=raw,event=event,received=received,info=inputs[2]['symbols'][0] if inputs else None);return
   boundary=state.get('next_execution_ms');now=int(self.clock()*1000)
   if type(boundary) is not int:raise ObservationError('Pilot boundary missing')
   if now<boundary:return
   if now>boundary+5000:
    self._record_result(boundary,{'action':'MISSED'},'missed_window');return
-  server=int(self.reader.get('/api/v3/time')['serverTime']);rows=self.reader.get('/api/v3/klines',{'symbol':'BTCUSDT','interval':'15m','limit':200});observed=int(self.clock()*1000)
+  if inputs is None:raise ObservationError('Pilot boundary inputs missing')
+  server=int(inputs[0]['serverTime']);rows=inputs[1];observed=int(self.clock()*1000)
   if abs(server-observed)>5000:raise ObservationError('Pilot data clock mismatch')
   try:decision=evaluate(rows,server_ms=server,start_ms=state['start_ms'],position_open=bool(quantity))
   except ValueError as exc:raise ObservationError(str(exc)) from None
@@ -141,8 +158,8 @@ class SpotPilotApplication(Application):
    self.store.set('spot_pilot',state)
   raw,event,received=self._quote_after(committed)
   if action=='SELL':
-   ok=self._exit(pos,'PILOT1H_SIGNAL',raw=raw,event=event,received=received,signal=decision);self._record_result(boundary,decision,'filled' if ok else 'not_filled');return
-  price=raw*Decimal('1.0005');info=self.reader.get('/api/v3/exchangeInfo',{'symbol':self.symbol})['symbols'][0]
+   ok=self._exit(pos,'PILOT1H_SIGNAL',raw=raw,event=event,received=received,signal=decision,info=inputs[2]['symbols'][0]);self._record_result(boundary,decision,'filled' if ok else 'not_filled');return
+  price=raw*Decimal('1.0005');info=inputs[2]['symbols'][0]
   try:qty=number(self._quantity(info,self.amount/price,price))
   except ObservationError:self._record_result(boundary,decision,'entry_skipped_exchange_filter');return
   with self.store.transaction():
