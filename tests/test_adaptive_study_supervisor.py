@@ -64,6 +64,10 @@ class SupervisorTest(unittest.TestCase):
   self.assertEqual(result['usdm_research']['epoch_start_ms'],2000)
   self.assertEqual(result['usdm_research']['limits_status'],'enforced_v2_research_only')
   for name in ('ai','baseline'):self.assertEqual(result['experiments'][name]['cash_usdt'],'1000')
+  import sqlite3
+  db=sqlite3.connect(self.root/'market-evidence.db');db.execute("INSERT INTO epoch_conflicts VALUES(1,0,'revision',3000)");db.commit();db.close();stopped[0]=False
+  serve(self.root,ai_path=self.root/'missing-ai',baseline_path=self.root/'missing-base',publisher_uid=0,version='test',stop=lambda:stopped[0],clock=lambda:3001,sleeper=lambda seconds:stopped.__setitem__(0,True),provider=Offline())
+  result=json.loads((self.root/'status.json').read_text());self.assertEqual(result['data_errors']['futures_history'],'conflict');self.assertEqual(result['usdm_research']['epoch_conflicts'],1)
  def test_capture_coverage_is_explicit_and_rejects_untrusted_data(self):
   import json,os
   from research.adaptive_study_supervisor import capture_coverage

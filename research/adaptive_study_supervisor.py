@@ -326,7 +326,8 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
        except (ValueError,TypeError,KeyError):
         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='invalid'
       elif market=='futures' and epoch_row:
-       item['entry_conflict']=True;errors[market+'_history']='epoch_data_unavailable';item['entry_conflict_reason']='epoch_data_unavailable'
+       reason='conflict' if evidence.execute('SELECT 1 FROM epoch_conflicts WHERE epoch_id=? LIMIT 1',(epoch_row[0],)).fetchone() else 'epoch_data_unavailable'
+       item['entry_conflict']=True;errors[market+'_history']=reason;item['entry_conflict_reason']=reason
       elif evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() and evidence.execute('SELECT 1 FROM market_conflicts WHERE market=? LIMIT 1',(market,)).fetchone():item['entry_conflict']=True;errors[market+'_history']='conflict'
      legacy_conflicts=(evidence.execute("SELECT count(*) FROM market_conflicts WHERE market='futures'").fetchone()[0] if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() else 0)
      epoch_conflicts=(evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0] if epoch_row else 0)
