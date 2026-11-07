@@ -222,5 +222,13 @@ class ReportUpdateGuardTests(unittest.TestCase):
         self.assertEqual(released['enabled'],['spot'])
         self.assertEqual(self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='diagnostics_update_freeze'").fetchone()[0],before)
 
+    def test_adaptiveview_preserves_previous_aiview_and_pauses(self):
+        self.shared.db.execute("INSERT INTO ledger_meta VALUES('aiview_update_freeze','{}')")
+        freeze_report_update(self.shared,self.q,'adaptiveview:freeze:test',now=100,namespace='adaptiveview')
+        with patch('trading_bot.paper_shared_store.time.time',return_value=100):
+            released=release_report_update(self.shared,self.q,'adaptiveview:release:test',protection_checked_ms=100000,now=100,namespace='adaptiveview')
+        self.assertEqual(released['enabled'],['spot'])
+        self.assertEqual(self.shared.db.execute("SELECT value FROM ledger_meta WHERE key='aiview_update_freeze'").fetchone()[0],'{}')
+
 
 if __name__=='__main__':unittest.main()
