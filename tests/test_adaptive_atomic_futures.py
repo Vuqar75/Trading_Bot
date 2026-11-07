@@ -109,6 +109,13 @@ class AtomicFuturesTest(unittest.TestCase):
    unavailable=observe(self.q,self.store,state,quote='103',quote_ms=self.now+1000,clock=lambda:self.now+1000)
    self.assertEqual((unavailable['state'],unavailable['reason']),('unavailable','funding_coverage_missing'))
    self.assertEqual(unavailable['trigger'],'stop')
+   self.assertEqual(unavailable['funding_wait']['trigger'],'stop')
+   # A restart keeps the observed but unexecuted trigger; an old price is
+   # never substituted for the fresh quote needed by a later close.
+   self.q.close();self.q=UnifiedQueue(self.qpath);self.addCleanup(self.q.close)
+   still_waiting=observe(self.q,self.store,state,quote='100',quote_ms=self.now+1000,clock=lambda:self.now+1000)
+   self.assertEqual(still_waiting['funding_wait']['trigger'],'stop')
+   self.assertIsNone(still_waiting['trigger'])
    self.assertFalse(any(j['command']=='/research_adaptive_exit' for j in self.q.pending('futures')))
    self.store.apply_funding(position['id'],[{'time':self.now+1000,'rate':'.001','mark':'100'}],self.now+1000)
    self.store.command(2,True,'/pause')

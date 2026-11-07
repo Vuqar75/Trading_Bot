@@ -16,7 +16,7 @@ def snapshot(path,*,quotes,now_ms):
   cash=Decimal(meta(db,'runtime_meta','cash'))+Decimal(meta(db,'futures_meta','cash'))
   realised=Decimal(meta(db,'runtime_meta','pnl'))+Decimal(meta(db,'futures_meta','pnl'))
   spot=meta(db,'runtime_meta','position');future=meta(db,'futures_meta','position')
-  quantity=Decimal(spot['quantity']);opened=[];unrealised=Decimal(0);valuation_known=True
+  quantity=Decimal(spot['quantity']);opened=[];unrealised=Decimal(0);valuation_known=True;funding_known=True
   if quantity:
    opened.append({'market':'spot','direction':'LONG','quantity':str(quantity)})
    try:
@@ -37,7 +37,7 @@ def snapshot(path,*,quotes,now_ms):
     qty=Decimal(future['quantity']);margin=Decimal(future['margin']);gross=(Decimal(future['entry'])-price)*qty
     net=margin+gross+Decimal(future['funding'])-Decimal(future['entry_fee'])-qty*price*Decimal('.001')
     unrealised+=max(Decimal(0),net)-margin
-   except (KeyError,ValueError,TypeError):valuation_known=False
+   except (KeyError,ValueError,TypeError):valuation_known=False;funding_known=False
   sums={};counts={}
   with localcontext() as context:
    context.prec=120
@@ -57,6 +57,7 @@ def snapshot(path,*,quotes,now_ms):
   if future:fees+=Decimal(future['entry_fee']);funding+=Decimal(future['funding'])
   closes=db.execute('SELECT count(*) FROM runtime_closes').fetchone()[0]+len(closed_futures)
   conflicts=bool(db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='funding_conflicts'").fetchone() and db.execute('SELECT 1 FROM funding_conflicts LIMIT 1').fetchone())
+  if conflicts:valuation_known=False
  with closing(sqlite3.connect((path/'observations.db').resolve().as_uri()+'?mode=ro',uri=True)) as obs:
   observations=[json.loads(r[0]) for r in obs.execute('SELECT payload FROM study_decisions ORDER BY data_ms')]
   blocked_count=obs.execute("SELECT count(*) FROM samples WHERE status IN ('blocked','entry_blocked','decision_unavailable')").fetchone()[0]
@@ -68,4 +69,4 @@ def snapshot(path,*,quotes,now_ms):
  after_api=(net-sum(known,Decimal(0))) if net is not None and manifest['source']=='AI' and known and not unknown else None
  blocked=json.loads(last_blocked[0]) if last_blocked else None
  latest=observations[-1] if observations else None
- return {'source':manifest['source'],'start_ms':manifest['start_ms'],'checked_ms':now_ms,'cash_usdt':str(cash),'positions':opened,'exposure_valid':len(opened)<=1,'realised_pnl_usdt':str(realised),'open_pnl_usdt':str(unrealised) if valuation_known else None,'net_pnl_usdt':str(net) if net is not None else None,'net_after_known_api_usd':str(after_api) if after_api is not None else None,'fees_usdt':str(fees) if fees_known else None,'funding_usdt':str(funding),'closed_trades':closes,'ledger_balanced':balanced,'funding_conflict':conflicts,'decisions':len(observations),'latest_decision':latest,'recorded_blocked_checks':blocked_count,'latest_blocked_check':blocked,'known_estimated_api_usd':str(sum(known,Decimal(0))) if known else None,'unknown_api_usage':unknown,'provider_bill_confirmed':False,'route':route}
+ return {'source':manifest['source'],'start_ms':manifest['start_ms'],'checked_ms':now_ms,'cash_usdt':str(cash),'positions':opened,'exposure_valid':len(opened)<=1,'realised_pnl_usdt':str(realised) if not conflicts else None,'open_pnl_usdt':str(unrealised) if valuation_known else None,'net_pnl_usdt':str(net) if net is not None else None,'net_after_known_api_usd':str(after_api) if after_api is not None else None,'fees_usdt':str(fees) if fees_known else None,'funding_usdt':str(funding) if not conflicts and funding_known else None,'closed_trades':closes,'ledger_balanced':balanced,'funding_conflict':conflicts,'decisions':len(observations),'latest_decision':latest,'recorded_blocked_checks':blocked_count,'latest_blocked_check':blocked,'known_estimated_api_usd':str(sum(known,Decimal(0))) if known else None,'unknown_api_usage':unknown,'provider_bill_confirmed':False,'route':route}

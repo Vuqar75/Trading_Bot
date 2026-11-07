@@ -31,7 +31,9 @@ def advance(store,*,position_id,mark_response,received_ms,history=None,fault=lam
  """Advance only across observed, verified events; persist evidence first."""
  _sandbox(store);pos=store.get('position');mark=validate_mark(mark_response,received_ms=received_ms)
  if not pos or pos.get('id')!=position_id:raise ValueError('funding_position_changed')
- db=store.db;row=db.execute('SELECT next_due_ms FROM adaptive_funding_schedule WHERE position_id=?',(position_id,)).fetchone()
+ db=store.db
+ if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='funding_conflicts'").fetchone() and db.execute('SELECT 1 FROM funding_conflicts LIMIT 1').fetchone():raise ValueError('funding_conflict_requires_review')
+ row=db.execute('SELECT next_due_ms FROM adaptive_funding_schedule WHERE position_id=?',(position_id,)).fetchone()
  if not row:raise ValueError('funding_schedule_missing')
  old_due=row[0]
  if received_ms<old_due:
@@ -71,11 +73,12 @@ def advance(store,*,position_id,mark_response,received_ms,history=None,fault=lam
 
 def covered(store,position,now_ms):
  """Short handoff after a fresh mark, never across the observed due time."""
+ db=store.db
+ if db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='funding_conflicts'").fetchone() and db.execute('SELECT 1 FROM funding_conflicts LIMIT 1').fetchone():return False
  cursor=position.get('funding_cursor',-1)
  if type(cursor) is not int or type(now_ms) is not int:return False
  if cursor>=now_ms:return True
  if not 0<=now_ms-cursor<=5000:return False
- db=store.db
  if not db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='adaptive_funding_schedule'").fetchone():return False
  row=db.execute('SELECT next_due_ms,observed_ms FROM adaptive_funding_schedule WHERE position_id=?',(position.get('id'),)).fetchone()
  return bool(row and row[0]>now_ms and type(row[1]) is int and 0<=now_ms-row[1]<=5000)

@@ -1,0 +1,31 @@
+[Unit]
+Description=Publish isolated adaptive study read-only display
+
+[Service]
+Type=oneshot
+User=adaptivestudy
+Group=adaptivestudy
+SupplementaryGroups=tradingbot
+WorkingDirectory=/opt/adaptive-study-current
+Environment=PYTHONPATH=/opt/adaptive-study-current
+Environment=HOME=/nonexistent
+UnsetEnvironment=TRADING_BOT_AI OPENAI_API_KEY RUNTIME_TELEGRAM_BOT_TOKEN RUNTIME_TELEGRAM_OWNER_ID GOOGLE_APPLICATION_CREDENTIALS
+ExecStart=/usr/bin/python3 -B -m research.adaptive_telegram_export --root /var/lib/adaptive-study/state --directory /var/lib/adaptive-study-telegram
+TimeoutStartSec=30
+UMask=0027
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+ProtectKernelModules=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/tradingbot-ai-executor -/etc/credstore.encrypted -/var/lib/donchian-observer
+ReadOnlyPaths=/var/lib/adaptive-study
+ReadWritePaths=/var/lib/adaptive-study-telegram
+MemoryMax=64M
+CPUQuota=10%
+TasksMax=8
+Nice=15

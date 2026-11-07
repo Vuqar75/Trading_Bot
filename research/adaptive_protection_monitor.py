@@ -60,6 +60,16 @@ def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=
  except (ValueError,KeyError,TypeError,ArithmeticError) as exc:problem=str(exc)
  summary={'checked_ms':now,'position_id':route.get('position_id'),'state':'unavailable' if problem else ('partial' if channel=='unavailable' or intrabar=='unavailable' else 'checked'),'reason':problem,'trigger':reason,'channel':channel,'channel_reason':channel_problem,'intrabar':intrabar}
  with queue.transaction():
+  wait_key='adaptive:funding_wait:'+str(route.get('action_id'))
+  prior_wait=queue.db.execute('SELECT value FROM unified_state WHERE key=?',(wait_key,)).fetchone()
+  if route.get('market')=='futures' and problem=='funding_coverage_missing' and reason:
+   if not prior_wait:
+    wait={'position_id':route.get('position_id'),'entry_action':route.get('action_id'),'trigger':reason,'first_seen_ms':now,'reason':'funding_coverage_missing'}
+    queue.db.execute('INSERT INTO unified_state VALUES(?,?)',(wait_key,json.dumps(wait,sort_keys=True)))
+   else:wait=json.loads(prior_wait[0])
+   summary['funding_wait']=wait
+  elif prior_wait and route.get('phase') in ('OPEN','EXIT_PENDING'):
+   summary['funding_wait']=json.loads(prior_wait[0])
   queue.db.execute("INSERT OR REPLACE INTO unified_state VALUES('adaptive:protection',?)",(json.dumps(summary,sort_keys=True),))
   if route['phase']=='EXIT_PENDING':
    pending=state.db.execute('SELECT exit_action FROM route_exit_pending WHERE entry_action=?',(route['action_id'],)).fetchone()

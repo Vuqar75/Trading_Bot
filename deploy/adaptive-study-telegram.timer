@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh the read-only adaptive study display
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=30s
+Unit=adaptive-study-telegram.service
+
+[Install]
+WantedBy=timers.target

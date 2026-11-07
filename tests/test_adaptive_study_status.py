@@ -22,3 +22,10 @@ class StudyStatusTest(unittest.TestCase):
   done=self.view();self.assertEqual(done['closed_trades'],1);self.assertEqual(done['positions'],[])
   self.assertGreater(Decimal(done['funding_usdt']),0);self.assertGreater(Decimal(done['fees_usdt']),0)
   self.assertEqual(Decimal(done['cash_usdt'])-1000,Decimal(done['net_pnl_usdt']))
+ def test_conflicting_funding_hides_unconfirmed_financial_results(self):
+  import sqlite3
+  f=self.f;f.test_short_funding_and_protection_without_ai()
+  with sqlite3.connect(f.root/'ai'/'financial.db') as db:
+   db.execute("INSERT INTO funding_conflicts VALUES(?,?,?)",(f.now,'conflicting fixture',f.now))
+  data=self.view();self.assertTrue(data['funding_conflict'])
+  for key in ('funding_usdt','realised_pnl_usdt','open_pnl_usdt','net_pnl_usdt'):self.assertIsNone(data[key])

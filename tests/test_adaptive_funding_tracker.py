@@ -43,6 +43,9 @@ class FundingTrackerTest(unittest.TestCase):
   advance(f.store,position_id=self.pos['id'],mark_response=mark,received_ms=now,history=self.history(now,[row]))
   with self.assertRaisesRegex(ValueError,'changed_requires_review'):record(f.store.db,{**row,'fundingRate':'0.002'},observed_ms=now+1)
   self.assertEqual(f.store.db.execute('SELECT count(*) FROM funding_conflicts').fetchone()[0],1)
+  self.assertFalse(covered(f.store,f.store.get('position'),now))
+  with self.assertRaisesRegex(ValueError,'funding_conflict_requires_review'):
+   advance(f.store,position_id=self.pos['id'],mark_response=mark,received_ms=now)
  def test_audit_missing_event_keeps_evidence_and_blocks(self):
   f=self.f;now=self.due+10;row={'symbol':'BTCUSDT','fundingTime':self.due+1,'fundingRate':'0.001','markPrice':'100'}
   advance(f.store,position_id=self.pos['id'],mark_response=self.mark(now,self.due+28800000),received_ms=now,history=self.history(now,[row]))
