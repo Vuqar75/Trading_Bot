@@ -1,0 +1,146 @@
+{
+  "url": "https://fapi.binance.com/fapi/v1/exchangeInfo",
+  "received_utc": "2026-11-07T08:11:22.717616+00:00",
+  "sha256_raw": "b8642230804071d666d510cd440dd9abb9200f7a405e4cfce6a60091cb8ae622",
+  "symbols": [
+    {
+      "symbol": "BTCUSDT",
+      "status": "TRADING",
+      "contractType": "PERPETUAL",
+      "baseAsset": "BTC",
+      "quoteAsset": "USDT",
+      "marginAsset": "USDT",
+      "filters": [
+        {
+          "filterType": "PRICE_FILTER",
+          "minPrice": "556.80",
+          "tickSize": "0.10",
+          "maxPrice": "4529764"
+        },
+        {
+          "maxQty": "1000",
+          "stepSize": "0.001",
+          "filterType": "LOT_SIZE",
+          "minQty": "0.001"
+        },
+        {
+          "filterType": "MARKET_LOT_SIZE",
+          "minQty": "0.001",
+          "stepSize": "0.001",
+          "maxQty": "120"
+        },
+        {
+          "limit": 200,
+          "filterType": "MAX_NUM_ORDERS"
+        },
+        {
+          "notional": "50",
+          "filterType": "MIN_NOTIONAL"
+        },
+        {
+          "multiplierUp": "1.0300",
+          "multiplierDecimal": "4",
+          "filterType": "PERCENT_PRICE",
+          "multiplierDown": "0.9700"
+        },
+        {
+          "filterType": "POSITION_RISK_CONTROL",
+          "positionControlSide": "NONE"
+        }
+      ]
+    },
+    {
+      "symbol": "ETHUSDT",
+      "status": "TRADING",
+      "contractType": "PERPETUAL",
+      "baseAsset": "ETH",
+      "quoteAsset": "USDT",
+      "marginAsset": "USDT",
+      "filters": [
+        {
+          "filterType": "PRICE_FILTER",
+          "tickSize": "0.01",
+          "maxPrice": "306177",
+          "minPrice": "39.86"
+        },
+        {
+          "filterType": "LOT_SIZE",
+          "minQty": "0.001",
+          "stepSize": "0.001",
+          "maxQty": "10000"
+        },
+        {
+          "maxQty": "2000",
+          "stepSize": "0.001",
+          "filterType": "MARKET_LOT_SIZE",
+          "minQty": "0.001"
+        },
+        {
+          "filterType": "MAX_NUM_ORDERS",
+          "limit": 200
+        },
+        {
+          "filterType": "MIN_NOTIONAL",
+          "notional": "20"
+        },
+        {
+          "multiplierUp": "1.0300",
+          "multiplierDown": "0.9700",
+          "multiplierDecimal": "4",
+          "filterType": "PERCENT_PRICE"
+        },
+        {
+          "filterType": "POSITION_RISK_CONTROL",
+          "positionControlSide": "NONE"
+        }
+      ]
+    },
+    {
+      "symbol": "SOLUSDT",
+      "status": "TRADING",
+      "contractType": "PERPETUAL",
+      "baseAsset": "SOL",
+      "quoteAsset": "USDT",
+      "marginAsset": "USDT",
+      "filters": [
+        {
+          "minPrice": "0.4200",
+          "tickSize": "0.0100",
+          "maxPrice": "6857",
+          "filterType": "PRICE_FILTER"
+        },
+        {
+          "maxQty": "1000000",
+          "minQty": "0.01",
+          "filterType": "LOT_SIZE",
+          "stepSize": "0.01"
+        },
+        {
+          "stepSize": "0.01",
+          "maxQty": "80000",
+          "minQty": "0.01",
+          "filterType": "MARKET_LOT_SIZE"
+        },
+        {
+          "limit": 200,
+          "filterType": "MAX_NUM_ORDERS"
+        },
+        {
+          "filterType": "MIN_NOTIONAL",
+          "notional": "5"
+        },
+        {
+          "multiplierDecimal": "4",
+          "filterType": "PERCENT_PRICE",
+          "multiplierUp": "1.0300",
+          "multiplierDown": "0.9700"
+        },
+        {
+          "filterType": "POSITION_RISK_CONTROL",
+          "positionControlSide": "NONE"
+        }
+      ]
+    }
+  ],
+  "note": "Current public metadata; not historical filters or account-specific margin brackets."
+}
