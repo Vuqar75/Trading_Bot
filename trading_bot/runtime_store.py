@@ -158,15 +158,34 @@ class RuntimeStore:
             qty = number(quantity)
             if not qty:
                 raise ObservationError('Zero quantity')
+            check_side={'SPOT_CHECK_BUY':'BUY','SPOT_CHECK_SELL':'SELL'}.get(reason)
+            if check_side:
+                if side!=check_side or identity.get('mode')!='paper' or identity.get('symbol','BTCUSDT')!='BTCUSDT':raise ObservationError('Check requires BTCUSDT paper')
+                from .spot_check_guard import validate
+                try:validate(self.get('spot_test_cycle'),side=side,business_key=business_key,quantity=qty,price=price,quote_at=quote_at,now_ms=int(time.time()*1000))
+                except ValueError as exc:raise ObservationError(str(exc)) from None
+                if side=='SELL' and (self.get('spot_test_cycle') or {}).get('position_id')!=target:raise ObservationError('Check position changed')
             if side == 'BUY':
                 if self.shared and self.shared.deployment_hold():raise ObservationError('Paper deployment hold active')
-                if self.get('paused') or number(pos['quantity']) or not pos['fees_known'] or self.loss() >= daily_limit:
+                pilot=self.get('spot_pilot')
+                if isinstance(pilot,dict) and pilot.get('phase') in ('active','awaiting_check','checking','ready_to_start') and reason not in ('PILOT1H_ENTRY','SPOT_CHECK_BUY'):
+                    raise ObservationError('Pilot prohibits other automatic entries')
+                if reason=='PILOT1H_ENTRY':
+                    if identity.get('mode')!='paper' or identity.get('symbol','BTCUSDT')!='BTCUSDT':raise ObservationError('Pilot requires BTCUSDT paper')
+                    from .spot_pilot_limits import validate_intent
+                    try:validate_intent(pilot,quote_at=quote_at,now_ms=int(time.time()*1000))
+                    except ValueError as exc:raise ObservationError(str(exc)) from None
+                if (self.get('paused') and not check_side) or number(pos['quantity']) or not pos['fees_known'] or self.loss() >= daily_limit:
                     raise ObservationError('Entry not allowed')
                 if qty * price * Decimal('1.002') > number(self.get('cash')):
                     raise ObservationError('Insufficient budget')
             elif side == 'SELL':
                 if target != pos['id'] or qty > number(pos['quantity']):
                     raise ObservationError('Stale or excessive close')
+                if reason in ('PILOT1H_STOP','PILOT1H_TIME','PILOT1H_SIGNAL'):
+                    from .spot_pilot_limits import validate_exit
+                    try:validate_exit(self.get('spot_pilot'),pos,reason=reason,price=price,quote_at=quote_at,now_ms=int(time.time()*1000))
+                    except ValueError as exc:raise ObservationError(str(exc)) from None
                 if reason == 'MANUAL' and not self.manual_request_valid(self.get('close_request'), pos):
                     raise ObservationError('Confirmed close is stale')
             else:
@@ -177,7 +196,7 @@ class RuntimeStore:
             symbol=self.get('identity').get('symbol','BTCUSDT')
             self.set('pair_order_symbol:' + client, symbol)
             self._order_symbol(client)
-            if symbol!='BTCUSDT' or reason in ('DONCHIAN60_ENTRY','DONCHIAN60_EXIT'):self.set('pair_order_quote_at:'+client,quote_at)
+            if symbol!='BTCUSDT' or reason in ('DONCHIAN60_ENTRY','DONCHIAN60_EXIT','PILOT1H_ENTRY','PILOT1H_STOP','PILOT1H_TIME','PILOT1H_SIGNAL','SPOT_CHECK_BUY','SPOT_CHECK_SELL'):self.set('pair_order_quote_at:'+client,quote_at)
             self.set('binding:' + client, pos['id'])
             if reason == 'MANUAL':
                 self.set('manual_binding:' + client, self.get('close_request'))
@@ -200,6 +219,19 @@ class RuntimeStore:
                     not 0<=stamp*1000-state['quote_trade_ms']<=5000 or stamp*1000>state.get('boundary_ms',0)+300000):
                     self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?",(client,))
                     return None
+            if order['side']=='BUY' and order['reason']=='PILOT1H_ENTRY':
+                from .spot_pilot_limits import validate_intent
+                try:validate_intent(self.get('spot_pilot'),quote_at=self.get('pair_order_quote_at:'+client),now_ms=int(time.time()*1000))
+                except ValueError:
+                    self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?",(client,))
+                    return None
+            check_side={'SPOT_CHECK_BUY':'BUY','SPOT_CHECK_SELL':'SELL'}.get(order['reason'])
+            if check_side:
+                from .spot_check_guard import validate
+                try:validate(self.get('spot_test_cycle'),side=check_side,business_key=order['business_key'],quantity=order['quantity'],price=order['price'],quote_at=self.get('pair_order_quote_at:'+client),now_ms=int(time.time()*1000))
+                except ValueError:
+                    self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?",(client,))
+                    return None
             if self._order_symbol(client)!='BTCUSDT':
                 observed=self.get('pair_order_quote_at:'+client)
                 if (isinstance(observed,bool) or not isinstance(observed,(int,float)) or
@@ -210,9 +242,21 @@ class RuntimeStore:
             pos = self.get('position')
             if self.get('blocked') or self.get('binding:' + client) != pos['id']:
                 raise ObservationError('Position changed or recovery required')
+            if check_side=='SELL' and (self.get('spot_test_cycle') or {}).get('position_id')!=pos['id']:
+                raise ObservationError('Check position changed')
+            if order['side']=='SELL' and order['reason'] in ('PILOT1H_STOP','PILOT1H_TIME','PILOT1H_SIGNAL'):
+                from .spot_pilot_limits import validate_exit
+                try:validate_exit(self.get('spot_pilot'),pos,reason=order['reason'],price=order['price'],quote_at=self.get('pair_order_quote_at:'+client),now_ms=int(time.time()*1000))
+                except ValueError:
+                    self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?",(client,))
+                    return None
+            pilot=self.get('spot_pilot')
+            if (order['side']=='BUY' and isinstance(pilot,dict) and pilot.get('phase') in ('active','awaiting_check','checking','ready_to_start') and order['reason'] not in ('PILOT1H_ENTRY','SPOT_CHECK_BUY')):
+                self.db.execute("UPDATE runtime_orders SET phase='SETTLED',status='EXPIRED' WHERE client_id=?",(client,))
+                return None
             if self.db.execute("SELECT 1 FROM runtime_orders WHERE client_id!=? AND phase!='SETTLED'", (client,)).fetchone():
                 raise ObservationError('Another order is unresolved')
-            if order['side'] == 'BUY' and (self.get('paused') or number(pos['quantity'])):
+            if order['side'] == 'BUY' and ((self.get('paused') and not check_side) or number(pos['quantity'])):
                 raise ObservationError('Entry no longer allowed')
             if order['side'] == 'BUY' and self.shared and self.shared.deployment_hold():
                 raise ObservationError('Paper deployment hold active')
@@ -297,6 +341,12 @@ class RuntimeStore:
                     cash -= debit
                     base += received
                     cost += debit
+                    if saved['reason']=='PILOT1H_ENTRY':
+                        from .spot_pilot_limits import record_entry
+                        pilot=self.get('spot_pilot')
+                        try:record_entry(pilot,client_id=client,position_id=pos['id'])
+                        except ValueError as exc:raise ObservationError(str(exc)) from None
+                        self.set('spot_pilot',pilot)
                 else:
                     debit = q + (fee if asset == base_asset else 0)
                     if debit > base:
@@ -307,6 +357,12 @@ class RuntimeStore:
                     pnl += credit - basis
                     base -= debit
                     cost -= basis
+                    pilot=self.get('spot_pilot')
+                    if isinstance(pilot,dict) and pilot.get('open_position_id')==pos['id']:
+                        from .spot_pilot_limits import record_close
+                        try:record_close(pilot,position_id=pos['id'],fill_id=key,pnl=credit-basis,known=known,remaining=base)
+                        except ValueError as exc:raise ObservationError(str(exc)) from None
+                        self.set('spot_pilot',pilot)
                 self.db.execute('INSERT INTO runtime_fills VALUES(?,?,?)', (key, client, encoded[key]))
             if base == 0:
                 cost = Decimal(0)
@@ -321,6 +377,18 @@ class RuntimeStore:
                 pos = {**pos, 'entry_price': str(quote/qty), 'entry_fees': entry_fees}
             if saved['side'] == 'SELL':
                 self.set('order_net:' + client, str(sum((Decimal(r[0]) for r in self.db.execute('SELECT pnl FROM runtime_closes WHERE client_id=?', (client,))), Decimal(0))))
+            if saved['reason'] in ('SPOT_CHECK_BUY','SPOT_CHECK_SELL') and len(fills)>len(existing):
+                check=self.get('spot_test_cycle')
+                if not isinstance(check,dict) or check.get('authorization')!='owner_local_once':raise ObservationError('Check identity conflict')
+                attempt=check.get(saved['side'].lower()+'_attempt',0)
+                if type(attempt) is not int or not 0<=attempt<=3 or saved['business_key']!='paper-check:'+str(check.get('id'))+':'+saved['side'].lower()+(':'+str(attempt) if attempt else ''):raise ObservationError('Check identity conflict')
+                if saved['side']=='BUY':
+                    if check.get('phase')!='BUY_ARMED' or status!='FILLED':raise ObservationError('Check buy not confirmed')
+                    check.update(phase='BUY_FILLED',position_id=pos['id'],quantity=str(base),buy_client_id=client,buy_time=time.time(),buy_price=str(quote/qty),buy_fee=str(sum((number(f['commission']) for f in fills),Decimal(0))))
+                else:
+                    if check.get('phase')!='SELL_ARMED' or check.get('position_id')!=pos['id']:raise ObservationError('Check sell identity conflict')
+                    check.update(phase='COMPLETE' if status=='FILLED' and base==0 else 'REVIEW',sell_client_id=client,sell_time=time.time(),sell_price=str(quote/qty),sell_fee=str(sum((number(f['commission']) for f in fills),Decimal(0))),net_pnl=str(pnl) if known else None)
+                self.set('spot_test_cycle',check)
             self.set('cash', str(cash))
             self.set('position', {**pos, 'quantity': str(base), 'cost': str(cost), 'fees_known': known})
             phase = 'SETTLED' if status in TERMINAL else 'ACK'
@@ -337,7 +405,7 @@ class RuntimeStore:
                 entry = self.get('entry_snapshot:' + client, {})
                 self.notify(spot_receipt(mode=self.get('identity')['mode'], side=saved['side'], status=status,
                     quantity=qty, average=quote/qty if qty else 0, fees=fees, remaining=base,
-                    reason=saved['reason'], interval=self.get('selected_interval', self.get('identity').get('interval', '15m')),
+                    reason=saved['reason'], interval=('1h' if saved['reason'].startswith('PILOT1H_') else self.get('selected_interval', self.get('identity').get('interval', '15m'))),
                     client=client, entry=entry.get('price'), entry_is_cost=entry.get('is_cost', False), entry_fees=entry.get('fees'),
                     net=self.get('order_net:' + client, '0'), known=known, symbol=symbol))
 
@@ -394,7 +462,9 @@ class RuntimeStore:
                 elif command.startswith('/timeframe'):
                     parts = command.split()
                     current = self.get('selected_interval', self.get('identity').get('interval', '15m'))
-                    if self.get('donchian60') is not None:
+                    if self.get('spot_pilot') is not None:
+                        message = 'Экспериментальный Spot-пилот: часовые свечи UTC; изменение интервала недоступно.'
+                    elif self.get('donchian60') is not None:
                         message = 'Donchian60: дневные свечи UTC; изменение интервала недоступно в этом режиме.'
                     elif len(parts) == 1:
                         message = 'Таймфрейм: ' + current + '. Выбор: /timeframe 1m, 5m, 15m или 1h. Сначала /pause и закрытие позиции.'

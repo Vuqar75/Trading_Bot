@@ -20,7 +20,7 @@ MODULES={'tradingbot-spot.service':'deploy/cloud_paper_launch.py',
 TRADING={'tradingbot-spot.service','tradingbot-futures.service','tradingbot-cross.service','tradingbot-margin.service'}
 
 
-def stage_units(source,destination,*,installed_root,candidate_root,installed_roots=None,pair_already_enabled=False):
+def stage_units(source,destination,*,installed_root,candidate_root,installed_roots=None,pair_already_enabled=False,spot_pilot=False):
     source=Path(source);destination=Path(destination)
     old=Path(installed_root);new=Path(candidate_root)
     if (not source.is_absolute() or source.is_symlink() or not source.is_dir() or
@@ -29,7 +29,8 @@ def stage_units(source,destination,*,installed_root,candidate_root,installed_roo
         not old.is_absolute() or not new.is_absolute() or old==new or
         source.resolve() in destination.parent.resolve().parents or source.resolve()==destination.parent.resolve()):
         raise ValueError('Distinct absolute unit paths and a new staging directory required')
-    if type(pair_already_enabled) is not bool:raise ValueError('Invalid pair flag mode')
+    if type(pair_already_enabled) is not bool or type(spot_pilot) is not bool:raise ValueError('Invalid pair flag mode')
+    if spot_pilot and not pair_already_enabled:raise ValueError('Pilot requires installed pair mode')
     if installed_roots is None: installed_roots={}
     if (not isinstance(installed_roots,dict) or any(
         name not in MODULES or not isinstance(root,str) or not Path(root).is_absolute() or Path(root)==new
@@ -64,6 +65,9 @@ def stage_units(source,destination,*,installed_root,candidate_root,installed_roo
             raise ValueError('Shared financial and queue paths required')
         ending='\r\n' if start.endswith('\r\n') else '\n' if start.endswith('\n') else ''
         if name in TRADING and not pair_already_enabled:lines[starts[0]]=start.rstrip('\r\n')+' --experimental-pair'+ending
+        if name=='tradingbot-spot.service' and spot_pilot:
+            if start.split().count('--donchian-paper')!=1 or '--spot-pilot' in start.split():raise ValueError('Unexpected installed Spot strategy')
+            lines[starts[0]]=start.replace('--donchian-paper','--spot-pilot')
         lines[work[0]]='WorkingDirectory='+str(new)+('\r\n' if lines[work[0]].endswith('\r\n') else '\n' if lines[work[0]].endswith('\n') else '')
         staged=''.join(lines).encode('utf-8')
         entries[name]={'old':data,'new':staged}
@@ -87,13 +91,14 @@ def main():
     parser.add_argument('--installed-root',required=True);parser.add_argument('--candidate-root',required=True)
     parser.add_argument('--installed-roots-json',help='JSON object mapping unit names to their verified current working directories')
     parser.add_argument('--pair-already-enabled',action='store_true',help='Require and preserve the installed paper pair flags')
+    parser.add_argument('--spot-pilot',action='store_true',help='Stage the approved Spot pilot instead of Donchian')
     args=parser.parse_args()
     roots=None
     if args.installed_roots_json:
         path=Path(args.installed_roots_json)
         if path.is_symlink() or not path.is_file(): raise ValueError('Expected a regular roots file')
         roots=json.loads(path.read_text(encoding='utf-8'))
-    print(json.dumps(stage_units(args.source,args.destination,installed_root=args.installed_root,candidate_root=args.candidate_root,installed_roots=roots,pair_already_enabled=args.pair_already_enabled),sort_keys=True))
+    print(json.dumps(stage_units(args.source,args.destination,installed_root=args.installed_root,candidate_root=args.candidate_root,installed_roots=roots,pair_already_enabled=args.pair_already_enabled,spot_pilot=args.spot_pilot),sort_keys=True))
 
 
 if __name__=='__main__':main()
