@@ -43,6 +43,11 @@ class CycleTest(unittest.TestCase):
   self.now=due+10;self.markets['futures']['quote'].update(price='103',event_ms=self.now-1,received_ms=self.now-1,next_due_ms=due+28800000)
   self.markets['futures']['funding_history']={'source':'binance_usdm_funding_rate','symbol':'BTCUSDT','start_ms':due-1,'end_ms':self.now,'received_ms':self.now,'rows':[{'symbol':'BTCUSDT','fundingTime':due+1,'fundingRate':'0.001','markPrice':'100'}]}
   self.assertEqual(self.run_cycle('ai',self.private/'missing')['status'],'protection_exit')
+ def test_new_epoch_rejects_mark_as_trade_price(self):
+  self.decision['mode']='TREND_DOWN';self.ai=bind(self.captured,self.decision,self.data_ms+1,model='gpt-6-luna',request_sha256='0'*64);self.apath.write_text(json.dumps(self.ai))
+  self.markets['futures']={'epoch_v2':True}
+  result=self.run_cycle('ai',self.apath)
+  self.assertEqual((result['status'],result['reason']),('entry_blocked','futures_trade_execution_price_unverified'))
  def test_history_conflict_blocks_entry_but_not_fresh_price_exit(self):
   self.markets['spot']['entry_conflict']=True
   self.assertEqual(self.run_cycle('ai',self.apath)['reason'],'market_history_conflict')

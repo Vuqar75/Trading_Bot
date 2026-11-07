@@ -15,6 +15,10 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
   status=json.loads((root/'status.json').read_text());now=clock()
   if status.get('schema')!=1 or type(status.get('checked_ms')) is not int or status['checked_ms']>now+5000:raise ValueError('status_invalid')
   result={'schema':1,'generated_ms':now,'checked_ms':status['checked_ms'],'start_ms':status['start_ms'],'version':status['code_version'],'backup':status.get('backup'), 'data_errors':status.get('data_errors',{}),'watermarks':status.get('market_watermarks',{}),'same_snapshot':status.get('same_snapshot',False),'experiments':{}}
+  # Narrow, non-secret study diagnostics; this does not grant access to ledgers.
+  limits=status.get('usdm_research')
+  if isinstance(limits,dict):
+   result['usdm_research']={k:limits.get(k) for k in ('epoch_id','epoch_start_ms','legacy_conflicts','epoch_conflicts','max_notional_usdt','max_risk_usdt','leverage','limits_status','execution_gate','economic_status','sizing','sizing_reason')}
   for name in ('ai','baseline'):
    v=status['experiments'][name];route=v.get('route') or {};cycle=status.get('cycles',{}).get(name,{})
    clean={k:v.get(k) for k in ('source','cash_usdt','realised_pnl_usdt','open_pnl_usdt','net_pnl_usdt','net_after_known_api_usd','fees_usdt','funding_usdt','closed_trades','ledger_balanced','funding_conflict','recorded_blocked_checks','known_estimated_api_usd','unknown_api_usage')}

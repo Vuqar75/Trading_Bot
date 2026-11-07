@@ -298,20 +298,35 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
     from .adaptive_market_history import ingest
     evidence=sqlite3.connect(root/'market-evidence.db',timeout=10,isolation_level=None)
     try:
+     epoch_row=(evidence.execute("SELECT id,start_ms FROM market_epochs WHERE market='futures' ORDER BY id DESC LIMIT 1").fetchone() if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_epochs'").fetchone() else None)
      for market in ('spot','futures'):
       item=markets[market]
+      if market=='futures' and epoch_row:item['epoch_v2']=True
       if item.get('candles'):
        try:
-        proof=ingest(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
+        if market=='futures' and epoch_row:
+         from .adaptive_market_epoch import ingest_epoch
+         proof=ingest_epoch(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
+        else:proof=ingest(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
         if proof['entry_blocked']:
-         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='conflict'
+         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='epoch_wait_for_new_signal' if market=='futures' and epoch_row and not proof.get('conflict') else 'conflict';item['entry_conflict_reason']=errors[market+'_history']
        except (ValueError,TypeError,KeyError):
         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='invalid'
+      elif market=='futures' and epoch_row:
+       item['entry_conflict']=True;errors[market+'_history']='epoch_data_unavailable';item['entry_conflict_reason']='epoch_data_unavailable'
       elif evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() and evidence.execute('SELECT 1 FROM market_conflicts WHERE market=? LIMIT 1',(market,)).fetchone():item['entry_conflict']=True;errors[market+'_history']='conflict'
+     legacy_conflicts=(evidence.execute("SELECT count(*) FROM market_conflicts WHERE market='futures'").fetchone()[0] if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() else 0)
+     epoch_conflicts=(evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0] if epoch_row else 0)
     finally:evidence.close()
     result=run_once(root,ai_path=ai_path,baseline_path=selected,publisher_uid=publisher_uid,baseline_uid=baseline_uid,markets=markets,clock=clock)
     watermarks=update_watermarks(root,markets,now_ms=before,start_ms=identity['start_ms'],signal_window=window)
     result.update({'schema':1,'process_pid':os.getpid(),'start_ms':identity['start_ms'],'code_version':version,'data_errors':errors,'signal_window':window,'market_watermarks':watermarks,'next_signal_boundary_ms':(clock()//900000+1)*900000,'baseline_origin':baseline_origin,'backup':backup_health(backup_path,owner_uid=backup_uid,now_ms=clock()),'global_ai_budget':budget_health(budget_path,owner_uid=publisher_uid,now_ms=clock())})
+    result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'preview_only_not_installed_in_execution','execution_gate':'futures_trade_execution_price_unverified','economic_status':'rejected','sizing':None}
+    try:
+     from .usdm_study_sizing import minimum_futures_size
+     ctx=markets['futures'];result['usdm_research']['sizing']=minimum_futures_size(ctx['filters']['filters'],ctx['quote']['price'],stop_distance='.02',fee_bps='10',slippage_bps='5')
+     result['usdm_research']['sizing']['price_kind']='indicative_mark_not_execution_price'
+    except (ValueError,KeyError,TypeError):result['usdm_research']['sizing_reason']='fresh_filter_or_price_unavailable'
     write_status(root,result)
    sleeper(next_delay(before,clock()))
 

@@ -48,6 +48,22 @@ class SupervisorTest(unittest.TestCase):
   self.assertEqual(out['data_errors']['spot_quote'],'unavailable_or_preboundary')
   self.assertEqual(out['cycles']['ai']['status'],'decision_unavailable')
   self.assertEqual(out['experiments']['baseline']['positions'],[])
+ def test_epoch_data_unavailable_fails_closed_and_preserves_accounts(self):
+  import json
+  from research.adaptive_market_epoch import start_epoch
+  bootstrap(self.root,clock=lambda:1000);start_epoch(self.root,market='futures',clock=lambda:2000)
+  class Offline:
+   def spot_quote(self,**kw):raise ValueError('offline')
+   def futures_quote(self,**kw):raise ValueError('offline')
+   def filters(self,*a,**kw):raise ValueError('offline')
+   def closed_15m(self,*a,**kw):raise ValueError('offline')
+  stopped=[False]
+  serve(self.root,ai_path=self.root/'missing-ai',baseline_path=self.root/'missing-base',publisher_uid=0,version='test',stop=lambda:stopped[0],clock=lambda:3000,sleeper=lambda seconds:stopped.__setitem__(0,True),provider=Offline())
+  result=json.loads((self.root/'status.json').read_text())
+  self.assertEqual(result['data_errors']['futures_history'],'epoch_data_unavailable')
+  self.assertEqual(result['usdm_research']['epoch_start_ms'],2000)
+  self.assertEqual(result['usdm_research']['limits_status'],'preview_only_not_installed_in_execution')
+  for name in ('ai','baseline'):self.assertEqual(result['experiments'][name]['cash_usdt'],'1000')
  def test_baseline_falls_back_after_ai_window_and_is_reused(self):
   import os
   now=20000*PERIOD+360001;self.root.mkdir(mode=0o700)

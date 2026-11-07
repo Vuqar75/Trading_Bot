@@ -74,7 +74,11 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
   choice=route(decision,snapshot_id=info['snapshot_id'],data_ms=info['data_ms'],now_ms=clock(),symbol='BTCUSDT',decision_version='regular-regime-horizon-v2',eligible=True,research_sandbox=True)
   if not choice['allowed']:return {'status':'blocked','reason':choice['reason'],'protection':protected}
   market=choice['market'];ctx=markets.get(market,{})
-  if ctx.get('entry_conflict'):return {'status':'entry_blocked','reason':'market_history_conflict','protection':protected}
+  if ctx.get('entry_conflict'):return {'status':'entry_blocked','reason':ctx.get('entry_conflict_reason','market_history_conflict'),'protection':protected}
+  # The existing USD-M quote is a mark, not an executable trade.  Until the
+  # entry/exit path carries a source-timestamped trade quote after signal
+  # fixation, the larger research notional must not turn that mark into a fill.
+  if market=='futures' and ctx.get('epoch_v2'):return {'status':'entry_blocked','reason':'futures_trade_execution_price_unverified','protection':protected}
   if ctx.get('entry_window') is False:return {'status':'waiting_for_signal_window','protection':protected}
   try:
    candles=ctx['candles'];bars=candles['bars'];skip_bar=candles['skip_bar']
