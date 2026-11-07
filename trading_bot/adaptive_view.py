@@ -38,7 +38,9 @@ def render(view='summary',path=SNAPSHOT,now=None):
   if decision.get('mode') and route.get('decision_fresh') is not True:mode+=' (срок истёк или не подтверждён)'
   pos=', '.join(str(p.get('direction'))+' '+str(p.get('market')) for p in positions) if positions else 'позиций нет'
   net=amount(v.get('net_pnl_usdt')) if v.get('ledger_balanced') is True else 'не подтверждён'
-  lines.append(f"{label}: режим {mode}; маршрут {route.get('strategy') or 'не выбран'}; {pos}; net {net} USDT; закрыто {v.get('closed_trades','неизвестно')}.")
+  proposed={'TREND_UP':'Spot • тренд LONG','TREND_DOWN':'isolated • тренд SHORT','RANGE':'Spot • диапазон','NO_TRADE':'нет входа'}.get(decision.get('mode'),'не выбран')
+  if route.get('decision_fresh') is not True:proposed='нет действующего решения'
+  lines.append(f"{label}: режим {mode}; маршрут {route.get('strategy') or proposed}; {pos}; net {net} USDT; закрыто {v.get('closed_trades','неизвестно')}.")
   if view=='positions':
    for p in positions:lines.append(f"  {p.get('strategy') or 'стратегия неизвестна'}: {amount(p.get('quantity'),'BTC')} BTC, вход {amount(p.get('entry'))} USDT; защитный уровень {amount(p.get('protective_level'))} USDT (модель, не биржевой стоп).")
    phase={'IDLE':'нет ожидающего исполнения','ENTRY_PENDING':'ожидается вход','EXIT_PENDING':'ожидается выход','OPEN':'позиция открыта','RECONCILE':'ожидается сверка'}.get(route.get('phase'),'неизвестно')
@@ -51,6 +53,10 @@ def render(view='summary',path=SNAPSHOT,now=None):
    reason=cycle.get('reason') or cycle.get('status') or route.get('entry_reason') or 'неизвестно';protection=cycle.get('protection') or {}
    lines.append('  Причина: '+labels.get(reason,str(reason)[:100])+'.')
    if protection.get('funding_wait'):lines.append('  Защитный сигнал сохранён; требуется сверка funding и актуальное условие выхода. Позиция не объявлена закрытой.')
+  elif view=='health':
+   protection=cycle.get('protection') or {};state=protection.get('state')
+   label_state={'no_position':'позиции нет','checked':'проверено','partial':'проверено частично','unavailable':'недоступно'}.get(state,'неизвестно')
+   lines.append('  Сопровождение: '+label_state+'; funding: '+('есть противоречие' if v.get('funding_conflict') else 'противоречие не отмечено')+'.')
  if view=='health':
   errors=d.get('data_errors') or {};lines.append('Данные: '+('ошибок не отмечено' if not errors else ', '.join(labels.get(str(x),str(x)[:80]) for x in errors.values()))+'.')
   for name in ('spot','futures'):
