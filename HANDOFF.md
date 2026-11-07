@@ -4465,3 +4465,36 @@ before action; initial probe is not authorization to act on stale data.
   finish integration, full Linux suite, unit rehearsal, fresh coordinated
   backup and safe switch before arming the root-owned test request.
 
+## 2026-11-07 — BTC paper pilot installed and check completed
+
+The preceding preparation checkpoint is superseded. VM application SHA is
+`8900dd255a3c71322e84fcb5fd0425a99bf11580` at
+`/opt/trading-bot-spotpilot-8900dd2`. Spot runs `btc-trend1-48-24-v1` on
+BTCUSDT, is enabled, and is flat; the other three markets remain paused.
+It began 06:00:13.592 UTC / 10:00:13.592 Baku, with 0 of 3 entries and
+0 USDT pilot realized PnL. Next eligible calculation 07:15 UTC / 11:15 Baku.
+The 48h/24h breakout and exits, 2% stop, 168h maximum hold, 15m wait,
+1 USDT realized-loss cap, source freshness, costs and limitations are fixed
+in `BTC_SPOT_PILOT_PLAN.md`. The strategy is economically unproven and is
+authorized only as a bounded paper experiment. Restart does not resume entries.
+
+The owner-authorized single CHECK paper BUY/SELL finished at 05:59 UTC with
+0.00013000 BTC on each side, net -0.0296532639 USDT, no remaining position,
+and cash 999.9695070649 USDT. IDs, fees, times and proof details are in
+`BTC_SPOT_PILOT_PLAN.md`. It is excluded from the pilot's entries and PnL.
+Do not repeat the test or the initial authorization. No real/Testnet orders
+were sent. The owner-stopped paid AI schedule remains disabled; `/ai` names
+the owner's decision. Donchian's separate observer was not restarted or changed.
+
+Nine actual unit copies were analyzed and failure/recovery rehearsed. The
+application tree passed 1448 Linux tests; 32 targeted tests covered the later
+recovery-only change and added recovery tests. The original archive-only test
+run failed one Git-history-dependent test because `.git` was absent, and was
+rerun successfully with the same application tree and Git history available.
+Three held health cycles, post-release health, fresh post-pilot backup, hash,
+restore, ledger reconciliation, one poller and relay were verified. Backup is
+`/var/lib/tradingbot/spotpilot-updates/20261107c/post-pilot`. The installed
+Telegram handlers rendered `/status`, `/report` and `/ai` under `tradingbot`;
+that is not a claim that the owner viewed them. No change to the independent
+observer, adaptive execution, other-market pauses or AI budget was made.
+

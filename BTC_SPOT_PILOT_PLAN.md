@@ -1,5 +1,54 @@
 # BTCUSDT paper Spot: pilot preparation — 2026-11-07
 
+## Installed result — 2026-11-07
+
+The earlier sections below describe preparation, not the current status. The
+paper application installed on the VM is `8900dd255a3c71322e84fcb5fd0425a99bf11580`,
+working directory `/opt/trading-bot-spotpilot-8900dd2`. Its source tree matches
+the full Linux-tested application tree, with a separately tested recovery-tool
+hardening and two additional recovery test files. The active strategy is
+`btc-trend1-48-24-v1`, **experimental paper; no economic advantage proven**.
+It started 2026-11-07 06:00:13.592 UTC / 10:00:13.592 Baku from cash and
+does not act on the already completed 06:00 signal. Its next eligible execution
+calculation is 07:15 UTC / 11:15 Baku (07:00 UTC signal, then one 15m wait).
+Spot entries were enabled after the check and reconciliation; isolated, cross
+and margin remain paused. No initial capital was added. A manual pause remains
+authoritative, including on restart. `/status spot`, `/report` and `/signal`
+display pilot rules, limits and separate results. `/ai` says the owner stopped
+paid scheduling. `/donchian` remains the independent observation.
+
+The owner-authorized **CHECK ONLY** paper cycle was completed by the normal
+single-writer `prepare -> claim -> PaperExchange -> apply` path. No real or
+Testnet order was submitted. BUY `rte2ceac73997a43e6a175dafa33a2a6a9` at
+05:59:24.174 UTC: 0.00013000 BTC at 76072.027005 USDT, fee
+0.00988936351065 USDT. SELL `rtbb6cc23da2c84d3fa3e01ad4adf7b0c1` at
+05:59:28.008 UTC: the same BTC quantity at 75995.992995 USDT, fee
+0.00987947908935 USDT. Net is -0.0296532639 USDT; cash changed from
+999.9991603288 to 999.9695070649 USDT. The position is closed; the cycle is
+not counted in pilot entries or pilot PnL. Test state and its original request
+are preserved; never re-arm a second check from them.
+
+Real installed unit files were rehearsed on nine copies with systemd-analyze,
+injected partial switching, restoration and refusal of unsafe rollback. The
+application tree passed 1448 Linux tests; the recovery-only change and two
+added test files passed 32 more targeted tests. The exact final candidate was
+switched with the guarded coordinator and coordinated backup. Three healthy
+cycles preceded release. `/var/lib/tradingbot/spotpilot-updates/20261107c/`
+contains before, stopped, post-release and **post-pilot** coordinated copies;
+the post-pilot financial, queue and observation copies were hash-checked,
+SQLite-integrity-checked and separately restored with a balanced ledger.
+The live health verifier confirmed one poller and healthy relay. No second
+poller or paid AI request was made. Actual Telegram delivery of a later screen
+is a user-facing observation, not inferred from rendering it as `tradingbot`.
+
+The hourly decision window is five seconds after the 15-minute delay; public
+data are fetched concurrently and execution requires a newer exchange trade
+timestamp after the durable decision. A measured WSL public-data probe took
+about 3.7 seconds through the fresh quote; that observation is not a service
+latency guarantee. A missed or stale window does not cause a backdated trade.
+The protective stop remains a paper model and gaps can exceed the threshold.
+Position monitoring and confirmed manual close continue while entries pause.
+
 This is a preparation record, not evidence that the pilot or a check trade was
 started. The owner permits exactly one labelled paper-only BUY/SELL check and
 the subsequent bounded pilot; neither permission enables real/Testnet orders.
