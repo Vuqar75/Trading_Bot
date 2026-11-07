@@ -83,6 +83,16 @@ class EpochTests(unittest.TestCase):
   self.assertEqual(calls,['futures','futures']);self.assertFalse(first.get('replayed',False))
   result=run(self.root,previous_epoch=1,clock=clock,sleeper=sleep,fetch=lambda *a,**k:self.fail('replay must not fetch'))
   self.assertTrue(result['replayed']);self.assertEqual(db.execute('select count(*) from market_epochs').fetchone()[0],2);db.close()
+ def test_continuation_fails_closed_on_revised_or_stale_window(self):
+  from tests.test_adaptive_candle_confirmation import sample
+  start_epoch(self.root,market='futures',clock=lambda:1800000)
+  db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);db.execute("INSERT INTO epoch_conflicts VALUES(1,0,'old',1800001)")
+  first=sample();second=sample(first['received_ms']+10000)
+  c={'id':'usdm-continuation-20261107-v1','previous_epoch':1,'first':first,'second':second}
+  with self.assertRaisesRegex(ValueError,'stale'):start_epoch(self.root,market='futures',clock=lambda:second['received_ms']+60001,continuation=c)
+  second['raw_bars'][10][4]='1.1';second['bars'][10]=(second['bars'][10][0],1.,2.,1.,1.1)
+  with self.assertRaisesRegex(ValueError,'unconfirmed'):start_epoch(self.root,market='futures',clock=lambda:second['received_ms']+1000,continuation=c)
+  self.assertEqual(db.execute('select count(*) from market_epochs').fetchone()[0],1);db.close()
  def test_volume_revision_is_retained_and_blocks(self):
   start_epoch(self.root,market='futures',clock=lambda:1000);db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None)
   rows=[[0,1,2,1,1],[900000,1,2,1,1]]

@@ -57,6 +57,11 @@ class V2AtomicStudyTests(unittest.TestCase):
   d.execute('UPDATE candle_confirmations SET recorded_ms=?',(self.now+1,));d.commit()
   with self.assertRaisesRegex(ValueError,'v2_warm_confirmation_missing'):self.call()
   self.assertIsNone(self.store.get('position'));d.close()
+ def test_signal_before_epoch_is_not_executed(self):
+  d=sqlite3.connect(self.root/'market-evidence.db')
+  d.execute('UPDATE market_epochs SET start_ms=? WHERE id=1',(self.bars[-1][0]+900000,));d.commit();d.close()
+  with self.assertRaisesRegex(ValueError,'signal_predates_epoch'):self.call()
+  self.assertIsNone(self.store.get('position'))
  def test_stale_trade_after_financial_lock_wait_cannot_fill(self):
   held=threading.Event();release=threading.Event()
   def lock():
