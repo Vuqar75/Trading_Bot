@@ -6,14 +6,15 @@ the Telegram queue, the independent observer or the AI budget database.
 
 ## Installed study, 2026-11-06
 
-The installed study code tree is GitHub commit `b95c1ca18ce2b21da17d85f709bf7f5535ac81b5`
-(local equivalent `0cf2277d5d09bd1b05df08d4680f66e642ae23af`, identical tree).
+The installed study code tree is GitHub commit `4588ace51c6a1ccf1e793f3697af00b9c7da81a9`
+(local equivalent `6e58fe9b22ccf526e1239417e9220e1cb3ba5ffc`, identical tree).
 The sole `adaptive-study.service` began at 2026-11-06 22:48:12.589 UTC
 (2026-11-07 02:48:12.589 Asia/Baku). Both separate experiments began in cash,
 1,000 USDT each, with no positions. Historical quotes do not authorize entries.
-The first eligible 4-hour decision boundary is 2026-11-07 00:00 UTC; the
-existing AI service has its own permitted collection window and may legitimately
-miss it. A future same-snapshot AI/baseline result is not yet proven.
+The first eligible 4-hour decision boundary was 2026-11-07 00:00 UTC: model
+and baseline both selected TREND_DOWN from the same verified snapshot. At
+04:00 UTC model RANGE and baseline TREND_DOWN were similarly verified. The
+existing AI service has its own collection window and may legitimately miss it.
 
 The initial 23:00 UTC candle window was missed due to a scheduler boundary
 race; it is explicitly recorded as a gap and was not backfilled. The installed
@@ -24,8 +25,10 @@ systemd test and a subsequent real budget publication also confirmed that
 watching the source directory detects atomic snapshot replacement.
 
 The local status is `/var/lib/adaptive-study/state/status.json`, readable with
-`sudo -u adaptivestudy cat /var/lib/adaptive-study/state/status.json`. It is
-not currently connected to Telegram. `adaptive-study-publisher.path` passes
+`sudo -u adaptivestudy cat /var/lib/adaptive-study/state/status.json`. The
+read-only `/adaptive` view is installed in app `13fc8f641a576262da5087ccb772b0be66c1c594`;
+its publisher timer is `adaptive-study-telegram.timer`. `/ai`, `/donchian`
+and `/report` retain separate meanings. `adaptive-study-publisher.path` passes
 sanitized evidence through a root-owned directory, not the AI credential or
 budget. The executor's evidence opt-in was installed outside its request
 window; the existing timer and budget were retained. An old response cannot be
@@ -35,9 +38,12 @@ retrospectively bound to candles that were not recorded at the time.
 separate snapshot and readback-verified external upload. The initial actual
 study archive was restored in isolation and verified, SHA-256
 `cfe611800de10e320abffe30839adb1973ce1e5a84af35832fca698668199a9b`.
-After the first accepted production candle, a newer external copy was
+After the first accepted production candle, an external copy was
 read back and restored, SHA-256
 `88c4a6982123c8d086be7e1903d7e004e9a2cea73ab6324ea70a9b4632c92e6e`.
+A later copy including the first decisions and the 04:30 UTC no-signal result
+was externally restored and verified, SHA-256
+`601163b4d1f257d33fb8ff1f0aabfa810840d5a669f25d36d91b2ff54731e87e`.
 The service account used by the uploader has existing bucket-wide authority;
 the research prefix is an application boundary, not an IAM restriction.
 Bucket lifecycle and off-host recovery of unrelated host-bound encrypted AI
@@ -49,8 +55,11 @@ executable prices. The system assumes complete fills and cannot partially
 close isolated positions; a daily or periodic protective check is not an
 exchange-held stop. Missing or contradictory funding remains unknown, blocks
 entries and may prevent a financially complete close; price-based protection
-is still evaluated where available. The study strategies previously failed
-economic selection and remain research-only.
+is still evaluated where available. A detected trigger during unconfirmed
+funding is saved durably, while the position remains open. A later close needs
+confirmed funding, a fresh price and a currently valid exit condition; an old
+price is never used. Changed accepted funding stays blocked for review. The
+study strategies previously failed economic selection and remain research-only.
 
 ## Prepare and rehearse
 

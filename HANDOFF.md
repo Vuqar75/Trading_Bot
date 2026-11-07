@@ -4372,3 +4372,55 @@ writer was confirmed when a second lock attempt failed. Both accounts remain
 fresh. A subsequent real external snapshot including these observations was
 downloaded and verified in isolated restoration: SHA-256
 `88c4a6982123c8d086be7e1903d7e004e9a2cea73ab6324ea70a9b4632c92e6e`.
+
+## Adaptive study Telegram view and funding protection — 2026-11-07
+
+Installed trading application: `13fc8f641a576262da5087ccb772b0be66c1c594`
+at `/opt/trading-bot-adaptiveview2-13fc8f6`. Installed research service:
+`4588ace51c6a1ccf1e793f3697af00b9c7da81a9`, the tree of local
+`6e58fe9b22ccf526e1239417e9220e1cb3ba5ffc`. The original study start
+2026-11-06 22:48:12.589 UTC is unchanged. `/adaptive` and five read-only
+buttons use `/var/lib/adaptive-study-telegram/snapshot.json`, atomically
+published by `adaptive-study-telegram.timer` as adaptivestudy:tradingbot.
+The bot user could read the snapshot but not the study private DB or write
+the snapshot. `/ai`, `/donchian`, and `/report` remain distinct. Rendering all
+five screens as the installed bot user passed; actual owner receipt and
+readability remain unconfirmed, not a completed user test.
+
+The 00:00 UTC decision was TREND_DOWN for both model and baseline; 04:00 UTC
+was model RANGE versus baseline TREND_DOWN. For each boundary the stored raw
+candles, snapshot ID and recomputed features were verified to match. The
+baseline entry remains blocked by persisted USD-M candle conflicts: the
+original and later source versions differ by 0.1 in several close values. No
+history was rewritten or conflict cleared. At 04:30 UTC the AI RANGE route
+recorded a rejected queue attempt `no range signal` (queue status FAILED is
+the existing non-execution representation); no route action, fill or position
+was created. Both research ledgers remain reconciled with 1,000 USDT each.
+
+With an isolated SHORT and missing funding, a protective trigger is now
+durably recorded across restart while the position remains open; no stale quote
+or fabricated funding is used. Once coverage returns, an actual close still
+requires a fresh quote and a currently valid exit condition. A changed funding
+event blocks coverage and close until review. Replays after funding application
+and close do not double post; conflicting/unconfirmed results are shown as
+unknown. No live SHORT was created to demonstrate this behavior.
+
+The first guarded rollout used `adaptiveview-updates/20261107a`, followed by
+the final view clarification under `adaptiveview2-updates/20261107b` (the
+second was necessary to show the derived route and monitoring health). Each
+used consistent backups, three consecutive protective cycles and guarded
+recovery. Cross data synchronization briefly delayed release in both runs;
+the hold remained in force, then health passed without relaxing checks.
+Postcheck confirmed history and positions, one poller, relay and verified
+post-release backup; Spot permission was restored and isolated, cross and
+margin remained paused. Donchian observer PID 70107 was unchanged; regular AI
+schedule and its sole budget remained active. No extra paid request was made.
+
+The final integrated Linux suite passed 1,561 tests with the one previously
+documented isolated-runner skip; the exact app candidate passed 76 targeted
+tests. The study's latest external backup was downloaded and restored in an
+isolated directory, SHA-256
+`601163b4d1f257d33fb8ff1f0aabfa810840d5a669f25d36d91b2ff54731e87e`.
+Paper full-fill assumptions, unsupported isolated partial closes, unknown
+publication time for funding, previously rejected strategy economics and
+bucket-wide uploader permission remain limitations.
