@@ -4498,3 +4498,29 @@ Telegram handlers rendered `/status`, `/report` and `/ai` under `tradingbot`;
 that is not a claim that the owner viewed them. No change to the independent
 observer, adaptive execution, other-market pauses or AI budget was made.
 
+## 2026-11-07 — offline Spot 5m/15m comparison completed
+
+The four preregistered BTC/ETH/SOL Spot configurations were rejected for a
+future paper pilot: both base and raised-cost-plus-delay totals are negative
+and BTC is also negative in the stressed scenario for each. No subsequent
+parameter search was run. See `SPOT_5M_15M_PLAN.md` (committed before any
+candidate results) and `SPOT_5M_15M_REPORT.md` for rules, all four scenarios,
+per-asset/period results, prior studies, assumptions and boundaries. Data for
+2024–2026 were previously used by the project and are not independent.
+
+Verified 69 official Binance Spot 5m monthly archives (2024-12 warmup through
+2026-10), source SHA-256 in `research/intraday_5m_manifest.json`; 201600 5m
+bars per asset were continuous and correctly closed. All 67200 aggregate
+15m OHLCV bars per asset matched earlier pinned Spot 15m archives. USD-M was
+not used. `/tmp/tradingbot-spot5m-study` and full JSON are local disposable
+cache, not Git; use the manifest URLs and hashes to restore. Compact results
+and baseline are `research/intraday_5m_summary.json`.
+
+The first computation exposed an implementation error in the range entry's
+minimum target distance: raw price was used where the plan required executed
+price with slippage. The defect was fixed, tested, and only range runs were
+recalculated; unchanged breakout and baseline outputs were reused. Both sets
+of results and the original result hash are explicitly recorded in the report.
+Ten targeted tests pass. No app code, VM, working pilot, positions, pauses,
+observers, schedules or AI budget were changed during this research.
+

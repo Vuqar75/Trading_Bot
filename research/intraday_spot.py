@@ -10,6 +10,8 @@ STEPS={'BTCUSDT':.00001,'ETHUSDT':.0001,'SOLUSDT':.001}
 BASE='https://data.binance.vision/data/spot/monthly/klines'
 SEGMENTS=(('2025H1','2025-01-01','2025-07-01'),('2025H2','2025-07-01','2026-01-01'),('2026A','2026-01-01','2026-06-01'),('2026B','2026-06-01','2026-11-01'))
 def stamp(s):return int(dt.datetime.fromisoformat(s).replace(tzinfo=dt.timezone.utc).timestamp()*1000)
+def require_closed(now_ms,end_ms):
+ if type(now_ms) is not int or type(end_ms) is not int or now_ms<end_ms:raise ValueError('period is not fully closed')
 def get(url):
  for n in range(3):
   try:
@@ -81,8 +83,9 @@ def simulate(rows,signals,symbol,start,end,kind,impact=5,delay=0):
  slippage=impact/10000;fee_rate=.001
  def buy(raw,t,proposal):
   nonlocal cash,qty,entry_raw,entry_px,entry_cost,opened,pos,turnover,fees,friction
-  if kind=='range' and (not proposal['lo']<=raw<=proposal['hi'] or proposal['mid']/raw-1<.006):rejected['range_or_distance_at_fill']+=1;return
-  price=raw*(1+slippage);q=math.floor((10/price)/STEPS[symbol]+1e-10)*STEPS[symbol];value=q*price;fee=value*fee_rate
+  price=raw*(1+slippage)
+  if kind=='range' and (not proposal['lo']<=price<=proposal['hi'] or proposal['mid']/price-1<.006):rejected['range_or_distance_at_fill']+=1;return
+  q=math.floor((10/price)/STEPS[symbol]+1e-10)*STEPS[symbol];value=q*price;fee=value*fee_rate
   if value<5:rejected['minimum']+=1;return
   if value+fee>cash:rejected['cash']+=1;return
   qty=q;entry_raw=raw;entry_px=price;entry_cost=value+fee;cash-=entry_cost;opened=t;turnover+=value;fees+=fee;friction+=q*(price-raw)
@@ -113,6 +116,7 @@ def simulate(rows,signals,symbol,start,end,kind,impact=5,delay=0):
   sig=signals.get(t+BAR)
   if sig:
    if qty:
+    if sig['break_buy' if kind=='breakout' else 'range_buy']:rejected['position_open']+=1
     if kind=='range' and c<pos['lo']:pos['transition']=True
     exit_signal=(sig['break_sell'] if kind=='breakout' else c<pos['lo'])
     if exit_signal and not pending:pending={'side':'SELL','at':t+BAR+delay*BAR,'reason':'signal'}
@@ -165,7 +169,8 @@ def compare_original_15m(symbol,root,rows):
  return {'bars':index,'ohlcv_mismatch_count':count,'first_mismatch_ms':mismatches,'source':'pinned original Binance Spot 15m'}
 
 def main():
- p=argparse.ArgumentParser();p.add_argument('--data',required=True);p.add_argument('--output',required=True);p.add_argument('--manifest',help='Previously saved source manifest, verified offline');p.add_argument('--original-15m',required=True);args=p.parse_args();root=Path(args.data);root.mkdir(parents=True,exist_ok=True)
+ p=argparse.ArgumentParser();p.add_argument('--data',required=True);p.add_argument('--output',required=True);p.add_argument('--manifest',help='Previously saved source manifest, verified offline');p.add_argument('--original-15m',required=True);p.add_argument('--range-only-from',help='Retain prior breakout and baseline results when correcting range execution');args=p.parse_args();root=Path(args.data);root.mkdir(parents=True,exist_ok=True)
+ require_closed(int(time.time()*1000),stamp('2026-11-01'))
  req=[(s,y,m,root) for s in SYMBOLS for y,m in months()]
  if args.manifest:
   manifest=json.loads(Path(args.manifest).read_text())
@@ -174,21 +179,25 @@ def main():
    if hashlib.sha256((root/item['file']).read_bytes()).hexdigest()!=item['sha256']:raise ValueError('cached archive changed')
  else:
   with ThreadPoolExecutor(max_workers=4) as pool:manifest=list(pool.map(download,req))
- results={};quality={};baselines={}
+ prior=json.loads(Path(args.range_only_from).read_text()) if args.range_only_from else None
+ results={k:v for k,v in prior['results'].items() if k.startswith('breakout|')} if prior else {}
+ quality={};baselines=prior['baselines'] if prior else {}
  for symbol in SYMBOLS:
   rows=load(symbol,root);quality[symbol]={'bars_5m':len(rows),'first_ms':rows[0][0],'last_ms':rows[-1][0],'gaps':0,'duplicates':0,'invalid':0}
   quality[symbol]['compare_15m']=compare_original_15m(symbol,Path(args.original_15m),rows)
-  for label,begin,end in SEGMENTS:
-   for scenario,impact,delay in (('base',5,0),('cost_only',10,0),('delay_only',5,1),('stress',10,1)):
-    baselines[f'{symbol}|{label}|{scenario}']=baseline(rows,symbol,stamp(begin),stamp(end),impact,delay)
+  if not prior:
+   for label,begin,end in SEGMENTS:
+    for scenario,impact,delay in (('base',5,0),('cost_only',10,0),('delay_only',5,1),('stress',10,1)):
+     baselines[f'{symbol}|{label}|{scenario}']=baseline(rows,symbol,stamp(begin),stamp(end),impact,delay)
   for factor in (1,3):
    signals=calculate(rows,factor)
    for label,begin,end in SEGMENTS:
-    for kind in ('breakout','range'):
+    for kind in (('range',) if prior else ('breakout','range')):
      for scenario,impact,delay in (('base',5,0),('cost_only',10,0),('delay_only',5,1),('stress',10,1)):
       key=f'{kind}|{factor*5}m|{symbol}|{label}|{scenario}'
       results[key]=simulate(rows,signals,symbol,stamp(begin),stamp(end),kind,impact,delay)
    print('complete',symbol,factor*5,flush=True)
  output={'created_utc':dt.datetime.now(dt.timezone.utc).isoformat(),'manifest':manifest,'quality':quality,'baselines':baselines,'results':results}
+ if prior:output['range_correction_from_sha256']=hashlib.sha256(Path(args.range_only_from).read_bytes()).hexdigest()
  Path(args.output).write_text(json.dumps(output,ensure_ascii=False),encoding='utf-8')
 if __name__=='__main__':main()
