@@ -1,0 +1,166 @@
+{
+  "boundaries": [
+    {
+      "account_samples": {
+        "ai": [
+          {
+            "payload": "{\"protection\":{\"state\":\"no_position\"},\"status\":\"decision_unavailable\"}",
+            "stamp_ms": 1794058203582,
+            "status": "decision_unavailable"
+          }
+        ],
+        "baseline": [
+          {
+            "payload": "{\"protection\":{\"state\":\"no_position\"},\"reason\":\"conflict\",\"status\":\"entry_blocked\"}",
+            "stamp_ms": 1794058203875,
+            "status": "entry_blocked"
+          }
+        ]
+      },
+      "boundary_ms": 1794058200000,
+      "closed_candle_observations": [
+        {
+          "open_ms": 1794057300000,
+          "raw_payload": "[1794057300000,\"75805.30\",\"75863.80\",\"75800.00\",\"75863.70\",\"302.096\",1794058199999,\"22907197.87750\",9133,\"143.069\",\"10849350.02870\",\"0\"]",
+          "raw_sha256": "7088fffbe5648636618749d29f93a2cf542c0f84478d0f7701e050b5c23d15e0",
+          "received_ms": 1794058200800,
+          "recorded_ms": null,
+          "server_ms": null,
+          "state": "preliminary"
+        },
+        {
+          "open_ms": 1794057300000,
+          "raw_payload": "[1794057300000,\"75805.30\",\"75863.80\",\"75800.00\",\"75863.80\",\"302.157\",1794058199999,\"22911825.56340\",9139,\"143.071\",\"10849501.75630\",\"0\"]",
+          "raw_sha256": "00547d4609cc4d60eeb0d2011791f46ab7373cf512a03b8b4d111f7f5f65a179",
+          "received_ms": 1794058234404,
+          "recorded_ms": 1794058235346,
+          "server_ms": 1794058234046,
+          "state": "awaiting_confirmation"
+        },
+        {
+          "open_ms": 1794057300000,
+          "raw_payload": "[1794057300000,\"75805.30\",\"75863.80\",\"75800.00\",\"75863.80\",\"302.157\",1794058199999,\"22911825.56340\",9139,\"143.071\",\"10849501.75630\",\"0\"]",
+          "raw_sha256": "00547d4609cc4d60eeb0d2011791f46ab7373cf512a03b8b4d111f7f5f65a179",
+          "received_ms": 1794058266871,
+          "recorded_ms": 1794058268179,
+          "server_ms": 1794058266507,
+          "state": "accepted"
+        }
+      ],
+      "warm_history_confirmations": [
+        {
+          "accepted_ms": 1794058175498,
+          "digest": "604beaf3a1fd2f29f3c25e9f5b0caffc87a8b0321e455acf53a8d6ad0f1df754",
+          "recorded_ms": 1794058177373,
+          "signal_open_ms": 1794056400000
+        }
+      ]
+    },
+    {
+      "account_samples": {
+        "ai": [
+          {
+            "payload": "{\"protection\":{\"state\":\"no_position\"},\"status\":\"decision_unavailable\"}",
+            "stamp_ms": 1794059103780,
+            "status": "decision_unavailable"
+          }
+        ],
+        "baseline": [
+          {
+            "payload": "{\"protection\":{\"state\":\"no_position\"},\"reason\":\"conflict\",\"status\":\"entry_blocked\"}",
+            "stamp_ms": 1794059103983,
+            "status": "entry_blocked"
+          }
+        ]
+      },
+      "boundary_ms": 1794059100000,
+      "closed_candle_observations": [
+        {
+          "open_ms": 1794058200000,
+          "raw_payload": "[1794058200000,\"75863.80\",\"75905.00\",\"75863.70\",\"75904.90\",\"212.038\",1794059099999,\"16089672.71620\",5971,\"141.584\",\"10743867.11120\",\"0\"]",
+          "raw_sha256": "12c81b4cb5cb968d52036fa5eae2730743d6196336875b2a5bfee42fe3773b40",
+          "received_ms": 1794059102912,
+          "recorded_ms": null,
+          "server_ms": null,
+          "state": "preliminary"
+        },
+        {
+          "open_ms": 1794058200000,
+          "raw_payload": "[1794058200000,\"75863.80\",\"75905.00\",\"75863.70\",\"75904.90\",\"212.132\",1794059099999,\"16096807.77700\",5977,\"141.586\",\"10744018.92120\",\"0\"]",
+          "raw_sha256": "55e086b97461aa09e9c5046e9bc979b6610f4b2593fb9503be38eab758031e18",
+          "received_ms": 1794059134584,
+          "recorded_ms": 1794059135579,
+          "server_ms": 1794059134224,
+          "state": "awaiting_confirmation"
+        },
+        {
+          "open_ms": 1794058200000,
+          "raw_payload": "[1794058200000,\"75863.80\",\"75905.00\",\"75863.70\",\"75904.90\",\"212.132\",1794059099999,\"16096807.77700\",5977,\"141.586\",\"10744018.92120\",\"0\"]",
+          "raw_sha256": "55e086b97461aa09e9c5046e9bc979b6610f4b2593fb9503be38eab758031e18",
+          "received_ms": 1794059168505,
+          "recorded_ms": 1794059169082,
+          "server_ms": 1794059167912,
+          "state": "accepted"
+        }
+      ],
+      "warm_history_confirmations": [
+        {
+          "accepted_ms": 1794059071692,
+          "digest": "8cfbf71b3e12235b4fc6a51d73c108ab028ac650eb6122e7fa1027152b296398",
+          "recorded_ms": 1794059072294,
+          "signal_open_ms": 1794057300000
+        }
+      ]
+    },
+    {
+      "account_samples": {
+        "ai": [
+          {
+            "payload": "{\"protection\":{\"state\":\"no_position\"},\"status\":\"decision_unavailable\"}",
+            "stamp_ms": 1794060004080,
+            "status": "decision_unavailable"
+          }
+        ],
+        "baseline": [
+          {
+            "payload": "{\"protection\":{\"state\":\"no_position\"},\"reason\":\"conflict\",\"status\":\"entry_blocked\"}",
+            "stamp_ms": 1794060004285,
+            "status": "entry_blocked"
+          }
+        ]
+      },
+      "boundary_ms": 1794060000000,
+      "closed_candle_observations": [
+        {
+          "open_ms": 1794059100000,
+          "raw_payload": "[1794059100000,\"75905.00\",\"75950.30\",\"75898.10\",\"75903.10\",\"321.724\",1794059999999,\"24426465.23040\",7494,\"166.969\",\"12676738.81730\",\"0\"]",
+          "raw_sha256": "4e7296f908438ce66a4898d0f5be7676ef3f2ae9276a0f83bd224a3752925316",
+          "received_ms": 1794060003775,
+          "recorded_ms": null,
+          "server_ms": null,
+          "state": "preliminary"
+        },
+        {
+          "open_ms": 1794059100000,
+          "raw_payload": "[1794059100000,\"75905.00\",\"75950.30\",\"75898.10\",\"75903.10\",\"321.724\",1794059999999,\"24426465.23040\",7494,\"166.969\",\"12676738.81730\",\"0\"]",
+          "raw_sha256": "4e7296f908438ce66a4898d0f5be7676ef3f2ae9276a0f83bd224a3752925316",
+          "received_ms": 1794060034889,
+          "recorded_ms": 1794060036580,
+          "server_ms": 1794060034529,
+          "state": "accepted"
+        }
+      ],
+      "warm_history_confirmations": [
+        {
+          "accepted_ms": 1794059974981,
+          "digest": "a6a490718a13849893ca27648011dbbb1e13399f8e2ca9c11e43c4a65dc4da3f",
+          "recorded_ms": 1794059975581,
+          "signal_open_ms": 1794058200000
+        }
+      ]
+    }
+  ],
+  "installed_commit": "35783ff20059f729a08bc867afb81642175d44b7",
+  "source": "BTCUSDT USD-M /fapi/v1/klines 15m trade",
+  "source_timezone": "UTC"
+}

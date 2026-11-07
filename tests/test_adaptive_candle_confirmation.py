@@ -33,6 +33,13 @@ class ConfirmationTests(unittest.TestCase):
   db.execute('UPDATE candle_confirmations SET recorded_ms=?',(payload['skip_bar'][0]+PERIOD,))
   self.assertFalse(confirmed_for_decision(db,1,payload))
   payload['raw_bars'][0][4]='1.1';self.assertFalse(confirmed_for_decision(db,1,payload));db.close()
+ def test_crash_after_commit_cannot_create_durable_time(self):
+  db=sqlite3.connect(':memory:',isolation_level=None);a=sample();b=sample(a['received_ms']+10000);c=compare(a,b);event={'state':'accepted','sample':c['second'],'comparison':c}
+  def crash():raise RuntimeError('crash after acceptance commit')
+  with self.assertRaisesRegex(RuntimeError,'after acceptance'):record_event(db,1,event,clock=crash)
+  self.assertIsNone(db.execute('SELECT recorded_ms FROM candle_confirmations').fetchone()[0])
+  record_event(db,1,event,clock=lambda:c['accepted_ms']+5000)
+  self.assertEqual(db.execute('SELECT recorded_ms FROM candle_confirmations').fetchone()[0],c['accepted_ms']+5000);db.close()
  def test_postclose_revisions_before_and_after_acceptance(self):
   db=sqlite3.connect(':memory:',isolation_level=None);db.execute('CREATE TABLE epoch_conflicts(epoch_id INTEGER,start_ms INTEGER,payload TEXT,observed_ms INTEGER,UNIQUE(epoch_id,start_ms,payload))');db.execute('CREATE TABLE epoch_provisional(epoch_id INTEGER,start_ms INTEGER,payload TEXT,sha256 TEXT,raw_payload TEXT,raw_sha256 TEXT,received_ms INTEGER)')
   v=sample();open_ms=v['raw_bars'][-1][0];close=open_ms+PERIOD;v['received_ms']=close+30000;v['server_ms']=v['received_ms']-1

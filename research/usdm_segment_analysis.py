@@ -6,6 +6,22 @@ def pct(values,p):
  if not values:return None
  x=sorted(values);i=(len(x)-1)*p;lo=int(i);hi=math.ceil(i);return x[lo]+(x[hi]-x[lo])*(i-lo)
 
+def classify_snapshot_ids(rows):
+ """Classify coverage; recent-snapshot omissions are not stream outages."""
+ previous=None;between=missing=duplicates=disordered=capture_gaps=within=0
+ for row in rows:
+  if row.get('kind')!='snapshot':capture_gaps+=1;previous=None;continue
+  data=row['value']['snapshots']['trades']['data']
+  ids=[v['a'] for v in data if type(v.get('a')) is int]
+  duplicates+=len(ids)-len(set(ids))
+  disordered+=sum(b<a for a,b in zip(ids,ids[1:]))
+  within+=sum(b>a+1 for a,b in zip(ids,ids[1:]))
+  if not ids:continue
+  low,high=min(ids),max(ids)
+  if previous is not None and low>previous+1:between+=1;missing+=low-previous-1
+  previous=high if previous is None else max(previous,high)
+ return {'snapshot_intervals_with_omissions':between,'omitted_ids_between_snapshots':missing,'gap_pairs_within_snapshots':within,'duplicates_within_snapshots':duplicates,'out_of_order_pairs_within_snapshots':disordered,'capture_gap_records':capture_gaps,'continuous_stream_promised':False}
+
 def analyse(rows, *, min_notional=50., step=.001, cap=100., taker_bps=5.):
  spread=[];cost_min=[];cost_max=[];moves=[];horizons={300000:[],900000:[]};history=[];quote_stale=0;unpaired=0;gaps=0;replays=0;last_trade=None;previous=None;n=0
  for row in rows:
@@ -49,7 +65,7 @@ def analyse(rows, *, min_notional=50., step=.001, cap=100., taker_bps=5.):
  def stats(a):return {'n':len(a),'p50':pct(a,.5),'p90':pct(a,.9),'p99':pct(a,.99),'min':min(a) if a else None,'max':max(a) if a else None}
  reference=pct(cost_min,.5)
  horizon_stats={str(k//60000)+'m':{'movement_bps':stats(v),'above_median_cost_long':sum(x>reference for x in v) if reference is not None else None,'above_median_cost_short':sum(-x>reference for x in v) if reference is not None else None} for k,v in horizons.items()}
- return {'snapshots':n,'gaps_detected':gaps,'trade_id_replays':replays,'unusable_time':quote_stale,'asynchronous_top_mismatch':unpaired,'spread_bps':stats(spread),'model_round_trip_bps_min':stats(cost_min),'model_round_trip_bps_max':stats(cost_max),'mid_change_bps_next_sample':stats(moves),'absolute_mid_change_bps_next_sample':stats([abs(x) for x in moves]),'horizons':horizon_stats,'limitations':'REST snapshots only, no continuous book, queue position, maker fill or guaranteed execution; gaps reflect only detected missed aggregate trades.'}
+ return {'snapshots':n,'gaps_detected':gaps,'trade_id_replays':replays,'unusable_time':quote_stale,'asynchronous_top_mismatch':unpaired,'spread_bps':stats(spread),'model_round_trip_bps_min':stats(cost_min),'model_round_trip_bps_max':stats(cost_max),'mid_change_bps_next_sample':stats(moves),'absolute_mid_change_bps_next_sample':stats([abs(x) for x in moves]),'horizons':horizon_stats,'limitations':'Recent REST snapshots only: intervals between snapshots do not imply a failed continuous stream; no continuous book, maker queue, fill or guaranteed execution.'}
 
 def main():
  p=argparse.ArgumentParser();p.add_argument('input');a=p.parse_args()
