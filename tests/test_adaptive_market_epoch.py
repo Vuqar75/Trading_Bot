@@ -42,6 +42,19 @@ class EpochTests(unittest.TestCase):
   c={'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':rows[:-1],'skip_bar':rows[-1],'raw_bars':raw}
   self.assertFalse(ingest_epoch(db,market='futures',candles=c,observed_ms=1800000)['entry_blocked'])
   c['raw_bars'][0][5]='11';self.assertTrue(ingest_epoch(db,market='futures',candles=c,observed_ms=1800001)['entry_blocked'])
-  self.assertEqual(db.execute('select count(*) from epoch_raw_candles').fetchone()[0],2)
+  self.assertEqual(db.execute('select count(*) from epoch_raw_candles').fetchone()[0],1)
   self.assertEqual(db.execute('select count(*) from epoch_conflicts').fetchone()[0],1);db.close()
+ def test_provisional_revision_preserved_and_old_conflict_ages_out(self):
+  start_epoch(self.root,market='futures',clock=lambda:1000);db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None)
+  def make(bars,skip):
+   raw=[[r[0],str(r[1]),str(r[2]),str(r[3]),str(r[4]),'10',r[0]+899999] for r in bars+[skip]]
+   return {'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':bars,'skip_bar':skip,'raw_bars':raw}
+  a=[0,1.,2.,1.,1.];provisional=[900000,1.,2.,1.,1.];final=[900000,1.,2.,1.,1.1];nextbar=[1800000,1.,2.,1.,1.]
+  self.assertFalse(ingest_epoch(db,market='futures',candles=make([a],provisional),observed_ms=1800000)['entry_blocked'])
+  db.execute("INSERT INTO epoch_conflicts VALUES(1,0,'old-conflict',1800000)")
+  self.assertFalse(ingest_epoch(db,market='futures',candles=make([final],nextbar),observed_ms=2700000)['entry_blocked'])
+  self.assertEqual(db.execute('select count(*) from epoch_conflicts').fetchone()[0],1)
+  self.assertEqual(db.execute('select count(*) from epoch_provisional').fetchone()[0],2)
+  self.assertEqual(db.execute('select payload from epoch_candles where start_ms=900000').fetchone()[0],'[900000,1.0,2.0,1.0,1.1]')
+  self.assertEqual(db.execute('select active_conflicts from epoch_windows where epoch_id=1').fetchone()[0],0);db.close()
 if __name__=='__main__':unittest.main()

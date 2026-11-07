@@ -321,22 +321,28 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
         else:proof=ingest(evidence,market=market,candles=item['candles'],observed_ms=item['candles']['received_ms'])
         if proof['entry_blocked']:
          reason='conflict'
-         if market=='futures' and epoch_row and not proof.get('conflict'):reason='epoch_raw_unavailable' if not proof.get('raw_available') else 'epoch_wait_for_new_signal'
+         if market=='futures' and epoch_row and not proof.get('conflict'):reason='epoch_raw_unavailable' if not proof.get('raw_available') else 'epoch_candle_not_mature' if not proof.get('mature') else 'epoch_wait_for_new_signal'
          item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']=reason;item['entry_conflict_reason']=reason
        except (ValueError,TypeError,KeyError):
         item['entry_conflict']=True;item.pop('bars',None);item.pop('skip_bar',None);item.pop('risk_bar',None);errors[market+'_history']='invalid'
       elif market=='futures' and epoch_row:
-       reason='conflict' if evidence.execute('SELECT 1 FROM epoch_conflicts WHERE epoch_id=? LIMIT 1',(epoch_row[0],)).fetchone() else 'epoch_data_unavailable'
+       has_window=evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_windows'").fetchone()
+       window=evidence.execute('SELECT active_conflicts FROM epoch_windows WHERE epoch_id=?',(epoch_row[0],)).fetchone() if has_window else None
+       active=window[0] if window else evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0]
+       reason='conflict' if active else 'epoch_data_unavailable'
        item['entry_conflict']=True;errors[market+'_history']=reason;item['entry_conflict_reason']=reason
       elif evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() and evidence.execute('SELECT 1 FROM market_conflicts WHERE market=? LIMIT 1',(market,)).fetchone():item['entry_conflict']=True;errors[market+'_history']='conflict'
      legacy_conflicts=(evidence.execute("SELECT count(*) FROM market_conflicts WHERE market='futures'").fetchone()[0] if evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='market_conflicts'").fetchone() else 0)
      epoch_conflicts=(evidence.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=?',(epoch_row[0],)).fetchone()[0] if epoch_row else 0)
+     has_window=evidence.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='epoch_windows'").fetchone()
+     last_window=evidence.execute('SELECT active_conflicts FROM epoch_windows WHERE epoch_id=?',(epoch_row[0],)).fetchone() if has_window and epoch_row else None
+     active_epoch_conflicts=last_window[0] if last_window else epoch_conflicts
     finally:evidence.close()
     def trade_fetch(*,not_before_ms):return provider.futures_execution_trade(not_before_ms=not_before_ms,clock=clock)
     result=run_once(root,ai_path=ai_path,baseline_path=selected,publisher_uid=publisher_uid,baseline_uid=baseline_uid,markets=markets,clock=clock,execution_fetch=trade_fetch)
     watermarks=update_watermarks(root,markets,now_ms=before,start_ms=identity['start_ms'],signal_window=window)
     result.update({'schema':1,'process_pid':os.getpid(),'start_ms':identity['start_ms'],'code_version':version,'data_errors':errors,'signal_window':window,'market_watermarks':watermarks,'next_signal_boundary_ms':(clock()//900000+1)*900000,'baseline_origin':baseline_origin,'backup':backup_health(backup_path,owner_uid=backup_uid,now_ms=clock()),'global_ai_budget':budget_health(budget_path,owner_uid=publisher_uid,now_ms=clock())})
-    result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'enforced_v2_research_only' if epoch_row else 'legacy_10_v2_inactive','execution_gate':'fresh_post_signal_trade_and_funding_required','economic_status':'rejected','capture':capture_coverage(root),'sizing':None}
+    result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'active_epoch_conflicts':active_epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'enforced_v2_research_only' if epoch_row else 'legacy_10_v2_inactive','execution_gate':'fresh_post_signal_trade_and_funding_required','economic_status':'rejected','capture':capture_coverage(root),'sizing':None}
     try:
      from .usdm_study_sizing import minimum_futures_size
      ctx=markets['futures'];result['usdm_research']['sizing']=minimum_futures_size(ctx['filters']['filters'],ctx['quote']['price'],stop_distance='.02',fee_bps='10',slippage_bps='5')

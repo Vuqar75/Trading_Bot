@@ -12,6 +12,8 @@ def _schema(db):
  db.execute('CREATE TABLE IF NOT EXISTS epoch_candles(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,sha256 TEXT NOT NULL,first_received_ms INTEGER NOT NULL,PRIMARY KEY(epoch_id,start_ms))')
  db.execute('CREATE TABLE IF NOT EXISTS epoch_raw_candles(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,sha256 TEXT NOT NULL,first_received_ms INTEGER NOT NULL,PRIMARY KEY(epoch_id,start_ms))')
  db.execute('CREATE TABLE IF NOT EXISTS epoch_conflicts(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,observed_ms INTEGER NOT NULL,UNIQUE(epoch_id,start_ms,payload))')
+ db.execute('CREATE TABLE IF NOT EXISTS epoch_provisional(epoch_id INTEGER NOT NULL,start_ms INTEGER NOT NULL,payload TEXT NOT NULL,sha256 TEXT NOT NULL,raw_payload TEXT,raw_sha256 TEXT NOT NULL,received_ms INTEGER NOT NULL,UNIQUE(epoch_id,start_ms,sha256,raw_sha256))')
+ db.execute('CREATE TABLE IF NOT EXISTS epoch_windows(epoch_id INTEGER PRIMARY KEY,first_ms INTEGER NOT NULL,last_ms INTEGER NOT NULL,active_conflicts INTEGER NOT NULL,observed_ms INTEGER NOT NULL)')
 
 def start_epoch(root,*,market,clock=lambda:int(time.time()*1000)):
  if market!='futures':raise ValueError('only_futures_epoch_supported')
@@ -65,6 +67,11 @@ def ingest_epoch(db,*,market,candles,observed_ms):
   eid,start=epoch
   for i,row in enumerate(rows):
    raw=json.dumps(list(row),separators=(',',':'),allow_nan=False);digest=hashlib.sha256(raw.encode()).hexdigest();old=db.execute('SELECT sha256 FROM epoch_candles WHERE epoch_id=? AND start_ms=?',(eid,row[0])).fetchone()
+   if i==len(rows)-1:
+    source=json.dumps(raw_rows[i],separators=(',',':'),allow_nan=False) if raw_rows is not None else None
+    source_sha=hashlib.sha256(source.encode()).hexdigest() if source is not None else ''
+    db.execute('INSERT OR IGNORE INTO epoch_provisional VALUES(?,?,?,?,?,?,?)',(eid,row[0],raw,digest,source,source_sha,observed_ms))
+    continue
    if old and old[0]!=digest:db.execute('INSERT OR IGNORE INTO epoch_conflicts VALUES(?,?,?,?)',(eid,row[0],raw,observed_ms))
    elif not old:db.execute('INSERT INTO epoch_candles VALUES(?,?,?,?,?)',(eid,row[0],raw,digest,observed_ms if i==len(rows)-1 else warm))
    if raw_rows is not None:
@@ -72,6 +79,9 @@ def ingest_epoch(db,*,market,candles,observed_ms):
     prior=db.execute('SELECT sha256 FROM epoch_raw_candles WHERE epoch_id=? AND start_ms=?',(eid,row[0])).fetchone()
     if prior and prior[0]!=source_sha:db.execute('INSERT OR IGNORE INTO epoch_conflicts VALUES(?,?,?,?)',(eid,row[0],json.dumps({'raw':raw_rows[i]},separators=(',',':')),observed_ms))
     elif not prior:db.execute('INSERT INTO epoch_raw_candles VALUES(?,?,?,?,?)',(eid,row[0],source,source_sha,observed_ms if i==len(rows)-1 else warm))
-  conflict=bool(db.execute('SELECT 1 FROM epoch_conflicts WHERE epoch_id=? LIMIT 1',(eid,)).fetchone())
-  db.commit();return {'epoch_id':eid,'start_ms':start,'conflict':conflict,'raw_available':raw_rows is not None,'new_signal':len(rows)>1 and rows[-2][0]+900000>start,'entry_blocked':conflict or raw_rows is None or len(rows)<2 or rows[-2][0]+900000<=start}
+  active=db.execute('SELECT count(*) FROM epoch_conflicts WHERE epoch_id=? AND start_ms>=? AND start_ms<=?',(eid,rows[0][0],rows[-2][0] if len(rows)>1 else rows[0][0])).fetchone()[0]
+  db.execute('INSERT OR REPLACE INTO epoch_windows VALUES(?,?,?,?,?)',(eid,rows[0][0],rows[-2][0] if len(rows)>1 else rows[0][0],active,observed_ms))
+  conflict=bool(active)
+  mature=len(rows)>1 and warm-(rows[-2][0]+900000)>=600000
+  db.commit();return {'epoch_id':eid,'start_ms':start,'conflict':conflict,'raw_available':raw_rows is not None,'mature':mature,'new_signal':len(rows)>1 and rows[-2][0]+900000>start,'entry_blocked':conflict or raw_rows is None or not mature or len(rows)<2 or rows[-2][0]+900000<=start}
  except BaseException:db.rollback();raise
