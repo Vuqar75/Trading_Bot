@@ -4573,3 +4573,11 @@ Raw closed-bar LONG and SHORT signal frequencies are separately recorded in
 `research/usdm_signal_counts.json`, covering 552 timeframe/family/asset/period
 cells; they are not conflated with the number of accepted or filled entries.
 
+
+## 7 ноября: USD-M источники и первый сегмент — продолжение требуется
+
+Ветка `research/usdm-source-execution`. Исследовательский код установлен в изолированную службу из `869ca851b11230ef8a034566ba34af5e68908d4e`; рабочие торговые службы не перезапускались. История 17 конфликтов сохранена; новая финансово проверенная эпоха стартовала 2026-11-07 09:17:10.948 UTC. По обеим копиям исходные 1000 USDT, позиций и закрытых сделок нет, ledger согласован. Первый 30-минутный сегмент REST: 360 снимков, 86 обнаруженных пропусков aggregate-trade IDs, sha256 `29f1c24c088c9a8ca02dbb00c087ceab9b2ce1156c0836f1f9798f90c625b70e`; raw `/var/lib/adaptive-study/usdm-segment-v1/capture.jsonl`. Подробности и границы — `USDM_SOURCE_EXECUTION_REPORT.md`, `USDM_SOURCE_PROVENANCE.md`, `research/usdm_segment_manifest.json`.
+
+**Не завершено:** 100 USDT/5 USDT в read-only снимке — только расчётный preview; действующий изолированный SHORT всё ещё ограничен прежними 10 USDT и использует mark в старой модели. Новая эпоха явно блокирует SHORT с `futures_trade_execution_price_unverified`; запрет не снимать до подключения и тестирования источника trade-цены после записи сигнала, проверок filters/риска внутри финансовой транзакции, безопасного выхода и crash/replay. AI-расписание остаётся остановлено, `same_snapshot=false`; не объявлять сравнение AI и baseline восстановленным до общего своевременного среза. Прежние 46 результатов не пересчитывались. Рабочий Spot и независимый Donchian не менять.
+
+Backup после эпохи externally read-back и integrity проверен, SHA-256 `7ff39fbdf7ca3dd2d1b2d42bac57d6734416c1eb9062f4326ddc7065c772ca6e`; до перехода `1246dbc7fe7714a58487f46515753feb99b9169c67f6d25226e0c4ec80486697`. 32 целевых теста установленной версии на VM, 33 локальных после добавления теста снимка. Экономически отклонённые стратегии не получили рабочего допуска.

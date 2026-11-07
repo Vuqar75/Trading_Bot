@@ -17,11 +17,11 @@ def analyse(rows, *, min_notional=50., step=.001, cap=100., taker_bps=5.):
    if ids[-1]<=last_trade:replays+=1
   if ids:last_trade=max(last_trade or ids[-1],ids[-1])
   if any(x.get('source_time_status')!='reported_unverified' or not 0<=x['received_ms']-x['source_event_ms']<=5000 for x in (book,depth)):
-   quote_stale+=1;previous=None;continue
+   quote_stale+=1;previous=None;history.clear();continue
   bid=float(b['bidPrice']);ask=float(b['askPrice']);mid=(bid+ask)/2
   if float(d['bids'][0][0])!=bid or float(d['asks'][0][0])!=ask:unpaired+=1
   bid=float(d['bids'][0][0]);ask=float(d['asks'][0][0]);mid=(bid+ask)/2
-  if not 0<bid<ask:quote_stale+=1;previous=None;continue
+  if not 0<bid<ask:quote_stale+=1;previous=None;history.clear();continue
   spread.append((ask-bid)/mid*10000)
   qmin=math.ceil(max(min_notional/ask,step)/step-1e-12)*step;qmax=math.floor(cap/ask/step+1e-12)*step
   def avg(levels,q):

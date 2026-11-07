@@ -21,6 +21,14 @@ class AdaptiveViewTest(unittest.TestCase):
   msg=adaptive_view.render(path=self.path,now=self.now)
   self.assertIn('позиций нет',msg);self.assertIn('AI:',msg);self.assertIn('Baseline:',msg);self.assertIn('прибыльность не доказана',msg)
   self.assertLess(len(msg),3500)
+ def test_research_limits_are_read_only_and_explicitly_preliminary(self):
+  status=json.loads((self.study/'status.json').read_text())
+  status['usdm_research']={'epoch_id':1,'epoch_start_ms':self.start+1,'legacy_conflicts':17,'epoch_conflicts':0,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'preview_only_not_installed_in_execution','execution_gate':'futures_trade_execution_price_unverified','economic_status':'rejected','sizing':None,'secret':'must_not_publish'}
+  write_status(self.study,status);publish(self.study,self.out,clock=lambda:self.now*1000)
+  data=json.loads(self.path.read_text());view=data['usdm_research']
+  self.assertEqual(view['limits_status'],'preview_only_not_installed_in_execution')
+  self.assertEqual(view['legacy_conflicts'],17);self.assertNotIn('secret',view)
+  self.assertIn('позиций нет',adaptive_view.render(path=self.path,now=self.now))
  def test_unknown_negative_stale_and_corrupt(self):
   data=json.loads(self.path.read_text());a=data['experiments']['ai'];a['net_pnl_usdt']='-0.000001';a['net_after_known_api_usd']=None;self.path.write_text(json.dumps(data))
   self.assertIn('-меньше 0.0001',adaptive_view.render(path=self.path,now=self.now))

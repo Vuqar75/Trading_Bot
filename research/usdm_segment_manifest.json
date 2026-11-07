@@ -1,0 +1,84 @@
+{
+  "analysis": {
+    "absolute_mid_change_bps_next_sample": {
+      "max": 4.739258719548278,
+      "min": 0,
+      "n": 355,
+      "p50": 0,
+      "p90": 0.766917552943226,
+      "p99": 2.6391826013321125
+    },
+    "asynchronous_top_mismatch": 11,
+    "gaps_detected": 86,
+    "horizons": {
+      "15m": {
+        "above_median_cost_long": 0,
+        "above_median_cost_short": 3,
+        "movement_bps": {
+          "max": 1.2475369353004417,
+          "min": -11.849095276305066,
+          "n": 108,
+          "p50": -3.2507905253253977,
+          "p90": 0.5423504849473293,
+          "p99": 1.1888305562089287
+        }
+      },
+      "5m": {
+        "above_median_cost_long": 0,
+        "above_median_cost_short": 0,
+        "movement_bps": {
+          "max": 7.971355649190048,
+          "min": -8.97539442856421,
+          "n": 231,
+          "p50": -2.3511872510473264,
+          "p90": 4.572242415563643,
+          "p99": 6.27027859373408
+        }
+      }
+    },
+    "limitations": "REST snapshots only, no continuous book, queue position, maker fill or guaranteed execution; gaps reflect only detected missed aggregate trades.",
+    "mid_change_bps_next_sample": {
+      "max": 4.739258719548278,
+      "min": -3.8709668953595955,
+      "n": 355,
+      "p50": 0,
+      "p90": 0.028890335926235508,
+      "p99": 2.0594202744315515
+    },
+    "model_round_trip_bps_max": {
+      "max": 10.013141165687868,
+      "min": 10.01312192167804,
+      "n": 358,
+      "p50": 10.013135460752416,
+      "p90": 10.013140043297208,
+      "p99": 10.013141067255727
+    },
+    "model_round_trip_bps_min": {
+      "max": 10.013141165687868,
+      "min": 10.01312192167804,
+      "n": 358,
+      "p50": 10.013135460752416,
+      "p90": 10.013140043297208,
+      "p99": 10.013141067255727
+    },
+    "snapshots": 360,
+    "spread_bps": {
+      "max": 0.013141165687867192,
+      "min": 0.013121921678040377,
+      "n": 358,
+      "p50": 0.013135460752416664,
+      "p90": 0.013140043297207513,
+      "p99": 0.013141067255726398
+    },
+    "trade_id_replays": 0,
+    "unusable_time": 2
+  },
+  "bytes": 1461037,
+  "created_utc": "2026-11-07T09:26:26.432773+00:00",
+  "file": "/var/lib/adaptive-study/usdm-segment-v1/capture.jsonl",
+  "first_request_ms": 1794041752337,
+  "last_receipt_ms": 1794043549010,
+  "sha256": "29f1c24c088c9a8ca02dbb00c087ceab9b2ce1156c0836f1f9798f90c625b70e",
+  "source": "Binance USD-M public REST snapshots",
+  "unit_state": "Result=success\nExecMainStatus=0\nActiveState=inactive"
+}
