@@ -69,7 +69,7 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
    route=baseline['route'];cycle=baseline['cycle']
    if route.get('phase')=='IDLE' and not baseline['positions'] and cycle.get('status')=='waiting_for_signal_window' and not status.get('data_errors'):
     when=datetime.datetime.fromtimestamp(signal['signal_close_ms']/1000,datetime.timezone(datetime.timedelta(hours=4))).strftime('%d.%m %H:%M')
-    detail=f"посл. {when} Баку: {signal['close']} ≥ {signal['threshold']}; SHORT нет"
+    detail=f"свеча {when} Баку: {signal['close']} ≥ мин48 {signal['threshold']}; SHORT нет"
     route['operational_strategy']=route.get('strategy');route['strategy']='тренд SHORT · '+detail
     cycle['operational_status']=cycle['status'];cycle['status']=detail
   raw=(json.dumps(result,sort_keys=True,separators=(',',':'),ensure_ascii=False)+'\n').encode()

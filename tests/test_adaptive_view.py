@@ -66,7 +66,7 @@ class AdaptiveViewTest(unittest.TestCase):
   status=json.loads((self.study/'status.json').read_text());status['experiments']['baseline']['route'].update(phase='IDLE',decision_fresh=True);status['experiments']['baseline']['latest_decision']={'mode':'TREND_DOWN'};status['cycles']['baseline']={'status':'waiting_for_signal_window'}
   write_status(self.study,status);publish(self.study,self.out,clock=lambda:self.now*1000)
   snapshot=json.loads(self.path.read_text());view=snapshot['experiments']['baseline'];self.assertEqual(view['last_hourly_signal']['close'],101.);self.assertEqual(view['last_hourly_signal']['threshold'],100.)
-  self.assertEqual(view['cycle']['operational_status'],'waiting_for_signal_window');self.assertIn('101.0 ≥ 100.0',adaptive_view.render(path=self.path,now=self.now));self.assertIn('SHORT нет',adaptive_view.render('why',path=self.path,now=self.now))
+  self.assertEqual(view['cycle']['operational_status'],'waiting_for_signal_window');self.assertIn('101.0 ≥ мин48 100.0',adaptive_view.render(path=self.path,now=self.now));self.assertIn('SHORT нет',adaptive_view.render('why',path=self.path,now=self.now))
   q=sqlite3.connect(self.study/'baseline'/'queue.db');self.assertEqual(q.execute('select count(*) from unified_jobs').fetchone()[0],1)
   data['candles_sha256']='tampered';q.execute('UPDATE unified_jobs SET payload=?',(json.dumps(data),));q.commit();q.close()
   publish(self.study,self.out,clock=lambda:self.now*1000)
