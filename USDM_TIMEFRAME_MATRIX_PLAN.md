@@ -79,3 +79,21 @@ model uses 5m bars, and for 1m/3m uses 1m bars. Stress adds one such base bar.
 An assumed next open is not proof of a fill. Same-bar stop/target or mark
 liquidation is resolved adversely; funding ambiguity must remain explicit.
 BTC, ETH, SOL have separate cash; no worker or active account is touched.
+
+## Current filters observed before screening
+
+The unauthenticated official `/fapi/v1/exchangeInfo` on 2026-11-07 reported
+BTCUSDT `MARKET_LOT_SIZE` min/step 0.001 BTC and `MIN_NOTIONAL` 50 USDT,
+ETHUSDT min/step 0.001 ETH and notional 20 USDT, SOLUSDT min/step 0.01 SOL
+and notional 5 USDT. Therefore the explicitly authorized 10-USDT cap cannot
+pass the **current** BTC or ETH notional minimum, even before quantity
+rounding; it must not be raised. These are current metadata, not verified
+historical filters or the owner's account-specific limits.
+
+Before any screening results, distinguish (1) the previously fixed $5 and
+prior-step hypothetical economic sensitivity, which cannot establish current
+exchange executability, from (2) a current-filter eligibility gate. Under (2)
+BTC and ETH cannot admit a $10 opening, so a BTC paper candidate requiring
+matching present exchange filters is ineligible regardless of hypothetical
+returns. SOL alone cannot be selected as a retrospective substitute. This
+data-driven correction adds no strategy, parameter search or trading permission.
