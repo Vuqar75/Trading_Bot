@@ -1,5 +1,24 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — post-rollout local ML quality audit, no new API or training
+
+Accepted owner rollout339c522:actualGPT/baselineRANGE,solejournal8attempts/
+18370microUSDreserved,localtechnicalupdatescontinue,laterpaidboundariesoff,
+all4workingmarketspausedasreported. No repeatGPT or ownerconfirmationneeded.
+
+Read existingforecasts/targets only: see PATTERN_AI_FORECAST_QUALITY.md.
+Original predictedstressnet>=5bpcomponent selects224overlappingcounterfactuals
+across58days/9months:meanprediction+16.4968bp,actualnet−38.4362bp,reference
+gross−8.5920bpbeforefees/impact. BTC/ETH/SOLconditionalmeansallnegative.
+Overallmeanforecast−30.2249vsactual−30.5500isnot evidenceofusefulpositive-tail
+ranking. Do not merelylowerP60gate orclaimthat0entriesprovedAIprofitability.
+Do not present224counterfactuals asrealtrades/accountPnL or asindependentN.
+This gradeslocalRF,not theoneactualGPTregimeanswer. Productioncode,VM,
+paidguards,budget,key andtradingstateunchanged. No training/newbacktest/API
+market/providercall;onlyGitfetchandlocalartifactaudit. Receipts/scripts/cases
+committed. Overallprofitabletradingobjective remainsunresolved;AIintegration
+milestone iscomplete and shouldnotberepeated.
+
 ## 2026-11-11 — pattern-AI live rollout and first GPT response
 
 See `PATTERN_AI_SERVER_INSTALL_20261111.md`. The VM now runs the validated
