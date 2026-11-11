@@ -1,0 +1,14 @@
+{
+  "base": {
+    "audited_closed_trades": 42,
+    "arithmetic_temporal_and_limits": "PASS",
+    "net_without_best_trade": 6.425598588754221,
+    "positive_stress_quarters": null
+  },
+  "stress": {
+    "audited_closed_trades": 40,
+    "arithmetic_temporal_and_limits": "PASS",
+    "net_without_best_trade": -5.4637936207234725,
+    "positive_stress_quarters": 1
+  }
+}

@@ -1,5 +1,22 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — bounded RSI15m check completed; fixed adaptation rejected
+
+Owner requested continuation. Actual BTCUSDT USD-M 2025 calculation completed
+here in cloud, not delegated. Frozen v20 source, protocol `c8f16a4`, implementation
+and 39 source checksums `43bcada`, no post-result tuning. See
+`RSI15M_VERIFICATION_REPORT.md`. Base 42 trades: +8.420553 USDT; stress 40:
+−3.518989 USDT; separate 1000-USDT accounts, <=100 notional at 1x. No residual.
+Only one stress quarter positive; stress without best −5.463794; 80% within24h
+versus required90%. Candidate fails registered admission. Base SHORT profit
+alone is not grounds to select that side after observing results. This is an
+immediate-protection/taker-cost adaptation, not author Pine return replication,
+and 2025 is not independent OOS. Five implementation checks plus independent
+arithmetic/time/limits audit of all82 closed trades pass. Complete source,
+signal/action/trade journals and audit retained. No new local task, install,
+VM/service/pause/secret/budget/AI schedule change or paid request. Do not repeat
+prior rejected experiments or rerun this calculation without a specific reason.
+
 ## 2026-11-11 — second external intraday review, no verified transfer
 
 Continued on owner instruction; see round 2 in `EXTERNAL_STRATEGY_REVIEW_20261111.md`.
