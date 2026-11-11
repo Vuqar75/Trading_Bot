@@ -1,5 +1,26 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — AI trade scenarios installed
+
+See `AI_TRADE_SCENARIOS_INSTALL_20261112.md`. Installed the unchanged
+`fa16c3c4286b004cc2bf5ea3f5b76f0ba19604dd` runtime over the exact deployed
+base in the existing AI analysis, publisher and Telegram paths. Bot
+integration commit `74205ace0b91bca8d53089cea7e8ab4bf2d6d948`; only the
+Spot service hosting the poller was restarted under backup and timed recovery.
+At 21:31:30.856 UTC / 01:31:30.856 Baku, the normal free capture of the 01:30
+candle produced a WAIT/no-pattern scenario: `/ai plan` explicitly shows no
+levels. Packet, live button navigation, authorization, replay and no-financial-
+job checks passed under the bot user; no Telegram receipt is claimed.
+Independent Decimal checks also passed on a saved real prior LONG snapshot,
+and a real saved WAIT snapshot produced no levels. No trade was created.
+
+Four working markets remain paused, one poller, no pending jobs; study and
+Donchian remain inactive/disabled. Model weights and budget are unchanged,
+eight attempts/$0.018370 reserved, with no later paid request. Post-install
+host-bound external budget backup was read back/restored with SHA-256
+`56f6a553e4815ac41bf5f86cdf340ce7424f63a525a9c3aa82efa0c78dcc4acf`.
+No new trading permission, economic admission or guaranteed fills are implied.
+
 ## 2026-11-12 — pattern trade scenarios and read-only /ai plan
 
 Fetched/fast-forwarded 9ef6361; verified ceb2ded and a7053acd are ancestors.
