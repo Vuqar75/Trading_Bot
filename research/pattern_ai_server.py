@@ -4,6 +4,14 @@ from pathlib import Path
 from research.pattern_ai_capture import capture
 from research.pattern_ai_snapshot import build
 
+PERIOD_MS=4*60*60*1000
+
+def paid_boundary_allowed(now_ms,boundary_ms):
+    """A single explicit boundary limits paid work; the regular gate still owns retries."""
+    if type(now_ms) is not int or type(boundary_ms) is not int or boundary_ms%PERIOD_MS:
+        return False
+    return now_ms//PERIOD_MS*PERIOD_MS==boundary_ms
+
 
 def publish(packet,path):
     path=Path(path)
@@ -20,7 +28,8 @@ def publish(packet,path):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--technical-output',required=True)
-    p.add_argument('--paid-existing-budget',action='store_true');p.add_argument('--state');p.add_argument('--gpt-output');a=p.parse_args()
+    p.add_argument('--paid-existing-budget',action='store_true');p.add_argument('--paid-boundary-ms',type=int);p.add_argument('--state');p.add_argument('--gpt-output');a=p.parse_args()
+    if a.paid_boundary_ms is not None and (not a.paid_existing_budget or a.paid_boundary_ms%PERIOD_MS):p.error('paid boundary must be a four-hour boundary with paid mode')
     bundle=json.loads(Path(a.model).read_text());cached=[]
     def fetch():
         if cached:return cached[0]
@@ -42,7 +51,7 @@ def main():
                 local={'status':'already_published','gpt_called':False}
             else:
                 snapshot,_=fetch();local={'status':'local_analysis_published','packet_id':snapshot['technical_context']['packet_id'],'gpt_called':False,'orders_enabled':False}
-        if a.paid_existing_budget:
+        if a.paid_existing_budget and (a.paid_boundary_ms is None or paid_boundary_allowed(now,a.paid_boundary_ms)):
             if not a.state or not a.gpt_output:p.error('existing --state and --gpt-output required')
             from research.adaptive_regular import tick
             # No alternate ledger: existing owner/schema/auth/window/cap/locks.

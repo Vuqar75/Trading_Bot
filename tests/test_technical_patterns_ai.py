@@ -1,9 +1,18 @@
 """Temporal boundaries and model/LLM admission boundaries, not network tests."""
-import copy,hashlib,json,unittest
+import copy,hashlib,json,unittest,sys
 from unittest.mock import patch
 import numpy as np
 from research import technical_patterns as t
 from research.pattern_ai_analyze import analyze
+class PaidBoundaryLimit(unittest.TestCase):
+    @unittest.skipIf(sys.platform=='win32','executor uses POSIX file locks')
+    def test_one_boundary_only(self):
+        from research.pattern_ai_server import paid_boundary_allowed, PERIOD_MS
+        target=100*PERIOD_MS
+        self.assertFalse(paid_boundary_allowed(target-1,target))
+        self.assertTrue(paid_boundary_allowed(target+120000,target))
+        self.assertFalse(paid_boundary_allowed(target+PERIOD_MS,target))
+        self.assertFalse(paid_boundary_allowed(target,target+1))
 
 class PatternAIContract(unittest.TestCase):
     def bundle(self):

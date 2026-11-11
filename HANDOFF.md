@@ -1,5 +1,17 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — pattern-AI live rollout, pending first GPT boundary
+
+See `PATTERN_AI_SERVER_INSTALL_20261111.md`. The VM now runs the validated
+local technical sidecar and existing privileged publisher; `/ai patterns` is
+installed in the sole Telegram bot from integration commit `1065a5de9c283163408091c8e70d4de1216c06ea`.
+Actual model input was verified without paid HTTP. The existing regular timer
+updates local analysis and admits paid work only for boundary 2026-11-11 16:00
+UTC via `--paid-boundary-ms 1794412800000`; do not infer a response until the
+sole journal confirms it. Four market pauses, old reservations and credential
+are retained. The pre-switch external budget backup was read back and restored;
+seven attempts and $0.016468 reserved. No entry or strategy was authorized.
+
 ## 2026-11-11 — actual pattern-AI module, GPT integration and Telegram panel
 
 Owner explicitly requested AI technical/pattern analysis. Runtimecandidate
