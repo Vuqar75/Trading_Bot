@@ -1,0 +1,10 @@
+{
+  "base": {
+    "audited_trades": 43,
+    "result": "PASS"
+  },
+  "stress": {
+    "audited_trades": 43,
+    "result": "PASS"
+  }
+}

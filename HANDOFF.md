@@ -1,5 +1,21 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — continued: actual trend-retest calculation completed
+
+Owner asked why work stopped; no external blocker. Frozen before results in
+`85cc664`, see RETEST15M_PROTOCOL.md / RETEST15M_REPORT.md. Independent small
+account adaptation of pinned PravarP11 source, not replication of headline PF:
+no pyramiding,full1.5R target instead of unexecutable minimum-size half-close,
+stop1%,100bar time exit. BTC USD-M2025,existing39 archive inputs inclvolume,
+<=100notional,1x. Base43 trades−9.420274USDT;stress43−13.567763;grossalready
+negative−1.771567/−2.074359. LONG7/SHORT36,95–98%within24h,noresidual.
+Future-truncation check and separate audit of all86 trade journals pass.
+Source ATR is Wilder sum14x conventional ATR and sizing minimum1wholecoin;
+headline source results cannot be assumed applicable. Fixed adaptation rejected;
+do not add a collector, local task or install, or retry changed params against
+same outcome. No new download,VM/service/pause/key/budget/paidAPI action.
+Overall profitable-bot objective remains unresolved; no success claim.
+
 ## 2026-11-11 — continued without confirmation: execution diagnosis completed
 
 See `RSI15M_ATTRIBUTION_REPORT.md`. Protocol/code frozen in `2ceb914`; only
