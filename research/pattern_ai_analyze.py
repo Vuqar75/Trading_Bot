@@ -39,6 +39,8 @@ def analyze(bundle,capture,now_ms):
         from research.derivatives_context import validate
         context=validate(capture['derivatives'],symbol=capture['symbol'],signal_ms=signal_ms,as_of_ms=now_ms)
         packet['derivatives']=context
+    from research.technical_trade_scenarios import build
+    packet['trade_scenarios']=build(packet)
     packet['packet_id']=hashlib.sha256(json.dumps(packet,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
     return packet
 

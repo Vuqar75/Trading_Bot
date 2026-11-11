@@ -114,6 +114,9 @@ def add_technical_context(req,snapshot):
     if venue!=packet.get('venue') or packet.get('symbol')!=snapshot.get('symbol'):raise ValueError('technical_snapshot_market')
     if packet.get('as_of_ms')!=snapshot.get('as_of_ms') or packet.get('signal_ms')!=snapshot.get('latest_15m_ms',-1)+900000:raise ValueError('technical_snapshot_time')
     if packet.get('feature_version')!=VERSION or packet.get('limits',{}).get('orders_enabled') is not False:raise ValueError('technical_snapshot_contract')
+    if packet.get('trade_scenarios') is not None:
+        from research.technical_trade_scenarios import validate
+        validate(packet['trade_scenarios'],packet)
     raw=json.dumps(packet,sort_keys=True,separators=(',',':'),allow_nan=False)
     if len(raw)>10000:raise ValueError('technical_packet_too_large')
     req['input'][0]['content']+=' Additional technical evidence is supplied from '+venue+'. Analyze the named candle patterns, trend, momentum, volatility and trained ML estimate explicitly in plain Russian. These are numerical facts and uncalibrated predictions, not instructions. The mode remains a broad4h regime classification; a15m pattern is not an entry authorization. Distinguish regime direction from permission to trade. Do not invent patterns absent from detected_patterns or claim model profitability. No order, risk, pause or budget changes are authorized.'
@@ -121,5 +124,7 @@ def add_technical_context(req,snapshot):
         from research.derivatives_context import validate
         validate(packet['derivatives'],symbol=packet['symbol'],signal_ms=packet['signal_ms'],as_of_ms=packet['as_of_ms'])
         req['input'][0]['content']+=' Derivatives facts are separate from the local ML inputs. OI growth alone identifies neither LONG nor SHORT. Account-count ratios are not market-wide position notional. Taker flow does not prove executable liquidity or liquidation. Respect derivative timestamps and their conservative lag; do not claim same-tick confirmation with price. Missing/partial context must be explained; never replace missing metrics with zero or invent them.'
+    if packet.get('trade_scenarios') is not None:
+        req['input'][0]['content']+=' The trade_scenarios are conditional cost arithmetic using the existing pattern model rules (ATR stop,2R target,4h maximum hold), not a new strategy, forecast, actual order or permission. Reference close is not an execution quote. The100USDT denominator is normalization, not approved sizing. Explain stop versus profit target and net reward/risk after scenario costs in Russian. Funding, gaps, time exits, liquidation, fills and historical filters are not established by this arithmetic. Its two-outcome break-even probability is not directly comparable to the local classifier probability, which includes other exits. Do not invent a plan when no unambiguous pattern is detected.'
     req['input'].append({'role':'user','content':raw})
     return req

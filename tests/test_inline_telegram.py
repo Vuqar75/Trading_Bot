@@ -169,6 +169,18 @@ class InlineTelegramTests(unittest.TestCase):
         self.assertEqual(len(buttons),6)
         self.assertIn('Теханализ и паттерны',[b['text'] for row in buttons for b in row])
 
+    def test_pattern_cost_button_is_read_only_and_replays_do_not_create_jobs(self):
+        now=time.time()
+        self.q.receive(1,True,'/ai patterns',now=now)
+        button=next(b for row in self.keyboard() for b in row if b['text']=='Расчёт сделки')
+        with unittest.mock.patch('trading_bot.ai_screens.render_screen',return_value='conditional costs') as render:
+            self.q.receive(2,True,'',now=now+1,callback_data=button['callback_data'])
+            self.q.receive(2,True,'',now=now+1,callback_data=button['callback_data'])
+        self.assertEqual(render.call_count,1);self.assertEqual(render.call_args.args,('plan',))
+        for market in ('spot','futures','futures_cross','margin_cross'):
+            self.assertEqual(self.q.pending(market),[])
+        self.assertEqual(self.q.db.execute("SELECT count(*) FROM unified_proposals WHERE status='OPEN'").fetchone()[0],0)
+
     def test_expired_sent_menu_is_removed_even_after_restart(self):
         now=time.time();self.q.receive(1,True,'/mode',now=now-121);self.t.flush(self.q)
         self.q.close();self.q=UnifiedQueue(self.path,allow_pair_experiment=True)

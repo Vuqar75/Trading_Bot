@@ -5,6 +5,44 @@ NAMES={'engulf_long':'бычье поглощение','engulf_short':'медв�
        'inside_long':'пробой внутреннего бара вверх','inside_short':'пробой внутреннего бара вниз','break_long':'пробой20свечей вверх','break_short':'пробой20свечей вниз'}
 
 
+def render_plan(path,now=None):
+    """Read saved arithmetic only; never fetch a quote or create a trade."""
+    try:
+        p=Path(path)
+        if p.is_symlink() or p.stat().st_size>30000:raise ValueError('report_size')
+        d=json.loads(p.read_bytes());now=time.time() if now is None else now
+        if 'trade_scenarios' not in d:
+            return '[ИИ • расчёт сделки]\nДля этого снимка расчёт не сохранён. Кнопка не запускает модель или сбор данных.'
+        from research.technical_trade_scenarios import validate
+        plan=validate(d['trade_scenarios'],d)
+        if d['as_of_ms']/1000>now+5:raise ValueError('report_time')
+        stale=now*1000>=d['expires_ms']
+        when=dt.datetime.fromtimestamp(d['signal_ms']/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%d.%m %H:%M Баку')
+        lines=['[ИИ • условный расчёт сделки] '+d['symbol']+(' • УСТАРЕЛО' if stale else ''),
+               'Свеча 15m: '+when+'. Это не открытая позиция.']
+        if plan['status']=='no_unambiguous_pattern':
+            lines.append('Однозначного LONG/SHORT-паттерна нет — уровни сделки не строятся.')
+        else:
+            def fmt(v):return format(float(v),'.8g')
+            lines+=['Направление паттерна: '+plan['side']+'.',
+                    'Основа: закрытие '+fmt(plan['reference_close'])+' USDT, не текущая цена исполнения.',
+                    'Стоп: '+fmt(plan['stop_distance_pct'])+'%; цель: 2R; удержание: до 4 часов после условного входа.',
+                    'Сравнение на 100 USDT условного оборота входа; это не размер заявки.']
+            for item in plan['scenarios']:
+                label='База' if item['name']=='base' else 'Стресс'
+                lines+=[label+': условный вход '+fmt(item['assumed_entry'])+'; стоп '+fmt(item['stop_reference'])+'; цель '+fmt(item['target_reference'])+'.',
+                        '  Net без funding: при цели '+fmt(item['net_at_target_usdt_per_100'])+' USDT; при стопе '+fmt(item['net_at_stop_usdt_per_100'])+' USDT; прибыль/риск '+fmt(item['net_reward_risk'])+'.',
+                        '  Модельные расходы: комиссия 5 б.п. + spread/impact '+fmt(item['impact_bps_per_side'])+' б.п. на сторону; задержка '+str(item['assumed_delay_minutes'])+' мин.']
+            if stale:lines.append('Снимок истёк; использовать уровни для нового входа нельзя.')
+            lines.append('ML: '+('кандидат по порогам, торгового допуска нет.' if plan['model_candidate'] else 'вход не подтверждён; расчёт уровней этого не меняет.'))
+        lines+=['Цена до spread/impact после задержки условно равна закрытию; задержка не проигрывается, будущие котировки неизвестны.',
+                'Funding не включён; гэп, выход по времени и фактическое исполнение могут изменить результат. Это не прогноз прибыли.',
+                'Стратегия, размер и биржевые filters не допущены этим расчётом. GPT и сделки кнопкой не запускаются.']
+        return '\n'.join(lines)[:3400]
+    except (OSError,ValueError,TypeError,KeyError,ArithmeticError,ImportError):
+        return '[ИИ • расчёт сделки]\nПроверенного расчёта нет: снимок отсутствует или повреждён. Вход не разрешён.'
+
+
 def render(path,now=None):
     try:
         p=Path(path)
@@ -14,6 +52,9 @@ def render(path,now=None):
         signal=d['signal_ms'];expiry=d['expires_ms'];asof=d['as_of_ms'];ml=d['ml'];f=d['features'];patterns=d['detected_patterns']
         if not all(type(x) is int for x in (signal,expiry,asof)) or expiry!=signal+900000 or not signal<=asof<expiry or asof/1000>now+5:raise ValueError('report_time')
         if ml.get('trade_allowed') is not False or ml.get('action') not in ('CANDIDATE','NO_TRADE') or not isinstance(patterns,list) or any(x not in NAMES for x in patterns):raise ValueError('report_admission')
+        if d.get('trade_scenarios') is not None:
+            from research.technical_trade_scenarios import validate
+            validate(d['trade_scenarios'],d)
         def number(key,scale=1):
             x=f[key]
             if type(x) not in (int,float) or not math.isfinite(x):raise ValueError('report_number')

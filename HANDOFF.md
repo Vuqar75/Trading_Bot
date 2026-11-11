@@ -1,5 +1,40 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — pattern trade scenarios and read-only /ai plan
+
+Fetched/fast-forwarded 9ef6361; verified ceb2ded and a7053acd are ancestors.
+Git authorization/history issue is resolved; do not repeat credential repair.
+Owner requested continued improvement. See AI_TRADE_SCENARIOS_20261112.md and
+AI_TRADE_SCENARIOS_LOCAL_TASK.md.
+
+Implemented conditional LONG/SHORT price/cost arithmetic for the existing15m
+pattern model: clipped1.5ATR stop,2R target,4h hold, base/stress fees/impact.
+Closed-candle price is a hypothetical reference, not a live execution quote;
+100USDT is normalization, not proposed order sizing. Funding/gaps/time exits/
+liquidation/fills/filters are not established. No pattern/ambiguous side =>
+no levels. This neither changes ML gates nor admits a strategy or a trade.
+
+Packet-bound recomputation rejects amended prices/costs/time/side; validates
+before request, publication and display. Optional field is included in packet
+hash; old snapshots remain compatible. Existing /ai patterns first button
+opens /ai plan; plan returns to patterns, main menu still6buttons. Callback
+reads the same saved technical.json; no quote/GPT/job/budget call. Existing
+GPT response schema and explicit single-paid-boundary guard stay unchanged.
+
+153targeted tests PASS with temporary HOME, no credentials and IP sockets
+blocked. Includes15new checks, independent Decimal arithmetic, existing label
+formula both sides/barriers, full capture+derivatives/request/export/view and
+fake sole-budget executor preserving old lock with one transport invocation.
+No new paid request, live collection, training or backtest; no full-suite
+repeat for this analysis/read-only change. Financial handlers unchanged.
+
+Code NOT installed on VM from this cloud chat (no VM access). Local task uses
+existing authorized rollout without changing pauses, stopped studies/Donchian,
+credentials, sole budget or paid schedule. New module needed on analysis,
+publisher and Telegram import paths. Owner-reported budget remains8attempts/
+$0.018370 reserve, not independently opened here. Existing ML profitability
+remains unproven; conditional positive target PnL is not evidence of alpha.
+
 ## 2026-11-11 — two-sided futures code delivered, not activated
 
 See `TWO_SIDED_FUTURES_DELIVERY_20261111.md`. Exact checked candidate
