@@ -1,0 +1,32 @@
+{
+  "base": {
+    "audited_closed": 70,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 70,
+        "closed_net": 28.0416357508028
+      },
+      "2026": {
+        "closed": 0,
+        "closed_net": 0
+      }
+    }
+  },
+  "stress": {
+    "audited_closed": 67,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 67,
+        "closed_net": 8.58120915529117
+      },
+      "2026": {
+        "closed": 0,
+        "closed_net": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,3 @@
+# Inference only; model is portable JSON, sklearn is not needed on the VM.
+numpy==2.3.5
+pandas==2.2.3

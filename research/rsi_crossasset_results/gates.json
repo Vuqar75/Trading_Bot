@@ -1,0 +1,35 @@
+{
+  "BTCUSDT": {
+    "checks": {
+      "counts": true,
+      "positive_both": true,
+      "positive_each_exit_year": false,
+      "stress_without_best": false,
+      "drawdown": false,
+      "intraday": false
+    },
+    "pass_all": false
+  },
+  "ETHUSDT": {
+    "checks": {
+      "counts": true,
+      "positive_both": false,
+      "positive_each_exit_year": false,
+      "stress_without_best": false,
+      "drawdown": false,
+      "intraday": true
+    },
+    "pass_all": false
+  },
+  "SOLUSDT": {
+    "checks": {
+      "counts": true,
+      "positive_both": false,
+      "positive_each_exit_year": false,
+      "stress_without_best": false,
+      "drawdown": false,
+      "intraday": false
+    },
+    "pass_all": false
+  }
+}

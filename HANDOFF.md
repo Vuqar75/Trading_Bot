@@ -1,5 +1,159 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — actual pattern-AI module, GPT integration and Telegram panel
+
+Owner explicitly requested AI technical/pattern analysis. Runtimecandidate
+**e62bef84bf26ea1383d855970c450ce3c50778bf**; see PATTERN_AI.md,
+PATTERN_AI_LOCAL_TASK.md and deploymentmanifest. Implemented causal15m
+RSI/ADX/ATR/EMA/volume +engulf/pin/inside/range patterns,trained RFclassifier
+and stress-net regressor,portable181KBJSON,no sklearn/backtest in inference.
+69,515counterfactualexamples,16purged6month/1monthfolds,50,628forecasts.
+MaxP0.57449<fixed0.60;224exceed5bpnet butNONEpassesbothgates. AIzero
+trades,not profitable alpha;qualificationFalse,no thresholdretuning.
+22,487baselineexecutedrecords audited,not AItrades. Compact7.38MBNPZ
+committed instead of33MBJSONduplicate; full source/label/hashreceipts retained.
+
+Newoptional technical_context in EXISTING adaptive_ai_executor.request keeps
+legacyresponseschema and oldrequestbehavior. Same-journal mock provesusage,
+idempotence andoldreservation/lockpreservation. Serveradapterdefaultsfree
+MLonce/15m;explicitpaidflag usesexistingregular.tick,$0.25cap,<=3640micro,
+<=6/day,originalencryptedcredential/locks. No secondbudget or directHTTPbypass.
+`/ai patterns`button reads independentlyvalidatedtechnicalsidecar;noAPI/jobs.
+Existingrootpublisher handlesbothsidecars;deploymentdrop-ins useexistingunits.
+83targetedtests PASS plusnumericalRMAparity/importisolation. Runtimepeak63MiB
+measuredhere;actualVMsystemdinstallationnotperformed. Manifest/patch prevent
+blindfullresearchbranchrollout over newerVMproductionfixes.
+
+Livecloudcaptureattempt:HTTP451onfirstUSD-MtimeGET,oneattempt,noretry/workaround.
+No gcloud,SSHagentidentities/defaultSSHkeys orVMconnector. No currentcapture,
+paidproviderresponse,VMdeployment,pausechange,originalbudgetaccess orfinancial
+trade. Historicalexamples explicitlyhistorical;neverpublishastoday.
+Nextnecessaryexecution is existinglocalagent/VM: follow exactLOCAL_TASK,
+installread-onlyanalysis and obtainenrichedGPTreply withinexistingauthorized
+budget/window. Do not repeattrain/backtests or askkeyagain. Actualprofitable
+tradingstrategy and firstliveenrichedGPTreply remain unconfirmed.
+
+## 2026-11-11 — completed fixed-rule size and cross-asset batch; no candidate
+
+Owner requested sustained execution and no routine intermediate reports.
+Actual work finished,not pending: see FINAL_FIXED_RULE_BATCH_REPORT.md.
+100USDTcap censored minimum0.001BTC above100k. One preregistered isolated
+fixed0.001/150cap/1x/5risk intervention:2025RSI+28.041636base/+8.581209stress,
+retest−15.493956/−28.395407. No production limits changed. RSI still failed
+90%within24h; explicitly amended scope BEFORE2026data to test economics without
+relaxing admission. Jan-Oct2026sameRSI−2.060255/−8.162074. Then completed a
+preregistered continuous2025-Oct2026BTC/ETH/SOLtransfer with frozen signals:
+BTC+25.981381/+0.419136;ETH−2.255960/−27.031786;SOL−41.495029/−60.560807.
+BTCstresswithoutbest−1.970371,DD2.204%,2026negative,69%within24h;all fail.
+Do not report as profitable candidate or trade to manufacture a success.
+914continuousclosedrecords pass independent audit;450overlapping diagnostic
+records audited separately,not additional independent observations.210archives
+hashchecked,monthlyJune29markgap filled from3verifiedofficialdailyarchives;
+no interpolated price,conflict or missingfunding accepted. Fulljournals,
+source/protocolprecommit receipts,gatesandyearbreakdowns saved. No parameter,
+asset or side selection after results; no further sweep queued. No live state,
+VM/service/pause/secret/budget/paidAPI action. Overallprofitableshort-term goal
+remains unmet; this specificbatch is complete. No background job remains.
+
+## 2026-11-11 — source follow-up after retest, no extra backtest queue
+
+See INTRADAY_SOURCE_FOLLOWUP.md and hash receipts. Pinned LeadLag repository
+withholds current rules; its15m OOS9trades isflat-to-negative. Pinned scalp-bot
+headline23.46% is explicitly a reportexample; timestamp useskline open while
+full15m bar is available to3m replay, and raw PnL lacks fees/funding/slippage
+in inspected engine. Neither is verified ready-to-copy scalping profit. No
+foreign code run,collector,VM/credential/budget/timer/pause action or paid call.
+Do not invent missing private rules or treat README example asrealtradeledger.
+The actual preceding retest experiment is completed and rejected, not a
+pending implementation task. No ongoing background AI job exists in this chat.
+
+## 2026-11-11 — continued: actual trend-retest calculation completed
+
+Owner asked why work stopped; no external blocker. Frozen before results in
+`85cc664`, see RETEST15M_PROTOCOL.md / RETEST15M_REPORT.md. Independent small
+account adaptation of pinned PravarP11 source, not replication of headline PF:
+no pyramiding,full1.5R target instead of unexecutable minimum-size half-close,
+stop1%,100bar time exit. BTC USD-M2025,existing39 archive inputs inclvolume,
+<=100notional,1x. Base43 trades−9.420274USDT;stress43−13.567763;grossalready
+negative−1.771567/−2.074359. LONG7/SHORT36,95–98%within24h,noresidual.
+Future-truncation check and separate audit of all86 trade journals pass.
+Source ATR is Wilder sum14x conventional ATR and sizing minimum1wholecoin;
+headline source results cannot be assumed applicable. Fixed adaptation rejected;
+do not add a collector, local task or install, or retry changed params against
+same outcome. No new download,VM/service/pause/key/budget/paidAPI action.
+Overall profitable-bot objective remains unresolved; no success claim.
+
+## 2026-11-11 — continued without confirmation: execution diagnosis completed
+
+See `RSI15M_ATTRIBUTION_REPORT.md`. Protocol/code frozen in `2ceb914`; only
+two missing model cells run:1min/10bp +5.038950 USDT (41 trades),6min/5bp
++1.761448 (40). Reused original diagonal. Symmetric net deterioration allocation:
+delay−7.608522, impact−4.331020 USDT; these include changed paths, not measured
+execution effects. All81 added trades pass independent ledger/time/cost/limits
+audit; no residual or unresolved position. Every cell still has only80–83%
+trades<=24h and no Q3 closes. Do not admit a profitable cell, select SHORT-only,
+change thresholds or implement maker after seeing results. Candidate stays
+rejected. Source-screened VWAP and cross-sectional repositories with pinned
+commits/hashes: optimistic TP-before-stop tie/funding omissions in first;
+slow multi-asset portfolio rather than requested intraday rule in second.
+No foreign code execution, additional data download, local task, full app
+suite, VM/pause/secret/budget/schedule change or paid call. Overall profitable
+short-term strategy goal remains unresolved; do not claim it completed.
+
+## 2026-11-11 — bounded RSI15m check completed; fixed adaptation rejected
+
+Owner requested continuation. Actual BTCUSDT USD-M 2025 calculation completed
+here in cloud, not delegated. Frozen v20 source, protocol `c8f16a4`, implementation
+and 39 source checksums `43bcada`, no post-result tuning. See
+`RSI15M_VERIFICATION_REPORT.md`. Base 42 trades: +8.420553 USDT; stress 40:
+−3.518989 USDT; separate 1000-USDT accounts, <=100 notional at 1x. No residual.
+Only one stress quarter positive; stress without best −5.463794; 80% within24h
+versus required90%. Candidate fails registered admission. Base SHORT profit
+alone is not grounds to select that side after observing results. This is an
+immediate-protection/taker-cost adaptation, not author Pine return replication,
+and 2025 is not independent OOS. Five implementation checks plus independent
+arithmetic/time/limits audit of all82 closed trades pass. Complete source,
+signal/action/trade journals and audit retained. No new local task, install,
+VM/service/pause/secret/budget/AI schedule change or paid request. Do not repeat
+prior rejected experiments or rerun this calculation without a specific reason.
+
+## 2026-11-11 — second external intraday review, no verified transfer
+
+Continued on owner instruction; see round 2 in `EXTERNAL_STRATEGY_REVIEW_20261111.md`.
+Three more source checkouts pinned: Dnayaka RSI15m, PravarP11 MTF retest,
+MG-Trading-Terminal positioning; Gulper SOL15m article also inspected.
+RSI has explicit rules but no public trade CSV/data/Python harness in its five
+tracked files; Pine defaults and delayed bracket placement must not be silently
+replaced by an immediate-stop simulator and called exact replication. It is
+unverified, not economically rejected. Retest OOS uses asset selection on a
+latest-year window overlapping the subsequent latest-half test and Spot API
+data, not demonstrated independent futures OOS. Positioning repo lacks engine
+and ledgers; unrelated later failure notes do not retract its initial BTC model.
+Gulper acknowledges whole-sweep selection and does not supply a verified forward
+ledger in inspected pages. No new backtest, local task, strategy admission,
+VM/pause/process change, paid request or budget access. Source hash inventory
+and saved 19-row CSV profile are in `intraday_receipt.json`; no raw foreign
+trading code was executed. Prior completed EMA/local tasks must not be rerun.
+
+## 2026-11-11 — external strategy screening completed in cloud; no candidate
+
+See `EXTERNAL_STRATEGY_REVIEW_20261111.md` and the pinned public-source receipts
+in `research/external_strategy_review/receipt.json`. Six projects screened;
+three source checkouts inspected without running their bots. The positive
+JosiahAshton paper account reconciles to its public ledger (A equity 105.422932
+from 70.52; 36 closed trades), but its reconstructed SHORT net is negative,
+mean holding 93.72 hourly bars and only 41.67% close within 24 bars. Current
+code uses candle-touch maker fills, catch-up replay, and same-bar inputs for
+modeled-open execution; no live fill validity is established. RL candidate's
+published 2026H1 holdout is -29.4144%, before omitted funding/slippage. Another
+candidate keeps exact strategy source/parameters private; two are daily trend
+systems; Sentinel paper uses assumed maker/taker blends and interpolated
+funding. No suitable independently verified short-term LONG/SHORT candidate
+was identified in this bounded search. Do not assign a new local backtest,
+collector or implementation task from these sources or rerun rejected EMA.
+No conclusion that all strategies are unprofitable is justified. No VM,
+account, pause, paid request, key, budget, timer or working service was touched.
+
 ## 2026-11-11 — cloud independent replay of published EMA artifacts
 
 See `PUBLISHED_EMA_REPLICATION_REVIEW.md`, the pinned author repositories and

@@ -51,8 +51,40 @@ def publish(source=SOURCE, target=TARGET, *, now=None, gid=None):
     return True
 
 
-if __name__ == '__main__':
+
+def publish_technical(source=None,target=None,*,now=None,gid=None):
+    """Publish an exact validated technical sidecar without reading budget."""
+    from trading_bot.technical_ai_view import render as technical_render
+    source=Path(source) if source is not None else SOURCE.with_name('technical.json')
+    target=Path(target) if target is not None else TARGET.with_name('technical.json')
+    now=time.time() if now is None else now
+    if any(p.is_symlink() for p in (source,source.parent,target,target.parent)):raise ValueError('symlink_report_rejected')
+    fd=os.open(source,os.O_RDONLY|os.O_NOFOLLOW)
+    with os.fdopen(fd,'rb') as f:raw=f.read(30001)
+    if len(raw)>30000:raise ValueError('technical_report_too_large')
+    d=json.loads(raw)
+    if target.exists() and target.read_bytes()==raw:return False
+    fd,tmp=tempfile.mkstemp(prefix='.technical-',dir=target.parent);tmp=Path(tmp)
     try:
-        print('AI_REPORT_PUBLISHED' if publish() else 'AI_REPORT_UNCHANGED')
-    except Exception:
-        raise SystemExit('AI_REPORT_NOT_PUBLISHED') from None
+        with os.fdopen(fd,'wb') as f:f.write(raw);f.flush();os.fsync(f.fileno())
+        text=technical_render(tmp,now)
+        if 'УСТАРЕЛО' in text or 'проверенного снимка нет' in text:raise ValueError('technical_report_invalid_or_stale')
+        if target.exists():
+            old=json.loads(target.read_bytes())
+            if (d['signal_ms'],d['as_of_ms'])<=(old['signal_ms'],old['as_of_ms']):raise ValueError('technical_report_not_newer')
+        if gid is None:gid=grp.getgrnam('tradingbot').gr_gid
+        os.chmod(tmp,0o640);os.chown(tmp,os.geteuid(),gid);os.replace(tmp,target)
+        fd=os.open(target.parent,os.O_RDONLY|os.O_DIRECTORY)
+        try:os.fsync(fd)
+        finally:os.close(fd)
+    finally:tmp.unlink(missing_ok=True)
+    return True
+
+
+if __name__ == '__main__':
+    good=False;changed=False
+    for function in (publish,publish_technical):
+        try:changed=function() or changed;good=True
+        except (OSError,ValueError,KeyError,TypeError):pass
+    if not good:raise SystemExit('AI_REPORT_NOT_PUBLISHED')
+    print('AI_REPORT_PUBLISHED' if changed else 'AI_REPORT_UNCHANGED')

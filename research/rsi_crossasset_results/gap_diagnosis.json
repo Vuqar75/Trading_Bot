@@ -1,0 +1,31 @@
+{
+  "BTCUSDT": {
+    "gaps": [],
+    "conflicts": 0,
+    "funding_events": 2100
+  },
+  "ETHUSDT": {
+    "gaps": [
+      {
+        "kind": "markPriceKlines",
+        "first_ms": 1782691200000,
+        "last_ms": 1782777540000,
+        "minutes": 1440
+      }
+    ],
+    "conflicts": 0,
+    "funding_events": 2100
+  },
+  "SOLUSDT": {
+    "gaps": [
+      {
+        "kind": "markPriceKlines",
+        "first_ms": 1782691200000,
+        "last_ms": 1782777540000,
+        "minutes": 1440
+      }
+    ],
+    "conflicts": 0,
+    "funding_events": 2100
+  }
+}

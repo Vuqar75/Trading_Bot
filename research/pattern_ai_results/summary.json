@@ -1,0 +1,405 @@
+{
+  "protocol": "PATTERN_AI_PROTOCOL.md",
+  "folds": [
+    {
+      "test_month": "2025-07",
+      "train_start_ms": 1735689600000,
+      "test_start_ms": 1751328000000,
+      "test_end_ms": 1754006400000,
+      "max_train_label_end_ms": 1751326560000,
+      "train_rows": 18871,
+      "test_rows": 3319,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2025-08",
+      "train_start_ms": 1738368000000,
+      "test_start_ms": 1754006400000,
+      "test_end_ms": 1756684800000,
+      "max_train_label_end_ms": 1754005860000,
+      "train_rows": 18978,
+      "test_rows": 3315,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2025-09",
+      "train_start_ms": 1740787200000,
+      "test_start_ms": 1756684800000,
+      "test_end_ms": 1759276800000,
+      "max_train_label_end_ms": 1756684260000,
+      "train_rows": 19440,
+      "test_rows": 3133,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2025-10",
+      "train_start_ms": 1743465600000,
+      "test_start_ms": 1759276800000,
+      "test_end_ms": 1761955200000,
+      "max_train_label_end_ms": 1759276260000,
+      "train_rows": 19452,
+      "test_rows": 3339,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2025-11",
+      "train_start_ms": 1746057600000,
+      "test_start_ms": 1761955200000,
+      "test_end_ms": 1764547200000,
+      "max_train_label_end_ms": 1761954660000,
+      "train_rows": 19574,
+      "test_rows": 3155,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2025-12",
+      "train_start_ms": 1748736000000,
+      "test_start_ms": 1764547200000,
+      "test_end_ms": 1767225600000,
+      "max_train_label_end_ms": 1764543960000,
+      "train_rows": 19423,
+      "test_rows": 3134,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-01",
+      "train_start_ms": 1751328000000,
+      "test_start_ms": 1767225600000,
+      "test_end_ms": 1769904000000,
+      "max_train_label_end_ms": 1767225060000,
+      "train_rows": 19381,
+      "test_rows": 3290,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-02",
+      "train_start_ms": 1754006400000,
+      "test_start_ms": 1769904000000,
+      "test_end_ms": 1772323200000,
+      "max_train_label_end_ms": 1769903460000,
+      "train_rows": 19350,
+      "test_rows": 2968,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-03",
+      "train_start_ms": 1756684800000,
+      "test_start_ms": 1772323200000,
+      "test_end_ms": 1775001600000,
+      "max_train_label_end_ms": 1772322660000,
+      "train_rows": 18997,
+      "test_rows": 3155,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-04",
+      "train_start_ms": 1759276800000,
+      "test_start_ms": 1775001600000,
+      "test_end_ms": 1777593600000,
+      "max_train_label_end_ms": 1774999260000,
+      "train_rows": 19031,
+      "test_rows": 3061,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-05",
+      "train_start_ms": 1761955200000,
+      "test_start_ms": 1777593600000,
+      "test_end_ms": 1780272000000,
+      "max_train_label_end_ms": 1777593060000,
+      "train_rows": 18747,
+      "test_rows": 3108,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-06",
+      "train_start_ms": 1764547200000,
+      "test_start_ms": 1780272000000,
+      "test_end_ms": 1782864000000,
+      "max_train_label_end_ms": 1780271460000,
+      "train_rows": 18701,
+      "test_rows": 3106,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-07",
+      "train_start_ms": 1767225600000,
+      "test_start_ms": 1782864000000,
+      "test_end_ms": 1785542400000,
+      "max_train_label_end_ms": 1782863460000,
+      "train_rows": 18678,
+      "test_rows": 2985,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-08",
+      "train_start_ms": 1769904000000,
+      "test_start_ms": 1785542400000,
+      "test_end_ms": 1788220800000,
+      "max_train_label_end_ms": 1785539160000,
+      "train_rows": 18375,
+      "test_rows": 3261,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-09",
+      "train_start_ms": 1772323200000,
+      "test_start_ms": 1788220800000,
+      "test_end_ms": 1790812800000,
+      "max_train_label_end_ms": 1788220260000,
+      "train_rows": 18662,
+      "test_rows": 3069,
+      "model_fitted": true
+    },
+    {
+      "test_month": "2026-10",
+      "train_start_ms": 1775001600000,
+      "test_start_ms": 1790812800000,
+      "test_end_ms": 1793491200000,
+      "max_train_label_end_ms": 1790811360000,
+      "train_rows": 18567,
+      "test_rows": 3230,
+      "model_fitted": true
+    }
+  ],
+  "results": {
+    "BTCUSDT/baseline/base": {
+      "closed": 3918,
+      "long": 1934,
+      "short": 1984,
+      "net": -676.7376410226799,
+      "gross": -3.476216204086646,
+      "fees": 336.5527607654151,
+      "impact": 336.5527598963234,
+      "funding": -0.15590415685486014,
+      "liquidation_fee": 0.0,
+      "max_dd": 0.677068777841524,
+      "without_best": -680.089382554309,
+      "quarters": {
+        "2025Q3": -160.53127940700944,
+        "2025Q4": -144.75741727756642,
+        "2026Q1": -122.90936159411784,
+        "2026Q2": -114.83757692802071,
+        "2026Q3": -92.49648491696689,
+        "2026Q4": -41.20552089899865
+      },
+      "rejections": {},
+      "mean_hold_min": 147.2493619193466
+    },
+    "BTCUSDT/baseline/stress": {
+      "closed": 3528,
+      "long": 1744,
+      "short": 1784,
+      "net": -925.1665450784643,
+      "gross": -9.13589932618368,
+      "fees": 305.29984587678223,
+      "impact": 610.5996826176316,
+      "funding": -0.13111725786676762,
+      "liquidation_fee": 0.0,
+      "max_dd": 0.9251788618907074,
+      "without_best": -927.6622433272031,
+      "quarters": {
+        "2025Q3": -238.53347849537883,
+        "2025Q4": -225.4070385199124,
+        "2026Q1": -180.50963025260646,
+        "2026Q2": -168.8576338254886,
+        "2026Q3": -111.85876398507787
+      },
+      "rejections": {
+        "insufficient_cash": 1800
+      },
+      "mean_hold_min": 142.38860544217687
+    },
+    "BTCUSDT/AI/base": {
+      "closed": 0,
+      "long": 0,
+      "short": 0,
+      "net": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "funding": 0,
+      "liquidation_fee": 0,
+      "max_dd": 0.0,
+      "without_best": 0,
+      "quarters": {},
+      "rejections": {},
+      "mean_hold_min": null
+    },
+    "BTCUSDT/AI/stress": {
+      "closed": 0,
+      "long": 0,
+      "short": 0,
+      "net": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "funding": 0,
+      "liquidation_fee": 0,
+      "max_dd": 0.0,
+      "without_best": 0,
+      "quarters": {},
+      "rejections": {},
+      "mean_hold_min": null
+    },
+    "ETHUSDT/baseline/base": {
+      "closed": 4356,
+      "long": 2176,
+      "short": 2180,
+      "net": -809.0154747698472,
+      "gross": 50.454580442677155,
+      "fees": 429.540729031048,
+      "impact": 429.54074164464606,
+      "funding": -0.3885845368302351,
+      "liquidation_fee": 0.0,
+      "max_dd": 0.8130120349327871,
+      "without_best": -812.8425158944564,
+      "quarters": {
+        "2025Q3": -144.90118694285596,
+        "2025Q4": -120.19206357195549,
+        "2026Q1": -175.92863883067506,
+        "2026Q2": -197.6776977941279,
+        "2026Q3": -131.7220575026905,
+        "2026Q4": -38.593830127542205
+      },
+      "rejections": {},
+      "mean_hold_min": 129.90151515151516
+    },
+    "ETHUSDT/baseline/stress": {
+      "closed": 3104,
+      "long": 1556,
+      "short": 1548,
+      "net": -903.3329437401381,
+      "gross": 14.071440827465922,
+      "fees": 305.65763553487193,
+      "impact": 611.3152851411515,
+      "funding": -0.43146389158070064,
+      "liquidation_fee": 0.0,
+      "max_dd": 0.903399979211602,
+      "without_best": -907.1010370077031,
+      "quarters": {
+        "2025Q3": -238.4212457595481,
+        "2025Q4": -202.2088609242946,
+        "2026Q1": -265.2144060825847,
+        "2026Q2": -196.807140395778,
+        "2026Q3": -0.6812905779329915
+      },
+      "rejections": {
+        "insufficient_cash": 4885
+      },
+      "mean_hold_min": 124.22551546391753
+    },
+    "ETHUSDT/AI/base": {
+      "closed": 0,
+      "long": 0,
+      "short": 0,
+      "net": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "funding": 0,
+      "liquidation_fee": 0,
+      "max_dd": 0.0,
+      "without_best": 0,
+      "quarters": {},
+      "rejections": {},
+      "mean_hold_min": null
+    },
+    "ETHUSDT/AI/stress": {
+      "closed": 0,
+      "long": 0,
+      "short": 0,
+      "net": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "funding": 0,
+      "liquidation_fee": 0,
+      "max_dd": 0.0,
+      "without_best": 0,
+      "quarters": {},
+      "rejections": {},
+      "mean_hold_min": null
+    },
+    "SOLUSDT/baseline/base": {
+      "closed": 4415,
+      "long": 2204,
+      "short": 2211,
+      "net": -892.4978419662556,
+      "gross": -15.27780842631404,
+      "fees": 438.60504791416986,
+      "impact": 438.60504409466927,
+      "funding": -0.009941531102383373,
+      "liquidation_fee": 0.0,
+      "max_dd": 0.8935111065576854,
+      "without_best": -896.3396368237857,
+      "quarters": {
+        "2025Q3": -166.8598084914603,
+        "2025Q4": -122.44420590408316,
+        "2026Q1": -162.88689859408632,
+        "2026Q2": -175.13731614434192,
+        "2026Q3": -209.73979338760327,
+        "2026Q4": -55.42981944468113
+      },
+      "rejections": {},
+      "mean_hold_min": 125.97961494903737
+    },
+    "SOLUSDT/baseline/stress": {
+      "closed": 3166,
+      "long": 1552,
+      "short": 1614,
+      "net": -902.5175195148263,
+      "gross": 39.98089356699242,
+      "fees": 314.21651937118764,
+      "impact": 628.4330787232342,
+      "funding": 0.15118501260307862,
+      "liquidation_fee": 0.0,
+      "max_dd": 0.9026345395508045,
+      "without_best": -906.3137646321599,
+      "quarters": {
+        "2025Q3": -257.6644111715282,
+        "2025Q4": -224.8165880569822,
+        "2026Q1": -220.44206841236414,
+        "2026Q2": -198.04101222583293,
+        "2026Q3": -1.5534396481187753
+      },
+      "rejections": {
+        "insufficient_cash": 4650
+      },
+      "mean_hold_min": 121.7507896399242
+    },
+    "SOLUSDT/AI/base": {
+      "closed": 0,
+      "long": 0,
+      "short": 0,
+      "net": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "funding": 0,
+      "liquidation_fee": 0,
+      "max_dd": 0.0,
+      "without_best": 0,
+      "quarters": {},
+      "rejections": {},
+      "mean_hold_min": null
+    },
+    "SOLUSDT/AI/stress": {
+      "closed": 0,
+      "long": 0,
+      "short": 0,
+      "net": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "funding": 0,
+      "liquidation_fee": 0,
+      "max_dd": 0.0,
+      "without_best": 0,
+      "quarters": {},
+      "rejections": {},
+      "mean_hold_min": null
+    }
+  },
+  "feature_version": "technical-patterns-v1"
+}

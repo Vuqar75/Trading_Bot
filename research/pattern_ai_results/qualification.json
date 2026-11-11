@@ -1,0 +1,13 @@
+{
+  "checks": {
+    "at_least_60_AI_trades": false,
+    "at_least_10_each_direction": false,
+    "positive_base_and_stress": false,
+    "stress_without_best_positive": false,
+    "three_of_last_four_quarters_positive": false,
+    "per_asset_drawdown_within_2pct": true
+  },
+  "qualified": false,
+  "orders_enabled": false,
+  "thresholds_retuned": false
+}
