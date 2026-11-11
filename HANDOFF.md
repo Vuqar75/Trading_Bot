@@ -1,5 +1,22 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — cloud independent replay of published EMA artifacts
+
+See `PUBLISHED_EMA_REPLICATION_REVIEW.md`, the pinned author repositories and
+`research/published_ema_review/results.json`. A public 76.5-MiB archive was
+downloaded and hash-pinned. Independent Python reconstruction from saved hourly
+prices matches EMAs, lagged positions, original costs, all training selections,
+stitched paths and reported clipped/full Sharpe on eight original paths.
+This is not regeneration of raw minute preprocessing. Actual stitched-position
+costs differ at window boundaries, but correcting them leaves held-out BTC/ETH
+Sharpe positive: 14/10 BTC 1.096939, ETH 1.330651; 7/28 BTC 0.825258,
+ETH 1.206332. These are old aggregated-price signed-log results, not current
+fixed-quantity futures cash PnL or admission. No 81-window scan was rerun.
+`PUBLISHED_EMA_LOCAL_TASK.md` specifies a bounded current-data transfer using
+the author's two schedules and only training-based 30-pair selection. Do not
+redo the cloud replay. No VM, Telegram, secret, budget, paid request, account,
+pause, observer or trading process was accessed or changed.
+
 ## 6 ноября: уточнён горизонт запроса AI-классификатора, кандидат к установке
 
 После подтверждения первого регулярного ответа (RANGE, baseline TREND_DOWN)
