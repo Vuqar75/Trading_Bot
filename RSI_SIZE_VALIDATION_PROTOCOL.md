@@ -23,3 +23,14 @@ author used2026H1,and unknown external tuning is not excluded. Preserve failed
 Acquire only required33public trade/mark/funding archives,verify officialSHA256,
 reuse December2025copies,pin checksums before calculation. One base/stress
 calculation,no paidAPI,privatekeys,VM,service,pause or new collector.
+
+## Input-gap receipt before any validation result
+
+The33verified monthly archives omitted1440mark minutes for2026-06-29;
+trade coverage was complete,no conflicting overlaps. Initial calculation
+aborted before a base/stress result. Official Binance daily mark archive for
+that day exists; add it only after its officialCHECKSUM verifies SHA256
+200e2ef30a86e9f91c011dae30d864f73c8480fddecc73ea227958596f6cd11c.
+This is an observed-data supplement,not interpolation or a price repair.
+Pin its receipt before replay; the original33archive manifest remains in Git
+history. Reject overlaps that differ; require complete trade/mark coverage.

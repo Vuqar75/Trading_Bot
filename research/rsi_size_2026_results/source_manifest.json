@@ -362,7 +362,22 @@
       "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/BTCUSDT/BTCUSDT-fundingRate-2026-10.zip",
       "bytes": 943,
       "checked_utc": "2026-11-11T13:01:38.628309+00:00"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2026-06-29.zip",
+      "url": "https://data.binance.vision/data/futures/um/daily/markPriceKlines/BTCUSDT/1m/BTCUSDT-1m-2026-06-29.zip",
+      "sha256": "200e2ef30a86e9f91c011dae30d864f73c8480fddecc73ea227958596f6cd11c",
+      "bytes": 35364,
+      "kind": "markPriceKlines",
+      "symbol": "BTCUSDT",
+      "reason": "Monthly archive omitted all1440minutes on2026-06-29; official daily archive supplement, not fabricated."
     }
   ],
-  "unavailable": []
+  "unavailable": [],
+  "gap_diagnosis": {
+    "monthly_missing_mark_day": "2026-06-29",
+    "minutes": 1440,
+    "supplement": "Official checksum-verified daily archive",
+    "no_strategy_results_before_repair": true
+  }
 }
