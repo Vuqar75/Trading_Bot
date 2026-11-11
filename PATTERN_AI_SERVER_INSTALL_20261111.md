@@ -51,3 +51,13 @@ proves message formation, not owner receipt in Telegram.
 Four focused actual-server prompt/compatibility tests and one one-boundary
 guard test passed. The previously completed training, historical paths,
 backtests and operator test trades were not repeated.
+
+Follow-up before the first paid boundary: paid mode now requires an explicit
+single aligned boundary; its free-only deployment template cannot accidentally
+enable an unlimited paid schedule. Two targeted boundary/argument tests passed
+on the VM. The existing AI report's one-boundary display explicitly states
+that later paid requests are disabled, while local technical updates continue;
+this was checked using an isolated mocked journal and a targeted test. The
+2026-11-11 15:30 UTC candle produced and published a fresh local snapshot at
+15:31:25 UTC with no GPT call. The actual Telegram callback path passed an
+in-memory authorization/replay/no-financial-job check under the bot user.

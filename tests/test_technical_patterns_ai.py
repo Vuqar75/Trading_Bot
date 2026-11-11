@@ -14,6 +14,13 @@ class PaidBoundaryLimit(unittest.TestCase):
         self.assertFalse(paid_boundary_allowed(target+PERIOD_MS,target))
         self.assertFalse(paid_boundary_allowed(target,target+1))
 
+    @unittest.skipIf(sys.platform=='win32','executor uses POSIX file locks')
+    def test_paid_mode_requires_boundary_before_reading_model(self):
+        import subprocess
+        p=subprocess.run([sys.executable,'-B','-m','research.pattern_ai_server','--model','missing','--technical-output','missing','--paid-existing-budget'],capture_output=True,text=True)
+        self.assertEqual(p.returncode,2)
+        self.assertIn('requires exactly one explicit four-hour boundary',p.stderr)
+
 class PatternAIContract(unittest.TestCase):
     def bundle(self):
         leaf=lambda value:[{'feature':[-2],'threshold':[-2.],'left':[-1],'right':[-1],'value':[value]}]
