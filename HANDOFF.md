@@ -1,5 +1,24 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — external strategy screening completed in cloud; no candidate
+
+See `EXTERNAL_STRATEGY_REVIEW_20261111.md` and the pinned public-source receipts
+in `research/external_strategy_review/receipt.json`. Six projects screened;
+three source checkouts inspected without running their bots. The positive
+JosiahAshton paper account reconciles to its public ledger (A equity 105.422932
+from 70.52; 36 closed trades), but its reconstructed SHORT net is negative,
+mean holding 93.72 hourly bars and only 41.67% close within 24 bars. Current
+code uses candle-touch maker fills, catch-up replay, and same-bar inputs for
+modeled-open execution; no live fill validity is established. RL candidate's
+published 2026H1 holdout is -29.4144%, before omitted funding/slippage. Another
+candidate keeps exact strategy source/parameters private; two are daily trend
+systems; Sentinel paper uses assumed maker/taker blends and interpolated
+funding. No suitable independently verified short-term LONG/SHORT candidate
+was identified in this bounded search. Do not assign a new local backtest,
+collector or implementation task from these sources or rerun rejected EMA.
+No conclusion that all strategies are unprofitable is justified. No VM,
+account, pause, paid request, key, budget, timer or working service was touched.
+
 ## 2026-11-11 — cloud independent replay of published EMA artifacts
 
 See `PUBLISHED_EMA_REPLICATION_REVIEW.md`, the pinned author repositories and

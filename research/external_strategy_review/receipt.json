@@ -1,0 +1,202 @@
+{
+  "as_of_date_baku": "2026-11-11",
+  "input_sha256": {
+    "josiah/bot/broker.py": "0e8815274b6675d5c94430066107ba2485c2f620a71853443c2ff1b1bc80b62b",
+    "josiah/bot/config.py": "f6998c276a2a39801d02f325de884723f1b287cd9439086247387ab2e7fef558",
+    "josiah/bot/engine.py": "5c062d6e2b7d4cf1632965aeaf92914b5136b56bbbdb14c33c69d481ede8565d",
+    "josiah/bot/live.py": "0e61522f2eeef3ce3197503c5daf7afe2995ef9de35378e996199d984e43639e",
+    "josiah/state/equity.csv": "7d52ac72c77be9b54e2aa058e035055e71cf4b28851edeeef904c426a2c65562",
+    "josiah/state/live_state.json": "0e5b40d5c75fdd76e5351542a6843897840f5408eaa49e0488560ccfec98ec2b",
+    "josiah/state/trades.csv": "728d1d7780bedbdd276c891fde74a463b710425498d2f0d0c0a3446047524894"
+  },
+  "josiah": {
+    "books": {
+      "A_conservative": {
+        "best_trade": {
+          "net": 23.463008030038203,
+          "symbol": "BTC-USDT-SWAP",
+          "time": "2026-08-27 17:00:00+00:00"
+        },
+        "by_module_net": {
+          "breakout": 39.0302492269385,
+          "meanrev": -3.0251481815504193
+        },
+        "by_side_net": {
+          "long": 39.40154822372476,
+          "short": -3.3964471783366776
+        },
+        "cash_reconciliation_rounding_residual_usd": -0.0004122914205211,
+        "closed": 36,
+        "closed_entries_over_100_usd": 4,
+        "closed_fraction_at_most_24_bars": 0.4166666666666667,
+        "closed_max_bars": 240.0,
+        "closed_mean_bars": 93.72222222222223,
+        "closed_median_bars": 35.0,
+        "closed_net_from_prices_full_cycle_fees_funding": 36.00510104538808,
+        "closed_net_without_best": 12.542093015349876,
+        "open": 2,
+        "open_leverage_max": 26.7,
+        "open_leverage_min": 2.3,
+        "snapshot_equity_usd": 105.42293217325015,
+        "snapshot_return_pct": 49.49366445441031,
+        "start_usd": 70.52
+      },
+      "B_aggressive": {
+        "best_trade": {
+          "net": 93.84949494599653,
+          "symbol": "BTC-USDT-SWAP",
+          "time": "2026-08-27 17:00:00+00:00"
+        },
+        "by_module_net": {
+          "breakout": 107.95988518741889,
+          "meanrev": -14.21231964628308
+        },
+        "by_side_net": {
+          "long": 123.41305853904403,
+          "short": -29.66549299790822
+        },
+        "cash_reconciliation_rounding_residual_usd": 0.000214871771833,
+        "closed": 36,
+        "closed_entries_over_100_usd": 36,
+        "closed_fraction_at_most_24_bars": 0.4166666666666667,
+        "closed_max_bars": 240.0,
+        "closed_mean_bars": 93.72222222222223,
+        "closed_median_bars": 35.0,
+        "closed_net_from_prices_full_cycle_fees_funding": 93.7475655411358,
+        "closed_net_without_best": -0.10192940486071497,
+        "open": 2,
+        "open_leverage_max": 26.7,
+        "open_leverage_min": 2.3,
+        "snapshot_equity_usd": 157.4619208368122,
+        "snapshot_return_pct": 123.28689852072064,
+        "start_usd": 70.52
+      },
+      "C_degen": {
+        "best_trade": {
+          "net": 234.6100515821166,
+          "symbol": "BTC-USDT-SWAP",
+          "time": "2026-08-27 17:00:00+00:00"
+        },
+        "by_module_net": {
+          "breakout": -20.9111014616121,
+          "meanrev": -25.10189583704454
+        },
+        "by_side_net": {
+          "long": 154.45437169356825,
+          "short": -200.4673689922249
+        },
+        "cash_reconciliation_rounding_residual_usd": -0.00011647502594033,
+        "closed": 34,
+        "closed_entries_over_100_usd": 33,
+        "closed_fraction_at_most_24_bars": 0.47058823529411764,
+        "closed_max_bars": 240.0,
+        "closed_mean_bars": 79.23529411764706,
+        "closed_median_bars": 28.5,
+        "closed_net_from_prices_full_cycle_fees_funding": -46.01299729865664,
+        "closed_net_without_best": -280.62304888077324,
+        "open": 2,
+        "open_leverage_max": 55.2,
+        "open_leverage_min": 2.3,
+        "snapshot_equity_usd": 22.075446132749732,
+        "snapshot_return_pct": -68.69619096320231,
+        "start_usd": 70.52
+      },
+      "D_max_leverage": {
+        "best_trade": {
+          "net": 60.33468845578997,
+          "symbol": "BTC-USDT-SWAP",
+          "time": "2026-08-31 00:00:00+00:00"
+        },
+        "by_module_net": {
+          "breakout": -35.33046217684085,
+          "meanrev": -30.90513943346338
+        },
+        "by_side_net": {
+          "long": -24.58161203028972,
+          "short": -41.6539895800145
+        },
+        "cash_reconciliation_rounding_residual_usd": 0.0002263911738676,
+        "closed": 15,
+        "closed_entries_over_100_usd": 15,
+        "closed_fraction_at_most_24_bars": 0.9333333333333333,
+        "closed_max_bars": 240.0,
+        "closed_mean_bars": 17.733333333333334,
+        "closed_median_bars": 1.0,
+        "closed_net_from_prices_full_cycle_fees_funding": -66.23560161030423,
+        "closed_net_without_best": -126.5702900660942,
+        "open": 0,
+        "open_leverage_max": 100.0,
+        "open_leverage_min": 25.0,
+        "snapshot_equity_usd": 4.48090101303868,
+        "snapshot_return_pct": -93.645914615657,
+        "start_usd": 70.52
+      },
+      "E_optimal": {
+        "best_trade": {
+          "net": 140.77150524602573,
+          "symbol": "BTC-USDT-SWAP",
+          "time": "2026-08-27 17:00:00+00:00"
+        },
+        "by_module_net": {
+          "breakout": 85.02817869117631,
+          "meanrev": -15.259716330832076
+        },
+        "by_side_net": {
+          "long": 103.34260211181123,
+          "short": -33.574139751466994
+        },
+        "cash_reconciliation_rounding_residual_usd": 0.000605240859179,
+        "closed": 36,
+        "closed_entries_over_100_usd": 35,
+        "closed_fraction_at_most_24_bars": 0.4166666666666667,
+        "closed_max_bars": 240.0,
+        "closed_mean_bars": 93.72222222222223,
+        "closed_median_bars": 35.0,
+        "closed_net_from_prices_full_cycle_fees_funding": 69.76846236034423,
+        "closed_net_without_best": -71.00304288568151,
+        "open": 2,
+        "open_leverage_max": 26.7,
+        "open_leverage_min": 2.3,
+        "snapshot_equity_usd": 131.5774411375666,
+        "snapshot_return_pct": 86.58173729093394,
+        "start_usd": 70.52
+      }
+    },
+    "commit": "53067b0218d65da42516259dcbf27d1bb445a9cc",
+    "rows": 322,
+    "snapshot_utc": "2026-11-11 08:10:00+00:00"
+  },
+  "rl": {
+    "commit": "5df17b4dadc0c0647cead7b310a2b816cbb7e8a0",
+    "compound_caveat": "Arithmetic illustration, not a continuous replay; both source accounts reset.",
+    "conditional_compound_pct_from_two_reset_years": -28.545844192,
+    "holdout": [
+      {
+        "closed_trades": 185,
+        "final_balance": 10123.05,
+        "metrics_sha256": "4cde23e2f32ac86592bf43783ee64855f8e0e3911cbf89b1338fcb22e8849f1c",
+        "path": "results/holdout/holdout_best_model__2025/metrics.txt",
+        "return_from_10000_pct": 1.2305,
+        "trades_sha256": "eb83e14d312c0a4a714c5fc71c3bca7f849b753f8e8cbe4ad4e68a70da5068b3"
+      },
+      {
+        "closed_trades": 87,
+        "final_balance": 7058.56,
+        "metrics_sha256": "b025add8ac203cd381a25ca1a81d0ac48caea110595471cabf717424f9adaa4b",
+        "path": "results/holdout/holdout_best_model__2026H1/metrics.txt",
+        "return_from_10000_pct": -29.4144,
+        "trades_sha256": "894a7dc86bdd2f9e944feb0aea1f49bcf23667457558195ea0f60fbd67c5caaa"
+      }
+    ]
+  },
+  "sentinel": {
+    "commit": "ca647c099755ae9770f92205d5fc413e8e7c6c95",
+    "scope": "static review only; no backtest, API, broker or imported code executed",
+    "source_sha256": {
+      "README.md": "6fd01082a10d515ba1d838ab65078a80d8abb53de31ebfec57c4659166f57219",
+      "scripts/carry_integration_bt.py": "fb262c5144fe770a5d94074affe8b5ecf1063760971a8dd9df173cb4b925add7",
+      "src/sentinel/backtest.py": "df94e3aee62cbf7507e42b251e720fc408adf75c2de5b98a56a27f7191839de4",
+      "src/sentinel/execution/paper_broker.py": "3afa7984ae65ff6a79e1ee0d700d1921ad6643c9e347c40c2b774715bb0163c7"
+    }
+  }
+}
