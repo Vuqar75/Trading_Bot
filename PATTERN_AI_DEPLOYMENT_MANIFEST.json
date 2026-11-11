@@ -1,0 +1,72 @@
+{
+  "base_reference_for_patch": "e15e6ebe5ac28e98bf8046f8f9e4922d4eddab0e",
+  "files": {
+    "research/technical_patterns.py": {
+      "sha256": "da3378c3409ae3da24c7f29b690ac919e15fb8b0a23753c523283ec9da9059df",
+      "kind": "new_runtime"
+    },
+    "research/pattern_ai_analyze.py": {
+      "sha256": "723e7035870a5358c9836c04181517f6b8ba04c4701d9c63989e6f46f13d2b37",
+      "kind": "new_runtime"
+    },
+    "research/pattern_ai_capture.py": {
+      "sha256": "65371d2dfa6a0376214e1d23b506ec3323f8495a27dc41ad0c65bb489c47a8f0",
+      "kind": "new_runtime"
+    },
+    "research/pattern_ai_snapshot.py": {
+      "sha256": "8738cde904f39027415f9f3a5c9cc6d13972d0fe6364f7197f795cb9d452dac5",
+      "kind": "new_runtime"
+    },
+    "research/pattern_ai_server.py": {
+      "sha256": "4b189f216ed9b90991bf85fc9f07d81174084c93c7cda3d794276966e6a1ccbc",
+      "kind": "new_runtime"
+    },
+    "research/pattern_ai_results/model.json": {
+      "sha256": "3d0d99fe90766a57da48a9f1847dcffb5d330ce1e61260574e0597671fbe1c32",
+      "kind": "new_runtime"
+    },
+    "trading_bot/technical_ai_view.py": {
+      "sha256": "bd051532208a3fff19335ca6a6f506e1f5f302b37793e975c4606580de529921",
+      "kind": "new_runtime"
+    },
+    "requirements-pattern-ai-inference.txt": {
+      "sha256": "93029857ac8671aeb88b3de0ca5b5180cb87dc01af7adc939ade8eee0442b90c",
+      "kind": "new_runtime"
+    },
+    "deploy/adaptive-ai-technical.conf": {
+      "sha256": "0fafc2d6822a122a6419cea0f11f5fb88d1e2c136add088aa203d136fdd51943",
+      "kind": "new_runtime"
+    },
+    "deploy/adaptive-ai-technical-publish-path.conf": {
+      "sha256": "a372f89cc7b12b1016d27babe7248fcbc838b8bd0d2c2568eb0e2bce93c97594",
+      "kind": "new_runtime"
+    },
+    "deploy/adaptive-ai-technical-publisher.conf": {
+      "sha256": "73b5295ac00ee604a9db577b20ba7aebdaf8dae01f2262ef14503eb9c949ed36",
+      "kind": "new_runtime"
+    },
+    "research/adaptive_ai_executor.py": {
+      "sha256": "25856d6f0a97c89e1d00736545b074e60162c73f90ceede010f4e19b8609c944",
+      "base_sha256": "dcae160f6341edcdce4e2678964c12c2a0cd73ffe9c2302aee010dd2d0025dac",
+      "kind": "apply_small_reviewed_patch_on_current_VM_base"
+    },
+    "research/adaptive_server_publish.py": {
+      "sha256": "fc5efcf00a653b869fd80f6dbe6968e0a79646682a78b7387c9e91108c07c18f",
+      "base_sha256": "ee594ef3a0e2f60fdd701322e8284f8ca3c5c237bd0ea6ade0366c2e5b3ef4f8",
+      "kind": "apply_small_reviewed_patch_on_current_VM_base"
+    },
+    "trading_bot/ai_screens.py": {
+      "sha256": "735ea93bb4b21eae6d9f5f84592da3dbcc62b5b4344fd47fa497db4759baa0f4",
+      "base_sha256": "22b9442e015735cb6ee76b2572196e943be5000599da3de8eae12888d885c00f",
+      "kind": "apply_small_reviewed_patch_on_current_VM_base"
+    },
+    "trading_bot/unified_queue.py": {
+      "sha256": "ccc02ed65f42928faeb9179689cf7801592c6e51aec4abc36acfb539bb3ff8eb",
+      "base_sha256": "2bc83461610d7ce4b3b2e5a4af3d04ce82ef8f56cb77e0c9b2e463326c9c9829",
+      "kind": "apply_small_reviewed_patch_on_current_VM_base"
+    }
+  },
+  "working_trading_strategy_change": false,
+  "schema_migration": false,
+  "model_admitted": false
+}

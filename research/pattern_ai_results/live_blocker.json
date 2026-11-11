@@ -1,0 +1,10 @@
+{
+  "market_endpoint": "https://fapi.binance.com/fapi/v1/time",
+  "http_status": 451,
+  "attempts": 1,
+  "retries": 0,
+  "workaround_attempted": false,
+  "current_capture": false,
+  "gcloud_available": false,
+  "vm_installation_performed": false
+}

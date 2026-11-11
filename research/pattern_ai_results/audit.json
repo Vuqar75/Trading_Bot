@@ -1,0 +1,107 @@
+{
+  "BTCUSDT/baseline/base": {
+    "closed_records": 3918,
+    "ledger_time_and_limits": "PASS"
+  },
+  "BTCUSDT/baseline/stress": {
+    "closed_records": 3528,
+    "ledger_time_and_limits": "PASS"
+  },
+  "BTCUSDT/AI/base": {
+    "closed_records": 0,
+    "ledger_time_and_limits": "PASS"
+  },
+  "BTCUSDT/AI/stress": {
+    "closed_records": 0,
+    "ledger_time_and_limits": "PASS"
+  },
+  "ETHUSDT/baseline/base": {
+    "closed_records": 4356,
+    "ledger_time_and_limits": "PASS"
+  },
+  "ETHUSDT/baseline/stress": {
+    "closed_records": 3104,
+    "ledger_time_and_limits": "PASS"
+  },
+  "ETHUSDT/AI/base": {
+    "closed_records": 0,
+    "ledger_time_and_limits": "PASS"
+  },
+  "ETHUSDT/AI/stress": {
+    "closed_records": 0,
+    "ledger_time_and_limits": "PASS"
+  },
+  "SOLUSDT/baseline/base": {
+    "closed_records": 4415,
+    "ledger_time_and_limits": "PASS"
+  },
+  "SOLUSDT/baseline/stress": {
+    "closed_records": 3166,
+    "ledger_time_and_limits": "PASS"
+  },
+  "SOLUSDT/AI/base": {
+    "closed_records": 0,
+    "ledger_time_and_limits": "PASS"
+  },
+  "SOLUSDT/AI/stress": {
+    "closed_records": 0,
+    "ledger_time_and_limits": "PASS"
+  },
+  "selection_diagnosis": {
+    "predictions": 50628,
+    "max_p_win": 0.5744907186187531,
+    "max_predicted_stress_net": 0.00511453421208341,
+    "above_p_gate": 0,
+    "above_net_gate": 224,
+    "above_both": 0,
+    "conclusion": "No trading system qualified: conservative probability gate admits no forecasts. Do not interpret no-trade as profitable alpha."
+  },
+  "input_receipt": {
+    "counterfactual_rows": 69515,
+    "uncompressed_examples_sha256": "d75ed65446495e43462742cbf66a021d7b07c596d32ce15790d0f47459849b45",
+    "compressed_local_bytes": 33742385,
+    "committed_npz_bytes": 7380103,
+    "features": [
+      "ret1",
+      "ret4",
+      "ret16",
+      "ret96",
+      "rsi",
+      "atr_pct",
+      "adx",
+      "body",
+      "upper_wick",
+      "lower_wick",
+      "close_location",
+      "ema9_gap",
+      "ema20_gap",
+      "ema50_gap",
+      "ema200_gap",
+      "volume_ratio",
+      "bb_width",
+      "hour_trend",
+      "hour_gap",
+      "fourhour_gap",
+      "hour_sin",
+      "hour_cos",
+      "engulf_long",
+      "engulf_short",
+      "pin_long",
+      "pin_short",
+      "inside_long",
+      "inside_short",
+      "break_long",
+      "break_short",
+      "side",
+      "asset_btc",
+      "asset_eth",
+      "asset_sol"
+    ],
+    "symbols": [
+      "BTCUSDT",
+      "ETHUSDT",
+      "SOLUSDT"
+    ],
+    "note": "Full counterfactual JSON retained locally and reproducible from pinned public archives; compact exact ML inputs committed instead of33MBduplicate."
+  }
+}

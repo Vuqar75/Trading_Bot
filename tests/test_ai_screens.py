@@ -20,7 +20,7 @@ class AIScreens(unittest.TestCase):
  def test_buttons_are_authorized_read_only_and_replay_is_safe(self):
   q=UnifiedQueue(Path(self.tmp.name)/'queue.sqlite');self.addCleanup(q.close)
   with patch('trading_bot.ai_screens.REPORT',self.p),patch('research.adaptive_ai_executor._send',side_effect=AssertionError('network forbidden')):
-   q.receive(1,True,'/ai',now=self.now);rows=q.db.execute("select value from unified_state where key like 'inline-action:%'").fetchall();self.assertEqual(len(rows),5)
+   q.receive(1,True,'/ai',now=self.now);rows=q.db.execute("select value from unified_state where key like 'inline-action:%'").fetchall();self.assertEqual(len(rows),6)
    token=q.db.execute("select key from unified_state where key like 'inline-action:%' limit 1").fetchone()[0].split(':',1)[1]
    q.receive(2,False,'',callback_data=token,now=self.now);q.receive(3,True,'',callback_data=token,now=self.now);q.receive(3,True,'',callback_data=token,now=self.now)
    self.assertEqual(q.db.execute('select count(*) from unified_jobs').fetchone()[0],0)
