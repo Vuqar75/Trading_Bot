@@ -31,11 +31,11 @@ def render(path,now=None):
             validate(context,symbol=d['symbol'],signal_ms=signal,as_of_ms=asof)
             status=context.get('status')
             if status not in ('available','partial','unavailable'):raise ValueError('derivatives_status')
-            labels={'oi_change_1h_pct':'OI за 1ч, %','oi_change_4h_pct':'OI за 4ч, %','oi_change_24h_pct':'OI за 24ч, %','global_account_long_short_ratio':'L/S всех счетов','top_position_long_short_ratio':'L/S позицийtop-трейдеров','taker_buy_sell_ratio':'Taker BUY/SELL'}
+            labels={'open_interest_units':'Открытый интерес, '+d['symbol'][:-4],'oi_change_1h_pct':'OI за 1ч, %','oi_change_4h_pct':'OI за 4ч, %','oi_change_24h_pct':'OI за 24ч, %','global_account_long_short_ratio':'L/S всех счетов','top_account_long_short_ratio':'L/S счетов топ-трейдеров','top_position_long_short_ratio':'L/S позиций топ-трейдеров','taker_buy_sell_ratio':'Taker BUY/SELL'}
             facts=context.get('facts',{})
             if not isinstance(facts,dict):raise ValueError('derivatives_facts')
             lines.append('Фьючерсные метрики: '+{'available':'доступны','partial':'неполные','unavailable':'недоступны'}[status]+'; задержка15мин.')
-            cut=dt.datetime.fromtimestamp(context['cutoff_ms']/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%H:%M Баку')
+            cut=dt.datetime.fromtimestamp(context['cutoff_ms']/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%d.%m %H:%M Баку')
             lines.append('Метрики не позднее '+cut+'.')
             if context.get('missing'):lines.append('Часть источников не предоставила проверенные данные.')
             for k,label in labels.items():

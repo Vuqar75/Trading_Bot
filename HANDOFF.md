@@ -1,5 +1,22 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — derivatives factual context installed
+
+See `DERIVATIVES_CONTEXT_SERVER_20261111.md`. Installed the seven factual
+context runtime changes from `f9f77da` on the existing server, publisher and
+Telegram bot; the active model and single-paid-boundary guard are unchanged.
+The actual 18:15 UTC candle and 18:00 UTC delayed derivatives cutoff were
+published with all five sources available, and the next same-bar tick reused
+the snapshot. Bot integration commit `20204f20cc91e4239a72bf08004f600e8e7b03b8`;
+only the Spot process hosting the poller was restarted using verified backup
+and timed recovery. Sixteen focused tests passed; the same live capture gave
+identical old-model features and output with and without factual context.
+The existing budget remains eight attempts and $0.018370 reserved, no new paid
+request; all four markets paused, one poller, no pending jobs. The fresh
+external encrypted budget archive was restored/verified (host-bound) with
+SHA-256 `aa50866d99fc3a088a1c52f6d19501dbe93e9815fe7b135270533b34414cb8a7`.
+New facts are not model inputs and give no trading authorization.
+
 ## 2026-11-11 — measured AI improvement study and factual derivatives context
 
 Owner requested continued improvement. See AI_IMPROVEMENT_20261111.md and
