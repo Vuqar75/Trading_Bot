@@ -1,0 +1,19 @@
+{
+  "features": [
+    "oi_log_change_1h",
+    "oi_log_change_4h",
+    "oi_log_change_24h",
+    "top_account_log_ratio",
+    "top_position_log_ratio",
+    "global_account_log_ratio",
+    "taker_log_ratio",
+    "position_vs_account_log_ratio",
+    "global_ratio_log_change_4h",
+    "side_times_global_log_ratio"
+  ],
+  "quality_pass": true,
+  "features_sha256": "36248a016b9343401095ead07c6eb79add6687e459c6adc9bed407022fb7ebad",
+  "original_data_sha256": "4a314d378a1937e3c157397952e92cc24f0accd878f04e3fdd29c944c67ac8e6",
+  "metrics_manifest_sha256": "8b75f06ef929a3ab30221b78a741473b8e791e19313c31f67a5b0c17abb246b2",
+  "lag_ms": 900000
+}

@@ -1,0 +1,35 @@
+{
+  "BTCUSDT": {
+    "files": 489,
+    "rows": 140778,
+    "invalid_value_rows": 51,
+    "equal_duplicates": 0,
+    "out_of_order_rows": 4221,
+    "observed_gap_intervals": 10,
+    "needed_examples": 17214,
+    "valid_examples": 17199,
+    "coverage": 0.9991286162425932
+  },
+  "ETHUSDT": {
+    "files": 489,
+    "rows": 140779,
+    "invalid_value_rows": 50,
+    "equal_duplicates": 0,
+    "out_of_order_rows": 4259,
+    "observed_gap_intervals": 10,
+    "needed_examples": 16816,
+    "valid_examples": 16799,
+    "coverage": 0.998989058039962
+  },
+  "SOLUSDT": {
+    "files": 489,
+    "rows": 140782,
+    "invalid_value_rows": 47,
+    "equal_duplicates": 0,
+    "out_of_order_rows": 4214,
+    "observed_gap_intervals": 9,
+    "needed_examples": 16598,
+    "valid_examples": 16575,
+    "coverage": 0.9986142908784191
+  }
+}
