@@ -16,7 +16,7 @@ def snapshot(path,*,quotes,now_ms):
   cash=Decimal(meta(db,'runtime_meta','cash'))+Decimal(meta(db,'futures_meta','cash'))
   realised=Decimal(meta(db,'runtime_meta','pnl'))+Decimal(meta(db,'futures_meta','pnl'))
   spot=meta(db,'runtime_meta','position');future=meta(db,'futures_meta','position')
-  quantity=Decimal(spot['quantity']);opened=[];unrealised=Decimal(0);valuation_known=True;funding_known=True
+  quantity=Decimal(spot['quantity']);opened=[];unrealised=Decimal(0);valuation_known=True;funding_known=True;test_open_net=None;test_position=False
   if quantity:
    opened.append({'market':'spot','direction':'LONG','quantity':str(quantity)})
    try:
@@ -25,18 +25,22 @@ def snapshot(path,*,quotes,now_ms):
     unrealised+=quantity*price*Decimal('.999')-Decimal(spot['cost'])
    except (KeyError,ValueError,TypeError):valuation_known=False
   if future:
-   opened.append({'market':'futures','direction':future['direction'],'quantity':future['quantity']})
+   for key,payload in db.execute("SELECT business_key,payload FROM futures_events WHERE event='OPEN' AND business_key LIKE 'operator-test:%'"):
+    if json.loads(payload).get('id')==future.get('id'):test_position=True;break
+   opened.append({'market':'futures','direction':future['direction'],'quantity':future['quantity'],'classification':'execution_test' if test_position else 'strategy'})
    try:
-    q=valid_quote(quotes['futures'],market='futures',now_ms=now_ms);price=Decimal(q['price'])*Decimal('1.0005')
-    if future['direction']!='SHORT':raise ValueError('unsupported_direction')
+    q=valid_quote(quotes['futures'],market='futures',now_ms=now_ms)
+    if future['direction'] not in ('LONG','SHORT'):raise ValueError('unsupported_direction')
+    price=Decimal(q['price'])*(Decimal('1.0005') if future['direction']=='SHORT' else Decimal('.9995'))
     cursor=future.get('funding_cursor',-1)
     if cursor<now_ms:
      exists=db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='adaptive_funding_schedule'").fetchone()
      due=db.execute('SELECT next_due_ms,observed_ms FROM adaptive_funding_schedule WHERE position_id=?',(future['id'],)).fetchone() if exists else None
      if not due or due[0]<=now_ms or not 0<=now_ms-cursor<=5000 or not 0<=now_ms-due[1]<=5000:raise ValueError('funding_unknown')
-    qty=Decimal(future['quantity']);margin=Decimal(future['margin']);gross=(Decimal(future['entry'])-price)*qty
+    qty=Decimal(future['quantity']);margin=Decimal(future['margin']);gross=(Decimal(future['entry'])-price)*qty*(1 if future['direction']=='SHORT' else -1)
     net=margin+gross+Decimal(future['funding'])-Decimal(future['entry_fee'])-qty*price*Decimal('.001')
-    unrealised+=max(Decimal(0),net)-margin
+    if test_position:test_open_net=max(Decimal(0),net)-margin
+    else:unrealised+=max(Decimal(0),net)-margin
    except (KeyError,ValueError,TypeError):valuation_known=False;funding_known=False
   sums={};counts={}
   with localcontext() as context:
@@ -51,10 +55,17 @@ def snapshot(path,*,quotes,now_ms):
    fee=Decimal(str(fill['commission']))
    if fee and fill.get('commissionAsset')!='USDT':fees_known=False
    else:spot_fees+=fee
-  closed_futures=[json.loads(r[0]) for r in db.execute("SELECT payload FROM futures_events WHERE event='CLOSE'")]
+  closed_futures=[];test_closes=[]
+  for key,payload in db.execute("SELECT business_key,payload FROM futures_events WHERE event='CLOSE'"):
+   item=json.loads(payload)
+   if key.startswith('operator-test:') and key.endswith(':exit') and item.get('reason')=='TEST':test_closes.append(dict(item,entry_action=key[:-5],exit_action=key))
+   else:closed_futures.append(item)
+  # The actual paper cash keeps every test fee and PnL. These adjustments are
+  # only the separately labelled strategy statistics; no ledger is changed.
+  realised-=sum((Decimal(x['net']) for x in test_closes),Decimal(0))
   fees=spot_fees+sum((Decimal(x['fees']) for x in closed_futures),Decimal(0))
   funding=sum((Decimal(x['funding']) for x in closed_futures),Decimal(0))
-  if future:fees+=Decimal(future['entry_fee']);funding+=Decimal(future['funding'])
+  if future and not test_position:fees+=Decimal(future['entry_fee']);funding+=Decimal(future['funding'])
   closes=db.execute('SELECT count(*) FROM runtime_closes').fetchone()[0]+len(closed_futures)
   conflicts=bool(db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='funding_conflicts'").fetchone() and db.execute('SELECT 1 FROM funding_conflicts LIMIT 1').fetchone())
   if conflicts:valuation_known=False
@@ -72,4 +83,4 @@ def snapshot(path,*,quotes,now_ms):
  after_api=(net-sum(known,Decimal(0))) if net is not None and manifest['source']=='AI' and known and not unknown else None
  blocked=json.loads(last_blocked[0]) if last_blocked else None
  latest=observations[-1] if observations else None
- return {'source':manifest['source'],'start_ms':manifest['start_ms'],'checked_ms':now_ms,'cash_usdt':str(cash),'positions':opened,'exposure_valid':len(opened)<=1,'realised_pnl_usdt':str(realised) if not conflicts else None,'open_pnl_usdt':str(unrealised) if valuation_known else None,'net_pnl_usdt':str(net) if net is not None else None,'net_after_known_api_usd':str(after_api) if after_api is not None else None,'fees_usdt':str(fees) if fees_known else None,'funding_usdt':str(funding) if not conflicts and funding_known else None,'closed_trades':closes,'ledger_balanced':balanced,'funding_conflict':conflicts,'decisions':len(observations),'latest_decision':latest,'recorded_blocked_checks':blocked_count,'latest_blocked_check':blocked,'known_estimated_api_usd':str(sum(known,Decimal(0))) if known else None,'unknown_api_usage':unknown,'provider_bill_confirmed':False,'route':route}
+ return {'source':manifest['source'],'start_ms':manifest['start_ms'],'checked_ms':now_ms,'cash_usdt':str(cash),'positions':opened,'exposure_valid':len(opened)<=1,'realised_pnl_usdt':str(realised) if not conflicts else None,'open_pnl_usdt':str(unrealised) if valuation_known else None,'net_pnl_usdt':str(net) if net is not None else None,'net_after_known_api_usd':str(after_api) if after_api is not None else None,'fees_usdt':str(fees) if fees_known else None,'funding_usdt':str(funding) if not conflicts and funding_known else None,'closed_trades':closes,'operator_test_closes':test_closes,'operator_test_open_net':str(test_open_net) if test_open_net is not None else None,'ledger_balanced':balanced,'funding_conflict':conflicts,'decisions':len(observations),'latest_decision':latest,'recorded_blocked_checks':blocked_count,'latest_blocked_check':blocked,'known_estimated_api_usd':str(sum(known,Decimal(0))) if known else None,'unknown_api_usage':unknown,'provider_bill_confirmed':False,'route':route}

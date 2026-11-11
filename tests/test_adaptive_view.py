@@ -43,6 +43,14 @@ class AdaptiveViewTest(unittest.TestCase):
   self.path.write_text(json.dumps(data));positions=adaptive_view.render('positions',path=self.path,now=self.now)
   self.assertIn('SHORT',positions);self.assertIn('ожидается выход',positions);self.assertIn('102',positions)
   self.assertIn('не объявлена закрытой',adaptive_view.render('why',path=self.path,now=self.now))
+ def test_operator_test_results_are_labelled_and_separate(self):
+  status=json.loads((self.study/'status.json').read_text());account=status['experiments']['baseline']
+  account['operator_test_closes']=[{'id':'fixture','direction':'LONG','quantity':'0.001','entry':'100','exit':'99','entry_fee':'0.0001','fees':'0.0002','funding':'0','net':'-0.0012','opened_ms':self.start,'closed_ms':self.start+1,'private':'not exported'}]
+  write_status(self.study,status);publish(self.study,self.out,clock=lambda:self.now*1000)
+  data=json.loads(self.path.read_text());self.assertNotIn('private',data['experiments']['baseline']['operator_tests'][0])
+  self.assertIn('не включён в статистику стратегии',adaptive_view.render(path=self.path,now=self.now))
+  result=adaptive_view.render('results',path=self.path,now=self.now)
+  self.assertIn('Проверка LONG',result);self.assertIn('-0.0012',result);self.assertIn('funding',result)
  def test_view_commands_authorization_callbacks_and_no_jobs(self):
   q=UnifiedQueue(self.root/'queue');self.addCleanup(q.close)
   with patch('trading_bot.adaptive_view.render',return_value='[Adaptive] fixture'):

@@ -45,7 +45,13 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
    result['usdm_research']={k:limits.get(k) for k in ('epoch_id','epoch_start_ms','legacy_conflicts','epoch_conflicts','active_epoch_conflicts','max_notional_usdt','max_risk_usdt','leverage','limits_status','execution_gate','economic_status','capture','candle_lifecycle','sizing','sizing_reason')}
   for name in ('ai','baseline'):
    v=status['experiments'][name];route=v.get('route') or {};cycle=status.get('cycles',{}).get(name,{})
-   clean={k:v.get(k) for k in ('source','cash_usdt','realised_pnl_usdt','open_pnl_usdt','net_pnl_usdt','net_after_known_api_usd','fees_usdt','funding_usdt','closed_trades','ledger_balanced','funding_conflict','recorded_blocked_checks','known_estimated_api_usd','unknown_api_usage')}
+   clean={k:v.get(k) for k in ('source','cash_usdt','realised_pnl_usdt','open_pnl_usdt','net_pnl_usdt','net_after_known_api_usd','fees_usdt','funding_usdt','closed_trades','ledger_balanced','funding_conflict','recorded_blocked_checks','known_estimated_api_usd','unknown_api_usage','operator_test_open_net')}
+   clean['operator_tests']=[{k:item.get(k) for k in ('id','entry_action','exit_action','direction','quantity','entry','exit','entry_fee','fees','funding','gross','net','opened_ms','closed_ms')} for item in (v.get('operator_test_closes') or [])[-8:]]
+   with closing(sqlite3.connect((root/name/'queue.db').resolve().as_uri()+'?mode=ro',uri=True)) as q:
+    pending=q.execute("SELECT command,payload FROM unified_jobs WHERE status='PENDING' AND command IN ('/research_operator_futures_entry','/research_operator_futures_exit') ORDER BY id DESC LIMIT 1").fetchone()
+    if pending:
+     data=json.loads(pending[1]);clean['operator_pending']={k:data.get(k) for k in ('classification','direction','action_id','position_id','fixed_ms')}
+     clean['operator_pending']['phase']='entry' if pending[0].endswith('_entry') else 'exit'
    clean['decision']={k:(v.get('latest_decision') or {}).get(k) for k in ('mode','data_ms','answer_ms','snapshot_id')}
    clean['route']={k:route.get(k) for k in ('phase','market','direction','strategy','entry_reason','pending_jobs','protection','decision_fresh','expires_ms')}
    clean['cycle']={k:cycle.get(k) for k in ('status','reason','protection')}
@@ -57,9 +63,9 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
      row=db.execute('SELECT value FROM '+table+' WHERE key=?',('position',)).fetchone()
      if not row:raise ValueError('position_missing')
      data=json.loads(row[0]);entry=data.get('entry_price') if market=='spot' else data.get('entry')
-     qty=str(position.get('quantity'));Decimal(qty);price=Decimal(str(entry));strategy=route.get('strategy')
-     factor=Decimal('1.02') if market=='futures' and strategy=='trend1' else Decimal('.98') if market=='spot' and strategy=='trend1' else Decimal('.99') if market=='spot' and strategy=='range' else None
-     positions.append({'market':market,'direction':position.get('direction'),'quantity':qty,'entry':str(entry),'strategy':strategy,'protective_level':str(price*factor) if factor is not None else None})
+     qty=str(position.get('quantity'));Decimal(qty);price=Decimal(str(entry));strategy=route.get('strategy');test=position.get('classification')=='execution_test'
+     factor=None if test else Decimal('1.02') if market=='futures' and strategy=='trend1' else Decimal('.98') if market=='spot' and strategy=='trend1' else Decimal('.99') if market=='spot' and strategy=='range' else None
+     positions.append({'market':market,'direction':position.get('direction'),'quantity':qty,'entry':str(entry),'strategy':'проверка исполнения' if test else strategy,'classification':'execution_test' if test else 'strategy','protective_level':str(price*factor) if factor is not None else None})
    clean['positions']=positions;result['experiments'][name]=clean
   baseline=result['experiments']['baseline'];signal=last_hourly_short(root,now_ms=status['checked_ms'])
   if signal:

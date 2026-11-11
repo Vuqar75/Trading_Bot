@@ -28,7 +28,14 @@ def render(view='summary',path=SNAPSHOT,now=None):
    x=w.get('last_closed_boundary_ms')
    if x is not None and (type(x) is not int or not 0<x<=generated):raise ValueError('invalid_candle_time')
   if now*1000-checked>180000 or now*1000-generated>180000:
-   return '[Adaptive] Оценка недоступна: снимок устарел. Последняя оценка: '+stamp(checked)+'.'
+   lines=['[Adaptive] Текущая оценка недоступна: снимок устарел.', 'Последняя оценка: '+stamp(checked)+'.']
+   for name in ('ai','baseline'):
+    tests=experiments[name].get('operator_tests') or []
+    if not isinstance(tests,list) or len(tests)>8:continue
+    for t in tests:
+     if not isinstance(t,dict) or type(t.get('closed_ms')) is not int:continue
+     lines.append(f"{name}: проверка {t.get('direction','неизвестно')}, завершена {stamp(t['closed_ms'])}; net {amount(t.get('net'))} USDT.")
+   return '\n'.join(lines)
  except (OSError,ValueError,TypeError,KeyError,OverflowError,json.JSONDecodeError):
   return '[Adaptive] Оценка недоступна: снимок отсутствует или повреждён.'
  lines=['[Adaptive] Адаптивный стенд • исследование • виртуальные средства',f"Старт: {stamp(start)}; дней: {max(0,int((checked-start)//86400000))}.",f'Оценка: {stamp(checked)}.']
@@ -41,6 +48,10 @@ def render(view='summary',path=SNAPSHOT,now=None):
   proposed={'TREND_UP':'Spot • тренд LONG','TREND_DOWN':'isolated • тренд SHORT','RANGE':'Spot • диапазон','NO_TRADE':'нет входа'}.get(decision.get('mode'),'не выбран')
   if route.get('decision_fresh') is not True:proposed='нет действующего решения'
   lines.append(f"{label}: режим {mode}; маршрут {route.get('strategy') or proposed}; {pos}; net {net} USDT; закрыто {v.get('closed_trades','неизвестно')}.")
+  tests=v.get('operator_tests') or [];pending=v.get('operator_pending')
+  if not isinstance(tests,list) or len(tests)>8:tests=[]
+  if tests:lines.append(f"  Проверка исполнения: завершено {len(tests)}; результат не включён в статистику стратегии.")
+  if isinstance(pending,dict):lines.append('  Проверочное намерение: '+('вход' if pending.get('phase')=='entry' else 'выход')+'; исполнение ещё не подтверждено.')
   if view=='positions':
    for p in positions:lines.append(f"  {p.get('strategy') or 'стратегия неизвестна'}: {amount(p.get('quantity'),'BTC')} BTC, вход {amount(p.get('entry'))} USDT; защитный уровень {amount(p.get('protective_level'))} USDT (модель, не биржевой стоп).")
    phase={'IDLE':'нет ожидающего исполнения','ENTRY_PENDING':'ожидается вход','EXIT_PENDING':'ожидается выход','OPEN':'позиция открыта','RECONCILE':'ожидается сверка'}.get(route.get('phase'),'неизвестно')
@@ -48,6 +59,11 @@ def render(view='summary',path=SNAPSHOT,now=None):
   elif view=='results':
    lines.append(f"  Реализовано {amount(v.get('realised_pnl_usdt'))}; открытый PnL {amount(v.get('open_pnl_usdt'))}; комиссии {amount(v.get('fees_usdt'))}; funding {amount(v.get('funding_usdt'))} USDT.")
    if name=='ai':lines.append(f"  После учтённой стоимости API: {amount(v.get('net_after_known_api_usd'))} USDT; оценка стоимости API: {amount(v.get('known_estimated_api_usd'))} USDT.")
+   for t in tests:
+    if not isinstance(t,dict):continue
+    lines.append(f"  Проверка {t.get('direction','неизвестно')}: {amount(t.get('quantity'),'BTC')} BTC; вход {amount(t.get('entry'))}, выход {amount(t.get('exit'))}; комиссии {amount(t.get('fees'))}, funding {amount(t.get('funding'))}, net {amount(t.get('net'))} USDT.")
+    if type(t.get('opened_ms')) is int and type(t.get('closed_ms')) is int:
+     lines.append(f"  Вход {stamp(t['opened_ms'])}, выход {stamp(t['closed_ms'])}; ID {str(t.get('entry_action','неизвестно'))[:100]} / {str(t.get('exit_action','неизвестно'))[:100]}.")
    lines.append('  Сверка: '+('сходится' if v.get('ledger_balanced') is True else 'не подтверждена')+'.')
   elif view=='why':
    reason=cycle.get('reason') or cycle.get('status') or route.get('entry_reason') or 'неизвестно';protection=cycle.get('protection') or {}
