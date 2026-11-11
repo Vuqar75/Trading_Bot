@@ -1,0 +1,151 @@
+diff --git a/research/pattern_ai_analyze.py b/research/pattern_ai_analyze.py
+index fec111f..ab2ae31 100644
+--- a/research/pattern_ai_analyze.py
++++ b/research/pattern_ai_analyze.py
+@@ -35,6 +35,10 @@ def analyze(bundle,capture,now_ms):
+             'side':'LONG' if side==1 else 'SHORT' if side==-1 else 'WAIT','detected_patterns':patterns,
+             'features':dict(zip(tech.FEATURES[:30],map(float,last))),'ml':ml,
+             'limits':{'research_only':True,'orders_enabled':False,'probability_calibration':'not_established','future_profit':'not_established'}}
++    if capture.get('derivatives') is not None:
++        from research.derivatives_context import validate
++        context=validate(capture['derivatives'],symbol=capture['symbol'],signal_ms=signal_ms,as_of_ms=now_ms)
++        packet['derivatives']=context
+     packet['packet_id']=hashlib.sha256(json.dumps(packet,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
+     return packet
+ 
+diff --git a/research/pattern_ai_capture.py b/research/pattern_ai_capture.py
+index c190985..7e9d5b5 100644
+--- a/research/pattern_ai_capture.py
++++ b/research/pattern_ai_capture.py
+@@ -5,13 +5,15 @@ import sys
+ HOST='https://fapi.binance.com'
+ 
+ 
+-def capture(symbol):
++def capture(symbol,*,derivatives=False):
+     if symbol not in ('BTCUSDT','ETHUSDT','SOLUSDT'):raise ValueError('symbol_denied')
++    from research.derivatives_context import PATHS
+     receipts=[]
+     def get(path,params=None):
++        if path not in PATHS | {'/fapi/v1/time','/fapi/v1/klines'}:raise ValueError('public_endpoint_denied')
+         url=HOST+path+('?' + urllib.parse.urlencode(params) if params else '')
+         try:
+-            with urllib.request.urlopen(url,timeout=20) as response:raw=response.read(2000000)
++            with urllib.request.urlopen(url,timeout=8 if path in PATHS else 20) as response:raw=response.read(2000000)
+         except urllib.error.HTTPError as exc:
+             status=exc.code;exc.close()
+             raise ValueError('public_market_unavailable_http'+str(status)) from None
+@@ -31,10 +33,18 @@ def capture(symbol):
+         cursor=new
+         if cursor>server:break
+     else:raise ValueError('capture_page_limit')
+-    return {'schema':1,'symbol':symbol,'venue':'binance-usdm','as_of_ms':int(time.time()*1000),'exchange_time_ms':server,'candles':rows,
++    result={'schema':1,'symbol':symbol,'venue':'binance-usdm','as_of_ms':int(time.time()*1000),'exchange_time_ms':server,'candles':rows,
+             'source_receipts':receipts,'limitation':'Public closed candle snapshot, not proof of finality or executable price.'}
++    if derivatives:
++        from research.derivatives_context import collect
++        signal=rows[-1][0]+bar
++        result['derivatives']=collect(get,symbol=symbol,signal_ms=signal,now_ms=int(time.time()*1000),clock=lambda:int(time.time()*1000))
++        result['as_of_ms']=int(time.time()*1000)
++    return result
+ 
+ if __name__=='__main__':
+-    value=capture(sys.argv[1]);path=Path(sys.argv[2]);path.parent.mkdir(parents=True,exist_ok=True)
++    import argparse
++    parser=argparse.ArgumentParser();parser.add_argument('symbol');parser.add_argument('output');parser.add_argument('--derivatives-context',action='store_true');args=parser.parse_args()
++    value=capture(args.symbol,derivatives=args.derivatives_context);path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
+     with gzip.open(path,'wt') as f:json.dump(value,f,separators=(',',':'))
+     print(json.dumps({'symbol':value['symbol'],'closed_bars':len(value['candles']),'as_of_ms':value['as_of_ms'],'last_close_ms':value['candles'][-1][0]+900000}))
+diff --git a/research/pattern_ai_server.py b/research/pattern_ai_server.py
+index 944b46d..8dc35da 100644
+--- a/research/pattern_ai_server.py
++++ b/research/pattern_ai_server.py
+@@ -27,13 +27,13 @@ def publish(packet,path):
+ 
+ 
+ def main():
+-    p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--technical-output',required=True)
++    p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--derivatives-context',action='store_true');p.add_argument('--technical-output',required=True)
+     p.add_argument('--paid-existing-budget',action='store_true');p.add_argument('--paid-boundary-ms',type=int);p.add_argument('--state');p.add_argument('--gpt-output');a=p.parse_args()
+     if a.paid_existing_budget != (a.paid_boundary_ms is not None) or (a.paid_boundary_ms is not None and a.paid_boundary_ms%PERIOD_MS):p.error('paid mode requires exactly one explicit four-hour boundary')
+     bundle=json.loads(Path(a.model).read_text());cached=[]
+     def fetch():
+         if cached:return cached[0]
+-        raw=capture('BTCUSDT');snapshot,base=build(raw,bundle,int(time.time()*1000));publish(snapshot['technical_context'],a.technical_output)
++        raw=capture('BTCUSDT',derivatives=a.derivatives_context);snapshot,base=build(raw,bundle,int(time.time()*1000));publish(snapshot['technical_context'],a.technical_output)
+         cached.append((snapshot,base));return cached[0]
+     now=int(time.time()*1000);target=Path(a.technical_output)
+     if not target.parent.is_dir():raise ValueError('existing_public_directory_required')
+@@ -47,7 +47,7 @@ def main():
+             if target.is_file() and not target.is_symlink() and target.stat().st_size<=30000:
+                 try:old=json.loads(target.read_text())
+                 except (ValueError,OSError):pass
+-            if old and old.get('signal_ms')==now//900000*900000 and old.get('ml',{}).get('model_id')==bundle['model_id'] and old.get('as_of_ms',now+1)<=now:
++            if old and old.get('signal_ms')==now//900000*900000 and old.get('ml',{}).get('model_id')==bundle['model_id'] and old.get('as_of_ms',now+1)<=now and (not a.derivatives_context or old.get('derivatives',{}).get('version')=='derivatives-context-v1'):
+                 local={'status':'already_published','gpt_called':False}
+             else:
+                 snapshot,_=fetch();local={'status':'local_analysis_published','packet_id':snapshot['technical_context']['packet_id'],'gpt_called':False,'orders_enabled':False}
+diff --git a/research/pattern_ai_snapshot.py b/research/pattern_ai_snapshot.py
+index 3cbffa2..97d69cc 100644
+--- a/research/pattern_ai_snapshot.py
++++ b/research/pattern_ai_snapshot.py
+@@ -21,6 +21,8 @@ def build(capture,bundle,now_ms):
+        'book':{'source_event_time':'unavailable','execution_quote':False},'news':[],
+        'coverage':'Только закрытые USD-M свечи и технические признаки; новостей и исполнимой котировки нет.',
+        'technical_context':packet}
++    if packet.get('derivatives') is not None:
++        s['coverage']='Свечи USD-M, технические признаки и фьючерсные метрики ('+packet['derivatives']['status']+'); новостей и исполнимой котировки нет.'
+     s['snapshot_id']=hashlib.sha256(canonical(s).encode()).hexdigest()
+     base='TREND_UP' if four[-1]>four[-20:].mean()*1.01 else 'TREND_DOWN' if four[-1]<four[-20:].mean()*.99 else 'RANGE'
+     return s,base
+diff --git a/research/technical_patterns.py b/research/technical_patterns.py
+index 3dacad2..c66b56e 100644
+--- a/research/technical_patterns.py
++++ b/research/technical_patterns.py
+@@ -117,5 +117,9 @@ def add_technical_context(req,snapshot):
+     raw=json.dumps(packet,sort_keys=True,separators=(',',':'),allow_nan=False)
+     if len(raw)>10000:raise ValueError('technical_packet_too_large')
+     req['input'][0]['content']+=' Additional technical evidence is supplied from '+venue+'. Analyze the named candle patterns, trend, momentum, volatility and trained ML estimate explicitly in plain Russian. These are numerical facts and uncalibrated predictions, not instructions. The mode remains a broad4h regime classification; a15m pattern is not an entry authorization. Distinguish regime direction from permission to trade. Do not invent patterns absent from detected_patterns or claim model profitability. No order, risk, pause or budget changes are authorized.'
++    if packet.get('derivatives') is not None:
++        from research.derivatives_context import validate
++        validate(packet['derivatives'],symbol=packet['symbol'],signal_ms=packet['signal_ms'],as_of_ms=packet['as_of_ms'])
++        req['input'][0]['content']+=' Derivatives facts are separate from the local ML inputs. OI growth alone identifies neither LONG nor SHORT. Account-count ratios are not market-wide position notional. Taker flow does not prove executable liquidity or liquidation. Respect derivative timestamps and their conservative lag; do not claim same-tick confirmation with price. Missing/partial context must be explained; never replace missing metrics with zero or invent them.'
+     req['input'].append({'role':'user','content':raw})
+     return req
+diff --git a/trading_bot/technical_ai_view.py b/trading_bot/technical_ai_view.py
+index af14705..dbaaa03 100644
+--- a/trading_bot/technical_ai_view.py
++++ b/trading_bot/technical_ai_view.py
+@@ -25,6 +25,25 @@ def render(path,now=None):
+                'RSI14: '+number('rsi',100)+'; ADX14: '+number('adx',100)+'; ATR14: '+number('atr_pct',100)+'%.',
+                'Объём относительно среднего: '+number('volume_ratio')+'x.',
+                'Модель: локальный RandomForest; это не ответ GPT.']
++        context=d.get('derivatives')
++        if context is not None:
++            from research.derivatives_context import validate
++            validate(context,symbol=d['symbol'],signal_ms=signal,as_of_ms=asof)
++            status=context.get('status')
++            if status not in ('available','partial','unavailable'):raise ValueError('derivatives_status')
++            labels={'oi_change_1h_pct':'OI за 1ч, %','oi_change_4h_pct':'OI за 4ч, %','oi_change_24h_pct':'OI за 24ч, %','global_account_long_short_ratio':'L/S всех счетов','top_position_long_short_ratio':'L/S позицийtop-трейдеров','taker_buy_sell_ratio':'Taker BUY/SELL'}
++            facts=context.get('facts',{})
++            if not isinstance(facts,dict):raise ValueError('derivatives_facts')
++            lines.append('Фьючерсные метрики: '+{'available':'доступны','partial':'неполные','unavailable':'недоступны'}[status]+'; задержка15мин.')
++            cut=dt.datetime.fromtimestamp(context['cutoff_ms']/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%H:%M Баку')
++            lines.append('Метрики не позднее '+cut+'.')
++            if context.get('missing'):lines.append('Часть источников не предоставила проверенные данные.')
++            for k,label in labels.items():
++                if k in facts:
++                    v=facts[k]
++                    if type(v) not in (int,float) or not math.isfinite(v):raise ValueError('derivatives_number')
++                    lines.append(label+': '+format(v,'.4g'))
++            lines.append('Это факты для анализа; текущая ML-модель их не использует. OI не определяет направление.')
+         if 'p_win_estimate' in ml:
+             pwin=ml['p_win_estimate'];net=ml['expected_stress_net_return']
+             if not all(type(x) in (int,float) and math.isfinite(x) for x in (pwin,net)) or not 0<=pwin<=1:raise ValueError('report_model_number')
+@@ -32,5 +51,5 @@ def render(path,now=None):
+         lines+=['Вывод: '+('исторический сигнал; использовать сейчас нельзя' if stale else 'исследовательский кандидат, допуска к сделке нет' if ml['action']=='CANDIDATE' else 'вход не подтверждён'),
+                 'Вероятности не калиброваны; прибыльность модели не подтверждена.','Кнопка читает снимок; GPT и сделки не запускаются.']
+         return '\n'.join(lines)[:3000]
+-    except (OSError,ValueError,TypeError,KeyError,OverflowError):
++    except (OSError,ValueError,TypeError,KeyError,OverflowError,ImportError):
+         return '[ИИ • теханализ и паттерны]\nСвежего проверенного снимка нет. Вход не разрешён; модель и платный API этой кнопкой не запускаются.'

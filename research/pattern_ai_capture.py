@@ -5,13 +5,15 @@ import sys
 HOST='https://fapi.binance.com'
 
 
-def capture(symbol):
+def capture(symbol,*,derivatives=False):
     if symbol not in ('BTCUSDT','ETHUSDT','SOLUSDT'):raise ValueError('symbol_denied')
+    from research.derivatives_context import PATHS
     receipts=[]
     def get(path,params=None):
+        if path not in PATHS | {'/fapi/v1/time','/fapi/v1/klines'}:raise ValueError('public_endpoint_denied')
         url=HOST+path+('?' + urllib.parse.urlencode(params) if params else '')
         try:
-            with urllib.request.urlopen(url,timeout=20) as response:raw=response.read(2000000)
+            with urllib.request.urlopen(url,timeout=8 if path in PATHS else 20) as response:raw=response.read(2000000)
         except urllib.error.HTTPError as exc:
             status=exc.code;exc.close()
             raise ValueError('public_market_unavailable_http'+str(status)) from None
@@ -31,10 +33,18 @@ def capture(symbol):
         cursor=new
         if cursor>server:break
     else:raise ValueError('capture_page_limit')
-    return {'schema':1,'symbol':symbol,'venue':'binance-usdm','as_of_ms':int(time.time()*1000),'exchange_time_ms':server,'candles':rows,
+    result={'schema':1,'symbol':symbol,'venue':'binance-usdm','as_of_ms':int(time.time()*1000),'exchange_time_ms':server,'candles':rows,
             'source_receipts':receipts,'limitation':'Public closed candle snapshot, not proof of finality or executable price.'}
+    if derivatives:
+        from research.derivatives_context import collect
+        signal=rows[-1][0]+bar
+        result['derivatives']=collect(get,symbol=symbol,signal_ms=signal,now_ms=int(time.time()*1000),clock=lambda:int(time.time()*1000))
+        result['as_of_ms']=int(time.time()*1000)
+    return result
 
 if __name__=='__main__':
-    value=capture(sys.argv[1]);path=Path(sys.argv[2]);path.parent.mkdir(parents=True,exist_ok=True)
+    import argparse
+    parser=argparse.ArgumentParser();parser.add_argument('symbol');parser.add_argument('output');parser.add_argument('--derivatives-context',action='store_true');args=parser.parse_args()
+    value=capture(args.symbol,derivatives=args.derivatives_context);path=Path(args.output);path.parent.mkdir(parents=True,exist_ok=True)
     with gzip.open(path,'wt') as f:json.dump(value,f,separators=(',',':'))
     print(json.dumps({'symbol':value['symbol'],'closed_bars':len(value['candles']),'as_of_ms':value['as_of_ms'],'last_close_ms':value['candles'][-1][0]+900000}))

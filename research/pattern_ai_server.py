@@ -27,13 +27,13 @@ def publish(packet,path):
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--technical-output',required=True)
+    p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--derivatives-context',action='store_true');p.add_argument('--technical-output',required=True)
     p.add_argument('--paid-existing-budget',action='store_true');p.add_argument('--paid-boundary-ms',type=int);p.add_argument('--state');p.add_argument('--gpt-output');a=p.parse_args()
     if a.paid_existing_budget != (a.paid_boundary_ms is not None) or (a.paid_boundary_ms is not None and a.paid_boundary_ms%PERIOD_MS):p.error('paid mode requires exactly one explicit four-hour boundary')
     bundle=json.loads(Path(a.model).read_text());cached=[]
     def fetch():
         if cached:return cached[0]
-        raw=capture('BTCUSDT');snapshot,base=build(raw,bundle,int(time.time()*1000));publish(snapshot['technical_context'],a.technical_output)
+        raw=capture('BTCUSDT',derivatives=a.derivatives_context);snapshot,base=build(raw,bundle,int(time.time()*1000));publish(snapshot['technical_context'],a.technical_output)
         cached.append((snapshot,base));return cached[0]
     now=int(time.time()*1000);target=Path(a.technical_output)
     if not target.parent.is_dir():raise ValueError('existing_public_directory_required')
@@ -47,7 +47,7 @@ def main():
             if target.is_file() and not target.is_symlink() and target.stat().st_size<=30000:
                 try:old=json.loads(target.read_text())
                 except (ValueError,OSError):pass
-            if old and old.get('signal_ms')==now//900000*900000 and old.get('ml',{}).get('model_id')==bundle['model_id'] and old.get('as_of_ms',now+1)<=now:
+            if old and old.get('signal_ms')==now//900000*900000 and old.get('ml',{}).get('model_id')==bundle['model_id'] and old.get('as_of_ms',now+1)<=now and (not a.derivatives_context or old.get('derivatives',{}).get('version')=='derivatives-context-v1'):
                 local={'status':'already_published','gpt_called':False}
             else:
                 snapshot,_=fetch();local={'status':'local_analysis_published','packet_id':snapshot['technical_context']['packet_id'],'gpt_called':False,'orders_enabled':False}

@@ -1,0 +1,377 @@
+{
+  "protocol": "PATTERN_CALIBRATION_PROTOCOL.md",
+  "total": {
+    "examples": 40861,
+    "raw_net_mse": 6.62593598502642e-05,
+    "calibrated_net_mse": 6.698080020987311e-05,
+    "raw_brier": 0.19533971376892265,
+    "calibrated_brier": 0.1962731260530715,
+    "calibrated_candidates": 0,
+    "candidate_actual_mean_net_bps": null,
+    "candidate_predicted_mean_net_bps": null,
+    "supported_examples": 40227
+  },
+  "by_asset": {
+    "BTCUSDT": {
+      "examples": 13854,
+      "raw_net_mse": 3.9084013389958976e-05,
+      "calibrated_net_mse": 3.94444717475052e-05,
+      "raw_brier": 0.18215844749238858,
+      "calibrated_brier": 0.18252285676485647,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 13692
+    },
+    "ETHUSDT": {
+      "examples": 13630,
+      "raw_net_mse": 7.028443827763008e-05,
+      "calibrated_net_mse": 7.097650695268986e-05,
+      "raw_brier": 0.19947609741686337,
+      "calibrated_brier": 0.20098973188348956,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 13289
+    },
+    "SOLUSDT": {
+      "examples": 13377,
+      "raw_net_mse": 9.030252579898751e-05,
+      "calibrated_net_mse": 9.142774732903682e-05,
+      "raw_brier": 0.20477638521047686,
+      "calibrated_brier": 0.2057078941812268,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 13246
+    }
+  },
+  "checks": {
+    "net_mse_improves_1pct": false,
+    "brier_improves_1pct": false,
+    "no_asset_worse_2pct": true
+  },
+  "analysis_promotion_eligible": false,
+  "trading_admitted": false,
+  "folds": [
+    {
+      "month": "2025-10",
+      "train_start_ms": 1751328000000,
+      "max_train_label_end_ms": 1759276260000,
+      "test_start_ms": 1759276800000,
+      "test_end_ms": 1761955200000,
+      "asset_training_rows": {
+        "BTCUSDT": 3352,
+        "ETHUSDT": 3182,
+        "SOLUSDT": 3215
+      },
+      "test_rows": 3339
+    },
+    {
+      "month": "2025-11",
+      "train_start_ms": 1754006400000,
+      "max_train_label_end_ms": 1761954660000,
+      "test_start_ms": 1761955200000,
+      "test_end_ms": 1764547200000,
+      "asset_training_rows": {
+        "BTCUSDT": 3317,
+        "ETHUSDT": 3208,
+        "SOLUSDT": 3243
+      },
+      "test_rows": 3155
+    },
+    {
+      "month": "2025-12",
+      "train_start_ms": 1756684800000,
+      "max_train_label_end_ms": 1764543960000,
+      "test_start_ms": 1764547200000,
+      "test_end_ms": 1767225600000,
+      "asset_training_rows": {
+        "BTCUSDT": 3209,
+        "ETHUSDT": 3195,
+        "SOLUSDT": 3203
+      },
+      "test_rows": 3134
+    },
+    {
+      "month": "2026-01",
+      "train_start_ms": 1759276800000,
+      "max_train_label_end_ms": 1767225060000,
+      "test_start_ms": 1767225600000,
+      "test_end_ms": 1769904000000,
+      "asset_training_rows": {
+        "BTCUSDT": 3197,
+        "ETHUSDT": 3201,
+        "SOLUSDT": 3216
+      },
+      "test_rows": 3290
+    },
+    {
+      "month": "2026-02",
+      "train_start_ms": 1761955200000,
+      "max_train_label_end_ms": 1769903460000,
+      "test_start_ms": 1769904000000,
+      "test_end_ms": 1772323200000,
+      "asset_training_rows": {
+        "BTCUSDT": 3231,
+        "ETHUSDT": 3173,
+        "SOLUSDT": 3159
+      },
+      "test_rows": 2968
+    },
+    {
+      "month": "2026-03",
+      "train_start_ms": 1764547200000,
+      "max_train_label_end_ms": 1772322660000,
+      "test_start_ms": 1772323200000,
+      "test_end_ms": 1775001600000,
+      "asset_training_rows": {
+        "BTCUSDT": 3189,
+        "ETHUSDT": 3104,
+        "SOLUSDT": 3077
+      },
+      "test_rows": 3155
+    },
+    {
+      "month": "2026-04",
+      "train_start_ms": 1767225600000,
+      "max_train_label_end_ms": 1774999260000,
+      "test_start_ms": 1775001600000,
+      "test_end_ms": 1777593600000,
+      "asset_training_rows": {
+        "BTCUSDT": 3204,
+        "ETHUSDT": 3105,
+        "SOLUSDT": 3094
+      },
+      "test_rows": 3061
+    },
+    {
+      "month": "2026-05",
+      "train_start_ms": 1769904000000,
+      "max_train_label_end_ms": 1777593060000,
+      "test_start_ms": 1777593600000,
+      "test_end_ms": 1780272000000,
+      "asset_training_rows": {
+        "BTCUSDT": 3116,
+        "ETHUSDT": 3034,
+        "SOLUSDT": 3018
+      },
+      "test_rows": 3108
+    },
+    {
+      "month": "2026-06",
+      "train_start_ms": 1772323200000,
+      "max_train_label_end_ms": 1780271460000,
+      "test_start_ms": 1780272000000,
+      "test_end_ms": 1782864000000,
+      "asset_training_rows": {
+        "BTCUSDT": 3150,
+        "ETHUSDT": 3132,
+        "SOLUSDT": 3027
+      },
+      "test_rows": 3106
+    },
+    {
+      "month": "2026-07",
+      "train_start_ms": 1775001600000,
+      "max_train_label_end_ms": 1782863460000,
+      "test_start_ms": 1782864000000,
+      "test_end_ms": 1785542400000,
+      "asset_training_rows": {
+        "BTCUSDT": 3135,
+        "ETHUSDT": 3157,
+        "SOLUSDT": 2973
+      },
+      "test_rows": 2985
+    },
+    {
+      "month": "2026-08",
+      "train_start_ms": 1777593600000,
+      "max_train_label_end_ms": 1785539160000,
+      "test_start_ms": 1785542400000,
+      "test_end_ms": 1788220800000,
+      "asset_training_rows": {
+        "BTCUSDT": 3145,
+        "ETHUSDT": 3097,
+        "SOLUSDT": 2949
+      },
+      "test_rows": 3261
+    },
+    {
+      "month": "2026-09",
+      "train_start_ms": 1780272000000,
+      "max_train_label_end_ms": 1788220260000,
+      "test_start_ms": 1788220800000,
+      "test_end_ms": 1790812800000,
+      "asset_training_rows": {
+        "BTCUSDT": 3229,
+        "ETHUSDT": 3089,
+        "SOLUSDT": 3020
+      },
+      "test_rows": 3069
+    },
+    {
+      "month": "2026-10",
+      "train_start_ms": 1782864000000,
+      "max_train_label_end_ms": 1790811360000,
+      "test_start_ms": 1790812800000,
+      "test_end_ms": 1793491200000,
+      "asset_training_rows": {
+        "BTCUSDT": 3221,
+        "ETHUSDT": 3055,
+        "SOLUSDT": 3016
+      },
+      "test_rows": 3230
+    }
+  ],
+  "by_month": {
+    "2025-10": {
+      "examples": 3339,
+      "raw_net_mse": 8.826489819801398e-05,
+      "calibrated_net_mse": 9.035411842774813e-05,
+      "raw_brier": 0.21145882151227685,
+      "calibrated_brier": 0.21377269993012218,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3291
+    },
+    "2025-11": {
+      "examples": 3155,
+      "raw_net_mse": 0.00011002535327335503,
+      "calibrated_net_mse": 0.0001101204061383704,
+      "raw_brier": 0.20784139090805004,
+      "calibrated_brier": 0.20867931918805482,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3136
+    },
+    "2025-12": {
+      "examples": 3134,
+      "raw_net_mse": 6.168472933560985e-05,
+      "calibrated_net_mse": 6.207491405568341e-05,
+      "raw_brier": 0.19240663046198697,
+      "calibrated_brier": 0.19660841843945687,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3059
+    },
+    "2026-01": {
+      "examples": 3290,
+      "raw_net_mse": 5.224214252115143e-05,
+      "calibrated_net_mse": 5.376786145098508e-05,
+      "raw_brier": 0.1820827482650849,
+      "calibrated_brier": 0.18220248153901208,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3155
+    },
+    "2026-02": {
+      "examples": 2968,
+      "raw_net_mse": 0.00013986349465606134,
+      "calibrated_net_mse": 0.00014530775908026296,
+      "raw_brier": 0.21904157449715494,
+      "calibrated_brier": 0.22107219493537156,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 2934
+    },
+    "2026-03": {
+      "examples": 3155,
+      "raw_net_mse": 7.77365859767835e-05,
+      "calibrated_net_mse": 7.713477972394091e-05,
+      "raw_brier": 0.20551550705710311,
+      "calibrated_brier": 0.2068444126544537,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3136
+    },
+    "2026-04": {
+      "examples": 3061,
+      "raw_net_mse": 4.364022428619461e-05,
+      "calibrated_net_mse": 4.3593788456392854e-05,
+      "raw_brier": 0.18657974915203007,
+      "calibrated_brier": 0.18709100747420812,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3056
+    },
+    "2026-05": {
+      "examples": 3108,
+      "raw_net_mse": 3.2230878924385646e-05,
+      "calibrated_net_mse": 3.218759437488375e-05,
+      "raw_brier": 0.17988273328232637,
+      "calibrated_brier": 0.18046534947309886,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3106
+    },
+    "2026-06": {
+      "examples": 3106,
+      "raw_net_mse": 8.915635541743852e-05,
+      "calibrated_net_mse": 8.966147712497485e-05,
+      "raw_brier": 0.20323264379575703,
+      "calibrated_brier": 0.2035039928167117,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3071
+    },
+    "2026-07": {
+      "examples": 2985,
+      "raw_net_mse": 3.490036788404544e-05,
+      "calibrated_net_mse": 3.492503809950672e-05,
+      "raw_brier": 0.1860633783727499,
+      "calibrated_brier": 0.18599040443224635,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 2984
+    },
+    "2026-08": {
+      "examples": 3261,
+      "raw_net_mse": 4.769507106586421e-05,
+      "calibrated_net_mse": 4.791916276548415e-05,
+      "raw_brier": 0.18281929360157623,
+      "calibrated_brier": 0.18285670723064867,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3243
+    },
+    "2026-09": {
+      "examples": 3069,
+      "raw_net_mse": 4.3184409619142044e-05,
+      "calibrated_net_mse": 4.3094495442848956e-05,
+      "raw_brier": 0.19006795493866213,
+      "calibrated_brier": 0.18981559457562297,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 2849
+    },
+    "2026-10": {
+      "examples": 3230,
+      "raw_net_mse": 4.2441712225482403e-05,
+      "calibrated_net_mse": 4.24045442797538e-05,
+      "raw_brier": 0.19290273003877303,
+      "calibrated_brier": 0.19310097257347864,
+      "calibrated_candidates": 0,
+      "candidate_actual_mean_net_bps": null,
+      "candidate_predicted_mean_net_bps": null,
+      "supported_examples": 3207
+    }
+  },
+  "source_sha256": {
+    "training_examples.npz": "4a314d378a1937e3c157397952e92cc24f0accd878f04e3fdd29c944c67ac8e6",
+    "predictions.json.gz": "32adf1ddd7a270a0582650be33d6f01079853f36eed6df404b0f5a3f341f6e83",
+    "model.json": "3d0d99fe90766a57da48a9f1847dcffb5d330ce1e61260574e0597671fbe1c32"
+  }
+}

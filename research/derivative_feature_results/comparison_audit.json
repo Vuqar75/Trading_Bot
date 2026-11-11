@@ -1,0 +1,23 @@
+{
+  "feature_rows_with_complete_lags": 50573,
+  "all_metric_lags_before_signal": true,
+  "all_source_ages_within_5min": true,
+  "extended_test_forecasts": 31233,
+  "calibrated_test_forecasts": 40861,
+  "equal_training_row_count_months": [
+    "2026-03",
+    "2026-04",
+    "2026-05",
+    "2026-06",
+    "2026-07",
+    "2026-08",
+    "2026-09",
+    "2026-10"
+  ],
+  "training_coverage_differences": {
+    "2026-01": 55,
+    "2026-02": 7
+  },
+  "new_live_model_promoted": false,
+  "trading_admitted": false
+}

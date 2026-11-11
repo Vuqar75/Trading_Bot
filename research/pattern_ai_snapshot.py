@@ -21,6 +21,8 @@ def build(capture,bundle,now_ms):
        'book':{'source_event_time':'unavailable','execution_quote':False},'news':[],
        'coverage':'Только закрытые USD-M свечи и технические признаки; новостей и исполнимой котировки нет.',
        'technical_context':packet}
+    if packet.get('derivatives') is not None:
+        s['coverage']='Свечи USD-M, технические признаки и фьючерсные метрики ('+packet['derivatives']['status']+'); новостей и исполнимой котировки нет.'
     s['snapshot_id']=hashlib.sha256(canonical(s).encode()).hexdigest()
     base='TREND_UP' if four[-1]>four[-20:].mean()*1.01 else 'TREND_DOWN' if four[-1]<four[-20:].mean()*.99 else 'RANGE'
     return s,base

@@ -11,9 +11,9 @@ def interpolate(x,xs,ys):
     return ys[j]+(ys[j+1]-ys[j])*(x-xs[j])/(xs[j+1]-xs[j])
 
 
-def adjust(raw_p,raw_net,calibrator,*,symbol,signal_ms,model_id=None):
+def adjust(raw_p,raw_net,calibrator,*,symbol,signal_ms,model_id):
     if calibrator.get('version')!=VERSION:raise ValueError('calibration_version')
-    if model_id is not None and calibrator.get('base_model_id')!=model_id:raise ValueError('calibration_model_mismatch')
+    if calibrator.get('base_model_id')!=model_id:raise ValueError('calibration_model_mismatch')
     if not calibrator['valid_from_ms']<=signal_ms<calibrator['valid_until_ms'] or calibrator['max_label_end_ms']>=signal_ms:raise ValueError('calibration_stale_or_future')
     if not all(type(x) in (int,float) and math.isfinite(x) for x in (raw_p,raw_net)) or not 0<=raw_p<=1:raise ValueError('calibration_input')
     c=calibrator.get('assets',{}).get(symbol)
