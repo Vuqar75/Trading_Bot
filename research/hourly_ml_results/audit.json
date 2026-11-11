@@ -1,0 +1,48 @@
+{
+  "checks": "unique forecasts and actions, strict historical target cutoff, availability, direction, fees, funding, risk and non-overlap",
+  "completed_audited": 16234,
+  "folds": 32,
+  "prediction_metrics": {
+    "BTCUSDT/Ridge": {
+      "missing_targets": 1,
+      "predictions": 11712,
+      "rmse": 0.004362673150675995,
+      "selected_mean_actual": null,
+      "selected_mean_prediction": null,
+      "selected_mean_signed_actual": null,
+      "selected_observed": 0
+    },
+    "BTCUSDT/XGBoost": {
+      "missing_targets": 1,
+      "predictions": 11712,
+      "rmse": 0.004389580993680888,
+      "selected_mean_actual": 0.001186812977001612,
+      "selected_mean_prediction": 0.0019378273947430508,
+      "selected_mean_signed_actual": 0.0019427525279314764,
+      "selected_observed": 14
+    },
+    "ETHUSDT/Ridge": {
+      "missing_targets": 1,
+      "predictions": 11712,
+      "rmse": 0.006336304964923504,
+      "selected_mean_actual": null,
+      "selected_mean_prediction": null,
+      "selected_mean_signed_actual": null,
+      "selected_observed": 0
+    },
+    "ETHUSDT/XGBoost": {
+      "missing_targets": 1,
+      "predictions": 11712,
+      "rmse": 0.006373128934273193,
+      "selected_mean_actual": -0.0011443356769582057,
+      "selected_mean_prediction": 0.0023359135048438423,
+      "selected_mean_signed_actual": 6.479622440305565e-05,
+      "selected_observed": 73
+    }
+  },
+  "prediction_rows": 46848,
+  "predictions_sha256": "a884638a415de6673cef234e2fcf05107a70b1251e7020ad4efcef3c2298bd26",
+  "selected_records": 47022,
+  "summary_sha256": "fa64bedecf98981321fba9e82949c1c1b004be19d108bf11d0fe1d52d9cc7986",
+  "trades_sha256": "8e0c9ba27644e1fdcf51684aa2b4188464d5caa337cbe70b954bb9dfa22f2fa6"
+}

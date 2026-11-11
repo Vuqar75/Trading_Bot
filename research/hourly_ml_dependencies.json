@@ -1,0 +1,19 @@
+{
+  "install_target": "D:/TradingBot-ML-work/deps",
+  "packages": {
+    "cloudpickle": "3.1.2",
+    "joblib": "1.6.0",
+    "numpy": "2.3.5",
+    "scikit-learn": "1.8.0",
+    "scipy": "1.16.3",
+    "threadpoolctl": "3.8.0",
+    "xgboost": "3.1.2"
+  },
+  "platform": "Windows-11-10.0.26300-SP0",
+  "python": "3.12.8",
+  "threads": {
+    "OMP_NUM_THREADS": "2",
+    "OPENBLAS_NUM_THREADS": "2",
+    "xgboost_n_jobs": 2
+  }
+}

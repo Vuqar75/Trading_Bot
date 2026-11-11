@@ -85,7 +85,8 @@ def equity_update(account,equity):
  account['peak']=max(account['peak'],equity)
  account['max_dd']=max(account['max_dd'],(account['peak']-equity)/account['peak'])
 
-def execute(signal,trade,mark,funding_by_min,account,symbol,stress):
+def execute(signal,trade,mark,funding_by_min,account,symbol,stress,hold_minutes=120):
+ if type(hold_minutes) is not int or hold_minutes<=0:raise ValueError('invalid holding time')
  sign=1 if signal['direction']=='LONG' else -1;impact=.001 if stress else .0005;fee=.0005
  entry_t=signal['signal_ms']+(6 if stress else 1)*M;ei=ix(entry_t)
  if entry_t>=END:return {'rejection':'end_of_observation'}
@@ -98,7 +99,7 @@ def execute(signal,trade,mark,funding_by_min,account,symbol,stress):
  if q*fill+entryfee>account['cash']:return {'rejection':'insufficient_cash'}
  risk=q*fill*(.02+2*(fee+impact)+.0021)
  if risk>5:return {'rejection':'estimated_risk_cap','estimated_risk':risk}
- stop=fill*(1-.02*sign);deadline=entry_t+120*M;accrued=0.;ambiguous=0;funding_events=[];out=None
+ stop=fill*(1-.02*sign);deadline=entry_t+hold_minutes*M;accrued=0.;ambiguous=0;funding_events=[];out=None
  account['cash']-=entryfee;equity_update(account,account['cash'])
  for i in range(ei,min(ix(deadline)+1,N)):
   t=START+i*M
