@@ -38,6 +38,17 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
   fcntl.flock(fd,fcntl.LOCK_SH)
   status=json.loads((root/'status.json').read_text());now=clock()
   if status.get('schema')!=1 or type(status.get('checked_ms')) is not int or status['checked_ms']>now+5000:raise ValueError('status_invalid')
+  if status.get('operator_only') is True:
+   # This is a read-only ledger refresh, not market collection or execution.
+   # The stopped collector's watermarks remain unchanged and are labelled.
+   from .adaptive_study_status import snapshot
+   previous=tempfile.tempdir
+   try:
+    tempfile.tempdir=str(root.parent)
+    status['experiments']={name:snapshot(root/name,quotes={},now_ms=now) for name in ('ai','baseline')}
+   finally:tempfile.tempdir=previous
+   status['checked_ms']=now
+   status['data_errors']={'study':'strategy_collection_paused'}
   result={'schema':1,'generated_ms':now,'checked_ms':status['checked_ms'],'start_ms':status['start_ms'],'version':status['code_version'],'backup':status.get('backup'), 'data_errors':status.get('data_errors',{}),'watermarks':status.get('market_watermarks',{}),'same_snapshot':status.get('same_snapshot',False),'experiments':{}}
   # Narrow, non-secret study diagnostics; this does not grant access to ledgers.
   limits=status.get('usdm_research')
@@ -67,6 +78,20 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
      factor=None if test else Decimal('1.02') if market=='futures' and strategy=='trend1' else Decimal('.98') if market=='spot' and strategy=='trend1' else Decimal('.99') if market=='spot' and strategy=='range' else None
      positions.append({'market':market,'direction':position.get('direction'),'quantity':qty,'entry':str(entry),'strategy':'проверка исполнения' if test else strategy,'classification':'execution_test' if test else 'strategy','protective_level':str(price*factor) if factor is not None else None})
    clean['positions']=positions;result['experiments'][name]=clean
+   # Backwards-compatible text for the already installed read-only renderer.
+   # Preserve the structured records above for newer renderers.
+   if clean['operator_tests']:
+    summary=[]
+    for item in clean['operator_tests'][-2:]:
+     if item.get('direction') not in ('LONG','SHORT'):continue
+     try:
+      qty=Decimal(str(item['quantity']));entry=Decimal(str(item['entry']));exitp=Decimal(str(item['exit']));fees=Decimal(str(item['fees']));funding=Decimal(str(item['funding']));net=Decimal(str(item['net']))
+      if not all(x.is_finite() for x in (qty,entry,exitp,fees,funding,net)):continue
+      summary.append(f"{item['direction']} {qty} BTC {entry:.4f}→{exitp:.4f}, комиссия {fees:.4f}, funding {funding:.4f}, net {net:.4f} USDT")
+     except (KeyError,ValueError,TypeError,ArithmeticError):continue
+    if summary and not positions:clean['route']['strategy']='Проверки исполнения (отдельно от стратегии): '+'; '.join(summary)
+   if clean.get('operator_pending'):
+    clean['route']['phase']='ENTRY_PENDING' if clean['operator_pending']['phase']=='entry' else 'EXIT_PENDING'
   baseline=result['experiments']['baseline'];signal=last_hourly_short(root,now_ms=status['checked_ms'])
   if signal:
    baseline['last_hourly_signal']=signal

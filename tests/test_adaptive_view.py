@@ -51,6 +51,17 @@ class AdaptiveViewTest(unittest.TestCase):
   self.assertIn('не включён в статистику стратегии',adaptive_view.render(path=self.path,now=self.now))
   result=adaptive_view.render('results',path=self.path,now=self.now)
   self.assertIn('Проверка LONG',result);self.assertIn('-0.0012',result);self.assertIn('funding',result)
+ def test_operator_only_refresh_reads_ledgers_without_market_or_writes(self):
+  import hashlib
+  status=json.loads((self.study/'status.json').read_text());status['operator_only']=True
+  write_status(self.study,status)
+  paths=[self.study/name/db for name in ('ai','baseline') for db in ('financial.db','queue.db','route.db')]
+  hashes=[hashlib.sha256(p.read_bytes()).hexdigest() for p in paths]
+  publish(self.study,self.out,clock=lambda:(self.now+200)*1000)
+  data=json.loads(self.path.read_text())
+  self.assertEqual(data['checked_ms'],(self.now+200)*1000)
+  self.assertEqual(data['data_errors']['study'],'strategy_collection_paused')
+  self.assertEqual(hashes,[hashlib.sha256(p.read_bytes()).hexdigest() for p in paths])
  def test_view_commands_authorization_callbacks_and_no_jobs(self):
   q=UnifiedQueue(self.root/'queue');self.addCleanup(q.close)
   with patch('trading_bot.adaptive_view.render',return_value='[Adaptive] fixture'):

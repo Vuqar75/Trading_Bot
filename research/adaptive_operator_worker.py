@@ -115,6 +115,7 @@ def publish_status(root, *, version, clock=lambda:int(time.time()*1000)):
         now=clock()
         value['checked_ms']=now
         value['code_version']=version
+        value['operator_only']=True
         value['experiments']={name:snapshot(root/name,quotes={},now_ms=now) for name in ('ai','baseline')}
         value['cycles']={name:{'status':'operator_only','reason':'strategy_collection_paused','protection':{'state':'unavailable' if value['experiments'][name]['positions'] else 'no_position'}} for name in ('ai','baseline')}
         value['data_errors']={'study':'strategy_collection_paused'}
