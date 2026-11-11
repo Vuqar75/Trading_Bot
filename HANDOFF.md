@@ -1,5 +1,22 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — continued without confirmation: execution diagnosis completed
+
+See `RSI15M_ATTRIBUTION_REPORT.md`. Protocol/code frozen in `2ceb914`; only
+two missing model cells run:1min/10bp +5.038950 USDT (41 trades),6min/5bp
++1.761448 (40). Reused original diagonal. Symmetric net deterioration allocation:
+delay−7.608522, impact−4.331020 USDT; these include changed paths, not measured
+execution effects. All81 added trades pass independent ledger/time/cost/limits
+audit; no residual or unresolved position. Every cell still has only80–83%
+trades<=24h and no Q3 closes. Do not admit a profitable cell, select SHORT-only,
+change thresholds or implement maker after seeing results. Candidate stays
+rejected. Source-screened VWAP and cross-sectional repositories with pinned
+commits/hashes: optimistic TP-before-stop tie/funding omissions in first;
+slow multi-asset portfolio rather than requested intraday rule in second.
+No foreign code execution, additional data download, local task, full app
+suite, VM/pause/secret/budget/schedule change or paid call. Overall profitable
+short-term strategy goal remains unresolved; do not claim it completed.
+
 ## 2026-11-11 — bounded RSI15m check completed; fixed adaptation rejected
 
 Owner requested continuation. Actual BTCUSDT USD-M 2025 calculation completed

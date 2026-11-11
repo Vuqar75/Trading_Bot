@@ -1,0 +1,367 @@
+{
+  "purpose": "diagnosis only; no admission or parameter selection",
+  "results": {
+    "delay1_impact10": {
+      "closed": 41,
+      "long": 12,
+      "short": 29,
+      "gross": 15.84521872390002,
+      "fees": 3.654388223638038,
+      "impact": 7.308792292494356,
+      "funding": 0.15691137687126833,
+      "liquidation_fees": 0.0,
+      "net_closed": 5.038949584638894,
+      "open": null,
+      "net_including_open": 5.038949584638885,
+      "cash": 1005.038949584639,
+      "equity": 1005.0389495846389,
+      "max_drawdown": 0.00748534982993997,
+      "hold_median_h": 6.2,
+      "hold_p90_h": 27.5,
+      "hold_max_h": 84.95,
+      "fraction_at_most_24h": 0.8292682926829268,
+      "exit_reasons": {
+        "target": 23,
+        "stop": 18
+      },
+      "rejects": {
+        "min_qty_or_cap": 52
+      },
+      "by_direction": {
+        "LONG": {
+          "closed": 12,
+          "gross": 2.078555609349889,
+          "fees": 1.0891450385268702,
+          "impact": 2.1782921556092187,
+          "funding": 0.0009513797515808687,
+          "liquidation_fees": 0.0,
+          "net": -1.1879302050346183
+        },
+        "SHORT": {
+          "closed": 29,
+          "gross": 13.76666311455013,
+          "fees": 2.5652431851111674,
+          "impact": 5.1305001368851375,
+          "funding": 0.15595999711968744,
+          "liquidation_fees": 0.0,
+          "net": 6.226879789673513
+        }
+      },
+      "by_segment": {
+        "Q1": {
+          "closed": 17,
+          "gross": 5.214821258750032,
+          "fees": 1.5055779746495455,
+          "impact": 3.0111611641201455,
+          "funding": 0.03912933466511134,
+          "liquidation_fees": 0.0,
+          "net": 0.7372114546454522
+        },
+        "Q2": {
+          "closed": 8,
+          "gross": 4.216137838999974,
+          "fees": 0.7131751811962805,
+          "impact": 1.4263545785303287,
+          "funding": 0.02471876685646978,
+          "liquidation_fees": 0.0,
+          "net": 2.101326846129835
+        },
+        "Q3": {
+          "closed": 0,
+          "gross": 0,
+          "fees": 0,
+          "impact": 0,
+          "funding": 0,
+          "liquidation_fees": 0,
+          "net": 0
+        },
+        "Q4": {
+          "closed": 16,
+          "gross": 6.414259626150015,
+          "fees": 1.4356350677922118,
+          "impact": 2.8712765498438824,
+          "funding": 0.0930632753496872,
+          "liquidation_fees": 0.0,
+          "net": 2.200411283863607
+        }
+      },
+      "best_trade": 1.9454196523698717,
+      "unresolved": null,
+      "pending": null
+    },
+    "delay6_impact5": {
+      "closed": 40,
+      "long": 12,
+      "short": 28,
+      "gross": 8.734575443674926,
+      "fees": 3.566026090286977,
+      "impact": 3.5660282739304385,
+      "funding": 0.1589264745253668,
+      "liquidation_fees": 0.0,
+      "net_closed": 1.7614475539828778,
+      "open": null,
+      "net_including_open": 1.7614475539828618,
+      "cash": 1001.7614475539826,
+      "equity": 1001.7614475539829,
+      "max_drawdown": 0.008900724446057644,
+      "hold_median_h": 6.825,
+      "hold_p90_h": 31.425000000000033,
+      "hold_max_h": 84.91666666666667,
+      "fraction_at_most_24h": 0.825,
+      "exit_reasons": {
+        "target": 21,
+        "stop": 19
+      },
+      "rejects": {
+        "min_qty_or_cap": 52
+      },
+      "by_direction": {
+        "LONG": {
+          "closed": 12,
+          "gross": 1.5495616526749652,
+          "fees": 1.0880815934359245,
+          "impact": 1.0880819808262168,
+          "funding": 0.0009513797515808687,
+          "liquidation_fees": 0.0,
+          "net": -0.6256505418355953
+        },
+        "SHORT": {
+          "closed": 28,
+          "gross": 7.185013790999961,
+          "fees": 2.4779444968510522,
+          "impact": 2.4779462931042215,
+          "funding": 0.15797509477378593,
+          "liquidation_fees": 0.0,
+          "net": 2.387098095818473
+        }
+      },
+      "by_segment": {
+        "Q1": {
+          "closed": 17,
+          "gross": 1.0876907292749527,
+          "fees": 1.5059626728577054,
+          "impact": 1.5059629447801999,
+          "funding": 0.04387174293921912,
+          "liquidation_fees": 0.0,
+          "net": -1.8803631454237324
+        },
+        "Q2": {
+          "closed": 8,
+          "gross": 3.852052311549996,
+          "fees": 0.7119305656982471,
+          "impact": 0.7119315287112404,
+          "funding": 0.02471876685646978,
+          "liquidation_fees": 0.0,
+          "net": 2.4529089839969784
+        },
+        "Q3": {
+          "closed": 0,
+          "gross": 0,
+          "fees": 0,
+          "impact": 0,
+          "funding": 0,
+          "liquidation_fees": 0,
+          "net": 0
+        },
+        "Q4": {
+          "closed": 15,
+          "gross": 3.794832402849977,
+          "fees": 1.3481328517310243,
+          "impact": 1.3481338004389982,
+          "funding": 0.0903359647296779,
+          "liquidation_fees": 0.0,
+          "net": 1.1889017154096317
+        }
+      },
+      "best_trade": 1.9943240474828139,
+      "unresolved": null,
+      "pending": null
+    },
+    "delay1_impact5": {
+      "closed": 42,
+      "long": 12,
+      "short": 30,
+      "gross": 15.708673312449873,
+      "fees": 3.730701943655122,
+      "impact": 3.7307058708230327,
+      "funding": 0.17328749247485953,
+      "liquidation_fees": 0.0,
+      "net_closed": 8.420552990446577,
+      "open": null,
+      "net_including_open": 8.420552990446595,
+      "cash": 1008.4205529904468,
+      "equity": 1008.4205529904466,
+      "max_drawdown": 0.0072195599304769546,
+      "hold_median_h": 6.183333333333334,
+      "hold_p90_h": 29.149999999999995,
+      "hold_max_h": 84.95,
+      "fraction_at_most_24h": 0.8095238095238095,
+      "exit_reasons": {
+        "target": 24,
+        "stop": 18
+      },
+      "rejects": {
+        "min_qty_or_cap": 52
+      },
+      "by_direction": {
+        "LONG": {
+          "closed": 12,
+          "gross": 1.5340074796749397,
+          "fees": 1.0888734202379675,
+          "impact": 1.0888738037397125,
+          "funding": 0.0009513797515808687,
+          "liquidation_fees": 0.0,
+          "net": -0.6427883645511594
+        },
+        "SHORT": {
+          "closed": 30,
+          "gross": 14.174665832774933,
+          "fees": 2.6418285234171544,
+          "impact": 2.64183206708332,
+          "funding": 0.17233611272327864,
+          "liquidation_fees": 0.0,
+          "net": 9.063341354997737
+        }
+      },
+      "by_segment": {
+        "Q1": {
+          "closed": 17,
+          "gross": 4.462545804374983,
+          "fees": 1.5058648775811365,
+          "impact": 1.5058659932174197,
+          "funding": 0.05478012674086994,
+          "liquidation_fees": 0.0,
+          "net": 1.5055950603172974
+        },
+        "Q2": {
+          "closed": 9,
+          "gross": 5.547900669999945,
+          "fees": 0.7890679841321826,
+          "impact": 0.7890693711072673,
+          "funding": 0.020841481204245504,
+          "liquidation_fees": 0.0,
+          "net": 3.99060479596474
+        },
+        "Q3": {
+          "closed": 0,
+          "gross": 0,
+          "fees": 0,
+          "impact": 0,
+          "funding": 0,
+          "liquidation_fees": 0,
+          "net": 0
+        },
+        "Q4": {
+          "closed": 16,
+          "gross": 5.6982268380749455,
+          "fees": 1.435769081941803,
+          "impact": 1.4357705064983457,
+          "funding": 0.09766588452974409,
+          "liquidation_fees": 0.0,
+          "net": 2.9243531341645403
+        }
+      },
+      "best_trade": 1.9949544016923733,
+      "unresolved": null,
+      "pending": null
+    },
+    "delay6_impact10": {
+      "closed": 40,
+      "long": 12,
+      "short": 28,
+      "gross": 6.996587450899941,
+      "fees": 3.5674379259361744,
+      "impact": 7.134882848459325,
+      "funding": 0.1867447199287788,
+      "liquidation_fees": 0.0,
+      "net_closed": -3.518988603566779,
+      "open": null,
+      "net_including_open": -3.518988603566754,
+      "cash": 996.4810113964331,
+      "equity": 996.4810113964332,
+      "max_drawdown": 0.010705894305289718,
+      "hold_median_h": 6.266666666666667,
+      "hold_p90_h": 47.821666666666665,
+      "hold_max_h": 84.88333333333334,
+      "fraction_at_most_24h": 0.8,
+      "exit_reasons": {
+        "target": 20,
+        "stop": 20
+      },
+      "rejects": {
+        "min_qty_or_cap": 52
+      },
+      "by_direction": {
+        "LONG": {
+          "closed": 12,
+          "gross": 2.0937179553498577,
+          "fees": 1.0883530121186973,
+          "impact": 2.1767081179552186,
+          "funding": 0.0009513797515808687,
+          "liquidation_fees": 0.0,
+          "net": -1.170391794972478
+        },
+        "SHORT": {
+          "closed": 28,
+          "gross": 4.902869495550084,
+          "fees": 2.479084913817477,
+          "impact": 4.958174730504107,
+          "funding": 0.18579334017719795,
+          "liquidation_fees": 0.0,
+          "net": -2.3485968085943005
+        }
+      },
+      "by_segment": {
+        "Q1": {
+          "closed": 17,
+          "gross": 1.8408599085500614,
+          "fees": 1.5056760398558207,
+          "impact": 3.0113539205713606,
+          "funding": 0.047199549245456156,
+          "liquidation_fees": 0.0,
+          "net": -2.628970502631663
+        },
+        "Q2": {
+          "closed": 8,
+          "gross": 4.208159323099943,
+          "fees": 0.7119789917929884,
+          "impact": 1.4239621917452168,
+          "funding": 0.02471876685646978,
+          "liquidation_fees": 0.0,
+          "net": 2.0969369064182075
+        },
+        "Q3": {
+          "closed": 0,
+          "gross": 0,
+          "fees": 0,
+          "impact": 0,
+          "funding": 0,
+          "liquidation_fees": 0,
+          "net": 0
+        },
+        "Q4": {
+          "closed": 15,
+          "gross": 0.9475682192499371,
+          "fees": 1.3497828942873653,
+          "impact": 2.6995667361427476,
+          "funding": 0.11482640382685289,
+          "liquidation_fees": 0.0,
+          "net": -2.986955007353323
+        }
+      },
+      "best_trade": 1.9448050171567184,
+      "unresolved": null,
+      "pending": null
+    }
+  },
+  "symmetric_change_allocation": {
+    "delay_usdt": -7.608521812334686,
+    "impact_usdt": -4.331019781678663
+  },
+  "account_source_sha256": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+  "checks": [
+    "cash reconciliation",
+    "no unresolved or residual",
+    "allocation reconciles"
+  ]
+}

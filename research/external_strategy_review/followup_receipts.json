@@ -1,0 +1,35 @@
+[
+  {
+    "name": "vwap",
+    "commit": "5ae2853d729b6761d4be3c2ccb7602beb32665cf",
+    "files": {
+      "Info": "292673ea8c8dc848017a72fa1ef0ae6bc98f7298e5ad16a7b9d22c31642e3096",
+      "README.md": "3d3e5b76cd6cfd77f9c3fc54f06a703867a1e4913f8748363d64ead3d09ca382",
+      "RESEARCH_JOURNAL.md": "2e368b31d25d3315c8a065b14bfa702cca480e067d1acf30e48cf8b99391f018",
+      "TERMUX_SETUP.md": "a8c0dd7bb9a3c460aa72463e4caecf633334df8d55152659c4d3526abea71a4d",
+      "backtest_v12.py": "a316617aec34b9cd2989e670cbcdc8b6bd6c476cf0a5c7d1d2942dcb92e193b0",
+      "backtest_v13.py": "c1f40b5658bffd3231c9f4638bfef65c8ed55146ffbf2cc77399416d418b2bdc",
+      "backtest_v14.py": "39a6da19bdf5b6d9838b542c7732641356d77b0f61158401b78be81644b2da2c",
+      "backtest_v14_honest.py": "9a3b2e48fb7ef931188e44a55c7abb9abea125b3c01a6814760d4c6d46f7c9d2",
+      "e13_results.json": "7e53831bf0139e0434909307631aae1df264b5c02132f263f8151a730afc40c5",
+      "e14_honest_results.json": "f80bbf13f078f75dd350a03a05de8946e45d1e3185e39278d8cd6cb2dc00b630",
+      "e14_results.json": "301459991b82793dfa3a760098931cafae57ba064dbdace77421e93f46aff135",
+      "main.py": "9dd389cadb2eb8f6c58d003fca8cf53321906fc002b3e532b4d269b02a0ab470",
+      "paper_trading_bot.py": "a2bdad18c642a0148c6c249a1c7676c60a568342707343dac8a838140b2d9eac",
+      "pyproject.toml": "04fdffa439099c2e62400b6a682bcc86a55ab7d685eb362ca6740d33d653c298",
+      "strategy_chart.png": "1240c790ef0077663a3ffe6853ed3c8e9607c9db541af58b25269c3f60eb44d7",
+      "uv.lock": "ad2e7ef3e4ab1a679816c3c31649944f4c4a82a9762b39c78f8df9474f8638b0"
+    }
+  },
+  {
+    "name": "crosssection",
+    "commit": "84180420d9c2ee432a8d7da470a7d393a48b148d",
+    "files": {
+      "Crypto_Momentum_Reversal.ipynb": "2bcc01cee0d75e544c987b2febe74bb1bc10d3f83e4b88d999640f8016c2c4d0",
+      "README.md": "c59fd2c9866b9d433021faadfb54744a63dbdfc372d4dd864983aa1db6f19186",
+      "prices_4h.csv": "cf3e475a4b153c9d1102bb373ae7ca439d5ed31aed3c625d4894bb12196dce27",
+      "requirements.txt": "9ee00205df2567a7c9b25d7b60b04f31bb9df79800f5e9227c79cec1fb212f03",
+      "volumes_4h.csv": "38009c036cf6b9d1e65a5f05108a3964a9b72b8280fbf3570f9674cabd8049f4"
+    }
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "delay1_impact10": {
+    "closed_trades": 41,
+    "ledger_time_cost_and_limits": "PASS"
+  },
+  "delay6_impact5": {
+    "closed_trades": 40,
+    "ledger_time_cost_and_limits": "PASS"
+  }
+}
