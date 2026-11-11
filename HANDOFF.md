@@ -1,5 +1,26 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — two-sided futures code delivered, not activated
+
+See `TWO_SIDED_FUTURES_DELIVERY_20261111.md`. Exact checked candidate
+`9866a35d8a4f727d4d1483e9e3683bcc89edece2` was delivered as a staged,
+inactive release `/opt/adaptive-two-sided-9866a35`. Ten runtime files were
+verified against their installed base and candidate hashes; the policy CLI
+and both directions were checked without network or a financial DB. Existing
+study service and Donchian remain stopped, all four markets remain paused,
+and no existing unit/symlink was changed. AI local analysis and read-only
+display timers remain as before; paid calls are limited to the already-used
+boundary. Budget remains eight attempts/$0.018370 reserved. Before delivery,
+study backup was externally read back and restored, SHA-256
+`da9e28fd74879e5a3f0891a860f83831e3973f8fe196d959418f520a4139ff63`.
+Trend1 is economically unqualified; entries require separate authorization.
+
+Local merge `ceb2ded9b96bbf0a589696ba67a05d54c62cd28d` has the exact candidate
+tree, but direct Git push was rejected 403 because Git Credential Manager
+selected `ntagiyeva`, which has no write permission. Do not force-push or
+rewrite the local history. GitHub connector publication is a separate commit
+based on the already-published identical candidate, not the original merge.
+
 ## 2026-11-11 — completed opt-in two-sided futures execution
 
 Owner requested continued improvement after moving the Windows project to D:.
