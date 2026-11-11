@@ -1,0 +1,1256 @@
+{
+  "inputs": {
+    "BTCUSDT": [
+      {
+        "file": "minute/klines/BTCUSDT-1m-2024-12.zip",
+        "sha256": "bfce141d2a152c2b94d85b797fe18ebfa195fa0e6091a7ccc06663ae1309466f"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-01.zip",
+        "sha256": "b69ca5b2c2d1ae00d68d2790d09138cb2a44085ff19e0da5dc98b569ea7e489e"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-02.zip",
+        "sha256": "d84ca981d06ee6491e16597f8d43955f62cab399a9f4b6efc2ee1b4d3a37f0fc"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-03.zip",
+        "sha256": "4837163333c9c9978255b8870a5a6de1bc48bd22a6c72fef54665a8d4e70b4df"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-04.zip",
+        "sha256": "87bca047ca7e8b1d27913091255018e121210276726c5aa445e85da6f56e2dcc"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-05.zip",
+        "sha256": "7acab7e40a74db53a2d6c35373ebe327eefa85b98f8c92fbe58755881e3841ee"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-06.zip",
+        "sha256": "78872b32c4d0bbc2d89a0459539b90cff47de08a9a56fdf8d233943a32e78efc"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-07.zip",
+        "sha256": "cf5fe0891c80e68d2d613eb5457100b7d886eee8cc913ccdd96ef45e757a5aaf"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-08.zip",
+        "sha256": "eaf41354fc1aa96eac94ee50b3fda603cd595f95030ebf30b2ab5bea7a4462c3"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-09.zip",
+        "sha256": "c296ba45c215934e9750ca82846c7b5d14be661649d8e4423eac834cf57330dc"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-10.zip",
+        "sha256": "bb7f53350fe27b6d8e38b5856ffc43f9ecda9d568d5bf31d0db0cd011da7100f"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-11.zip",
+        "sha256": "981da0b054f99b959fe6245fb363336b46908d358f37251d59bad308f375bc54"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2025-12.zip",
+        "sha256": "2d5b2e1887dac1dfe450010877de7203a72e19df7a771067b980bbb07ad3069c"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-01.zip",
+        "sha256": "58e9c620a6acda209d25766b3cf4262f3104649f5c26f247d933e0da8bb7946f"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-02.zip",
+        "sha256": "805626ad2dc5b704d52c211996d12e9e4b1be234998f3dba4b3d34ff79be0337"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-03.zip",
+        "sha256": "c472a865f230bf1b5b17e124770a83c083144e3e11a115733288fb8f3e3b8baa"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-04.zip",
+        "sha256": "515b86570f0c6924f6dc2cf90589d3db90f3de9c6bfd9a22dde0429995dc5405"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-05.zip",
+        "sha256": "d91548e94220d5211bb32447cc4b604ee266d145f2092edc5ec613328cbbc20a"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-06.zip",
+        "sha256": "9b214199eb5063585c7ed0f59ba19323326d68ac024b85106713989399204490"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-07.zip",
+        "sha256": "f18440bb58f0c7e1ff63cbb906132002877c4914540c8aebab920da6937cff73"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-08.zip",
+        "sha256": "adfd0846ea580681aeb18a6bdf06660dcfcc1a7b6819ea2eecfc3c53240ec67a"
+      },
+      {
+        "file": "minute/klines/BTCUSDT-1m-2026-09.zip",
+        "sha256": "e1a821b5bf6b48d57da01c3e390b8a467a698155def5c18c2c63c0eb044a3247"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2024-12.zip",
+        "sha256": "e130a234850304431c747c6f832aae250586f953f015b92dbe4a51c4604d6a59"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-01.zip",
+        "sha256": "c061f32b85c72aa8e588882bfd2b884968cfdea45308b3b74f8fb3ff44d9fdc6"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-02.zip",
+        "sha256": "f541de26d9c2c0dbf259f3583bc505916c9cd993da0d62a26d556f79bfc91a94"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-03.zip",
+        "sha256": "5c5ee421ba6e062102de1860c89a52d9518633ec5e0c2a49e832744d6fae286d"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-04.zip",
+        "sha256": "67ccab1f1585d297ec6985a197b47ddb45d325ed094525dbe432d19ea10f9e0a"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-05.zip",
+        "sha256": "33f9130e9d92c6774b8438d857e838df5db26e7308fcbb2a178722a021be6d0f"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-06.zip",
+        "sha256": "ffae55c885010290cc9aa8faabfdc3b204f7a0671c59b77cb77844da11844501"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-07.zip",
+        "sha256": "33eaa2e5fe002aacdd2656af3457186965325fde98a014d2cef754eb3ce849ad"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-08.zip",
+        "sha256": "b52004debc432af8cc44cd98884cc7c94458346be8adb13950b44edf8b646f9b"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-09.zip",
+        "sha256": "25b00a0726920d6a00b05fa6fe26966969964905f05ab917539b77a9066db5f1"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-10.zip",
+        "sha256": "628766a37dca06405268f2d4269598198d5c822aa4477a6804a192212ffa1f6e"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-11.zip",
+        "sha256": "1915d3d64c34b3b1e7309740091f39f525ff68ff543e7685518c0a0970636d66"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2025-12.zip",
+        "sha256": "e1ed1dcd4ed9e7cf174a1c2e04f50f04e4fe52c787836cde8f6fadd32f3aef30"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-01.zip",
+        "sha256": "aa48fc9892158909320230708e8d04d8750b1b7b97c936bc926144ad28ec9021"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-02.zip",
+        "sha256": "2205f17c1d774577a2aeeb1015787d9f966437eaf27090d477f16ae1bdddc4d1"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-03.zip",
+        "sha256": "7731b4b15be1e59eb80422e7eee0067af124c42804c5e575e4cf5ed508d94687"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-04.zip",
+        "sha256": "a1655f959e24c73a010b949649d45fcb2854bb9e2f5fe8e998269eb6ad4585e4"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-05.zip",
+        "sha256": "c9e4475e8762b4e52b899785deca52bceb0efb9bf08bd411b3147cd5e1da5e25"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-06.zip",
+        "sha256": "5d5d8b86efbe709e034409634347a161183e7c0df3854f8d96c9778dc1c923ba"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-07.zip",
+        "sha256": "5bb16a0707eef96d648480ab45943f25b27425154b2ccb881c200cfd51e594ed"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-08.zip",
+        "sha256": "3bd0556d903ce14f833ed58c78fd8d3309bc1a3804bb401c9fa2dd9d902f2c37"
+      },
+      {
+        "file": "minute/markPriceKlines/BTCUSDT-1m-2026-09.zip",
+        "sha256": "68dfd75f32b99bd8019e914395d2a7d60d5c1a74a700fde9991bf19b0c39322e"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2024-12.zip",
+        "sha256": "069409f525ebf6370ee1c7defe475167de4b97284c5ac8e68768652968cd3dc9"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-01.zip",
+        "sha256": "df725010d55458866eb5a47e9ee708c6796c9d7e77b14c38342cea11f381815e"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-02.zip",
+        "sha256": "e918b90fb33df3a3317feea13807a892047f1ec86eeac100bdb7b3dd83285d46"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-03.zip",
+        "sha256": "a3b95cfb315641fbfddc61eb32adf2a2588afb7a3973a61f464aca007ad43e3f"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-04.zip",
+        "sha256": "01dbb7bd0135f98bd63bdde6b943cde1accc1770cabf92f68a1ec0653ced3888"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-05.zip",
+        "sha256": "e7355e2775b88009c984db1783bb8ed6b5f24ede2b52bb764151b5722d6a5e42"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-06.zip",
+        "sha256": "a1f4a40953740fa83ee9ad97776ff8325d1958654a67f1325614071a983819d4"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-07.zip",
+        "sha256": "b097dff828f6e43fece23db0d3cb98042a9d7bc19693b8cbfd051d88eb973b7b"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-08.zip",
+        "sha256": "1180129860b6e196e8d70bb9719e81573aa6b4acb423ba5ee7f82f10c836f7ab"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-09.zip",
+        "sha256": "21dc6570fc6bffad0e7b5f9e99211b82ad07c95ab4f18c3a2daa3b95ec98344c"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-10.zip",
+        "sha256": "9ecdedab6344fc4cdb154763266b8e09627a71c3cc5574cf868158b541c259c2"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-11.zip",
+        "sha256": "23735400405627d610123e3a43db3e98ae7addb93459cd670e65a7659a5f081b"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2025-12.zip",
+        "sha256": "35318b789f020b0e04c9043112480743855554e52e1d188437cbdaa67246d51d"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-01.zip",
+        "sha256": "fcdc796484f395830d418588a34a26baed8849dbef0ff2b56173247e493ff51f"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-02.zip",
+        "sha256": "80df1dd669dc1e3afc360c9da8b9a949a127fce088eedbf5bf708bd37b0a1f58"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-03.zip",
+        "sha256": "5c069d5e9597a44fd0e213395082e59ff223fb99c9eab3a2a5a2a5622ba7867c"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-04.zip",
+        "sha256": "51cdeb4de7d5ef1d4eece80b6115e391bdf7a2d0803bf9ad8371ab23340b22d3"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-05.zip",
+        "sha256": "445b65fd6b17bfcfb5e4d035db29fad34f729fa078f0449024db42621be84e6e"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-06.zip",
+        "sha256": "cff97ce688329592bccbbf5873b5c7021649e093f5f5806e332c5b4fb7fd6a00"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-07.zip",
+        "sha256": "e36fcc66f493d7d9ec348c852fc22e9f318c79cf7adae17398a3994ae0adc41e"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-08.zip",
+        "sha256": "7c108b3a02bd6dc7345ca7323e3a49664edcea0afdcf780ffb3b44762c45a964"
+      },
+      {
+        "file": "fundingRate/BTCUSDT-fundingRate-2026-09.zip",
+        "sha256": "913cd31b8f924a06717a2fac17f3df6132c24ccded209eb3e4ae7d83e1b247f2"
+      }
+    ],
+    "ETHUSDT": [
+      {
+        "file": "minute/klines/ETHUSDT-1m-2024-12.zip",
+        "sha256": "82018947075e35e5ac0a771bb97a22118008db2c6fb6a94f8c1a2c4ebb34d12b"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-01.zip",
+        "sha256": "05e33ba3568c5381a36764097ea93917a7f1a93fadd1a0018e64bedb042526f6"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-02.zip",
+        "sha256": "79c07ecaaa04a04d815f428d0617b84cc536afe95f5cb2fc62bd93c10c3adfa1"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-03.zip",
+        "sha256": "82351bb41febb62d3680c761cf7cf9e29182435d9b4843e674ded63de3b29a32"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-04.zip",
+        "sha256": "75ea6a45c8bed04294449ff7d56f047c235a36fac176736816c01d6892bd8687"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-05.zip",
+        "sha256": "a2560653e2f602444d2201e44e77cdba6e48233649d22fb7e8c703ce9fc6277a"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-06.zip",
+        "sha256": "189aa2e5daf3621f6f7f9fd58df763e0667592f3baf407270e0ad42399155c69"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-07.zip",
+        "sha256": "e3af3ee3ac3251d313ad8987169d5c02bfd8c094bf047bbce9373eaf19ee479c"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-08.zip",
+        "sha256": "8cd85f1c417c4c65cd32348f3e4e23c8b35dd4e5e59a20a187e2a74777bd6664"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-09.zip",
+        "sha256": "dc1f5e05a0b873accd0ed2a854ee14086da03b08a581198b20b5658042c6dc5f"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-10.zip",
+        "sha256": "c0b8d557384ce1cd77df8f08cb6775f350a531a1792fa9deceb05f51a3939438"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-11.zip",
+        "sha256": "2dd6ded997100a92d11394eddccc54f1070b0fcf029c5e126859b5af80f6329e"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2025-12.zip",
+        "sha256": "8fc3e01faeb240ed9f77e4ba8bbcdf42bb7b0c7004d35fe8010bd0fd9090e4a9"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-01.zip",
+        "sha256": "0dc9c455c6d0735fe7e177d98a5088ab473c7fc1fa723710e783ff5dd49df4bb"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-02.zip",
+        "sha256": "2109cab7fa27eee904a7d6d6dd982633579fc4091765dc8fa16c001f2da8a1c2"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-03.zip",
+        "sha256": "d61eeba7aed3067525c6503bfbfd4f8d55585b846b67115eb85eeb1d2f857bf1"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-04.zip",
+        "sha256": "fd01f08f331a0dcb5d89c718afb199f7cda63f43228b72ddda0bdd08bfd527c7"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-05.zip",
+        "sha256": "9710b3d1e350bef5bf31b8d1531c5801d35f963d223d0a42e73ae86ddd376e92"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-06.zip",
+        "sha256": "3b771e114b494805ac4cc677b34befb7e5f332bf5bd3a8a368cd21d65cd99cba"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-07.zip",
+        "sha256": "5c98ad0cfa152fbe08df59838ead7c8bbfa433af943bbfb4d082626ebee2d83e"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-08.zip",
+        "sha256": "038b412935c3349e95b4abe3e9cec8a7fd521d16ce73fff3c2f92d605b252b9e"
+      },
+      {
+        "file": "minute/klines/ETHUSDT-1m-2026-09.zip",
+        "sha256": "c85c7ec631fa7fe3a90c30e4ef6a76aeac0b88be895872388d87a6a8fd3d2892"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2024-12.zip",
+        "sha256": "19b9ceda7d035adf49e05736ef09b2c68ede9a30f69d1ef57d31d853788c6174"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-01.zip",
+        "sha256": "56fe6ca1c6c4eaf5c1079146de963e3c12ccf0d5a5abcd871fa854a6cbb12d17"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-02.zip",
+        "sha256": "551e42ccaea640d22624d359263545514fe7a5cb120e0adf578566298cba3258"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-03.zip",
+        "sha256": "738caf61d954fa9c646f740b65e6f086195f429b486779e53d5bee794e58e790"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-04.zip",
+        "sha256": "3990d7e0978ad40b5fea4dca3d9ba52afab47c69f08152c2087aafaa144b4df4"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-05.zip",
+        "sha256": "ce0320af7474b5963e23678fd46be0d91c0ec26063d1d4756fc37fbe80cd7e80"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-06.zip",
+        "sha256": "fa93582eadf151db1a6ad908b117e371e0eddc328f1fbadc285d22766b994754"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-07.zip",
+        "sha256": "be82906e912bfc917d3cb037f7c2ed42e8e8297c3b42f7759ef3ddb61fbee2fa"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-08.zip",
+        "sha256": "6e049b3801a12f61cc1ec71a6fab1d7be623e2d78201690e3dbdb1060262e2e1"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-09.zip",
+        "sha256": "55b708a77c9debec7b6fa67acad0645051b751fb001891a236248995f96ad4ee"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-10.zip",
+        "sha256": "bf536369ef7c20336b9b56c69915520f47313bde4eac663abebccd516fcab224"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-11.zip",
+        "sha256": "b51df6894126e10d54315691d1660e26370a473be807551394e9c043e5800a6d"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2025-12.zip",
+        "sha256": "d0bec7a0985a1dcaa31f82232a94f8f05f48b4bb73242b3d01e16d7b2d79d94f"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-01.zip",
+        "sha256": "68df831e9bf82f7609e9234007511d0afb783aaea35008507dbbac635d3b2eb6"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-02.zip",
+        "sha256": "17a6c9aa7400a8f9d7086988af3a5d678b18e7b9b44e0be112e6039c9649c92f"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-03.zip",
+        "sha256": "e94f7d38667507fb4dae63f1c9635454d07b9eaecf0c800500d139d3a1e7c256"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-04.zip",
+        "sha256": "35e38fcee8b7070336fc467d7009c31fbb2f2574f7bde4f363995020dd7b4f2b"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-05.zip",
+        "sha256": "34d55ec2c9c1726b79914b8766edb279d025e6319f53d5099c9f6a60714351cc"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-06.zip",
+        "sha256": "aa2afb08a5d8e24cf2c986228fbfeb28e97a58ccda0bda798c6855fbfb2521ed"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-07.zip",
+        "sha256": "641ce19380be3671714cf4e358d671737af834534e6e6f1f75852ffc07ce3e7d"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-08.zip",
+        "sha256": "d00934bc9bef31b683c5d689b5812d1397085eed11eff8dcb4babd80dbf0870b"
+      },
+      {
+        "file": "minute/markPriceKlines/ETHUSDT-1m-2026-09.zip",
+        "sha256": "dcca59f8b352059563ade58ae52369bc02e9934857cb3bd790813c561d2dfaff"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2024-12.zip",
+        "sha256": "11a0847e8aacb32eeb725611fda4fe6a8419c03eb0c16e14dfc3b9287e78ecc9"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-01.zip",
+        "sha256": "88c95b99d2784a7baac529fe578563d7e05038a1b8a498b2f59bf81b216fee20"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-02.zip",
+        "sha256": "9e116dd6754484a19ecc41ced40b8dfa7f62c33d41cdc3317336b1e1f043767f"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-03.zip",
+        "sha256": "62464a8bfb7ba515628acb76d3e2172d33b88805faa2e701a22537c51a17d139"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-04.zip",
+        "sha256": "7db62cb5e9f32397dacabb3d571b96397024bda3810bde0799c90f61cb773679"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-05.zip",
+        "sha256": "996aff38f046b50510301532ac5cbdca115afca971c49cb548f50e5d70e18d99"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-06.zip",
+        "sha256": "ae7ca242249ca3df06d1222a0c264fe83b18c4b2c19fe656e864f7d081d5e198"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-07.zip",
+        "sha256": "5f2d840c5669ca946529c33f6df32433c5d0cd973eb4adfd40459270c460e7f8"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-08.zip",
+        "sha256": "c3fca21c71afb4962e89f8e3d84afe5832019ed8f570ee7c7c299f2436a28b62"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-09.zip",
+        "sha256": "2fa09df245aadc73cf43f837a72c3009fcd7d10c8c4e3db48b2d1021c331841a"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-10.zip",
+        "sha256": "1ae86c5fb1f15d8792906b746cc7598ebe7e6e7194b74501db79c874e37d7e14"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-11.zip",
+        "sha256": "a3a8abb219373ec1e02e8d1a47015665d180d6130cfe1df71d2fa8fc9de59e59"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2025-12.zip",
+        "sha256": "ef9e84f53a5fa07702958c8700077c8be0a90ec8b3e25110f5611109c3c0090c"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-01.zip",
+        "sha256": "830cf7797ea6ecdc554ac2d9047a141df1a6a544f4ea58e7028227930462b139"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-02.zip",
+        "sha256": "e445f00c81a7fa8361d99b3660f24b4f58e5d952fe301d70bbc72c319bc01a77"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-03.zip",
+        "sha256": "9f5625846c503a1e94fcdecd2deb37dc8852e341add353fa48c2b9a0cc70df6a"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-04.zip",
+        "sha256": "86160f455478a8b262d96d1516f583355e6e0cec7beeb5784e69dda76f599e98"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-05.zip",
+        "sha256": "ff926ad3fc48493c26c85af16620b19c695cc1854faa1e7f0ea2ab9fdafc2084"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-06.zip",
+        "sha256": "cc6fb028a811bc423b711f6b89de067bf92a2eda61303e1ce0b219b5d3210e47"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-07.zip",
+        "sha256": "ece7f6c64d0e45fbd64929dec40bae525fe365381046e367de5ca0827bc623d3"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-08.zip",
+        "sha256": "8b843307038b3aedf725b1342003cce39f9526451ed92f407ca80bc637487839"
+      },
+      {
+        "file": "fundingRate/ETHUSDT-fundingRate-2026-09.zip",
+        "sha256": "d1916b9181cf3507ad5a6522ac6587cd84a424941f1a2132ab887f768b5dd4de"
+      }
+    ]
+  },
+  "predictability": {
+    "BTCUSDT": {
+      "2025H1": {
+        "combined": {
+          "coefficients": [
+            8.435899559659982e-06,
+            -0.006798643527413866,
+            -0.0804547225257319
+          ],
+          "n": 181,
+          "r2": 0.009715118943356194
+        },
+        "single": {
+          "coefficients": [
+            3.071525479099211e-06,
+            -0.006959722897775161
+          ],
+          "n": 181,
+          "r2": 0.001086847112979239
+        }
+      },
+      "2025H2": {
+        "combined": {
+          "coefficients": [
+            0.0005524170476490789,
+            -0.026200068467417403,
+            -0.39896320439480193
+          ],
+          "n": 184,
+          "r2": 0.2833511214242579
+        },
+        "single": {
+          "coefficients": [
+            0.00047276650173862526,
+            -0.019486462154344426
+          ],
+          "n": 184,
+          "r2": 0.00662025887780604
+        }
+      },
+      "2026H1": {
+        "combined": {
+          "coefficients": [
+            6.591335094034755e-05,
+            0.008755979966976295,
+            -0.025177531062355672
+          ],
+          "n": 181,
+          "r2": 0.004646501711159878
+        },
+        "single": {
+          "coefficients": [
+            6.321711086423809e-05,
+            0.00844429936372334
+          ],
+          "n": 181,
+          "r2": 0.003804547342192266
+        }
+      },
+      "2026Q3": {
+        "combined": {
+          "coefficients": [
+            -0.0001233080829136431,
+            0.01605264748343852,
+            0.2168694128286035
+          ],
+          "n": 92,
+          "r2": 0.14229025599411782
+        },
+        "single": {
+          "coefficients": [
+            -7.728770162452614e-05,
+            0.021788437804001554
+          ],
+          "n": 92,
+          "r2": 0.049470568525858294
+        }
+      },
+      "all": {
+        "combined": {
+          "coefficients": [
+            0.00017245717067300326,
+            0.0009724668194636132,
+            -0.19127472179769214
+          ],
+          "n": 638,
+          "r2": 0.05546401022664971
+        },
+        "single": {
+          "coefficients": [
+            0.0001457244383224988,
+            -3.563649944613994e-05
+          ],
+          "n": 638,
+          "r2": 3.843360185662448e-08
+        }
+      }
+    },
+    "ETHUSDT": {
+      "2025H1": {
+        "combined": {
+          "coefficients": [
+            -0.00011693265144082636,
+            -0.03241606046841918,
+            0.04869144839714368
+          ],
+          "n": 181,
+          "r2": 0.026091840702500257
+        },
+        "single": {
+          "coefficients": [
+            -0.00010735894306744976,
+            -0.033013148911724646
+          ],
+          "n": 181,
+          "r2": 0.023722524998501804
+        }
+      },
+      "2025H2": {
+        "combined": {
+          "coefficients": [
+            0.0011932945777716442,
+            -0.018037507748107515,
+            -0.6176514388233034
+          ],
+          "n": 184,
+          "r2": 0.3091566430548446
+        },
+        "single": {
+          "coefficients": [
+            0.0010734162059548686,
+            -0.024081779149829487
+          ],
+          "n": 184,
+          "r2": 0.005463405362019169
+        }
+      },
+      "2026H1": {
+        "combined": {
+          "coefficients": [
+            0.00021909742465894952,
+            0.009233507430181465,
+            0.1340517008393861
+          ],
+          "n": 181,
+          "r2": 0.022023282626203233
+        },
+        "single": {
+          "coefficients": [
+            0.00027947011284645265,
+            0.009785572705436747
+          ],
+          "n": 181,
+          "r2": 0.003777117930981011
+        }
+      },
+      "2026Q3": {
+        "combined": {
+          "coefficients": [
+            -0.00016570610876115858,
+            -0.010390183502099783,
+            0.18120941425332526
+          ],
+          "n": 92,
+          "r2": 0.10880524377798073
+        },
+        "single": {
+          "coefficients": [
+            -7.431933112594949e-05,
+            -0.0023928559114000368
+          ],
+          "n": 92,
+          "r2": 0.0003457589145061668
+        }
+      },
+      "all": {
+        "combined": {
+          "coefficients": [
+            0.00038549357770155835,
+            -0.014733944483133851,
+            -0.19999744950818116
+          ],
+          "n": 638,
+          "r2": 0.04273270793662054
+        },
+        "single": {
+          "coefficients": [
+            0.0003201237427990213,
+            -0.015185753654593709
+          ],
+          "n": 638,
+          "r2": 0.004404179854595958
+        }
+      }
+    }
+  },
+  "summary": {
+    "base/BTCUSDT/2025H1": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.1474684579833889,
+      "breakeven_bps_per_entry_notional": -2.3131611598763393,
+      "drawdown_closed_equity": 0.008263045863588564,
+      "fees": 5.062524067069999,
+      "friction": 2.0250095799997796,
+      "funding": 0.0,
+      "gross": -1.170699999999997,
+      "net": -8.258233647069778,
+      "rejections": {
+        "notional_cap": 40,
+        "risk_cap": 5
+      },
+      "trades": 56,
+      "unresolved": {},
+      "without_best_trade": -9.038865827439778
+    },
+    "base/BTCUSDT/2025H2": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.10315535327549519,
+      "breakeven_bps_per_entry_notional": 2.4829446149319185,
+      "drawdown_closed_equity": 0.0020631070655099393,
+      "fees": 1.7914336055099997,
+      "friction": 0.7165734599999269,
+      "funding": 0.0,
+      "gross": 0.44490000000002317,
+      "net": -2.0631070655099037,
+      "rejections": {
+        "notional_cap": 75
+      },
+      "trades": 20,
+      "unresolved": {},
+      "without_best_trade": -2.3002423617099024
+    },
+    "base/BTCUSDT/2026H1": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.0838475632401087,
+      "breakeven_bps_per_entry_notional": 2.74013211863145,
+      "drawdown_closed_equity": 0.007487430769219827,
+      "fees": 6.627666468370002,
+      "friction": 2.651066659999676,
+      "funding": 0.0,
+      "gross": 1.8163000000000045,
+      "net": -7.462433128369674,
+      "rejections": {},
+      "trades": 89,
+      "unresolved": {},
+      "without_best_trade": -8.23600396463968
+    },
+    "base/BTCUSDT/2026Q3": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.1052316711781795,
+      "breakeven_bps_per_entry_notional": -1.0337162260656683,
+      "drawdown_closed_equity": 0.004640261391609213,
+      "fees": 3.07985253184,
+      "friction": 1.2319409999999047,
+      "funding": 0.0,
+      "gross": -0.31839999999999424,
+      "net": -4.630193531839898,
+      "rejections": {
+        "risk_cap": 2
+      },
+      "trades": 44,
+      "unresolved": {},
+      "without_best_trade": -4.748042714439895
+    },
+    "base/BTCUSDT/LONG": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.10647406210999578,
+      "breakeven_bps_per_entry_notional": 0.46171944512784846,
+      "drawdown_closed_equity": 0.00990856499855954,
+      "fees": 7.31413411623,
+      "friction": 2.925653659999639,
+      "funding": 0.0,
+      "gross": 0.3377000000000337,
+      "net": -9.902087776229608,
+      "rejections": {},
+      "trades": 93,
+      "unresolved": {},
+      "without_best_trade": -10.235283753039614
+    },
+    "base/BTCUSDT/SHORT": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.10786103100482455,
+      "breakeven_bps_per_entry_notional": 0.4697455430350407,
+      "drawdown_closed_equity": 0.012624893252773425,
+      "fees": 9.24734255656,
+      "friction": 3.6989370399996484,
+      "funding": 0.0,
+      "gross": 0.43440000000000123,
+      "net": -12.511879596559648,
+      "rejections": {},
+      "trades": 116,
+      "unresolved": {},
+      "without_best_trade": -13.292511776929649
+    },
+    "base/BTCUSDT/all": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.10724386302769971,
+      "breakeven_bps_per_entry_notional": 0.46620102637771893,
+      "drawdown_closed_equity": 0.02242518809251414,
+      "fees": 16.56147667279,
+      "friction": 6.624590699999286,
+      "funding": 0.0,
+      "gross": 0.7721000000000355,
+      "net": -22.41396737278924,
+      "rejections": {
+        "notional_cap": 115,
+        "risk_cap": 7
+      },
+      "trades": 209,
+      "unresolved": {},
+      "without_best_trade": -23.19459955315924
+    },
+    "base/BTCUSDT/check": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.09092200496398177,
+      "breakeven_bps_per_entry_notional": 1.5428491352798839,
+      "drawdown_closed_equity": 0.012099103882539566,
+      "fees": 9.707519000209999,
+      "friction": 3.88300765999958,
+      "funding": 0.0,
+      "gross": 1.4979000000000104,
+      "net": -12.092626660209575,
+      "rejections": {
+        "risk_cap": 2
+      },
+      "trades": 133,
+      "unresolved": {},
+      "without_best_trade": -12.86619749647958
+    },
+    "base/ETHUSDT/2025H1": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.02106543611420322,
+      "breakeven_bps_per_entry_notional": 4.079834567844893,
+      "drawdown_closed_equity": 0.002305967140588641,
+      "fees": 2.1872213457629996,
+      "friction": 0.8748885739999488,
+      "funding": 0.0,
+      "gross": 0.8923700000000172,
+      "net": -2.1697399197629315,
+      "rejections": {
+        "risk_cap": 1
+      },
+      "trades": 103,
+      "unresolved": {},
+      "without_best_trade": -2.427979318652931
+    },
+    "base/ETHUSDT/2025H2": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.019176108840602987,
+      "breakeven_bps_per_entry_notional": 5.245619738111039,
+      "drawdown_closed_equity": 0.0018557928377339805,
+      "fees": 1.9929113304949997,
+      "friction": 0.7971645739999124,
+      "funding": 0.0,
+      "gross": 1.045050000000041,
+      "net": -1.7450259044948717,
+      "rejections": {},
+      "trades": 91,
+      "unresolved": {},
+      "without_best_trade": -1.9408407069648743
+    },
+    "base/ETHUSDT/2026H1": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.02227640423908307,
+      "breakeven_bps_per_entry_notional": 3.491122653295711,
+      "drawdown_closed_equity": 0.0021162584027125605,
+      "fees": 2.013663124713,
+      "friction": 0.8054652779998865,
+      "funding": 0.0,
+      "gross": 0.7028699999999957,
+      "net": -2.1162584027128917,
+      "rejections": {
+        "entry_trade_or_mark_gap": 1
+      },
+      "trades": 95,
+      "unresolved": {},
+      "without_best_trade": -2.481595222172892
+    },
+    "base/ETHUSDT/2026Q3": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.03546363793691797,
+      "breakeven_bps_per_entry_notional": -2.768607689478759,
+      "drawdown_closed_equity": 0.0013121546036657036,
+      "fees": 0.7824961516660002,
+      "friction": 0.31299845199996956,
+      "funding": 0.0,
+      "gross": -0.21665999999999597,
+      "net": -1.312154603665965,
+      "rejections": {},
+      "trades": 37,
+      "unresolved": {},
+      "without_best_trade": -1.3936990626259673
+    },
+    "base/ETHUSDT/LONG": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.015011626581407176,
+      "breakeven_bps_per_entry_notional": 7.006964438099569,
+      "drawdown_closed_equity": 0.0021316509745608983,
+      "fees": 3.0471792065599996,
+      "friction": 1.2188717679998717,
+      "funding": 0.0,
+      "gross": 2.134400000000053,
+      "net": -2.131650974559819,
+      "rejections": {},
+      "trades": 142,
+      "unresolved": {},
+      "without_best_trade": -2.4969877940198195
+    },
+    "base/ETHUSDT/SHORT": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.028323520956939355,
+      "breakeven_bps_per_entry_notional": 0.7360932901369565,
+      "drawdown_closed_equity": 0.0053922766120751975,
+      "fees": 3.929112746076999,
+      "friction": 1.5716451099998456,
+      "funding": 0.0,
+      "gross": 0.289230000000005,
+      "net": -5.211527856076842,
+      "rejections": {},
+      "trades": 184,
+      "unresolved": {},
+      "without_best_trade": -5.525516532352842
+    },
+    "base/ETHUSDT/all": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.022525088437535753,
+      "breakeven_bps_per_entry_notional": 3.4745542322596124,
+      "drawdown_closed_equity": 0.007478699755779297,
+      "fees": 6.976291952637002,
+      "friction": 2.7905168779997176,
+      "funding": 0.0,
+      "gross": 2.4236300000000583,
+      "net": -7.343178830636655,
+      "rejections": {
+        "entry_trade_or_mark_gap": 1,
+        "risk_cap": 1
+      },
+      "trades": 326,
+      "unresolved": {},
+      "without_best_trade": -7.708515650096656
+    },
+    "base/ETHUSDT/check": {
+      "avg_hold_min": 29.0,
+      "avg_net": -0.025972825805900438,
+      "breakeven_bps_per_entry_notional": 1.7390318855525362,
+      "drawdown_closed_equity": 0.003428413006378264,
+      "fees": 2.7961592763790004,
+      "friction": 1.1184637299998563,
+      "funding": 0.0,
+      "gross": 0.4862099999999996,
+      "net": -3.428413006378858,
+      "rejections": {
+        "entry_trade_or_mark_gap": 1
+      },
+      "trades": 132,
+      "unresolved": {},
+      "without_best_trade": -3.7937498258388582
+    },
+    "stress/BTCUSDT/2025H1": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.255698015148203,
+      "breakeven_bps_per_entry_notional": -8.285372803838696,
+      "drawdown_closed_equity": 0.01431908884829943,
+      "fees": 5.062944948300001,
+      "friction": 5.062943899999403,
+      "funding": 0.0,
+      "gross": -4.193199999999968,
+      "net": -14.319088848299367,
+      "rejections": {
+        "notional_cap": 40,
+        "risk_cap": 5
+      },
+      "trades": 56,
+      "unresolved": {},
+      "without_best_trade": -14.804367116574383
+    },
+    "stress/BTCUSDT/2025H2": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.20082558041373977,
+      "breakeven_bps_per_entry_notional": -2.41684296804176,
+      "drawdown_closed_equity": 0.004016511608274641,
+      "fees": 1.7917058582749998,
+      "friction": 1.7917057499997757,
+      "funding": 0.0,
+      "gross": -0.43310000000002036,
+      "net": -4.016511608274795,
+      "rejections": {
+        "notional_cap": 75
+      },
+      "trades": 20,
+      "unresolved": {},
+      "without_best_trade": -4.254187814249798
+    },
+    "stress/BTCUSDT/2026H1": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.13527602130561103,
+      "breakeven_bps_per_entry_notional": 1.8331873712698836,
+      "drawdown_closed_equity": 0.012039565896199292,
+      "fees": 6.627382796199999,
+      "friction": 6.627383099999336,
+      "funding": 0.0,
+      "gross": 1.215199999999954,
+      "net": -12.039565896199383,
+      "rejections": {},
+      "trades": 89,
+      "unresolved": {},
+      "without_best_trade": -12.431743228049397
+    },
+    "stress/BTCUSDT/2026Q3": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.15060964811249236,
+      "breakeven_bps_per_entry_notional": -1.5187789977863368,
+      "drawdown_closed_equity": 0.006626824516949796,
+      "fees": 3.0795123169499994,
+      "friction": 3.0795121999996766,
+      "funding": 0.0,
+      "gross": -0.4677999999999883,
+      "net": -6.6268245169496645,
+      "rejections": {
+        "risk_cap": 2
+      },
+      "trades": 44,
+      "unresolved": {},
+      "without_best_trade": -6.77201219184967
+    },
+    "stress/BTCUSDT/LONG": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.1827257106615505,
+      "breakeven_bps_per_entry_notional": -3.2346402810282826,
+      "drawdown_closed_equity": 0.016993491091523993,
+      "fees": 7.313695841525,
+      "friction": 7.313695249999227,
+      "funding": 0.0,
+      "gross": -2.366099999999969,
+      "net": -16.993491091524195,
+      "rejections": {},
+      "trades": 93,
+      "unresolved": {},
+      "without_best_trade": -17.286222202074214
+    },
+    "stress/BTCUSDT/SHORT": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.17248706705343983,
+      "breakeven_bps_per_entry_notional": -1.6359735442488217,
+      "drawdown_closed_equity": 0.020068979674099183,
+      "fees": 9.2478500782,
+      "friction": 9.247849699998971,
+      "funding": 0.0,
+      "gross": -1.512800000000054,
+      "net": -20.00849977819902,
+      "rejections": {},
+      "trades": 116,
+      "unresolved": {},
+      "without_best_trade": -20.493778046474034
+    },
+    "stress/BTCUSDT/all": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.17704301851542198,
+      "breakeven_bps_per_entry_notional": -2.3420520779060054,
+      "drawdown_closed_equity": 0.03700199086972316,
+      "fees": 16.561545919724995,
+      "friction": 16.5615449499982,
+      "funding": 0.0,
+      "gross": -3.8789000000000264,
+      "net": -37.001990869723194,
+      "rejections": {
+        "notional_cap": 115,
+        "risk_cap": 7
+      },
+      "trades": 209,
+      "unresolved": {},
+      "without_best_trade": -37.48726913799821
+    },
+    "stress/BTCUSDT/check": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.1403488000988651,
+      "breakeven_bps_per_entry_notional": 0.7698014373718899,
+      "drawdown_closed_equity": 0.01866639041314909,
+      "fees": 9.70689511315,
+      "friction": 9.706895299999012,
+      "funding": 0.0,
+      "gross": 0.7473999999999655,
+      "net": -18.66639041314906,
+      "rejections": {
+        "risk_cap": 2
+      },
+      "trades": 133,
+      "unresolved": {},
+      "without_best_trade": -19.058567744999074
+    },
+    "stress/ETHUSDT/2025H1": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.03920325471548299,
+      "breakeven_bps_per_entry_notional": 1.5416206394633347,
+      "drawdown_closed_equity": 0.004313190527120569,
+      "fees": 2.1875775756949993,
+      "friction": 2.1875776599997683,
+      "funding": 0.0,
+      "gross": 0.3372200000000176,
+      "net": -4.037935235694748,
+      "rejections": {
+        "risk_cap": 1
+      },
+      "trades": 103,
+      "unresolved": {},
+      "without_best_trade": -4.587342823514749
+    },
+    "stress/ETHUSDT/2025H2": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.03303809159384397,
+      "breakeven_bps_per_entry_notional": 4.916954138001387,
+      "drawdown_closed_equity": 0.0030130905986705874,
+      "fees": 1.9931530450400008,
+      "friction": 1.9931532899997804,
+      "funding": 0.0,
+      "gross": 0.9798399999999783,
+      "net": -3.0064663350398013,
+      "rejections": {},
+      "trades": 91,
+      "unresolved": {},
+      "without_best_trade": -3.216433818234804
+    },
+    "stress/ETHUSDT/2026H1": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.03878469772918201,
+      "breakeven_bps_per_entry_notional": 1.7029963702402608,
+      "drawdown_closed_equity": 0.003727697085505042,
+      "fees": 2.0137280992725004,
+      "friction": 2.013728184999772,
+      "funding": 0.0,
+      "gross": 0.34290999999998006,
+      "net": -3.6845462842722916,
+      "rejections": {
+        "entry_trade_or_mark_gap": 1
+      },
+      "trades": 95,
+      "unresolved": {},
+      "without_best_trade": -3.8962090674072924
+    },
+    "stress/ETHUSDT/2026Q3": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.048298293662902995,
+      "breakeven_bps_per_entry_notional": -2.8383198766693543,
+      "drawdown_closed_equity": 0.001787036865527284,
+      "fees": 0.7824634605275002,
+      "friction": 0.7824634049999123,
+      "funding": 0.0,
+      "gross": -0.2221099999999986,
+      "net": -1.787036865527411,
+      "rejections": {},
+      "trades": 37,
+      "unresolved": {},
+      "without_best_trade": -1.8741868173274148
+    },
+    "stress/ETHUSDT/LONG": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.03366064521867729,
+      "breakeven_bps_per_entry_notional": 4.318110326476644,
+      "drawdown_closed_equity": 0.00477981162105209,
+      "fees": 3.0478006460524996,
+      "friction": 3.0478009749996575,
+      "funding": 0.0,
+      "gross": 1.3157899999999845,
+      "net": -4.779811621052175,
+      "rejections": {},
+      "trades": 142,
+      "unresolved": {},
+      "without_best_trade": -5.01054783933968
+    },
+    "stress/ETHUSDT/SHORT": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.04204441901892436,
+      "breakeven_bps_per_entry_notional": 0.3106753043240951,
+      "drawdown_closed_equity": 0.007867233240171688,
+      "fees": 3.9291215344824986,
+      "friction": 3.9291215649995745,
+      "funding": 0.0,
+      "gross": 0.12206999999999389,
+      "net": -7.736173099482083,
+      "rejections": {},
+      "trades": 184,
+      "unresolved": {},
+      "without_best_trade": -8.285580687302083
+    },
+    "stress/ETHUSDT/all": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.03839259116728297,
+      "breakeven_bps_per_entry_notional": 2.061056300915095,
+      "drawdown_closed_equity": 0.012616294528605205,
+      "fees": 6.976922180535002,
+      "friction": 6.9769225399992365,
+      "funding": 0.0,
+      "gross": 1.4378599999999786,
+      "net": -12.515984720534249,
+      "rejections": {
+        "entry_trade_or_mark_gap": 1,
+        "risk_cap": 1
+      },
+      "trades": 326,
+      "unresolved": {},
+      "without_best_trade": -13.06539230835425
+    },
+    "stress/ETHUSDT/check": {
+      "avg_hold_min": 30.0,
+      "avg_net": -0.0414513874984826,
+      "breakeven_bps_per_entry_notional": 0.43202893735538017,
+      "drawdown_closed_equity": 0.005471583149799813,
+      "fees": 2.796191559800001,
+      "friction": 2.7961915899996845,
+      "funding": 0.0,
+      "gross": 0.12079999999998148,
+      "net": -5.471583149799703,
+      "rejections": {
+        "entry_trade_or_mark_gap": 1
+      },
+      "trades": 132,
+      "unresolved": {},
+      "without_best_trade": -5.683245932934704
+    }
+  }
+}
