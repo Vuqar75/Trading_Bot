@@ -26,6 +26,10 @@ class RegularTests(unittest.TestCase):
  def test_success_same_snapshot_and_idempotent(self):
   out=self.tick();self.assertEqual((out['mode'],out['baseline']),('NO_TRADE','TREND_DOWN'));self.assertEqual(len(self.calls),1);self.assertEqual(self.tick()['status'],'completed');self.assertEqual(len(self.calls),1)
   d=json.loads(self.public.read_text());self.assertIn('baseline того же среза: TREND_DOWN',d['summary']);self.assertIn('входы запрещены',d['risks'])
+ def test_one_paid_boundary_does_not_claim_future_paid_schedule(self):
+  with patch.dict('os.environ',{'PATTERN_AI_ONE_PAID_BOUNDARY':'1'}):
+   self.assertEqual(self.tick()['status'],'completed')
+  d=json.loads(self.public.read_text());self.assertIn('дальнейшие платные запросы выключены',d['shadow_details']['schedule']);self.assertIn('дальнейшие платные запросы выключены',d['summary'])
  def test_opt_in_capture_is_durable_before_reserved_http_and_builds_export(self):
   from tests import test_adaptive_shadow as fixture
   from research.adaptive_snapshot_proof import capture

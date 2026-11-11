@@ -29,7 +29,7 @@ def publish(packet,path):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--technical-output',required=True)
     p.add_argument('--paid-existing-budget',action='store_true');p.add_argument('--paid-boundary-ms',type=int);p.add_argument('--state');p.add_argument('--gpt-output');a=p.parse_args()
-    if a.paid_boundary_ms is not None and (not a.paid_existing_budget or a.paid_boundary_ms%PERIOD_MS):p.error('paid boundary must be a four-hour boundary with paid mode')
+    if a.paid_existing_budget != (a.paid_boundary_ms is not None) or (a.paid_boundary_ms is not None and a.paid_boundary_ms%PERIOD_MS):p.error('paid mode requires exactly one explicit four-hour boundary')
     bundle=json.loads(Path(a.model).read_text());cached=[]
     def fetch():
         if cached:return cached[0]
@@ -51,7 +51,7 @@ def main():
                 local={'status':'already_published','gpt_called':False}
             else:
                 snapshot,_=fetch();local={'status':'local_analysis_published','packet_id':snapshot['technical_context']['packet_id'],'gpt_called':False,'orders_enabled':False}
-        if a.paid_existing_budget and (a.paid_boundary_ms is None or paid_boundary_allowed(now,a.paid_boundary_ms)):
+        if a.paid_existing_budget and paid_boundary_allowed(now,a.paid_boundary_ms):
             if not a.state or not a.gpt_output:p.error('existing --state and --gpt-output required')
             from research.adaptive_regular import tick
             # No alternate ledger: existing owner/schema/auth/window/cap/locks.

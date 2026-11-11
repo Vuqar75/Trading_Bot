@@ -82,6 +82,7 @@ def counts(db):
  rows=db.execute('SELECT state,count(*) FROM regular_windows GROUP BY state').fetchall();return dict(rows)
 def publish(db,state,public,now,blocker=None):
  """Export only validated public status and never call any model."""
+ one_paid_boundary=os.environ.get('PATTERN_AI_ONE_PAID_BOUNDARY')=='1'
  path=Path(public); c=counts(db);total=db.execute('SELECT COALESCE(SUM(reserved_micro_usd),0) FROM api_attempts').fetchone()[0]
  usage=db.execute('SELECT usage_json FROM api_usage').fetchall();i=o=0
  for row in usage:
@@ -99,7 +100,9 @@ def publish(db,state,public,now,blocker=None):
    snap=json.loads(recent[1]);detail={'model':decision['mode'],'baseline':rec['baseline'],'reasons':decision['reasons'],'uncertainties':decision['uncertainties'],'features':snap.get('features',{}),'previous_data_utc':stamp(decision['data_ms']),'previous_answer_utc':stamp(rec['received_ms']),'previous_expiry_utc':stamp(decision['expires_ms'])}
   labels={'waiting_for_first_boundary':'ожидание первой границы','missed':'окно пропущено; задним числом запрос не отправляется','source_unavailable_or_stale':'данные отсутствуют или устарели','uncertain_http':'неопределённая попытка, вызовы приостановлены','budget_exhausted':'общий лимит исчерпан','daily_limit':'дневной лимит достигнут','local_recovery_failed':'ошибка локальной обработки, вызовы приостановлены'}
   d={'schema':1,'data_utc':stamp(now),'answer_utc':stamp(now),'expires_utc':stamp(now+PERIOD),'diagnostic_only':True,'complete':False,'metrics':'Состояние расписания; рыночное решение не обновлено.','coverage':'Предыдущее решение показано с его состоянием свежести.','summary':'ИИ работает в shadow; адаптивные торговые входы запрещены. Состояние расписания: '+labels.get(blocker,'ошибка, требуется проверка')+'; следующая граница '+next_at+'; '+previous,'risks':('Резерв micro-USD: '+str(total)+'; остаток: '+str(CAP-total)+'; регулярных успешных: '+str(c.get('completed',0))+'; неопределённых: '+str(c.get('uncertain',0))+'; ошибок обработки: '+str(c.get('processing_failed',0))+'; пропущенных: '+str(c.get('missed',0))+'; оценка usage USD: '+str(estimate)+'; счёт провайдера не подтверждён.'),'sources':[]}
-  detail.update({'budget_display':budget_display,'schedule':'Состояние: '+labels.get(blocker,'ошибка, требуется проверка')+'; следующий пересмотр '+next_at+'.'});d['shadow_details']=detail
+  schedule='Состояние: '+labels.get(blocker,'ошибка, требуется проверка')+'; следующий пересмотр '+next_at+'.'
+  if one_paid_boundary:schedule='Состояние: '+labels.get(blocker,'ошибка, требуется проверка')+'; последующие платные запросы не включены.'
+  detail.update({'budget_display':budget_display,'schedule':schedule});d['shadow_details']=detail
   from .adaptive_ai_export import write
   return write(path,d)
  candidate=path.with_name('.regular-candidate.json')
@@ -113,9 +116,11 @@ def publish(db,state,public,now,blocker=None):
   pairs=db.execute("SELECT json_extract(a.decision_json,'$.response.mode'),a.baseline FROM regular_windows w JOIN adaptive_decisions a ON a.request_id=w.request_id WHERE w.state='completed' ORDER BY w.boundary_ms").fetchall()
   same=sum(x==y for x,y in pairs);switches=sum(pairs[j][0]!=pairs[j-1][0] for j in range(1,len(pairs)));no_trade=sum(x=='NO_TRADE' for x,y in pairs)
   stats='Расписание активно; следующий пересмотр '+datetime.fromtimestamp(next_ms/1000,timezone(timedelta(hours=4))).strftime('%Y-%m-%d %H:%M Баку')+'; совпадений '+str(same)+'/'+str(len(pairs))+'; расхождений '+str(len(pairs)-same)+'; NO_TRADE '+str(no_trade)+'; переключений ИИ '+str(switches)+'. '
+  if one_paid_boundary:stats='Платный анализ разрешён на одну границу; дальнейшие платные запросы выключены. Совпадений '+str(same)+'/'+str(len(pairs))+'; расхождений '+str(len(pairs)-same)+'. '
   d['summary']=(stats+d['summary']+'; baseline: закрытие против SMA20 4H с порогом 1%; причины ИИ приведены выше.')[:800]
   d['shadow_details']['budget_display']=budget_display
   d['shadow_details']['schedule']='Следующий пересмотр '+datetime.fromtimestamp(next_ms/1000,timezone(timedelta(hours=4))).strftime('%Y-%m-%d %H:%M Баку')+'.'
+  if one_paid_boundary:d['shadow_details']['schedule']='Платный запрос разрешён на одну границу; дальнейшие платные запросы выключены. Локальный теханализ обновляется.'
   horizons={}
   for hours in (4,24):
    values=[Decimal(x[0]) for x in db.execute('SELECT return_pct FROM regular_horizons WHERE hours=?',(hours,))]
