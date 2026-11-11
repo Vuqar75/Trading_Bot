@@ -62,6 +62,19 @@ class DerivativesContext(unittest.TestCase):
 
 
 class DerivativesReadOnlyPanel(unittest.TestCase):
+    def test_top_accounts_positions_and_absolute_oi_are_distinct(self):
+        import json,tempfile
+        from pathlib import Path
+        from trading_bot.technical_ai_view import render
+        signal=900000000;now=signal+120000;c=DerivativesContext().context(signal)
+        packet={'feature_version':'technical-patterns-v1','venue':'binance-usdm','symbol':'BTCUSDT','signal_ms':signal,'expires_ms':signal+900000,'as_of_ms':now,
+                'features':{'rsi':.55,'adx':.2,'atr_pct':.004,'volume_ratio':1.2},'detected_patterns':[],
+                'ml':{'action':'NO_TRADE','trade_allowed':False},'derivatives':c}
+        with tempfile.TemporaryDirectory() as folder:
+            p=Path(folder)/'technical.json';p.write_text(json.dumps(packet));text=render(p,now/1000)
+        for label in ('Открытый интерес, BTC','L/S счетов топ-трейдеров','L/S позиций топ-трейдеров','Taker BUY/SELL'):
+            self.assertIn(label,text)
+
     def test_partial_facts_are_visible_without_fabricated_ratio(self):
         import json,tempfile
         from pathlib import Path
