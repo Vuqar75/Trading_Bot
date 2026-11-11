@@ -1,0 +1,7 @@
+{
+  "records": 638,
+  "closed_audited": 521,
+  "journal_sha256": "217a169f67da52c6eded5000d073571cc166b1d9316bf5e0cca91986202f6e35",
+  "summary_sha256": "d0cb4650f6d0c63bdb241af7160d59ab915e1d816b4055abd50041a1c3c41700",
+  "checks": "signal direction, sigma causality, time, funding event timing, size, risk and accounting passed"
+}
