@@ -1,5 +1,38 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — actual pattern-AI module, GPT integration and Telegram panel
+
+Owner explicitly requested AI technical/pattern analysis. Runtimecandidate
+**e62bef84bf26ea1383d855970c450ce3c50778bf**; see PATTERN_AI.md,
+PATTERN_AI_LOCAL_TASK.md and deploymentmanifest. Implemented causal15m
+RSI/ADX/ATR/EMA/volume +engulf/pin/inside/range patterns,trained RFclassifier
+and stress-net regressor,portable181KBJSON,no sklearn/backtest in inference.
+69,515counterfactualexamples,16purged6month/1monthfolds,50,628forecasts.
+MaxP0.57449<fixed0.60;224exceed5bpnet butNONEpassesbothgates. AIzero
+trades,not profitable alpha;qualificationFalse,no thresholdretuning.
+22,487baselineexecutedrecords audited,not AItrades. Compact7.38MBNPZ
+committed instead of33MBJSONduplicate; full source/label/hashreceipts retained.
+
+Newoptional technical_context in EXISTING adaptive_ai_executor.request keeps
+legacyresponseschema and oldrequestbehavior. Same-journal mock provesusage,
+idempotence andoldreservation/lockpreservation. Serveradapterdefaultsfree
+MLonce/15m;explicitpaidflag usesexistingregular.tick,$0.25cap,<=3640micro,
+<=6/day,originalencryptedcredential/locks. No secondbudget or directHTTPbypass.
+`/ai patterns`button reads independentlyvalidatedtechnicalsidecar;noAPI/jobs.
+Existingrootpublisher handlesbothsidecars;deploymentdrop-ins useexistingunits.
+83targetedtests PASS plusnumericalRMAparity/importisolation. Runtimepeak63MiB
+measuredhere;actualVMsystemdinstallationnotperformed. Manifest/patch prevent
+blindfullresearchbranchrollout over newerVMproductionfixes.
+
+Livecloudcaptureattempt:HTTP451onfirstUSD-MtimeGET,oneattempt,noretry/workaround.
+No gcloud,SSHagentidentities/defaultSSHkeys orVMconnector. No currentcapture,
+paidproviderresponse,VMdeployment,pausechange,originalbudgetaccess orfinancial
+trade. Historicalexamples explicitlyhistorical;neverpublishastoday.
+Nextnecessaryexecution is existinglocalagent/VM: follow exactLOCAL_TASK,
+installread-onlyanalysis and obtainenrichedGPTreply withinexistingauthorized
+budget/window. Do not repeattrain/backtests or askkeyagain. Actualprofitable
+tradingstrategy and firstliveenrichedGPTreply remain unconfirmed.
+
 ## 2026-11-11 — completed fixed-rule size and cross-asset batch; no candidate
 
 Owner requested sustained execution and no routine intermediate reports.
