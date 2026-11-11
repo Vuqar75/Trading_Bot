@@ -35,6 +35,10 @@ def analyze(bundle,capture,now_ms):
             'side':'LONG' if side==1 else 'SHORT' if side==-1 else 'WAIT','detected_patterns':patterns,
             'features':dict(zip(tech.FEATURES[:30],map(float,last))),'ml':ml,
             'limits':{'research_only':True,'orders_enabled':False,'probability_calibration':'not_established','future_profit':'not_established'}}
+    if capture.get('derivatives') is not None:
+        from research.derivatives_context import validate
+        context=validate(capture['derivatives'],symbol=capture['symbol'],signal_ms=signal_ms,as_of_ms=now_ms)
+        packet['derivatives']=context
     packet['packet_id']=hashlib.sha256(json.dumps(packet,sort_keys=True,separators=(',',':'),allow_nan=False).encode()).hexdigest()
     return packet
 

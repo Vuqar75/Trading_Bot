@@ -1,0 +1,176 @@
+{
+  "unit": "overlapping counterfactual forecast examples; not actual trades or a shared account",
+  "selection": "original predicted stress-net >=5bp, unchanged; diagnostic only, no new admission gate",
+  "all_forecasts": {
+    "examples": 50628,
+    "mean_predicted_net_bps": -30.224904750265768,
+    "mean_realized_counterfactual_net_bps": -30.550024544404643,
+    "mean_predicted_p_win": 0.2785804616402696,
+    "actual_positive_fraction": 0.2709567828079324,
+    "distinct_utc_days": 488,
+    "months": 16
+  },
+  "original_regressor_gate": {
+    "examples": 224,
+    "mean_predicted_net_bps": 16.496803545604298,
+    "mean_realized_counterfactual_net_bps": -38.43624347874874,
+    "mean_predicted_p_win": 0.4184999256239319,
+    "actual_positive_fraction": 0.35714285714285715,
+    "distinct_utc_days": 58,
+    "months": 9
+  },
+  "selected_cost_decomposition_mean_bps": {
+    "gross": -8.591959033549738,
+    "fees": 10.007263922462824,
+    "impact": 20.014519252965535,
+    "funding": 0.1774987302293587,
+    "liquidation_fee": 0.0,
+    "net": -38.436243478748736
+  },
+  "by_asset": {
+    "BTCUSDT": {
+      "examples": 23,
+      "mean_predicted_net_bps": 11.36025990838532,
+      "mean_realized_counterfactual_net_bps": -66.31153430518198,
+      "mean_predicted_p_win": 0.43686304570863516,
+      "actual_positive_fraction": 0.21739130434782608,
+      "distinct_utc_days": 13,
+      "months": 3
+    },
+    "ETHUSDT": {
+      "examples": 72,
+      "mean_predicted_net_bps": 14.7691029904329,
+      "mean_realized_counterfactual_net_bps": -60.78153448969389,
+      "mean_predicted_p_win": 0.4217513466888009,
+      "actual_positive_fraction": 0.2638888888888889,
+      "distinct_utc_days": 34,
+      "months": 9
+    },
+    "SOLUSDT": {
+      "examples": 129,
+      "mean_predicted_net_bps": 18.376919387684737,
+      "mean_realized_counterfactual_net_bps": -20.994440053973424,
+      "mean_predicted_p_win": 0.41341113431681004,
+      "actual_positive_fraction": 0.43410852713178294,
+      "distinct_utc_days": 47,
+      "months": 9
+    }
+  },
+  "by_month": {
+    "2025-07": {
+      "examples": 0
+    },
+    "2025-08": {
+      "examples": 7,
+      "mean_predicted_net_bps": 30.188828966550744,
+      "mean_realized_counterfactual_net_bps": -48.18276674450422,
+      "mean_predicted_p_win": 0.36649221952822686,
+      "actual_positive_fraction": 0.2857142857142857,
+      "distinct_utc_days": 2,
+      "months": 1
+    },
+    "2025-09": {
+      "examples": 0
+    },
+    "2025-10": {
+      "examples": 48,
+      "mean_predicted_net_bps": 21.82543153600263,
+      "mean_realized_counterfactual_net_bps": -35.29932297060286,
+      "mean_predicted_p_win": 0.37563755687010364,
+      "actual_positive_fraction": 0.3958333333333333,
+      "distinct_utc_days": 7,
+      "months": 1
+    },
+    "2025-11": {
+      "examples": 11,
+      "mean_predicted_net_bps": 12.299653418781357,
+      "mean_realized_counterfactual_net_bps": 29.494280021539005,
+      "mean_predicted_p_win": 0.4208970437040554,
+      "actual_positive_fraction": 0.8181818181818182,
+      "distinct_utc_days": 6,
+      "months": 1
+    },
+    "2025-12": {
+      "examples": 52,
+      "mean_predicted_net_bps": 14.88945145738376,
+      "mean_realized_counterfactual_net_bps": -25.94035081428377,
+      "mean_predicted_p_win": 0.4366049768568278,
+      "actual_positive_fraction": 0.36538461538461536,
+      "distinct_utc_days": 10,
+      "months": 1
+    },
+    "2026-01": {
+      "examples": 23,
+      "mean_predicted_net_bps": 17.446452919346424,
+      "mean_realized_counterfactual_net_bps": -37.90726197821949,
+      "mean_predicted_p_win": 0.4476455838904088,
+      "actual_positive_fraction": 0.30434782608695654,
+      "distinct_utc_days": 6,
+      "months": 1
+    },
+    "2026-02": {
+      "examples": 48,
+      "mean_predicted_net_bps": 13.847641901824542,
+      "mean_realized_counterfactual_net_bps": -39.93770252304077,
+      "mean_predicted_p_win": 0.436420025536175,
+      "actual_positive_fraction": 0.3541666666666667,
+      "distinct_utc_days": 18,
+      "months": 1
+    },
+    "2026-03": {
+      "examples": 20,
+      "mean_predicted_net_bps": 13.379999361693192,
+      "mean_realized_counterfactual_net_bps": -82.30365235781312,
+      "mean_predicted_p_win": 0.43959637236048177,
+      "actual_positive_fraction": 0.2,
+      "distinct_utc_days": 5,
+      "months": 1
+    },
+    "2026-04": {
+      "examples": 2,
+      "mean_predicted_net_bps": 12.025578739973843,
+      "mean_realized_counterfactual_net_bps": -101.59890608794127,
+      "mean_predicted_p_win": 0.4210195530170806,
+      "actual_positive_fraction": 0.0,
+      "distinct_utc_days": 1,
+      "months": 1
+    },
+    "2026-05": {
+      "examples": 0
+    },
+    "2026-06": {
+      "examples": 13,
+      "mean_predicted_net_bps": 13.014418552651806,
+      "mean_realized_counterfactual_net_bps": -70.42022318432866,
+      "mean_predicted_p_win": 0.3797409682722258,
+      "actual_positive_fraction": 0.23076923076923078,
+      "distinct_utc_days": 3,
+      "months": 1
+    },
+    "2026-07": {
+      "examples": 0
+    },
+    "2026-08": {
+      "examples": 0
+    },
+    "2026-09": {
+      "examples": 0
+    },
+    "2026-10": {
+      "examples": 0
+    }
+  },
+  "maximum_p_win": 0.5744907186187531,
+  "passed_original_combined_gate": 0,
+  "source_sha256": {
+    "training_examples.npz": "4a314d378a1937e3c157397952e92cc24f0accd878f04e3fdd29c944c67ac8e6",
+    "predictions.json.gz": "32adf1ddd7a270a0582650be33d6f01079853f36eed6df404b0f5a3f341f6e83",
+    "summary.json": "ba695ff52d88c9b171297b9a25fc7cf1a304021563da08dbb62c8774165e7d78"
+  },
+  "limitations": [
+    "Historical data and model family already used for development.",
+    "Examples overlap within4h and across assets; counts are not independent sample size.",
+    "No confidence intervals or proof of live execution claimed.",
+    "These results evaluate local RandomForest,not the single live GPT regime answer."
+  ]
+}

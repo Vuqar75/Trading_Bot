@@ -1,5 +1,51 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — measured AI improvement study and factual derivatives context
+
+Owner requested continued improvement. See AI_IMPROVEMENT_20261111.md and
+DERIVATIVES_CONTEXT_LOCAL_TASK.md. Calibration protocol023bcc5:40,861matched
+rolling tests,netMSE+1.09% andBrier+0.48%,0candidates;NOTpromoted. Singlefixed
+positioning-feature trial0f7ab7d/74eb91c,inputs39b88a7:1,467officialSHAverified
+metricarchives,>=99.86%coverage,alltemporalagschecked. Jan-Oct2026:31,233
+matchedforecasts,netMSE+0.073%,Brier+0.094%,0candidates;NOTpromoted. Original
+trainingrows differ by55Jan/7Feb,otherwisematch; disclosed,notalpha. No gate
+lowering,modelJSONreplacement,financialreplayornewpaidGPTcalls.
+
+Delivered OPTIONAL factual --derivatives-context for existingserver:OI1/4/24h,
+global/topaccount/toppositionratios,takerflow. SamepublicFAPIhost,5allowlisted
+GETs,boundedparallel8sectimeouts,noAPIkeys/retries/alternatehosts. Correct
+periodEND vs takerSTART normalization,15mconservativelag,partial/unavailable
+withoutzeroimputation. Sources/venue/cutoff/observationtime validated at
+producer,AIrequest andread-onlypanel. Newfacts explicitlyNOTusedbycurrentML;
+no claim of predictive-performance improvement. Existing singlepaidboundary
+and allfinancialguards preserved. --derivatives-context alone cannotpay.
+
+89targetedtestsPASS. Currentinstalledmodelhashunchanged;originalVM/budget,
+pauses,credentials andpaidwindows untouched. Cloud hasnoVMaccess;freshREST
+availabilityonVMnotclaimed. Source/delta manifest andlocaltaskready for
+existinglocalagent,copyvalidatoralso tobot/publisher. No newstand/timer or
+retrainingneeded;installonlymeasuredfactualcontext,notfailedmodelvariants.
+Historicalexamples markedhistorical. Overallprofitableentrystrategyunconfirmed.
+
+## 2026-11-11 — post-rollout local ML quality audit, no new API or training
+
+Accepted owner rollout339c522:actualGPT/baselineRANGE,solejournal8attempts/
+18370microUSDreserved,localtechnicalupdatescontinue,laterpaidboundariesoff,
+all4workingmarketspausedasreported. No repeatGPT or ownerconfirmationneeded.
+
+Read existingforecasts/targets only: see PATTERN_AI_FORECAST_QUALITY.md.
+Original predictedstressnet>=5bpcomponent selects224overlappingcounterfactuals
+across58days/9months:meanprediction+16.4968bp,actualnet−38.4362bp,reference
+gross−8.5920bpbeforefees/impact. BTC/ETH/SOLconditionalmeansallnegative.
+Overallmeanforecast−30.2249vsactual−30.5500isnot evidenceofusefulpositive-tail
+ranking. Do not merelylowerP60gate orclaimthat0entriesprovedAIprofitability.
+Do not present224counterfactuals asrealtrades/accountPnL or asindependentN.
+This gradeslocalRF,not theoneactualGPTregimeanswer. Productioncode,VM,
+paidguards,budget,key andtradingstateunchanged. No training/newbacktest/API
+market/providercall;onlyGitfetchandlocalartifactaudit. Receipts/scripts/cases
+committed. Overallprofitabletradingobjective remainsunresolved;AIintegration
+milestone iscomplete and shouldnotberepeated.
+
 ## 2026-11-11 — pattern-AI live rollout and first GPT response
 
 See `PATTERN_AI_SERVER_INSTALL_20261111.md`. The VM now runs the validated

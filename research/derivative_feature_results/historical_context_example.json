@@ -1,0 +1,99 @@
+{
+  "schema": 1,
+  "feature_version": "technical-patterns-v1",
+  "symbol": "BTCUSDT",
+  "venue": "binance-usdm",
+  "as_of_ms": 1793475001000,
+  "signal_ms": 1793475000000,
+  "expires_ms": 1793475900000,
+  "side": "SHORT",
+  "historical_example": true,
+  "detected_patterns": [
+    "engulf_short",
+    "inside_short"
+  ],
+  "features": {
+    "ret1": -0.001260900867947945,
+    "ret4": -0.0018753853421322741,
+    "ret16": 0.0012964105954449412,
+    "ret96": 0.012888217214854558,
+    "rsi": 0.4918678459564513,
+    "atr_pct": 0.0010509121552362013,
+    "adx": 0.32930140135280245,
+    "body": 0.9082483781279452,
+    "upper_wick": 0.0,
+    "lower_wick": 0.09175162187205481,
+    "close_location": 0.09175162187205481,
+    "ema9_gap": -0.0007927483958820591,
+    "ema20_gap": -0.0003990356687850749,
+    "ema50_gap": 0.0006546713899693302,
+    "ema200_gap": -0.005001603038256697,
+    "volume_ratio": 0.3595081374675225,
+    "bb_width": 0.004164255203295707,
+    "hour_trend": -0.0059349444018881314,
+    "hour_gap": 0.0009200669536004735,
+    "fourhour_gap": -0.012806817249016222,
+    "hour_sin": -0.923879532511287,
+    "hour_cos": 0.38268343236508917,
+    "engulf_long": 0.0,
+    "engulf_short": 1.0,
+    "pin_long": 0.0,
+    "pin_short": 0.0,
+    "inside_long": 0.0,
+    "inside_short": 1.0,
+    "break_long": 0.0,
+    "break_short": 0.0
+  },
+  "ml": {
+    "action": "NO_TRADE",
+    "trade_allowed": false,
+    "p_win_estimate": 0.18156689569143544,
+    "expected_stress_net_return": -0.003141340881388262,
+    "model_id": "causal-fold-2026-10"
+  },
+  "fold_receipt": {
+    "test_month": "2026-10",
+    "train_start_ms": 1775001600000,
+    "test_start_ms": 1790812800000,
+    "test_end_ms": 1793491200000,
+    "max_train_label_end_ms": 1790811360000,
+    "train_rows": 18567,
+    "test_rows": 3230,
+    "model_fitted": true
+  },
+  "derivatives": {
+    "version": "derivatives-context-v1",
+    "symbol": "BTCUSDT",
+    "venue": "binance-usdm",
+    "signal_ms": 1793475000000,
+    "cutoff_ms": 1793474100000,
+    "requested_ms": 1793475001000,
+    "observed_ms": 1793475001000,
+    "status": "partial",
+    "facts": {
+      "open_interest_units": 97529.371,
+      "top_account_long_short_ratio": 2.7513469,
+      "top_position_long_short_ratio": 1.678565,
+      "global_account_long_short_ratio": 2.59254384,
+      "oi_change_1h_pct": 0.028272297112863498,
+      "oi_change_4h_pct": 0.6131644916696821,
+      "oi_change_24h_pct": 1.7640838936289427
+    },
+    "source_times_ms": {
+      "oi": 1793474100000,
+      "top_accounts": 1793474100000,
+      "top_positions": 1793474100000,
+      "global_accounts": 1793474100000,
+      "oi_1h": 1793470500000,
+      "oi_4h": 1793459700000,
+      "oi_24h": 1793387700000
+    },
+    "missing": {
+      "taker": "archive_to_live_period_mapping_not_verified"
+    },
+    "source_period_ms": 300000,
+    "conservative_lag_ms": 900000,
+    "used_by_local_ml": false,
+    "source_kind": "historical_official_archive_nominal_create_time_not_live_capture"
+  }
+}
