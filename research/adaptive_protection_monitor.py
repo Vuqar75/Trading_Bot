@@ -4,6 +4,7 @@ from decimal import Decimal
 from pathlib import Path
 from .adaptive_route_state import RouteState
 from .adaptive_route_policy import closed_bar_signal
+from .adaptive_atomic_futures import stop_hit,channel_exit
 from trading_bot.unified_queue import UnifiedQueue
 
 def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=None,clock=lambda:int(time.time()*1000),source_mark=None):
@@ -37,12 +38,13 @@ def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=
    elif strategy=='range' and (mark>=Decimal(signal['target']) or (risk_data is not None and Decimal(str(risk_data[2]))>=Decimal(signal['target']))):reason='target'
    elif type(opened) is int and now-opened>=(86400000 if strategy=='range' else 604800000):reason='time'
   elif route['market']=='futures' and route['strategy']=='trend1':
+   if p.get('direction')!=route['direction']:raise ValueError('route_position_mismatch')
    # Continue evaluating price protection even when settlement is blocked by
    # missing funding. Expose the trigger, but do not create a falsely settled
    # close until the funding history is confirmed.
    from .adaptive_funding_tracker import covered
    if not covered(store,p,now):problem='funding_coverage_missing'
-   if mark>=Decimal(p['entry'])*Decimal('1.02') or (risk_data is not None and Decimal(str(risk_data[2]))>=Decimal(p['entry'])*Decimal('1.02')):reason='stop'
+   if stop_hit(p,mark,risk_data):reason='stop'
    elif type(opened) is int and now-opened>=604800000:reason='time'
   else:raise ValueError('market_policy_absent')
   if route['strategy']=='trend1':
@@ -55,7 +57,7 @@ def observe(queue,store,state,*,quote,quote_ms,bars=None,skip_bar=None,risk_bar=
      if not skip_bar[0]+900000<=now<=skip_bar[0]+905000:raise ValueError('signal_exit_window_missed')
      if not sig or sig[0]!='TREND':raise ValueError('channel_data_unavailable')
      channel='checked'
-     if reason is None and ((route['market']=='spot' and sig[1]<sig[4]) or (route['market']=='futures' and sig[1]>sig[5])):reason='signal'
+     if reason is None and ((route['market']=='spot' and sig[1]<sig[4]) or (route['market']=='futures' and channel_exit(p,sig))):reason='signal'
     except (ValueError,TypeError,IndexError):channel_problem='channel_data_invalid_or_stale'
  except (ValueError,KeyError,TypeError,ArithmeticError) as exc:problem=str(exc)
  summary={'checked_ms':now,'position_id':route.get('position_id'),'state':'unavailable' if problem else ('partial' if channel=='unavailable' or intrabar=='unavailable' else 'checked'),'reason':problem,'trigger':reason,'channel':channel,'channel_reason':channel_problem,'intrabar':intrabar}

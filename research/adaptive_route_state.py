@@ -20,11 +20,14 @@ class RouteState:
                         'CREATE TABLE IF NOT EXISTS route_exit_pending(entry_action TEXT PRIMARY KEY,exit_action TEXT NOT NULL,position_id TEXT NOT NULL);')
  def close(self):self.db.close()
  def status(self):return dict(self.db.execute('SELECT * FROM route_state WHERE id=1').fetchone())
- def begin_entry(self,action_id,decision,signal,*,snapshot_id,data_ms,symbol,decision_version,quote_ms,expiry_ms,eligible=False,research_sandbox=False):
+ def begin_entry(self,action_id,decision,signal,*,snapshot_id,data_ms,symbol,decision_version,quote_ms,expiry_ms,eligible=False,research_sandbox=False,route_policy=VERSION):
   if not isinstance(action_id,str) or not action_id or len(action_id)>100:raise ValueError('invalid_action')
   if not isinstance(signal,dict) or signal.get('symbol')!=symbol or signal.get('snapshot_id')!=snapshot_id:raise ValueError('signal_mismatch')
   if signal.get('source') not in ('AI','baseline'):raise ValueError('decision_source_required')
+  if 'route_policy' in signal and signal['route_policy']!=route_policy:raise ValueError('signal_policy_mismatch')
   signal=dict(signal,decision_version=decision_version)
+  if route_policy!=VERSION:signal['route_policy']=route_policy
+  elif 'route_policy' in signal:raise ValueError('signal_policy_mismatch')
   canonical=lambda x:json.dumps(x,sort_keys=True,separators=(',',':'))
   self.db.execute('BEGIN IMMEDIATE')
   try:
@@ -33,7 +36,7 @@ class RouteState:
     if previous['decision_json']!=canonical(decision) or previous['signal_json']!=canonical(signal):raise ValueError('action_identity_conflict')
     self.db.commit();return {'replayed':True,'phase':previous['phase']}
    now=self.clock()
-   result=route(decision,snapshot_id=snapshot_id,data_ms=data_ms,now_ms=now,symbol=symbol,decision_version=decision_version,eligible=eligible,research_sandbox=research_sandbox)
+   result=route(decision,snapshot_id=snapshot_id,data_ms=data_ms,now_ms=now,symbol=symbol,decision_version=decision_version,eligible=eligible,research_sandbox=research_sandbox,policy=route_policy)
    if not result['allowed']:raise ValueError(result['reason'])
    if type(quote_ms) is not int or type(expiry_ms) is not int or not 0<=now-quote_ms<=5000 or now>=expiry_ms:raise ValueError('stale_quote_or_signal')
    if self.status()['phase']!='IDLE':raise ValueError('exposure_or_pending')
@@ -124,7 +127,7 @@ class RouteState:
     item=financial.execute("SELECT value FROM futures_meta WHERE key='position'").fetchone()
     position=json.loads(item[0]) if item else None
     recorded=json.loads(order[0]) if order else None
-    if not recorded or not position or position.get('id')!=recorded.get('id') or position.get('direction')!='SHORT' or position.get('symbol','BTCUSDT')!='BTCUSDT':raise ValueError('entry_not_confirmed')
+    if not recorded or not position or position.get('id')!=recorded.get('id') or row['direction'] not in ('LONG','SHORT') or position.get('direction')!=row['direction'] or recorded.get('direction')!=row['direction'] or position.get('symbol','BTCUSDT')!='BTCUSDT':raise ValueError('entry_not_confirmed')
    else:raise ValueError('market_policy_absent')
    if row['phase']=='OPEN' and row['position_id']!=position['id']:raise ValueError('position_changed')
    self.db.execute("UPDATE route_state SET phase='OPEN',position_id=? WHERE id=1",(position['id'],))

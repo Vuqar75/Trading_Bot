@@ -1,5 +1,37 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — completed opt-in two-sided futures execution
+
+Owner requested continued improvement after moving the Windows project to D:.
+Read/fetched aa9cde2; cloud worktree remains separate from the Windows checkout.
+See TWO_SIDED_FUTURES_20261111.md and TWO_SIDED_FUTURES_LOCAL_TASK.md.
+
+Completed existing research execution path for futures LONG as well as SHORT,
+including the trusted cycle/supervisor, durable queue/policy identity, atomic
+shared exposure check, source/epoch/trade proofs, funding, direction-aware
+protection and recovery. Explicit policy isolated-futures-two-sided-v2 routes
+TREND_UP to futures LONG and TREND_DOWN to futures SHORT; RANGE stays blocked.
+Legacy policy/default action identities remain compatible. Policy is opt-in
+via --route-policy; it does not promote trend1 economically or activate trading.
+Read-only export/UI now use the actual side for protection and proposed route.
+
+Validation: 219/219 existing extended offline router-bench; 1829/1829 full Linux
+suite, no skips, Python 3.12.14. Added 13 direction/recovery/exposure checks plus
+full LONG epoch/trade cycle and UI policy check. First full run found missing
+optional xgboost and a stale five-button expectation; installed xgboost-cpu3.1.1
+in scratch only and corrected the test to the already shipped six-button menu.
+Final full run passed including those modules. IP sockets denied and credentials
+absent during both isolated suites; no live paper/VM trades or provider calls.
+
+VM installation/activation NOT performed: this cloud executor has no VM access.
+Latest installed state remains owner-reported 20204f20.../f9f77da; four markets
+paused, stopped studies and later paid boundaries untouched by this work.
+Reported sole budget (8 attempts, $0.018370 reserved) was not opened or modified.
+Weights, ML gate and GPT prompt unchanged. Profitable short-term strategy still
+unproven; do not lower the gate or treat synthetic tests as strategy returns.
+Local agent can deliver verified code using existing authorized rollout while
+preserving stopped services, pauses and budget. No new stand/service/account.
+
 ## 2026-11-11 — derivatives factual context installed
 
 See `DERIVATIVES_CONTEXT_SERVER_20261111.md`. Installed the seven factual

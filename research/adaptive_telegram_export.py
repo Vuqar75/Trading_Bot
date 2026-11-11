@@ -3,6 +3,7 @@ import argparse,datetime,fcntl,json,os,sqlite3,stat,tempfile,time,math
 from contextlib import closing
 from decimal import Decimal
 from pathlib import Path
+from .adaptive_route_policy import VERSION,FUTURES_VERSION
 
 def last_hourly_short(root,*,now_ms):
  """Read an actually evaluated hourly SHORT; never submit or amend a job."""
@@ -50,6 +51,9 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
    status['checked_ms']=now
    status['data_errors']={'study':'strategy_collection_paused'}
   result={'schema':1,'generated_ms':now,'checked_ms':status['checked_ms'],'start_ms':status['start_ms'],'version':status['code_version'],'backup':status.get('backup'), 'data_errors':status.get('data_errors',{}),'watermarks':status.get('market_watermarks',{}),'same_snapshot':status.get('same_snapshot',False),'experiments':{}}
+  policy=status.get('route_policy',VERSION)
+  if policy not in (VERSION,FUTURES_VERSION):raise ValueError('unsupported_route_policy')
+  result['route_policy']=policy
   # Narrow, non-secret study diagnostics; this does not grant access to ledgers.
   limits=status.get('usdm_research')
   if isinstance(limits,dict):
@@ -75,7 +79,8 @@ def publish(root,directory,*,clock=lambda:int(time.time()*1000)):
      if not row:raise ValueError('position_missing')
      data=json.loads(row[0]);entry=data.get('entry_price') if market=='spot' else data.get('entry')
      qty=str(position.get('quantity'));Decimal(qty);price=Decimal(str(entry));strategy=route.get('strategy');test=position.get('classification')=='execution_test'
-     factor=None if test else Decimal('1.02') if market=='futures' and strategy=='trend1' else Decimal('.98') if market=='spot' and strategy=='trend1' else Decimal('.99') if market=='spot' and strategy=='range' else None
+     if market=='futures' and position.get('direction') not in ('LONG','SHORT'):raise ValueError('invalid_position_direction')
+     factor=None if test else (Decimal('.98') if position['direction']=='LONG' else Decimal('1.02')) if market=='futures' and strategy=='trend1' else Decimal('.98') if market=='spot' and strategy=='trend1' else Decimal('.99') if market=='spot' and strategy=='range' else None
      positions.append({'market':market,'direction':position.get('direction'),'quantity':qty,'entry':str(entry),'strategy':'проверка исполнения' if test else strategy,'classification':'execution_test' if test else 'strategy','protective_level':str(price*factor) if factor is not None else None})
    clean['positions']=positions;result['experiments'][name]=clean
    # Backwards-compatible text for the already installed read-only renderer.

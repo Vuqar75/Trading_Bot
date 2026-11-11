@@ -12,6 +12,7 @@ from .adaptive_experiment_cycle import cycle
 from .adaptive_experiment_init import initialize
 from .adaptive_study_status import snapshot
 from .adaptive_snapshot_proof import PERIOD,read_trusted,verify_baseline
+from .adaptive_route_policy import VERSION,FUTURES_VERSION
 
 def capture_coverage(root):
  p=Path(root)/'usdm-capture-summary.json'
@@ -167,12 +168,13 @@ def collect_markets(root,*,signal_window,clock=lambda:int(time.time()*1000),prov
   elif prior.get('status') in ('unavailable','pending','received'):errors['funding_audit']=prior['status']
  return markets,errors
 
-def run_once(root,*,ai_path,baseline_path,publisher_uid,markets,baseline_uid=None,clock=lambda:int(time.time()*1000),execution_fetch=None):
+def run_once(root,*,ai_path,baseline_path,publisher_uid,markets,baseline_uid=None,clock=lambda:int(time.time()*1000),execution_fetch=None,route_policy=VERSION):
+ if route_policy not in (VERSION,FUTURES_VERSION):raise ValueError('unsupported_route_policy')
  root=Path(root);results={};views={}
  # Same market objects are supplied to both experiments; only the decision
  # source differs. Decision freshness and signal timing are rechecked by cycle.
  for name,source,decision in (('ai','AI',ai_path),('baseline','baseline',baseline_path)):
-  try:results[name]=cycle(root/name,source=source,decision_path=decision,publisher_uid=(baseline_uid if name=='baseline' and baseline_uid is not None else publisher_uid),markets=markets,clock=clock,execution_fetch=execution_fetch)
+  try:results[name]=cycle(root/name,source=source,decision_path=decision,publisher_uid=(baseline_uid if name=='baseline' and baseline_uid is not None else publisher_uid),markets=markets,clock=clock,execution_fetch=execution_fetch,route_policy=route_policy)
   except Exception:results[name]={'status':'internal_error_requires_review'}
   stamp=clock();journal=root/name/'observations.db'
   with closing(sqlite3.connect(journal,timeout=10)) as db:
@@ -186,7 +188,7 @@ def run_once(root,*,ai_path,baseline_path,publisher_uid,markets,baseline_uid=Non
   try:views[name]=snapshot(root/name,quotes={k:v['quote'] for k,v in markets.items() if 'quote' in v},now_ms=clock())
   except Exception:views[name]={'source':source,'status':'valuation_or_accounting_unavailable'}
  a=views.get('ai',{}).get('latest_decision');b=views.get('baseline',{}).get('latest_decision')
- return {'checked_ms':clock(),'experiments':views,'cycles':results,'same_snapshot':bool(a and b and a['snapshot_id']==b['snapshot_id'])}
+ return {'checked_ms':clock(),'route_policy':route_policy,'experiments':views,'cycles':results,'same_snapshot':bool(a and b and a['snapshot_id']==b['snapshot_id'])}
 
 def _atomic_json(root,name,value):
  if name not in ('status.json','funding-audit.json','market-watermarks.json'):raise ValueError('status_name_invalid')
@@ -294,7 +296,8 @@ def budget_health(path,*,owner_uid,now_ms):
   return {'state':'fresh' if age<=600000 else 'stale',**value,'unreserved_micro_usd':value['cap_micro_usd']-value['reserved_micro_usd']}
  except (OSError,ValueError,TypeError,KeyError):return {'state':'unavailable'}
 
-def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,backup_uid=None,budget_path=None,stop=lambda:False,clock=lambda:int(time.time()*1000),sleeper=time.sleep,provider=feed,capture_fetch=None):
+def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,backup_uid=None,budget_path=None,stop=lambda:False,clock=lambda:int(time.time()*1000),sleeper=time.sleep,provider=feed,capture_fetch=None,route_policy=VERSION):
+ if route_policy not in (VERSION,FUTURES_VERSION):raise ValueError('unsupported_route_policy')
  root=Path(root)
  if root.is_symlink() or not root.resolve().is_relative_to(Path(tempfile.gettempdir()).resolve()):raise ValueError('sandbox_root_required')
  root.mkdir(mode=0o700,parents=True,exist_ok=True);meta=root.lstat()
@@ -410,7 +413,7 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
      active_epoch_conflicts=last_window[0] if last_window else epoch_conflicts
     finally:evidence.close()
     def trade_fetch(*,not_before_ms):return provider.futures_execution_trade(not_before_ms=not_before_ms,clock=clock)
-    result=run_once(root,ai_path=ai_path,baseline_path=selected,publisher_uid=publisher_uid,baseline_uid=baseline_uid,markets=markets,clock=clock,execution_fetch=trade_fetch)
+    result=run_once(root,ai_path=ai_path,baseline_path=selected,publisher_uid=publisher_uid,baseline_uid=baseline_uid,markets=markets,clock=clock,execution_fetch=trade_fetch,route_policy=route_policy)
     watermarks=update_watermarks(root,markets,now_ms=before,start_ms=identity['start_ms'],signal_window=window)
     result.update({'schema':1,'process_pid':os.getpid(),'start_ms':identity['start_ms'],'code_version':version,'data_errors':errors,'signal_window':window,'market_watermarks':watermarks,'next_signal_boundary_ms':(clock()//900000+1)*900000,'baseline_origin':baseline_origin,'backup':backup_health(backup_path,owner_uid=backup_uid,now_ms=clock()),'global_ai_budget':budget_health(budget_path,owner_uid=publisher_uid,now_ms=clock())})
     result['usdm_research']={'epoch_id':epoch_row[0] if epoch_row else None,'epoch_start_ms':epoch_row[1] if epoch_row else None,'legacy_conflicts':legacy_conflicts,'epoch_conflicts':epoch_conflicts,'active_epoch_conflicts':active_epoch_conflicts,'max_notional_usdt':'100','max_risk_usdt':'5','leverage':1,'limits_status':'enforced_v2_research_only' if epoch_row else 'legacy_10_v2_inactive','execution_gate':'fresh_post_signal_trade_and_funding_required','economic_status':'rejected','capture':capture_coverage(root),'candle_lifecycle':lifecycle,'sizing':None}
@@ -424,9 +427,10 @@ def serve(root,*,ai_path,baseline_path,publisher_uid,version,backup_path=None,ba
 
 def main():
  parser=argparse.ArgumentParser();parser.add_argument('--root',required=True);parser.add_argument('--ai',required=True);parser.add_argument('--baseline',required=True);parser.add_argument('--publisher-uid',type=int,required=True);parser.add_argument('--version',required=True);parser.add_argument('--backup-status');parser.add_argument('--backup-user');parser.add_argument('--budget-status')
+ parser.add_argument('--route-policy',choices=(VERSION,FUTURES_VERSION),default=VERSION)
  args=parser.parse_args();stopping=[False]
  for sig in (signal.SIGTERM,signal.SIGINT):signal.signal(sig,lambda *_:stopping.__setitem__(0,True))
  uid=pwd.getpwnam(args.backup_user).pw_uid if args.backup_user else None
- serve(args.root,ai_path=args.ai,baseline_path=args.baseline,publisher_uid=args.publisher_uid,version=args.version,backup_path=args.backup_status,backup_uid=uid,budget_path=args.budget_status,stop=lambda:stopping[0])
+ serve(args.root,ai_path=args.ai,baseline_path=args.baseline,publisher_uid=args.publisher_uid,version=args.version,backup_path=args.backup_status,backup_uid=uid,budget_path=args.budget_status,stop=lambda:stopping[0],route_policy=args.route_policy)
 
 if __name__=='__main__':main()

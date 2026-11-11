@@ -17,6 +17,8 @@ def render(view='summary',path=SNAPSHOT,now=None):
   if len(raw)>100000:raise ValueError('too_large')
   d=json.loads(raw);generated=d['generated_ms'];checked=d['checked_ms'];start=d['start_ms'];experiments=d['experiments']
   if d['schema']!=1 or any(type(x) is not int for x in (generated,checked,start)) or not 0<start<=checked<=generated<=now*1000+5000 or set(experiments)!={'ai','baseline'}:raise ValueError('invalid_snapshot')
+  policy=d.get('route_policy','isolated-router-policy-v1')
+  if policy not in ('isolated-router-policy-v1','isolated-futures-two-sided-v2'):raise ValueError('invalid_route_policy')
   for name in ('ai','baseline'):
    v=experiments[name]
    if not isinstance(v.get('positions'),list) or len(v['positions'])>1 or not isinstance(v.get('route'),dict) or not isinstance(v.get('cycle'),dict):raise ValueError('invalid_account')
@@ -46,6 +48,8 @@ def render(view='summary',path=SNAPSHOT,now=None):
   pos=', '.join(str(p.get('direction'))+' '+str(p.get('market')) for p in positions) if positions else 'позиций нет'
   net=amount(v.get('net_pnl_usdt')) if v.get('ledger_balanced') is True else 'не подтверждён'
   proposed={'TREND_UP':'Spot • тренд LONG','TREND_DOWN':'isolated • тренд SHORT','RANGE':'Spot • диапазон','NO_TRADE':'нет входа'}.get(decision.get('mode'),'не выбран')
+  if policy=='isolated-futures-two-sided-v2':
+   proposed={'TREND_UP':'isolated • тренд LONG','TREND_DOWN':'isolated • тренд SHORT','RANGE':'вход запрещён: стратегия диапазона не допущена','NO_TRADE':'нет входа'}.get(decision.get('mode'),'не выбран')
   if route.get('decision_fresh') is not True:proposed='нет действующего решения'
   lines.append(f"{label}: режим {mode}; маршрут {route.get('strategy') or proposed}; {pos}; net {net} USDT; закрыто {v.get('closed_trades','неизвестно')}.")
   tests=v.get('operator_tests') or [];pending=v.get('operator_pending')

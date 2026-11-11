@@ -1,7 +1,7 @@
 """Record timely shadow decisions on the existing isolated durable queue."""
 import hashlib,json,tempfile
 from pathlib import Path
-from .adaptive_route_policy import decision_digest,candle_digest,route
+from .adaptive_route_policy import decision_digest,candle_digest,route,VERSION
 from .adaptive_shadow import validate_model
 from trading_bot.unified_queue import UnifiedQueue
 
@@ -34,15 +34,18 @@ def record(queue,decision,*,source,symbol,version,now_ms):
  if conflict:raise ValueError('decision_conflict_requires_review')
  return record
 
-def enqueue(queue,decision,*,source,symbol,version,now_ms,bars,skip_bar,funding_evidence=None):
+def enqueue(queue,decision,*,source,symbol,version,now_ms,bars,skip_bar,funding_evidence=None,route_policy=VERSION):
  """Persist a research decision and immutable candle fixture on a temp queue."""
  _sandbox(queue)
  identity=record(queue,decision,source=source,symbol=symbol,version=version,now_ms=now_ms)
- choice=route(decision,snapshot_id=decision['snapshot_id'],data_ms=decision['data_ms'],now_ms=now_ms,symbol=symbol,decision_version=version,eligible=True,research_sandbox=True)
+ choice=route(decision,snapshot_id=decision['snapshot_id'],data_ms=decision['data_ms'],now_ms=now_ms,symbol=symbol,decision_version=version,eligible=True,research_sandbox=True,policy=route_policy)
  if not choice['allowed']:return {'status':'BLOCKED','reason':choice['reason']}
- candle_hash=candle_digest(bars,skip_bar);action='research:'+hashlib.sha256((source+':'+identity['sha256']+':'+candle_hash).encode()).hexdigest()[:32]
+ candle_hash=candle_digest(bars,skip_bar)
+ policy_suffix='' if route_policy==VERSION else ':'+route_policy
+ action='research:'+hashlib.sha256((source+':'+identity['sha256']+':'+candle_hash+policy_suffix).encode()).hexdigest()[:32]
  update=int(hashlib.sha256(action.encode()).hexdigest()[:15],16);market=choice['market']
  data={'action_id':action,'decision_sha256':identity['sha256'],'candles_sha256':candle_hash,'bars':bars,'skip_bar':skip_bar}
+ if route_policy!=VERSION:data['route_policy']=route_policy
  if market=='futures':
   if not isinstance(funding_evidence,dict):raise ValueError('funding_evidence_unavailable')
   data.update({'funding_sha256':decision_digest(funding_evidence),'funding_evidence':funding_evidence})

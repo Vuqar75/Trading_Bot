@@ -1,4 +1,5 @@
 import json,os,tempfile,unittest
+from decimal import Decimal
 from pathlib import Path
 from research.adaptive_experiment_init import initialize
 from research.adaptive_experiment_cycle import cycle
@@ -49,10 +50,16 @@ class CycleTest(unittest.TestCase):
   result=self.run_cycle('ai',self.apath)
   self.assertEqual((result['status'],result['reason']),('entry_blocked','futures_trade_execution_price_unverified'))
  def test_v2_full_cycle_uses_trade_and_local_exit_when_ai_missing(self):
+  self.check_v2_full_cycle('SHORT')
+ def test_two_sided_long_v2_epoch_cycle_and_protection_without_ai(self):
+  self.check_v2_full_cycle('LONG')
+ def check_v2_full_cycle(self,direction):
   import sqlite3
   from research.adaptive_market_epoch import _schema,ingest_epoch
-  self.decision['mode']='TREND_DOWN';self.ai=bind(self.captured,self.decision,self.data_ms+1,model='gpt-6-luna',request_sha256='0'*64);self.apath.write_text(json.dumps(self.ai))
-  bar=900000;bars=[(i*bar,100.,101.,99.,100.) for i in range(196)];bars[-1]=(195*bar,100.,101.,98.,99.)
+  from research.adaptive_route_policy import VERSION,FUTURES_VERSION
+  policy=FUTURES_VERSION if direction=='LONG' else VERSION
+  self.decision['mode']='TREND_UP' if direction=='LONG' else 'TREND_DOWN';self.ai=bind(self.captured,self.decision,self.data_ms+1,model='gpt-6-luna',request_sha256='0'*64);self.apath.write_text(json.dumps(self.ai))
+  bar=900000;bars=[(i*bar,100.,101.,99.,100.) for i in range(196)];bars[-1]=(195*bar,100.,102.,98.,101. if direction=='LONG' else 99.)
   candles={'market':'futures','symbol':'BTCUSDT','source':'binance_usdm_klines','bars':bars,'skip_bar':(196*bar,100.,101.,99.,100.)}
   candles['raw_bars']=[[r[0],str(r[1]),str(r[2]),str(r[3]),str(r[4]),'10',r[0]+899999] for r in bars+[candles['skip_bar']]]
   db=sqlite3.connect(self.root/'market-evidence.db',isolation_level=None);_schema(db);db.execute("INSERT INTO market_epochs(market,start_ms,created_ms,proof,source) VALUES('futures',?,?,?,?)",(194*bar,194*bar,'{}','binance_usdm_klines_v2'));ingest_epoch(db,market='futures',candles=candles,observed_ms=self.now)
@@ -64,10 +71,24 @@ class CycleTest(unittest.TestCase):
    if r['filterType']=='MIN_NOTIONAL':r['minNotional']='50'
   self.markets['futures']={'epoch_v2':True,'candles':candles,'quote':{'symbol':'BTCUSDT','source':'binance_usdm_mark','price':'100','event_ms':self.now,'received_ms':self.now,'next_due_ms':self.now+28800000},'filters':{'market':'futures','symbol':'BTCUSDT','filters':filters,'received_ms':self.now}}
   def trade(**kw):return {'symbol':'BTCUSDT','source':'binance_usdm_trade','trade_id':1,'price':self.markets['futures']['quote']['price'],'event_ms':self.now,'received_ms':self.now}
-  result=cycle(self.root/'ai',source='AI',decision_path=self.apath,publisher_uid=os.getuid(),markets=self.markets,clock=lambda:self.now,execution_fetch=trade)
+  result=cycle(self.root/'ai',source='AI',decision_path=self.apath,publisher_uid=os.getuid(),markets=self.markets,clock=lambda:self.now,execution_fetch=trade,route_policy=policy)
   self.assertEqual(result['result']['status'],'OPEN')
-  self.now+=1000;self.markets['futures']['quote'].update(price='103',event_ms=self.now,received_ms=self.now)
-  result=cycle(self.root/'ai',source='AI',decision_path=self.private/'missing',publisher_uid=os.getuid(),markets=self.markets,clock=lambda:self.now,execution_fetch=trade)
+  self.assertEqual(result['route']['direction'],direction)
+  from research.adaptive_study_status import snapshot
+  from research.adaptive_study_supervisor import write_status
+  from research.adaptive_telegram_export import publish
+  current=snapshot(self.root/'ai',quotes={'futures':self.markets['futures']['quote']},now_ms=self.now)
+  base=snapshot(self.root/'baseline',quotes={},now_ms=self.now)
+  write_status(self.root,{'schema':1,'checked_ms':self.now,'start_ms':self.data_ms//PERIOD*PERIOD-1,'code_version':'test','route_policy':policy,'experiments':{'ai':current,'baseline':base},'cycles':{'ai':result}})
+  (self.root/'cycle.lock').touch();output=self.root/'public';output.mkdir(mode=0o700)
+  publish(self.root,output,clock=lambda:self.now)
+  data=json.loads((output/'snapshot.json').read_text())
+  level=Decimal(data['experiments']['ai']['positions'][0]['protective_level'])
+  entry=Decimal(data['experiments']['ai']['positions'][0]['entry'])
+  self.assertEqual(level,entry*(Decimal('.98') if direction=='LONG' else Decimal('1.02')))
+  self.assertEqual(data['route_policy'],policy)
+  self.now+=1000;self.markets['futures']['quote'].update(price='97' if direction=='LONG' else '103',event_ms=self.now,received_ms=self.now)
+  result=cycle(self.root/'ai',source='AI',decision_path=self.private/'missing',publisher_uid=os.getuid(),markets=self.markets,clock=lambda:self.now,execution_fetch=trade,route_policy=policy)
   self.assertEqual(result['status'],'protection_exit');self.assertEqual(result['result']['status'],'IDLE')
  def test_history_conflict_blocks_entry_but_not_fresh_price_exit(self):
   self.markets['spot']['entry_conflict']=True

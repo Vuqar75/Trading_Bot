@@ -3,6 +3,7 @@ import os,subprocess,sys,tempfile
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 MODULES=('tests.test_adaptive_router_comparison','tests.test_adaptive_atomic_spot','tests.test_adaptive_atomic_futures',
+         'tests.test_adaptive_two_sided_futures','tests.test_usdm_v2_atomic_study','tests.test_adaptive_view','tests.test_inline_telegram',
          'tests.test_adaptive_experiment_fence','tests.test_adaptive_experiment_init','tests.test_adaptive_experiment_cycle','tests.test_adaptive_experiment_recovery','tests.test_adaptive_snapshot_proof.SnapshotProofTest','tests.test_adaptive_funding_evidence','tests.test_adaptive_funding_tracker','tests.test_adaptive_market_proof','tests.test_adaptive_market_history','tests.test_adaptive_public_feed','tests.test_adaptive_decision_export','tests.test_adaptive_study_publisher','tests.test_adaptive_study_supervisor','tests.test_adaptive_study_backup','tests.test_adaptive_study_status','tests.test_adaptive_study_observations','tests.test_adaptive_regular',
          'tests.test_adaptive_exposure_guard','tests.test_adaptive_route_policy','tests.test_adaptive_route_state','tests.test_adaptive_router_transition',
          'tests.test_runtime.RuntimeTests.test_process_crash_during_fill_commit','tests.test_runtime.RuntimeTests.test_process_crash_before_and_after_commit',

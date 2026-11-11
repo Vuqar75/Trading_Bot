@@ -11,13 +11,14 @@ from trading_bot.unified_queue import UnifiedQueue
 from .adaptive_route_state import RouteState
 from .adaptive_market_proof import quote as valid_quote
 from .adaptive_snapshot_proof import read_trusted,verify,verify_baseline
-from .adaptive_route_policy import route
+from .adaptive_route_policy import route,VERSION,FUTURES_VERSION
 from .adaptive_decision_queue import record,enqueue
 from .adaptive_experiment_recovery import reconcile,recover_spot
 from .adaptive_protection_monitor import observe
-from .adaptive_spot_worker import process_entry,process_short,process_stop,process_short_stop
+from .adaptive_spot_worker import process_entry,process_futures_entry,process_stop,process_short_stop
 
-def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(time.time()*1000),execution_fetch=None):
+def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(time.time()*1000),execution_fetch=None,route_policy=VERSION):
+ if route_policy not in (VERSION,FUTURES_VERSION):raise ValueError('unsupported_route_policy')
  path=Path(path);manifest=json.loads((path/'manifest.json').read_text())
  if source not in ('AI','baseline') or manifest.get('source')!=source:raise ValueError('experiment_identity_conflict')
  start=manifest['start_ms'];q=state=spot=future=None
@@ -75,7 +76,7 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
    record(q,decision,source=source,symbol='BTCUSDT',version='regular-regime-horizon-v2',now_ms=now)
   except (OSError,ValueError,KeyError,TypeError):return {'status':'decision_unavailable','protection':protected}
   if state.status()['phase']!='IDLE':return {'status':'position_open','protection':protected,'mode':decision['mode']}
-  choice=route(decision,snapshot_id=info['snapshot_id'],data_ms=info['data_ms'],now_ms=clock(),symbol='BTCUSDT',decision_version='regular-regime-horizon-v2',eligible=True,research_sandbox=True)
+  choice=route(decision,snapshot_id=info['snapshot_id'],data_ms=info['data_ms'],now_ms=clock(),symbol='BTCUSDT',decision_version='regular-regime-horizon-v2',eligible=True,research_sandbox=True,policy=route_policy)
   if not choice['allowed']:return {'status':'blocked','reason':choice['reason'],'protection':protected}
   market=choice['market'];ctx=markets.get(market,{})
   if ctx.get('entry_conflict'):return {'status':'entry_blocked','reason':ctx.get('entry_conflict_reason','market_history_conflict'),'protection':protected}
@@ -97,14 +98,14 @@ def cycle(path,*,source,decision_path,publisher_uid,markets,clock=lambda:int(tim
     due=ctx['quote'].get('next_due_ms')
     if type(due) is not int or due<=clock():raise ValueError('funding_schedule_unavailable')
     funding={'symbol':'BTCUSDT','complete':True,'observed_ms':price['received_ms'],'next_due_ms':due,'source':'public'}
-   outcome=enqueue(q,decision,source=source,symbol='BTCUSDT',version='regular-regime-horizon-v2',now_ms=clock(),bars=bars,skip_bar=skip_bar,funding_evidence=funding)
+   outcome=enqueue(q,decision,source=source,symbol='BTCUSDT',version='regular-regime-horizon-v2',now_ms=clock(),bars=bars,skip_bar=skip_bar,funding_evidence=funding,route_policy=route_policy)
    if outcome['status']=='BLOCKED':return {'status':'blocked','reason':outcome['reason'],'protection':protected}
    if outcome['status']!='PENDING':return {'status':'already_processed','result':outcome['status'],'protection':protected}
    signal={'source':source,'symbol':'BTCUSDT','snapshot_id':info['snapshot_id'],'strategy':choice['strategy'],'direction':choice['direction']}
    args={'decision':decision,'signal':signal,'data_ms':info['data_ms'],'decision_version':'regular-regime-horizon-v2','bars':bars,'skip_bar':skip_bar,'quote':price['price'],'quote_ms':price['event_ms'],'filters':filters['filters'],'filters_ms':filters['received_ms'],'clock':clock}
    if market=='futures':args['funding_evidence']=funding
    if market=='futures' and ctx.get('epoch_v2'):args.update(execution_fetch=execution_fetch,filter_mark_proof=price)
-   result=(process_entry(q,spot,state,**args) if market=='spot' else process_short(q,future,state,**args))
+   result=(process_entry(q,spot,state,**args) if market=='spot' else process_futures_entry(q,future,state,direction=choice['direction'],route_policy=route_policy,**args))
    if market=='futures' and result.get('status')=='OPEN':
     from .adaptive_funding_tracker import register
     pos=future.get('position');register(future,position_id=pos['id'],next_due_ms=funding['next_due_ms'],observed_ms=funding['observed_ms'])

@@ -7,6 +7,16 @@ from research.adaptive_study_supervisor import bootstrap,cycle_lock,run_once,wri
 from research.adaptive_telegram_export import publish
 
 class AdaptiveViewTest(unittest.TestCase):
+ def test_two_sided_policy_explains_long_and_range_without_spot_route(self):
+  data=json.loads(self.path.read_text());data['route_policy']='isolated-futures-two-sided-v2'
+  for v in data['experiments'].values():
+   v['decision']={'mode':'TREND_UP'};v['route'].update(strategy=None,decision_fresh=True)
+  self.path.write_text(json.dumps(data))
+  text=adaptive_view.render(path=self.path,now=self.now)
+  self.assertIn('isolated • тренд LONG',text);self.assertNotIn('Spot • тренд LONG',text)
+  for v in data['experiments'].values():v['decision']['mode']='RANGE'
+  self.path.write_text(json.dumps(data))
+  self.assertIn('стратегия диапазона не допущена',adaptive_view.render(path=self.path,now=self.now))
  def setUp(self):
   self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.root=Path(self.tmp.name);self.now=1800000000
   self.study=self.root/'study';self.out=self.root/'public';self.out.mkdir(mode=0o700)
