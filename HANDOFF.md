@@ -1,5 +1,23 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — second external intraday review, no verified transfer
+
+Continued on owner instruction; see round 2 in `EXTERNAL_STRATEGY_REVIEW_20261111.md`.
+Three more source checkouts pinned: Dnayaka RSI15m, PravarP11 MTF retest,
+MG-Trading-Terminal positioning; Gulper SOL15m article also inspected.
+RSI has explicit rules but no public trade CSV/data/Python harness in its five
+tracked files; Pine defaults and delayed bracket placement must not be silently
+replaced by an immediate-stop simulator and called exact replication. It is
+unverified, not economically rejected. Retest OOS uses asset selection on a
+latest-year window overlapping the subsequent latest-half test and Spot API
+data, not demonstrated independent futures OOS. Positioning repo lacks engine
+and ledgers; unrelated later failure notes do not retract its initial BTC model.
+Gulper acknowledges whole-sweep selection and does not supply a verified forward
+ledger in inspected pages. No new backtest, local task, strategy admission,
+VM/pause/process change, paid request or budget access. Source hash inventory
+and saved 19-row CSV profile are in `intraday_receipt.json`; no raw foreign
+trading code was executed. Prior completed EMA/local tasks must not be rerun.
+
 ## 2026-11-11 — external strategy screening completed in cloud; no candidate
 
 See `EXTERNAL_STRATEGY_REVIEW_20261111.md` and the pinned public-source receipts

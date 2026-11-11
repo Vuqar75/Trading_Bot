@@ -1,0 +1,40 @@
+{
+  "rsi": {
+    "commit": "3216d14f111d705bd48b3b1746bd7cbaa2832653",
+    "tracked_files": 5,
+    "file_sha256": {
+      "README.md": "58aa8fbc5160734ba4032dbd4005aa6515a87cae98c66814f34ee22d1eff5cb5",
+      "strategies/version20_pullback_regimeTP.pine": "f1a692ebc926a52ad30a29e5ce5f3975b85fa6b9ab65ff6de856a241f0e13930",
+      "strategies/version21_hiwr.pine": "eb8bfe81ccc9b6e1ce4971e251016a0194a3133f007a3c3c7e3a8db3ee84431b"
+    },
+    "tracked_code_or_ledger_files_except_pine": []
+  },
+  "retest": {
+    "commit": "f750f2ba12a83ace5de0f2e6d056bfcdaa6fe171",
+    "tracked_files": 30,
+    "file_sha256": {
+      "README.md": "40447f721c78c5c8b934eddfacda6e9552fad6756472e859b521ad3fbc864f33",
+      "main.py": "20c4e30e9a3c3009181d3e91a3ece82000742dc39b85f8f0298397ba9ef02b6f",
+      "oos_validation.py": "2fbab7ef64b359e45b3c32d30e35b99101726ab2b14e44755ece021e3463c214",
+      "data_loader.py": "37674a17da2c011683e93350bef509242ac62c521d2d4cd69f9927c299e481f0",
+      "indicators.py": "22face703bca92ccd114d77d569afb88339fb65d03ad3985fa1a5e2c51971267",
+      "results/oos_validation/oos_results.csv": "5f298b0cde22364d2f01175da901064f9d4a7cd75ce90551912b3af05eccb232"
+    },
+    "oos_csv_profile": {
+      "rows": 19,
+      "mean_profit_factor": 2.031157894736842,
+      "positive_returns": 14,
+      "pf_at_least_1_5": 17
+    }
+  },
+  "positioning": {
+    "commit": "e6d26a6d41693ea74024cf699942f72f224e296c",
+    "tracked_files": 30,
+    "file_sha256": {
+      "strategies/positioning-based-btc.md": "ff7779a7174c835a18900865a781188fdb9e3cc7232481ff8070dc4d7855add4",
+      "strategies/honest-backtest-2026-04-14.md": "fc121e55d552bd84649560c1a5e92d9a563cde370c3c2a88964f926fa6984c67",
+      "strategies/barrel-oos-honest-2026-04-15.md": "f9e2ca0ecc6e7a8e1271ed37e011a18cca3ee514cb1feed59b2772f883759461"
+    },
+    "tracked_code_or_ledger_files_except_pine": []
+  }
+}
