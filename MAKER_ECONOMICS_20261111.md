@@ -1,5 +1,7 @@
 # Maker economics: fixed-path screening and workstation cleanup
 
+> **Correction, 2026-11-11:** The saved 1h A SHORT paths summarized below used a **96-hour time-exit trigger**, not 48 hours. The 48-hour statement in the proposed mechanics protocol below is incorrect as a description of those paths. At least five base trades and five stress trades exited at the 96-hour trigger. The 48-hour adaptation has no matching saved results or preserved trade-level journal and is not admitted. The saved 96-hour path is not admitted either: its zero-additional-cost maker/taker arithmetic is negative on the stress path. See `MAKER_VIABILITY_20261111.md` for the corrected, exact fee calculation and sensitivity. The following historical proposal is retained for context; it is not authorization to collect data or start trading.
+
 **Decision: prepare one execution-mechanics study, not trading or a new backtest.** Some previously saved paths have positive arithmetic headroom after standard maker fees, but this does not establish a limit-order fill or a profitable strategy. The selected case is BTCUSDT USD-M 1h A SHORT, with the exact saved breakout parameters. It is the shortest examined BTC interval whose saved base SHORT path has >7 bps break-even with over 100 closed trades; this is an explicit retrospective selection, not evidence of statistical significance or a claim that it is the best configuration. It still failed the earlier economic screen.
 
 ## Source, coverage and calculation

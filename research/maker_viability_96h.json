@@ -1,0 +1,441 @@
+{
+  "base": {
+    "additional_cost_sensitivity": {
+      "0": {
+        "additional_bps": 0,
+        "additional_cost": 0.0,
+        "remaining_after": 0.27043240590593376
+      },
+      "0.5": {
+        "additional_bps": 0.5,
+        "additional_cost": 0.10445194335612489,
+        "remaining_after": 0.16598046254980886
+      },
+      "1": {
+        "additional_bps": 1,
+        "additional_cost": 0.20890388671224977,
+        "remaining_after": 0.06152851919368399
+      },
+      "1.3": {
+        "additional_bps": 1.3,
+        "additional_cost": 0.2715750527259247,
+        "remaining_after": -0.0011426468199909334
+      },
+      "2": {
+        "additional_bps": 2,
+        "additional_cost": 0.41780777342449954,
+        "remaining_after": -0.14737536751856578
+      }
+    },
+    "aggregate": {
+      "before_costs": 1.7328406557730816,
+      "before_costs_bps": 8.294918218347684,
+      "denominator": 2089.038867122498,
+      "entry_maker_fee": 0.41775374483690014,
+      "entry_notional_saved_fill": 2088.7687241845006,
+      "exit_notional_saved_fill": 2089.309010060495,
+      "exit_taker_fee": 1.0446545050302476,
+      "fee_total": 1.4624082498671478,
+      "fees_bps": 7.000387943387147,
+      "funding": 0.18408727745700967,
+      "gross": 1.5487533783160718,
+      "old_impact": 2.089039254310612,
+      "remaining": 0.27043240590593376,
+      "remaining_bps": 1.2945302749605379,
+      "turnover": 4178.077734244996
+    },
+    "ambiguous_funding_bars": 3,
+    "closed": 219,
+    "drop_segment_retrospective": {
+      "2025H1": {
+        "before_costs": 1.7249923298697392,
+        "before_costs_bps": 11.358341766317949,
+        "denominator": 1518.7008503169318,
+        "entry_maker_fee": 0.3037467914296001,
+        "entry_notional_saved_fill": 1518.7339571480004,
+        "exit_notional_saved_fill": 1518.6677434858632,
+        "exit_taker_fee": 0.7593338717429317,
+        "fee_total": 1.0630806631725318,
+        "fees_bps": 6.999934601674067,
+        "funding": 0.14007742118736283,
+        "gross": 1.5849149086823764,
+        "old_impact": 1.5187012465454894,
+        "remaining": 0.6619116666972074,
+        "remaining_bps": 4.358407164643883,
+        "trades_kept": 159,
+        "trades_skipped": 60,
+        "turnover": 3037.4017006338636
+      },
+      "2025H2": {
+        "before_costs": 1.212307543329187,
+        "before_costs_bps": 8.113040908383624,
+        "denominator": 1494.2702212637028,
+        "entry_maker_fee": 0.2988146375402001,
+        "entry_notional_saved_fill": 1494.0731877010005,
+        "exit_notional_saved_fill": 1494.467254826405,
+        "exit_taker_fee": 0.7472336274132025,
+        "fee_total": 1.0460482649534026,
+        "fees_bps": 7.000395578175684,
+        "funding": 0.11210417241931396,
+        "gross": 1.100203370909873,
+        "old_impact": 1.4942704963143818,
+        "remaining": 0.16625927837578436,
+        "remaining_bps": 1.1126453302079395,
+        "trades_kept": 156,
+        "trades_skipped": 63,
+        "turnover": 2988.5404425274055
+      },
+      "2026A": {
+        "before_costs": 0.4565834825852323,
+        "before_costs_bps": 2.773835639323877,
+        "denominator": 1646.0365427294194,
+        "entry_maker_fee": 0.32907155171510016,
+        "entry_notional_saved_fill": 1645.3577585755006,
+        "exit_notional_saved_fill": 1646.715326883338,
+        "exit_taker_fee": 0.823357663441669,
+        "fee_total": 1.1524292151567692,
+        "fees_bps": 7.0012371246985685,
+        "funding": 0.16811517557663289,
+        "gross": 0.2884683070085994,
+        "old_impact": 1.646036614846318,
+        "remaining": -0.6958457325715369,
+        "remaining_bps": -4.227401485374691,
+        "trades_kept": 173,
+        "trades_skipped": 46,
+        "turnover": 3292.0730854588387
+      },
+      "2026B": {
+        "before_costs": 1.8046386115350863,
+        "before_costs_bps": 11.222116324573634,
+        "denominator": 1608.1089870574397,
+        "entry_maker_fee": 0.3216282538258001,
+        "entry_notional_saved_fill": 1608.1412691290006,
+        "exit_notional_saved_fill": 1608.0767049858787,
+        "exit_taker_fee": 0.8040383524929393,
+        "fee_total": 1.1256666063187395,
+        "fees_bps": 6.999939776336391,
+        "funding": 0.13196506318771933,
+        "gross": 1.672673548347367,
+        "old_impact": 1.6081094052256473,
+        "remaining": 0.6789720052163468,
+        "remaining_bps": 4.222176548237242,
+        "trades_kept": 169,
+        "trades_skipped": 50,
+        "turnover": 3216.2179741148793
+      }
+    },
+    "old_taker_best_trade_net": 1.4429898645338448,
+    "old_taker_net": -2.4452374656591473,
+    "old_taker_net_without_best": -3.888227330192992,
+    "random_fixed_list_expectation": {
+      "0": {
+        "expected_remaining": 0.27043240590593376,
+        "skipped": 0
+      },
+      "110": {
+        "expected_remaining": 0.13459877736870676,
+        "skipped": 110
+      },
+      "22": {
+        "expected_remaining": 0.24326568019848835,
+        "skipped": 22
+      }
+    },
+    "segments": {
+      "2025H1": {
+        "before_costs": 0.007848325903342418,
+        "before_costs_bps": 0.13760832474925117,
+        "closed": 60,
+        "denominator": 570.3380168055659,
+        "entry_maker_fee": 0.11400695340730004,
+        "entry_notional_saved_fill": 570.0347670365002,
+        "exit_notional_saved_fill": 570.6412665746316,
+        "exit_taker_fee": 0.2853206332873158,
+        "fee_total": 0.3993275866946158,
+        "fees_bps": 7.001595105499529,
+        "funding": 0.044009856269646846,
+        "gross": -0.03616153036630443,
+        "old_impact": 0.5703380077651228,
+        "remaining": -0.3914792607912734,
+        "remaining_bps": -6.8639867807502775,
+        "turnover": 1140.6760336111317
+      },
+      "2025H2": {
+        "before_costs": 0.5205331124438944,
+        "before_costs_bps": 8.751858660812374,
+        "closed": 63,
+        "denominator": 594.7686458587951,
+        "entry_maker_fee": 0.11893910729670004,
+        "entry_notional_saved_fill": 594.6955364835002,
+        "exit_notional_saved_fill": 594.8417552340901,
+        "exit_taker_fee": 0.29742087761704505,
+        "fee_total": 0.4163599849137451,
+        "fees_bps": 7.000368762084909,
+        "funding": 0.07198310503769571,
+        "gross": 0.44855000740619877,
+        "old_impact": 0.5947687579962304,
+        "remaining": 0.10417312753014935,
+        "remaining_bps": 1.7514898987274665,
+        "turnover": 1189.5372917175903
+      },
+      "2026A": {
+        "before_costs": 1.2762571731878494,
+        "before_costs_bps": 28.809265841580984,
+        "closed": 46,
+        "denominator": 443.0023243930785,
+        "entry_maker_fee": 0.08868219312180002,
+        "entry_notional_saved_fill": 443.4109656090001,
+        "exit_notional_saved_fill": 442.5936831771569,
+        "exit_taker_fee": 0.22129684158857846,
+        "fee_total": 0.30997903471037846,
+        "fees_bps": 6.9972326925159045,
+        "funding": 0.015972101880376795,
+        "gross": 1.2602850713074725,
+        "old_impact": 0.44300263946429425,
+        "remaining": 0.9662781384774709,
+        "remaining_bps": 21.81203314906508,
+        "turnover": 886.004648786157
+      },
+      "2026B": {
+        "before_costs": -0.07179795576200475,
+        "before_costs_bps": -1.492898626974315,
+        "closed": 50,
+        "denominator": 480.9298800650582,
+        "entry_maker_fee": 0.09612549101110002,
+        "entry_notional_saved_fill": 480.6274550555001,
+        "exit_notional_saved_fill": 481.23230507461636,
+        "exit_taker_fee": 0.2406161525373082,
+        "fee_total": 0.3367416435484082,
+        "fees_bps": 7.001886501684095,
+        "funding": 0.052122214269290326,
+        "gross": -0.12392017003129507,
+        "old_impact": 0.48092984908496494,
+        "remaining": -0.40853959931041295,
+        "remaining_bps": -8.49478512865841,
+        "turnover": 961.8597601301165
+      }
+    },
+    "time_exit_count": 5
+  },
+  "limits": "fixed saved path; no trade-level maker fills, true queue or post-skip routing",
+  "source_sha256": "1be8d70ac22aa62f3155854eee677fe9862ee719188a64b7d24dbc4ad8ea21b5",
+  "strategy": "1h A SHORT BTCUSDT, saved 96-hour threshold, not 48h",
+  "stress": {
+    "additional_cost_sensitivity": {
+      "0": {
+        "additional_bps": 0,
+        "additional_cost": 0.0,
+        "remaining_after": -0.8987042796843416
+      },
+      "0.5": {
+        "additional_bps": 0.5,
+        "additional_cost": 0.10927230765386871,
+        "remaining_after": -1.0079765873382103
+      },
+      "1": {
+        "additional_bps": 1,
+        "additional_cost": 0.21854461530773742,
+        "remaining_after": -1.1172488949920791
+      },
+      "1.3": {
+        "additional_bps": 1.3,
+        "additional_cost": 0.2841079999000587,
+        "remaining_after": -1.1828122795844003
+      },
+      "2": {
+        "additional_bps": 2,
+        "additional_cost": 0.43708923061547483,
+        "remaining_after": -1.3357935102998164
+      }
+    },
+    "aggregate": {
+      "before_costs": 0.6316940170529325,
+      "before_costs_bps": 2.8904579331018083,
+      "denominator": 2185.446153077374,
+      "entry_maker_fee": 0.43669857089340003,
+      "entry_notional_saved_fill": 2183.492854467,
+      "exit_notional_saved_fill": 2187.3994516877483,
+      "exit_taker_fee": 1.093699725843874,
+      "fee_total": 1.5303982967372742,
+      "fees_bps": 7.002681327024631,
+      "funding": 0.1673984673505322,
+      "gross": 0.4642955497024003,
+      "old_impact": 4.370892770450076,
+      "remaining": -0.8987042796843416,
+      "remaining_bps": -4.1122233939228225,
+      "turnover": 4370.892306154748
+    },
+    "ambiguous_funding_bars": 3,
+    "closed": 229,
+    "drop_segment_retrospective": {
+      "2025H1": {
+        "before_costs": 0.7420826932739341,
+        "before_costs_bps": 4.676018745183776,
+        "denominator": 1586.9968315209755,
+        "entry_maker_fee": 0.31714334799120003,
+        "entry_notional_saved_fill": 1585.716739956,
+        "exit_notional_saved_fill": 1588.276923085951,
+        "exit_taker_fee": 0.7941384615429755,
+        "fee_total": 1.1112818095341757,
+        "fees_bps": 7.002419837657298,
+        "funding": 0.1282715463715048,
+        "gross": 0.6138111469024292,
+        "old_impact": 3.1739942768529334,
+        "remaining": -0.3691991162602415,
+        "remaining_bps": -2.326401092473522,
+        "trades_kept": 166,
+        "trades_skipped": 63,
+        "turnover": 3173.993663041951
+      },
+      "2025H2": {
+        "before_costs": 0.9170034580027683,
+        "before_costs_bps": 5.947038801316759,
+        "denominator": 1541.949680569985,
+        "entry_maker_fee": 0.3081629853432,
+        "entry_notional_saved_fill": 1540.8149267160002,
+        "exit_notional_saved_fill": 1543.08443442397,
+        "exit_taker_fee": 0.771542217211985,
+        "fee_total": 1.079705202555185,
+        "fees_bps": 7.002207764367963,
+        "funding": 0.10261099044034527,
+        "gross": 0.814392467562423,
+        "old_impact": 3.0839001755322824,
+        "remaining": -0.16270174455241682,
+        "remaining_bps": -1.055168963051205,
+        "trades_kept": 161,
+        "trades_skipped": 68,
+        "turnover": 3083.89936113997
+      },
+      "2026A": {
+        "before_costs": -0.231261689572248,
+        "before_costs_bps": -1.334716308103688,
+        "denominator": 1732.6654972906974,
+        "entry_maker_fee": 0.3461483141910001,
+        "entry_notional_saved_fill": 1730.7415709550005,
+        "exit_notional_saved_fill": 1734.5894236263944,
+        "exit_taker_fee": 0.8672947118131972,
+        "fee_total": 1.2134430260041973,
+        "fees_bps": 7.003331155965254,
+        "funding": 0.15126036976283222,
+        "gross": -0.3825220593350802,
+        "old_impact": 3.465330612059158,
+        "remaining": -1.4447047155764454,
+        "remaining_bps": -8.338047464068943,
+        "trades_kept": 182,
+        "trades_skipped": 47,
+        "turnover": 3465.330994581395
+      },
+      "2026B": {
+        "before_costs": 0.4672575894543431,
+        "before_costs_bps": 2.7571269067970934,
+        "denominator": 1694.7264498504646,
+        "entry_maker_fee": 0.3386410651548001,
+        "entry_notional_saved_fill": 1693.2053257740004,
+        "exit_notional_saved_fill": 1696.247573926929,
+        "exit_taker_fee": 0.8481237869634645,
+        "fee_total": 1.1867648521182645,
+        "fees_bps": 7.002692689566388,
+        "funding": 0.12005249547691431,
+        "gross": 0.34720509397742877,
+        "old_impact": 3.3894532469058536,
+        "remaining": -0.7195072626639214,
+        "remaining_bps": -4.245565782769294,
+        "trades_kept": 178,
+        "trades_skipped": 51,
+        "turnover": 3389.4528997009293
+      }
+    },
+    "old_taker_best_trade_net": 1.4855536448350937,
+    "old_taker_net": -5.924644906473418,
+    "old_taker_net_without_best": -7.410198551308511,
+    "random_fixed_list_expectation": {
+      "0": {
+        "expected_remaining": -0.8987042796843416,
+        "skipped": 0
+      },
+      "114": {
+        "expected_remaining": -0.4513143762606956,
+        "skipped": 114
+      },
+      "23": {
+        "expected_remaining": -0.8084414044322025,
+        "skipped": 23
+      }
+    },
+    "segments": {
+      "2025H1": {
+        "before_costs": -0.11038867622100154,
+        "before_costs_bps": -1.8445785172570934,
+        "closed": 63,
+        "denominator": 598.4493215563987,
+        "entry_maker_fee": 0.11955522290220001,
+        "entry_notional_saved_fill": 597.7761145110001,
+        "exit_notional_saved_fill": 599.1225286017973,
+        "exit_taker_fee": 0.29956126430089863,
+        "fee_total": 0.41911648720309863,
+        "fees_bps": 7.00337475716564,
+        "funding": 0.039126920979027396,
+        "gross": -0.14951559720002894,
+        "old_impact": 1.1968984935971423,
+        "remaining": -0.5295051634241001,
+        "remaining_bps": -8.847953274422734,
+        "turnover": 1196.8986431127973
+      },
+      "2025H2": {
+        "before_costs": -0.28530944094983585,
+        "before_costs_bps": -4.433737450620752,
+        "closed": 68,
+        "denominator": 643.4964725073892,
+        "entry_maker_fee": 0.12853558555020003,
+        "entry_notional_saved_fill": 642.6779277510002,
+        "exit_notional_saved_fill": 644.3150172637781,
+        "exit_taker_fee": 0.3221575086318891,
+        "fee_total": 0.45069309418208914,
+        "fees_bps": 7.003816080389064,
+        "funding": 0.06478747691018694,
+        "gross": -0.3500969178600228,
+        "old_impact": 1.2869925949177934,
+        "remaining": -0.7360025351319249,
+        "remaining_bps": -11.437553531009815,
+        "turnover": 1286.9929450147783
+      },
+      "2026A": {
+        "before_costs": 0.8629557066251805,
+        "before_costs_bps": 19.0590232951947,
+        "closed": 47,
+        "denominator": 452.7806557866768,
+        "entry_maker_fee": 0.09055025670240001,
+        "entry_notional_saved_fill": 452.75128351200004,
+        "exit_notional_saved_fill": 452.81002806135353,
+        "exit_taker_fee": 0.22640501403067678,
+        "fee_total": 0.3169552707330768,
+        "fees_bps": 7.00019461260746,
+        "funding": 0.01613809758769999,
+        "gross": 0.8468176090374805,
+        "old_impact": 0.9055621583909177,
+        "remaining": 0.5460004358921037,
+        "remaining_bps": 12.058828682587237,
+        "turnover": 905.5613115733536
+      },
+      "2026B": {
+        "before_costs": 0.1644364275985894,
+        "before_costs_bps": 3.3509236844837624,
+        "closed": 51,
+        "denominator": 490.7197032269095,
+        "entry_maker_fee": 0.09805750573859999,
+        "entry_notional_saved_fill": 490.2875286929999,
+        "exit_notional_saved_fill": 491.15187776081905,
+        "exit_taker_fee": 0.24557593888040952,
+        "fee_total": 0.3436334446190095,
+        "fees_bps": 7.002642085885697,
+        "funding": 0.0473459718736179,
+        "gross": 0.1170904557249715,
+        "old_impact": 0.9814395235442223,
+        "remaining": -0.17919701702042012,
+        "remaining_bps": -3.6517184014019337,
+        "turnover": 981.439406453819
+      }
+    },
+    "time_exit_count": 5
+  }
+}
