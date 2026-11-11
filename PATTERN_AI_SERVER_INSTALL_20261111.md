@@ -61,3 +61,43 @@ this was checked using an isolated mocked journal and a targeted test. The
 2026-11-11 15:30 UTC candle produced and published a fresh local snapshot at
 15:31:25 UTC with no GPT call. The actual Telegram callback path passed an
 in-memory authorization/replay/no-financial-job check under the bot user.
+On the VM a separate free-only capture and analysis measured peak RSS 83,644
+KiB, below the configured 128 MiB service limit. A no-network transient probe
+confirmed the existing encrypted credential is made available to `adaptiveai`
+without displaying its value.
+
+## First actual enriched GPT decision
+
+At the authorized 16:00 UTC boundary, actual request
+`regular:1794412800000` used the saved snapshot
+`c04c8553195374d619d6d5594bb34b1ef8849053b9fb870b1ae9a00ca9058d6b`
+and technical packet
+`5d9c91c1219eba346fd329cfc9a560371eb3ca699643ea5d6fd680614ed2e290`.
+Data time was 16:02:26.071 UTC, response time 16:02:43.409 UTC and expiry
+20:00 UTC. GPT chose RANGE, and the baseline for that same snapshot chose
+RANGE. GPT cited weak 4H direction and ADX, mixed momentum, absent detected
+patterns and the absence of an executable quote; it did not authorize a trade.
+The stored 16:00 UTC local technical display showed RSI 57.29, ADX 17.67,
+ATR 0.3749%, no confirmed pattern and no trade. The model is research-only;
+historical qualification is false.
+
+The single request has exactly one send claim, one durable response and a
+completed decision, including usage 1,295 input and 894 output tokens. Its
+reserve is 1,902 micro-USD. At the existing executor's rate assumptions the
+estimated incremental cost is $0.0005765; this is neither an additional
+reservation nor a confirmed provider invoice. The journal contains eight
+attempts and $0.018370 reserved; remaining limit $0.231630. Two previous actual
+charges remain unknown. Repeated 16:03 and 16:04 service ticks reported the
+existing completed attempt and did not generate a second claim.
+
+The root publisher published both fresh technical and GPT reports. `/ai`,
+`/ai patterns` and `/ai costs` were rendered under `tradingbot`, including
+the correct one-boundary paid schedule; this verifies formation, not owner
+receipt. A post-attempt external backup was uploaded, downloaded, decrypted
+and restored into an isolated temporary database by the existing service at
+16:04:05 UTC. Its ciphertext SHA-256 is
+`a839ddd4fde6998178f6a493e8e7089dc9dc1b239d3a2b263e7010853615c75d`;
+it verified eight attempts and 18,370 micro-USD reserved. It remains host-bound.
+Post-check: all four working markets paused, no pending queue jobs, one paper
+main/Telegram process. The local-analysis timer remains active, but its paid
+gate cannot authorize another boundary.

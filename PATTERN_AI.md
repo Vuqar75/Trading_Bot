@@ -25,6 +25,8 @@ also calls the EXISTING `adaptive_regular.tick`: original server journal,
 ownership,encrypted credential,one-writer lock,window rules,uncertainty
 blocks,$0.25totalcap,6/day and<=3640microUSD/attempt are retained. No second
 journal,lock reset or direct bypassing HTTP call exists in this adapter.
+The deployed one-shot version also requires `--paid-boundary-ms` to specify
+one aligned 4H boundary; subsequent timer ticks only refresh local analysis.
 The paid question remains the existing4h regime question;15m pattern
 information is supporting evidence,not an authorization to trade.
 
