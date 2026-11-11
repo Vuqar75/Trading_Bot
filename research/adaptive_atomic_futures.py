@@ -1,28 +1,46 @@
-"""Isolated research SHORT entry through the existing futures paper ledger."""
+"""Isolated research entries through the existing futures paper ledger."""
 import copy,hashlib,json,tempfile,time
 from contextlib import contextmanager
 from decimal import Decimal
 from pathlib import Path
 from .adaptive_exposure_guard import require_clear
-from .adaptive_route_policy import route,closed_bar_signal,decision_digest,candle_digest
+from .adaptive_route_policy import route,closed_bar_signal,decision_digest,candle_digest,VERSION,FUTURES_VERSION
 from trading_bot.futures_store import FuturesStore
 from trading_bot.paper_pair_catalog import usd_m_perpetual_candidate
 
-def enter_short(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms,decision_version,
-                bars,skip_bar,quote,quote_ms,filters,filters_ms,funding_evidence,decision_source,clock=lambda:int(time.time()*1000),fault=lambda stage:None,execution_proof=None,signal_fixed_ms=None,filter_mark_proof=None):
+def enter_short(store,queue_path,**kwargs):
+ return _enter(store,queue_path,direction='SHORT',**kwargs)
+
+def enter_long(store,queue_path,**kwargs):
+ return _enter(store,queue_path,direction='LONG',route_policy=FUTURES_VERSION,**kwargs)
+
+def stop_hit(position,mark,risk_bar=None):
+ direction=position.get('direction')
+ if direction not in ('LONG','SHORT'):raise ValueError('invalid_position_direction')
+ threshold=Decimal(position['entry'])*(Decimal('.98') if direction=='LONG' else Decimal('1.02'))
+ extreme=Decimal(str(risk_bar[3 if direction=='LONG' else 2])) if risk_bar is not None else mark
+ return min(mark,extreme)<=threshold if direction=='LONG' else max(mark,extreme)>=threshold
+
+def channel_exit(position,signal):
+ direction=position.get('direction')
+ if direction not in ('LONG','SHORT'):raise ValueError('invalid_position_direction')
+ return bool(signal and signal[0]=='TREND' and (signal[1]<signal[4] if direction=='LONG' else signal[1]>signal[5]))
+
+def _enter(store,queue_path,*,direction,job_id,action_id,decision,snapshot_id,data_ms,decision_version,
+                bars,skip_bar,quote,quote_ms,filters,filters_ms,funding_evidence,decision_source,clock=lambda:int(time.time()*1000),fault=lambda stage:None,execution_proof=None,signal_fixed_ms=None,filter_mark_proof=None,route_policy=VERSION):
  if type(store) is not FuturesStore or not store.shared or store.symbol!='BTCUSDT':raise ValueError('shared_isolated_store_required')
  if store.fee!=Decimal('10') or store.slip!=Decimal('5'):raise ValueError('unexpected_execution_costs')
  dbfile=Path(store.db.execute('PRAGMA database_list').fetchone()[2]);queue_path=Path(queue_path);root=Path(tempfile.gettempdir()).resolve()
  if dbfile.is_symlink() or queue_path.is_symlink() or not dbfile.resolve().is_relative_to(root) or queue_path.resolve().parent!=dbfile.resolve().parent:raise ValueError('sandbox_path_required')
  if not isinstance(bars,list) or not bars or not isinstance(skip_bar,(tuple,list)) or len(skip_bar)!=5:raise ValueError('invalid_bars')
  sig=closed_bar_signal(bars,'trend1',now_ms=bars[-1][0]+900000)
- if not sig or sig[0]!='TREND' or not sig[1]<sig[3]:raise ValueError('no_short_signal')
+ if not sig or sig[0]!='TREND' or not (sig[1]>sig[2] if direction=='LONG' else sig[1]<sig[3]):raise ValueError('no_'+direction.lower()+'_signal')
  expected_ms=bars[-1][0]+1800000
  if skip_bar[0]!=bars[-1][0]+900000:raise ValueError('skip_bar_mismatch')
  closed_bar_signal([skip_bar],'range',now_ms=expected_ms)
  mark=Decimal(str(quote))
  if not mark.is_finite() or mark<=0:raise ValueError('invalid_quote')
- fill=mark*(1-store.slip/10000)
+ fill=mark*(1+(1 if direction=='LONG' else -1)*store.slip/10000)
  filters=copy.deepcopy(filters)
  if execution_proof is not None:
   from .adaptive_market_proof import futures_trade_quote,quote as checked_mark
@@ -48,8 +66,8 @@ def enter_short(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms
   if market_attached:store.db.execute('DETACH DATABASE route_market')
   store.db.execute('DETACH DATABASE route_queue');raise
  def checked_clock():
-  now=clock();admission=route(decision,snapshot_id=snapshot_id,data_ms=data_ms,now_ms=now,symbol='BTCUSDT',decision_version=decision_version,market='futures',eligible=True,research_sandbox=True)
-  if not admission['allowed'] or admission['strategy']!='trend1':raise ValueError(admission.get('reason','route_changed'))
+  now=clock();admission=route(decision,snapshot_id=snapshot_id,data_ms=data_ms,now_ms=now,symbol='BTCUSDT',decision_version=decision_version,market='futures',eligible=True,research_sandbox=True,policy=route_policy)
+  if not admission['allowed'] or admission['strategy']!='trend1' or admission['direction']!=direction:raise ValueError(admission.get('reason','route_changed'))
   if type(quote_ms) is not int or not 0<=now-quote_ms<=5000 or not expected_ms<=now<=expected_ms+5000:raise ValueError('stale_quote_or_signal')
   if execution_proof is not None:
    from .adaptive_market_proof import futures_trade_quote,quote as checked_mark
@@ -67,18 +85,20 @@ def enter_short(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms
  @contextmanager
  def locked_check():
   with original():
+   bound=store.db.execute('SELECT payload FROM route_queue.unified_jobs WHERE id=?',(job_id,)).fetchone()
+   if not bound or json.loads(bound[0]).get('route_policy',VERSION)!=route_policy:raise ValueError('queue_policy_mismatch')
    old=store.db.execute('SELECT event,payload FROM futures_events WHERE business_key=?',(action_id,)).fetchone()
    if old:
     payload=json.loads(old['payload'])
-    if old['event']!='OPEN' or payload.get('direction')!='SHORT' or Decimal(payload['quantity'])!=quantity or Decimal(payload['entry'])!=fill:raise ValueError('action_identity_conflict')
+    if old['event']!='OPEN' or payload.get('direction')!=direction or Decimal(payload['quantity'])!=quantity or Decimal(payload['entry'])!=fill:raise ValueError('action_identity_conflict')
     yield;return
    if market_attached and store.db.execute("SELECT 1 FROM route_market.sqlite_master WHERE type='table' AND name='market_epochs'").fetchone():
     epoch=store.db.execute("SELECT id,start_ms FROM route_market.market_epochs WHERE market='futures' ORDER BY id DESC LIMIT 1").fetchone()
     if epoch:
      if execution_proof is None:raise ValueError('v2_trade_execution_proof_required')
      if not route_attached:raise ValueError('v2_route_guard_required')
-     route_state=store.db.execute('SELECT phase,action_id,market FROM route_guard.route_state WHERE id=1').fetchone()
-     if not route_state or tuple(route_state)!=('ENTRY_PENDING',action_id,'futures'):raise ValueError('v2_route_not_pending')
+     route_state=store.db.execute('SELECT phase,action_id,market,direction FROM route_guard.route_state WHERE id=1').fetchone()
+     if not route_state or tuple(route_state)!=('ENTRY_PENDING',action_id,'futures',direction):raise ValueError('v2_route_not_pending')
      if store.db.execute('SELECT 1 FROM route_market.epoch_conflicts WHERE epoch_id=? AND start_ms>=? AND start_ms<=? LIMIT 1',(epoch['id'],bars[0][0],bars[-1][0])).fetchone():raise ValueError('v2_epoch_conflict')
      if bars[-1][0]+900000<=epoch['start_ms']:raise ValueError('signal_predates_epoch')
      confirmed_raw=[]
@@ -118,7 +138,7 @@ def enter_short(store,queue_path,*,job_id,action_id,decision,snapshot_id,data_ms
    finally:clear(store.db,action_id,'futures')
  try:
   store.margin=margin;store.transaction=lambda:locked_check()
-  try:opened=store.open_position('SHORT',mark,clock(),action_id,clock_ms=checked_clock)
+  try:opened=store.open_position(direction,mark,clock(),action_id,clock_ms=checked_clock)
   finally:store.transaction=original;store.margin=original_margin
   fault('after_open')
   if opened:return {'status':'filled'}
@@ -151,23 +171,29 @@ def exit_on_stop(store,queue_path,*,route_state,job_id,action_id,position_id,quo
  if previous:
   event=json.loads(previous['payload']);reason=event.get('reason')
   if previous['event']!='CLOSE' or reason not in ('STOP','TIME','SIGNAL'):raise ValueError('action_identity_conflict')
+  direction=event.get('direction')
  else:
   position=store.get('position');action=route_state.db.execute('SELECT signal_json FROM route_actions WHERE action_id=?',(state['action_id'],)).fetchone()
   signal_data=json.loads(action[0]) if action else {};entry_ms=signal_data.get('entry_boundary_ms')
   if not position:raise ValueError('route_position_mismatch')
-  threshold=Decimal(position['entry'])*Decimal('1.02')
+  direction=position.get('direction')
+  threshold=Decimal(position['entry'])*(Decimal('.98') if direction=='LONG' else Decimal('1.02'))
   if risk_bar is not None:
    closed_bar_signal([risk_bar],'range',now_ms=risk_bar[0]+900000)
    risk_at=mark_checked_ms if execution_proof is not None else clock()
    if type(entry_ms) is not int or risk_bar[0]<entry_ms or not risk_bar[0]+900000<=risk_at<=risk_bar[0]+905000:raise ValueError('risk_bar_stale')
-  if trigger_mark>=threshold or (risk_bar is not None and Decimal(str(risk_bar[2]))>=threshold):
-   reason='STOP';reference=mark if execution_proof is not None else max(mark,threshold,Decimal(str(risk_bar[1])) if risk_bar is not None else mark)
+  if stop_hit(position,trigger_mark,risk_bar):
+   reason='STOP'
+   if execution_proof is None:
+    values=(mark,threshold,Decimal(str(risk_bar[1])) if risk_bar is not None else mark)
+    reference=min(values) if direction=='LONG' else max(values)
   elif type(entry_ms) is int and clock()-entry_ms>=604800000:reason='TIME'
   elif bars and skip_bar:
    sig=closed_bar_signal(bars,'trend1',now_ms=bars[-1][0]+900000)
-   if not sig or sig[0]!='TREND' or not sig[1]>sig[5] or skip_bar[0]!=bars[-1][0]+900000:raise ValueError('protective_exit_not_met')
+   if not channel_exit(position,sig) or skip_bar[0]!=bars[-1][0]+900000:raise ValueError('protective_exit_not_met')
    closed_bar_signal([skip_bar],'range',now_ms=skip_bar[0]+900000);reason='SIGNAL'
   else:raise ValueError('protective_exit_not_met')
+ if direction not in ('LONG','SHORT'):raise ValueError('invalid_position_direction')
  def checked_exit_clock():
   now=clock()
   if type(quote_ms) is not int or not 0<=now-quote_ms<=5000:raise ValueError('stale_protection_quote')
@@ -177,11 +203,11 @@ def exit_on_stop(store,queue_path,*,route_state,job_id,action_id,position_id,quo
    futures_trade_quote(execution_proof,now_ms=now,not_before_ms=trigger_fixed_ms);checked_mark(mark_proof,market='futures',now_ms=mark_checked_ms)
    current=checked_mark(current_mark_proof,market='futures',now_ms=now)
    if type(filters_ms) is not int or not 0<=now-filters_ms<=120000:raise ValueError('stale_filters')
-   validate_market_take_bound(execution_filters,mark*(1+store.slip/10000),current['price'])
+   validate_market_take_bound(execution_filters,mark*(1+(1 if direction=='SHORT' else -1)*store.slip/10000),current['price'])
   risk_at=mark_checked_ms if execution_proof is not None else now
   if risk_bar is not None and not risk_bar[0]+900000<=risk_at<=risk_bar[0]+905000:raise ValueError('risk_bar_stale')
   pos=store.get('position')
-  if not pos or pos.get('id')!=position_id:raise ValueError('route_position_mismatch')
+  if not pos or pos.get('id')!=position_id or pos.get('direction')!=direction:raise ValueError('route_position_mismatch')
   from .adaptive_funding_tracker import cover_through_under_lock
   cover_through_under_lock(store,pos,now)
   if reason=='SIGNAL' and (not bars or not skip_bar or not skip_bar[0]+900000<=risk_at<=skip_bar[0]+905000):raise ValueError('signal_exit_window_missed')
@@ -214,8 +240,9 @@ def exit_on_stop(store,queue_path,*,route_state,job_id,action_id,position_id,quo
    expected_bar=list(risk_bar) if risk_bar is not None else None
    if json.loads(job['payload']).get('risk_bar')!=expected_bar:raise ValueError('risk_bar_identity_mismatch')
    state=route_state.status();pos=store.get('position')
-   if state['phase'] not in ('OPEN','EXIT_PENDING') or (state['market'],state['strategy'],state['position_id'])!=('futures','trend1',position_id) or not pos or pos['id']!=position_id:raise ValueError('route_position_mismatch')
-   if reason=='STOP' and trigger_mark<Decimal(pos['entry'])*Decimal('1.02') and (risk_bar is None or Decimal(str(risk_bar[2]))<Decimal(pos['entry'])*Decimal('1.02')):raise ValueError('protective_stop_not_met')
+   if state['phase'] not in ('OPEN','EXIT_PENDING') or (state['market'],state['strategy'],state['position_id'],state['direction'])!=('futures','trend1',position_id,direction) or not pos or pos['id']!=position_id:raise ValueError('route_position_mismatch')
+   if reason=='STOP' and not stop_hit(pos,trigger_mark,risk_bar):raise ValueError('protective_stop_not_met')
+   if reason=='SIGNAL' and not channel_exit(pos,closed_bar_signal(bars,'trend1',now_ms=bars[-1][0]+900000)):raise ValueError('protective_exit_not_met')
    if reason=='TIME' and (type(entry_ms) is not int or now-entry_ms<604800000):raise ValueError('time_exit_not_due')
    if reason=='SIGNAL' and (not bars or not skip_bar or not skip_bar[0]+900000<=risk_at<=skip_bar[0]+905000):raise ValueError('signal_exit_window_missed')
    from .adaptive_funding_tracker import covered

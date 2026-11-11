@@ -165,7 +165,9 @@ class InlineTelegramTests(unittest.TestCase):
         sent=[payload for method,payload in self.api.calls if method=='sendMessage']
         self.assertEqual(len(sent),1)
         self.assertTrue(sent[0]['disable_web_page_preview'])
-        self.assertEqual(len(sent[0]['reply_markup']['inline_keyboard']),5)
+        buttons=sent[0]['reply_markup']['inline_keyboard']
+        self.assertEqual(len(buttons),6)
+        self.assertIn('Теханализ и паттерны',[b['text'] for row in buttons for b in row])
 
     def test_expired_sent_menu_is_removed_even_after_restart(self):
         now=time.time();self.q.receive(1,True,'/mode',now=now-121);self.t.flush(self.q)
