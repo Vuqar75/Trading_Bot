@@ -1,0 +1,19 @@
+{
+  "source_archive_size": 80263893,
+  "source_archive_pinned_sha256_from_completed_review": "2bb40a7860733ba073a089c82b3424f4551d101d061fb31f4e9f51da978a81fd",
+  "verification": "ZIP CRC plus 02 and 09 SHA-256 match completed review; only byte ranges were fetched, not full archive SHA recheck",
+  "02_sha256": "1a60292454b5b8aeed914a0cda02eb6e9c5807afd247c8afddcc5aede41a9030",
+  "09_sha256": "abcf96636539115484437f816ec2997570b2e1f726cfd2e34339c11bcca5d320",
+  "05_sha256": "b6f7edd9212f293f8a4142d2fb583521ac96d655c17c3d4f2061cfae8a87e336",
+  "08_sha256": "f4dc19fad749e83a61270fe9f049434fa1eba17298114ff51de4dc2dc7d642b6",
+  "train_start_1based": 1,
+  "train_end_1based": 336,
+  "test_start_1based": 337,
+  "test_end_1based": 576,
+  "selected": "20_50",
+  "saved_selected": "train_20_50",
+  "recomputed_sharpe": 0.7077856309759551,
+  "sample_npz_sha256": "091de3d29a54259eae66ef8292d50a3cd6b214084a28370ca97c7c06edec0d29",
+  "bytes_transferred": 4105833,
+  "range_requests": 15
+}

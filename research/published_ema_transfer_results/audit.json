@@ -1,0 +1,15 @@
+{
+  "checks": "chronological selection; stitched turnover; same-exposure holds; 2-sided reversal fees; quantity, risk, funding and ledger",
+  "choices": 182,
+  "closed_audited": 3013,
+  "sha256": {
+    "choices.json.gz": "c0d0888275791be9bcf98de7963f117d3935057b53658159f2a2eaf03822fefe",
+    "events.json.gz": "718e1e6bb85274ed4b5df0dcbb27d161449d840b7f242c009d54e11590cc97d6",
+    "ledger.json.gz": "44a88530ea0381065768566d17cfed8e8bbeb9f608aa9299928f137c10061b91",
+    "signals.json.gz": "5fc907c9bd37973332ae535b18a0fbced0848940fb7ae7cd5f96c31e16b9dabd",
+    "summary.json": "ea9bae918663de219ea6edae14b4d02a9c50de862664c6a1217cefcc6465a93e"
+  },
+  "signals": 128452,
+  "verified_reversal_double_fills": 1979,
+  "verified_same_exposure_pair_switch_holds_base": 124
+}
