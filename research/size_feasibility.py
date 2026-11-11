@@ -22,7 +22,11 @@ def main(root,out):
     finally:r.core.size_for=original
     gates={}
     for name in ('rsi','retest'):
-        s=json.loads((out/name/'summary.json').read_text())['results']
+        p=out/name/'summary.json';saved=json.loads(p.read_text())
+        saved['size_intervention_protocol']='SIZE_FEASIBILITY_PROTOCOL.md'
+        saved['context']={'start':'2025-01-01','end_exclusive':'2026-01-01','fixed_qty_btc':.001,'notional_cap':150}
+        p.write_text(json.dumps(saved,indent=2)+'\n')
+        s=saved['results']
         base,stress=s['base'],s['stress']
         checks={
             'counts':all(x['closed']>=30 and x['long']>=10 and x['short']>=10 for x in s.values()),

@@ -1,6 +1,7 @@
 """Fixed2026 continuation; never modifies production modules on disk."""
 from pathlib import Path
 import sys
+import json
 from research import rsi15m_verification as r
 from research.size_feasibility import fixed_size
 
@@ -22,5 +23,9 @@ def main(root,out):
     r.configure_period=configure
     r.core.size_for=fixed_size
     r.main(root,out)
+    p=out/'summary.json';s=json.loads(p.read_text())
+    s['protocol']='RSI_SIZE_VALIDATION_PROTOCOL.md'
+    s['context']={'start':'2026-01-01','end_exclusive':'2026-11-01','fixed_qty_btc':.001,'notional_cap':150}
+    p.write_text(json.dumps(s,indent=2)+'\n')
 
 if __name__=='__main__':main(Path(sys.argv[1]),Path(sys.argv[2]))

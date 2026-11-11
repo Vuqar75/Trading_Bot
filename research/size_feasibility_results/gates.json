@@ -1,0 +1,24 @@
+{
+  "rsi": {
+    "checks": {
+      "counts": true,
+      "positive_both": true,
+      "stress_without_best": true,
+      "three_stress_quarters": true,
+      "drawdown": true,
+      "intraday": false
+    },
+    "pass_all": false
+  },
+  "retest": {
+    "checks": {
+      "counts": true,
+      "positive_both": false,
+      "stress_without_best": false,
+      "three_stress_quarters": false,
+      "drawdown": false,
+      "intraday": true
+    },
+    "pass_all": false
+  }
+}

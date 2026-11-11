@@ -1,5 +1,27 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — completed fixed-rule size and cross-asset batch; no candidate
+
+Owner requested sustained execution and no routine intermediate reports.
+Actual work finished,not pending: see FINAL_FIXED_RULE_BATCH_REPORT.md.
+100USDTcap censored minimum0.001BTC above100k. One preregistered isolated
+fixed0.001/150cap/1x/5risk intervention:2025RSI+28.041636base/+8.581209stress,
+retest−15.493956/−28.395407. No production limits changed. RSI still failed
+90%within24h; explicitly amended scope BEFORE2026data to test economics without
+relaxing admission. Jan-Oct2026sameRSI−2.060255/−8.162074. Then completed a
+preregistered continuous2025-Oct2026BTC/ETH/SOLtransfer with frozen signals:
+BTC+25.981381/+0.419136;ETH−2.255960/−27.031786;SOL−41.495029/−60.560807.
+BTCstresswithoutbest−1.970371,DD2.204%,2026negative,69%within24h;all fail.
+Do not report as profitable candidate or trade to manufacture a success.
+914continuousclosedrecords pass independent audit;450overlapping diagnostic
+records audited separately,not additional independent observations.210archives
+hashchecked,monthlyJune29markgap filled from3verifiedofficialdailyarchives;
+no interpolated price,conflict or missingfunding accepted. Fulljournals,
+source/protocolprecommit receipts,gatesandyearbreakdowns saved. No parameter,
+asset or side selection after results; no further sweep queued. No live state,
+VM/service/pause/secret/budget/paidAPI action. Overallprofitableshort-term goal
+remains unmet; this specificbatch is complete. No background job remains.
+
 ## 2026-11-11 — source follow-up after retest, no extra backtest queue
 
 See INTRADAY_SOURCE_FOLLOWUP.md and hash receipts. Pinned LeadLag repository

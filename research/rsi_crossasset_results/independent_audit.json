@@ -1,0 +1,92 @@
+{
+  "BTCUSDT_base": {
+    "audited_closed": 133,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 70,
+        "closed_net": 28.0416357508028
+      },
+      "2026": {
+        "closed": 63,
+        "closed_net": -2.060254983780814
+      }
+    }
+  },
+  "BTCUSDT_stress": {
+    "audited_closed": 129,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 67,
+        "closed_net": 8.58120915529117
+      },
+      "2026": {
+        "closed": 62,
+        "closed_net": -8.162073586546331
+      }
+    }
+  },
+  "ETHUSDT_base": {
+    "audited_closed": 182,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 94,
+        "closed_net": 29.529089382321963
+      },
+      "2026": {
+        "closed": 88,
+        "closed_net": -31.785049392176358
+      }
+    }
+  },
+  "ETHUSDT_stress": {
+    "audited_closed": 180,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 94,
+        "closed_net": 16.807994369182904
+      },
+      "2026": {
+        "closed": 86,
+        "closed_net": -43.839779921431074
+      }
+    }
+  },
+  "SOLUSDT_base": {
+    "audited_closed": 146,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 72,
+        "closed_net": -14.264316127644742
+      },
+      "2026": {
+        "closed": 74,
+        "closed_net": -27.23071246549611
+      }
+    }
+  },
+  "SOLUSDT_stress": {
+    "audited_closed": 144,
+    "result": "PASS",
+    "open_position": false,
+    "exit_year_subtotals": {
+      "2025": {
+        "closed": 72,
+        "closed_net": -33.82689210576101
+      },
+      "2026": {
+        "closed": 72,
+        "closed_net": -26.73391500724798
+      }
+    }
+  }
+}

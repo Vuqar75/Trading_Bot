@@ -1,0 +1,348 @@
+{
+  "protocol": "RETEST15M_PROTOCOL.md",
+  "inputs": [
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2024-12.zip",
+      "sha256": "069409f525ebf6370ee1c7defe475167de4b97284c5ac8e68768652968cd3dc9"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-01.zip",
+      "sha256": "df725010d55458866eb5a47e9ee708c6796c9d7e77b14c38342cea11f381815e"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-02.zip",
+      "sha256": "e918b90fb33df3a3317feea13807a892047f1ec86eeac100bdb7b3dd83285d46"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-03.zip",
+      "sha256": "a3b95cfb315641fbfddc61eb32adf2a2588afb7a3973a61f464aca007ad43e3f"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-04.zip",
+      "sha256": "01dbb7bd0135f98bd63bdde6b943cde1accc1770cabf92f68a1ec0653ced3888"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-05.zip",
+      "sha256": "e7355e2775b88009c984db1783bb8ed6b5f24ede2b52bb764151b5722d6a5e42"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-06.zip",
+      "sha256": "a1f4a40953740fa83ee9ad97776ff8325d1958654a67f1325614071a983819d4"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-07.zip",
+      "sha256": "b097dff828f6e43fece23db0d3cb98042a9d7bc19693b8cbfd051d88eb973b7b"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-08.zip",
+      "sha256": "1180129860b6e196e8d70bb9719e81573aa6b4acb423ba5ee7f82f10c836f7ab"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-09.zip",
+      "sha256": "21dc6570fc6bffad0e7b5f9e99211b82ad07c95ab4f18c3a2daa3b95ec98344c"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-10.zip",
+      "sha256": "9ecdedab6344fc4cdb154763266b8e09627a71c3cc5574cf868158b541c259c2"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-11.zip",
+      "sha256": "23735400405627d610123e3a43db3e98ae7addb93459cd670e65a7659a5f081b"
+    },
+    {
+      "file": "fundingRate/BTCUSDT-fundingRate-2025-12.zip",
+      "sha256": "35318b789f020b0e04c9043112480743855554e52e1d188437cbdaa67246d51d"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2024-12.zip",
+      "sha256": "bfce141d2a152c2b94d85b797fe18ebfa195fa0e6091a7ccc06663ae1309466f"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-01.zip",
+      "sha256": "b69ca5b2c2d1ae00d68d2790d09138cb2a44085ff19e0da5dc98b569ea7e489e"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-02.zip",
+      "sha256": "d84ca981d06ee6491e16597f8d43955f62cab399a9f4b6efc2ee1b4d3a37f0fc"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-03.zip",
+      "sha256": "4837163333c9c9978255b8870a5a6de1bc48bd22a6c72fef54665a8d4e70b4df"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-04.zip",
+      "sha256": "87bca047ca7e8b1d27913091255018e121210276726c5aa445e85da6f56e2dcc"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-05.zip",
+      "sha256": "7acab7e40a74db53a2d6c35373ebe327eefa85b98f8c92fbe58755881e3841ee"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-06.zip",
+      "sha256": "78872b32c4d0bbc2d89a0459539b90cff47de08a9a56fdf8d233943a32e78efc"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-07.zip",
+      "sha256": "cf5fe0891c80e68d2d613eb5457100b7d886eee8cc913ccdd96ef45e757a5aaf"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-08.zip",
+      "sha256": "eaf41354fc1aa96eac94ee50b3fda603cd595f95030ebf30b2ab5bea7a4462c3"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-09.zip",
+      "sha256": "c296ba45c215934e9750ca82846c7b5d14be661649d8e4423eac834cf57330dc"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-10.zip",
+      "sha256": "bb7f53350fe27b6d8e38b5856ffc43f9ecda9d568d5bf31d0db0cd011da7100f"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-11.zip",
+      "sha256": "981da0b054f99b959fe6245fb363336b46908d358f37251d59bad308f375bc54"
+    },
+    {
+      "file": "minute/klines/BTCUSDT-1m-2025-12.zip",
+      "sha256": "2d5b2e1887dac1dfe450010877de7203a72e19df7a771067b980bbb07ad3069c"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2024-12.zip",
+      "sha256": "e130a234850304431c747c6f832aae250586f953f015b92dbe4a51c4604d6a59"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-01.zip",
+      "sha256": "c061f32b85c72aa8e588882bfd2b884968cfdea45308b3b74f8fb3ff44d9fdc6"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-02.zip",
+      "sha256": "f541de26d9c2c0dbf259f3583bc505916c9cd993da0d62a26d556f79bfc91a94"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-03.zip",
+      "sha256": "5c5ee421ba6e062102de1860c89a52d9518633ec5e0c2a49e832744d6fae286d"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-04.zip",
+      "sha256": "67ccab1f1585d297ec6985a197b47ddb45d325ed094525dbe432d19ea10f9e0a"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-05.zip",
+      "sha256": "33f9130e9d92c6774b8438d857e838df5db26e7308fcbb2a178722a021be6d0f"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-06.zip",
+      "sha256": "ffae55c885010290cc9aa8faabfdc3b204f7a0671c59b77cb77844da11844501"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-07.zip",
+      "sha256": "33eaa2e5fe002aacdd2656af3457186965325fde98a014d2cef754eb3ce849ad"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-08.zip",
+      "sha256": "b52004debc432af8cc44cd98884cc7c94458346be8adb13950b44edf8b646f9b"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-09.zip",
+      "sha256": "25b00a0726920d6a00b05fa6fe26966969964905f05ab917539b77a9066db5f1"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-10.zip",
+      "sha256": "628766a37dca06405268f2d4269598198d5c822aa4477a6804a192212ffa1f6e"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-11.zip",
+      "sha256": "1915d3d64c34b3b1e7309740091f39f525ff68ff543e7685518c0a0970636d66"
+    },
+    {
+      "file": "minute/markPriceKlines/BTCUSDT-1m-2025-12.zip",
+      "sha256": "e1ed1dcd4ed9e7cf174a1c2e04f50f04e4fe52c787836cde8f6fadd32f3aef30"
+    }
+  ],
+  "checks": [
+    "causal truncation",
+    "cash reconciliation"
+  ],
+  "results": {
+    "base": {
+      "closed": 94,
+      "long": 35,
+      "short": 59,
+      "gross": 3.464576453749411,
+      "fees": 9.472681982933262,
+      "impact": 9.47268284907633,
+      "funding": -0.013167870450814252,
+      "liquidation_fees": 0.0,
+      "net_closed": -15.493956248710994,
+      "open": null,
+      "net_including_open": -15.493956248711015,
+      "cash": 984.5060437512898,
+      "equity": 984.506043751289,
+      "max_drawdown": 0.02183667986338226,
+      "hold_median_h": 5.791666666666666,
+      "hold_p90_h": 22.16666666666667,
+      "hold_max_h": 25.25,
+      "fraction_at_most_24h": 0.925531914893617,
+      "exit_reasons": {
+        "target": 35,
+        "stop": 54,
+        "invalid_signal": 5
+      },
+      "rejects": {},
+      "by_direction": {
+        "LONG": {
+          "closed": 35,
+          "gross": 8.845537304249694,
+          "fees": 3.761974357267799,
+          "impact": 3.761976568651706,
+          "funding": -0.3059677641297625,
+          "liquidation_fees": 0.0,
+          "net": 1.0156186142004269
+        },
+        "SHORT": {
+          "closed": 59,
+          "gross": -5.380960850500283,
+          "fees": 5.710707625665463,
+          "impact": 5.710706280424623,
+          "funding": 0.29279989367894826,
+          "liquidation_fees": 0.0,
+          "net": -16.50957486291142
+        }
+      },
+      "by_segment": {
+        "Q1": {
+          "closed": 28,
+          "gross": 4.923688760249817,
+          "fees": 2.640056486102685,
+          "impact": 2.640057717024567,
+          "funding": -0.013504937861961523,
+          "liquidation_fees": 0.0,
+          "net": -0.369930380739396
+        },
+        "Q2": {
+          "closed": 18,
+          "gross": 3.3566536419999036,
+          "fees": 1.7623771622823394,
+          "impact": 1.7623780014455406,
+          "funding": -0.051505774476187566,
+          "liquidation_fees": 0.0,
+          "net": -0.21960729620416422
+        },
+        "Q3": {
+          "closed": 20,
+          "gross": -0.3827657062501093,
+          "fees": 2.2665920026100514,
+          "impact": 2.2665919069183875,
+          "funding": -0.02629225445984696,
+          "liquidation_fees": 0.0,
+          "net": -4.942241870238396
+        },
+        "Q4": {
+          "closed": 28,
+          "gross": -4.4330002422502,
+          "fees": 2.8036563319381855,
+          "impact": 2.8036552236878345,
+          "funding": 0.0781350963471818,
+          "liquidation_fees": 0.0,
+          "net": -9.962176701529037
+        }
+      },
+      "best_trade": 1.576209561151725,
+      "unresolved": null,
+      "pending": null
+    },
+    "stress": {
+      "closed": 94,
+      "long": 35,
+      "short": 59,
+      "gross": 0.026112714499438694,
+      "fees": 9.471169718805893,
+      "impact": 18.942339463723517,
+      "funding": -0.008010456617815898,
+      "liquidation_fees": 0.0,
+      "net_closed": -28.395406924647787,
+      "open": null,
+      "net_including_open": -28.395406924647773,
+      "cash": 971.6045930753533,
+      "equity": 971.6045930753522,
+      "max_drawdown": 0.033703176084918636,
+      "hold_median_h": 5.433333333333334,
+      "hold_p90_h": 23.30166666666667,
+      "hold_max_h": 25.25,
+      "fraction_at_most_24h": 0.9042553191489362,
+      "exit_reasons": {
+        "target": 31,
+        "stop": 56,
+        "invalid_signal": 7
+      },
+      "rejects": {},
+      "by_direction": {
+        "LONG": {
+          "closed": 35,
+          "gross": 2.367088219499521,
+          "fees": 3.76021656056564,
+          "impact": 7.520435488219155,
+          "funding": -0.3139857587373037,
+          "liquidation_fees": 0.0,
+          "net": -9.227549588022576
+        },
+        "SHORT": {
+          "closed": 59,
+          "gross": -2.3409755050000824,
+          "fees": 5.710953158240253,
+          "impact": 11.421903975504364,
+          "funding": 0.3059753021194878,
+          "liquidation_fees": 0.0,
+          "net": -19.16785733662521
+        }
+      },
+      "by_segment": {
+        "Q1": {
+          "closed": 28,
+          "gross": 2.100798012999818,
+          "fees": 2.6402515286374935,
+          "impact": 5.280505158072745,
+          "funding": 0.0026052656530368293,
+          "liquidation_fees": 0.0,
+          "net": -5.817353408057383
+        },
+        "Q2": {
+          "closed": 18,
+          "gross": 0.9197326449998366,
+          "fees": 1.7622210602906774,
+          "impact": 3.5244430403137956,
+          "funding": -0.06209735147718756,
+          "liquidation_fees": 0.0,
+          "net": -4.429028807081824
+        },
+        "Q3": {
+          "closed": 20,
+          "gross": 0.1663045354998611,
+          "fees": 2.2662185714449823,
+          "impact": 4.532437309194313,
+          "funding": -0.02629225445984696,
+          "liquidation_fees": 0.0,
+          "net": -6.658643599599281
+        },
+        "Q4": {
+          "closed": 28,
+          "gross": -3.1607224790000767,
+          "fees": 2.8024785584327394,
+          "impact": 5.604953956142665,
+          "funding": 0.07777388366618179,
+          "liquidation_fees": 0.0,
+          "net": -11.490381109909297
+        }
+      },
+      "best_trade": 1.5178351670593777,
+      "unresolved": null,
+      "pending": null
+    }
+  },
+  "size_intervention_protocol": "SIZE_FEASIBILITY_PROTOCOL.md",
+  "context": {
+    "start": "2025-01-01",
+    "end_exclusive": "2026-01-01",
+    "fixed_qty_btc": 0.001,
+    "notional_cap": 150
+  }
+}
