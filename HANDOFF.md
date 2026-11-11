@@ -1,16 +1,25 @@
 # Trading_Bot — контекст передачи работы
 
-## 2026-11-11 — pattern-AI live rollout, pending first GPT boundary
+## 2026-11-11 — pattern-AI live rollout and first GPT response
 
 See `PATTERN_AI_SERVER_INSTALL_20261111.md`. The VM now runs the validated
 local technical sidecar and existing privileged publisher; `/ai patterns` is
 installed in the sole Telegram bot from integration commit `1065a5de9c283163408091c8e70d4de1216c06ea`.
 Actual model input was verified without paid HTTP. The existing regular timer
 updates local analysis and admits paid work only for boundary 2026-11-11 16:00
-UTC via `--paid-boundary-ms 1794412800000`; do not infer a response until the
-sole journal confirms it. Four market pauses, old reservations and credential
-are retained. The pre-switch external budget backup was read back and restored;
-seven attempts and $0.016468 reserved. No entry or strategy was authorized.
+UTC via `--paid-boundary-ms 1794412800000`. The single actual attempt
+`regular:1794412800000` completed at 16:02:43 UTC: GPT RANGE and same-snapshot
+baseline RANGE; response, claim and usage (1295 input / 894 output tokens) are
+durable. Estimated incremental cost $0.0005765 is not a provider invoice; the
+attempt reserved $0.001902. The sole journal now contains eight attempts and
+$0.018370 reserved, including old unknown charges. No repeat was sent at later
+timer ticks. The local-only technical timer continues; no later paid boundaries
+are enabled. GPT and `/ai patterns` were formed by the installed bot user, not
+confirmed as received by the owner. Post-attempt encrypted external backup was
+downloaded and restored/verified with SHA-256
+`a839ddd4fde6998178f6a493e8e7089dc9dc1b239d3a2b263e7010853615c75d`.
+Encryption is host-bound. All four working markets remain paused; one Telegram
+paper main process; no financial entry or strategy was authorized.
 
 ## 2026-11-11 — actual pattern-AI module, GPT integration and Telegram panel
 
