@@ -1,5 +1,17 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-11 — source follow-up after retest, no extra backtest queue
+
+See INTRADAY_SOURCE_FOLLOWUP.md and hash receipts. Pinned LeadLag repository
+withholds current rules; its15m OOS9trades isflat-to-negative. Pinned scalp-bot
+headline23.46% is explicitly a reportexample; timestamp useskline open while
+full15m bar is available to3m replay, and raw PnL lacks fees/funding/slippage
+in inspected engine. Neither is verified ready-to-copy scalping profit. No
+foreign code run,collector,VM/credential/budget/timer/pause action or paid call.
+Do not invent missing private rules or treat README example asrealtradeledger.
+The actual preceding retest experiment is completed and rejected, not a
+pending implementation task. No ongoing background AI job exists in this chat.
+
 ## 2026-11-11 — continued: actual trend-retest calculation completed
 
 Owner asked why work stopped; no external blocker. Frozen before results in
