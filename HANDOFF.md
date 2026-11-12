@@ -1,5 +1,42 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — free technical analysis for BTC/ETH/SOL
+
+Fetched ae9ab47 confirmed installed history. Owner asked to continue.
+Completed optional --extra-symbols ETHUSDT SOLUSDT on the existing free server,
+per-asset publisher, and technical-only asset selection in /ai patterns/plan/
+history. See AI_MULTI_ASSET_20261112.md and AI_MULTI_ASSET_LOCAL_TASK.md.
+No new service/timer/model/training/account/epoch. Existing trained model
+already includes all3asset flags; profitability/admission unchanged.
+
+Default BTC CLI/filenames and6buttonmainmenu preserved. Extra assets use
+technical-ETHUSDT/SOLUSDT.json and technical-history-ETHUSDT/SOLUSDT.json.
+BTC's untagged legacy history is upgraded with symbol while retaining start/
+records; no cross-asset history migration. Publisher and views bind payload
+symbol to selected file; missing/wrong asset never falls back to BTC. Technical
+asset callbacks preserve view/asset but do not modify market, /pair or pauses.
+GPT/budget menus remain explicitly BTC-only; extra free captures are processed
+AFTER the BTC paid path, which still accepts only the original BTC fetch and
+sole journal. Original paid boundary/regular window/token/reserve/locks intact.
+
+Same-bar cache validates asset/venue/model/times/context, no re-collection;
+malformed cache handled. Per-symbol errors independent; BTC data failure in
+multi mode skips paid work without another fetch. Explicit HTTP401/403/451
+halts remaining host requests in the cycle, no alternate host/retry. Enabling
+extras increases public capture volume ~3x; no paid model usage is implied.
+Snapshots have separate observation times, not a synchronized portfolio.
+
+187targetedtestsPASS under temporary HOME, credentials removed, IP sockets
+blocked;16newtests. Existing budget/backup/queue checks included. No real Binance
+or paid provider calls, no full/backtest repeat. Financial handlers/weights
+unchanged. Code not installed on VM from this cloud chat (no VM access).
+Latest installed remains9b05eb4 / bot7adce0b perae9ab47; fourmarkets paused,
+study/Donchian stopped, budget owner-reported8attempts/$0.018370 reserve.
+Keys/journal not opened. Localtask enables only free extras via existing
+rollout and checks actual data/limits. BTC history start1794455186000 preserved.
+Periodic external history backup is still unconfirmed/not included per latest
+report; code does not silently claim to fix that separate limitation.
+
 ## 2026-11-12 — technical plan history installed
 
 See `AI_PLAN_HISTORY_INSTALL_20261112.md`. Installed unchanged runtime

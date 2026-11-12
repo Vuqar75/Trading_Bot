@@ -5,15 +5,18 @@ NAMES={'engulf_long':'бычье поглощение','engulf_short':'медв�
        'inside_long':'пробой внутреннего бара вверх','inside_short':'пробой внутреннего бара вниз','break_long':'пробой20свечей вверх','break_short':'пробой20свечей вниз'}
 
 
-def render_history(path,now=None):
+def render_history(path,now=None,*,symbol=None):
     try:
         from research.technical_plan_history import validate,MAX_BYTES
         p=Path(path);now=time.time() if now is None else now
         if p.is_symlink() or p.stat().st_size>MAX_BYTES:raise ValueError('history_size')
         d=validate(json.loads(p.read_bytes()))
+        if symbol is not None:
+            from research.technical_assets import history_matches
+            history_matches(d,symbol)
         if d['checked_ms']>now*1000+5000:raise ValueError('history_future')
         when=lambda x:dt.datetime.fromtimestamp(x/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%d.%m %H:%M Баку')
-        lines=['[ИИ • наблюдение за уровнями]'+(' • УСТАРЕЛО' if now*1000-d['checked_ms']>1800000 else ''),
+        lines=['[ИИ • наблюдение за уровнями] '+(symbol or d.get('symbol','BTCUSDT'))+(' • УСТАРЕЛО' if now*1000-d['checked_ms']>1800000 else ''),
                'Начало сохранения: '+when(d['started_ms'])+'; проверка: '+when(d['checked_ms'])+'.',
                'Это движение цены, не исполнения, сделки или PnL.']
         if not d['records']:lines.append('Однозначные планы пока не сохранены.')
@@ -31,15 +34,16 @@ def render_history(path,now=None):
                 'Хранятся последние 64 плана; удалено старых: '+str(d['discarded'])+'. Кнопка читает файл, не вызывает GPT.']
         return '\n'.join(lines)[:3400]
     except (OSError,ValueError,KeyError,TypeError,ArithmeticError,ImportError):
-        return '[ИИ • наблюдение за уровнями]\nПроверенной истории нет. Сделки и прибыль по отсутствующим данным не восстанавливаются.'
+        return '[ИИ • наблюдение за уровнями]'+(' '+symbol if symbol else '')+'\nПроверенной истории нет. Сделки и прибыль по отсутствующим данным не восстанавливаются.'
 
 
-def render_plan(path,now=None):
+def render_plan(path,now=None,*,symbol=None):
     """Read saved arithmetic only; never fetch a quote or create a trade."""
     try:
         p=Path(path)
         if p.is_symlink() or p.stat().st_size>30000:raise ValueError('report_size')
         d=json.loads(p.read_bytes());now=time.time() if now is None else now
+        if symbol is not None and d.get('symbol')!=symbol:raise ValueError('report_market')
         if 'trade_scenarios' not in d:
             return '[ИИ • расчёт сделки]\nДля этого снимка расчёт не сохранён. Кнопка не запускает модель или сбор данных.'
         from research.technical_trade_scenarios import validate
@@ -69,14 +73,15 @@ def render_plan(path,now=None):
                 'Стратегия, размер и биржевые filters не допущены этим расчётом. GPT и сделки кнопкой не запускаются.']
         return '\n'.join(lines)[:3400]
     except (OSError,ValueError,TypeError,KeyError,ArithmeticError,ImportError):
-        return '[ИИ • расчёт сделки]\nПроверенного расчёта нет: снимок отсутствует или повреждён. Вход не разрешён.'
+        return '[ИИ • расчёт сделки]'+(' '+symbol if symbol else '')+'\nПроверенного расчёта нет: снимок отсутствует или повреждён. Вход не разрешён.'
 
 
-def render(path,now=None):
+def render(path,now=None,*,symbol=None):
     try:
         p=Path(path)
         if p.is_symlink() or p.stat().st_size>30000:raise ValueError('report_size')
         d=json.loads(p.read_bytes());now=time.time() if now is None else now
+        if symbol is not None and d.get('symbol')!=symbol:raise ValueError('report_market')
         if d.get('feature_version')!='technical-patterns-v1' or d.get('venue')!='binance-usdm' or d.get('symbol') not in ('BTCUSDT','ETHUSDT','SOLUSDT'):raise ValueError('report_schema')
         signal=d['signal_ms'];expiry=d['expires_ms'];asof=d['as_of_ms'];ml=d['ml'];f=d['features'];patterns=d['detected_patterns']
         if not all(type(x) is int for x in (signal,expiry,asof)) or expiry!=signal+900000 or not signal<=asof<expiry or asof/1000>now+5:raise ValueError('report_time')
@@ -122,4 +127,4 @@ def render(path,now=None):
                 'Вероятности не калиброваны; прибыльность модели не подтверждена.','Кнопка читает снимок; GPT и сделки не запускаются.']
         return '\n'.join(lines)[:3000]
     except (OSError,ValueError,TypeError,KeyError,OverflowError,ImportError):
-        return '[ИИ • теханализ и паттерны]\nСвежего проверенного снимка нет. Вход не разрешён; модель и платный API этой кнопкой не запускаются.'
+        return '[ИИ • теханализ и паттерны]'+(' '+symbol if symbol else '')+'\nСвежего проверенного снимка нет. Вход не разрешён; модель и платный API этой кнопкой не запускаются.'

@@ -197,6 +197,33 @@ class InlineTelegramTests(unittest.TestCase):
         self.assertEqual(render.call_args.args,('history',))
         self.assertEqual(self.q.db.execute('SELECT count(*) FROM unified_jobs').fetchone()[0],0)
 
+    def test_technical_asset_selection_stays_read_only_and_bound_to_view(self):
+        now=time.time();before=self.q.state('mode')
+        with patch('trading_bot.ai_screens.render_screen',return_value='local analysis') as render:
+            self.q.receive(1,True,'/ai patterns ETH',now=now)
+            self.assertEqual(render.call_args.kwargs,{'symbol':'ETHUSDT'})
+            sol=next(b for row in self.keyboard() for b in row if b['text']=='SOL')
+            self.q.receive(2,False,'',now=now+1,callback_data=sol['callback_data'])
+            self.assertEqual(render.call_count,1)
+            self.q.receive(3,True,'',now=now+1,callback_data=sol['callback_data'])
+            self.q.receive(3,True,'',now=now+1,callback_data=sol['callback_data'])
+            self.assertEqual(render.call_count,2);self.assertEqual(render.call_args.kwargs,{'symbol':'SOLUSDT'})
+            plan=next(b for row in self.keyboard() for b in row if b['text']=='Расчёт сделки')
+            self.q.receive(4,True,'',now=now+2,callback_data=plan['callback_data'])
+            self.assertEqual(render.call_args.args,('plan',));self.assertEqual(render.call_args.kwargs,{'symbol':'SOLUSDT'})
+            refresh=next(b for row in self.keyboard() for b in row if b['text']=='Обновить')
+            self.q.receive(5,True,'',now=now+3,callback_data=refresh['callback_data'])
+            self.assertEqual(render.call_args.args,('plan',));self.assertEqual(render.call_args.kwargs,{'symbol':'SOLUSDT'})
+        self.assertEqual(self.q.state('mode'),before)
+        self.assertEqual(self.q.db.execute('SELECT count(*) FROM unified_jobs').fetchone()[0],0)
+
+    def test_unknown_asset_and_non_btc_gpt_view_never_render_btc_as_fallback(self):
+        now=time.time()
+        with patch('trading_bot.ai_screens.render_screen',side_effect=AssertionError('wrong fallback')):
+            for ident,command in enumerate(('/ai patterns XRPUSDT','/ai plan ../../other','/ai costs ETHUSDT'),1):
+                self.q.receive(ident,True,command,now=now)
+        self.assertEqual(self.q.db.execute('SELECT count(*) FROM unified_jobs').fetchone()[0],0)
+
     def test_expired_sent_menu_is_removed_even_after_restart(self):
         now=time.time();self.q.receive(1,True,'/mode',now=now-121);self.t.flush(self.q)
         self.q.close();self.q=UnifiedQueue(self.path,allow_pair_experiment=True)

@@ -21,18 +21,22 @@ def _bounded(value,limit=400):
     if not isinstance(value,str):return 'неизвестно'
     return ' '.join(value.split())[:limit]
 
-def render_screen(screen='main',path=REPORT,now=None):
+def render_screen(screen='main',path=REPORT,now=None,*,symbol='BTCUSDT'):
     """Never talks to network or mutates any state; rejects invalid snapshots."""
     now=time.time() if now is None else now
+    from research.technical_assets import sidecar,symbol as asset_symbol,VIEWS
+    try:symbol=asset_symbol(symbol)
+    except ValueError:return '[ИИ] Актив не поддерживается. Доступны BTCUSDT, ETHUSDT, SOLUSDT.'
+    if screen not in VIEWS and symbol!='BTCUSDT':return '[ИИ] Сохранённые GPT-ответы и бюджетный экран относятся только к BTCUSDT.'
     if screen=='patterns':
         from .technical_ai_view import render as render_patterns
-        return render_patterns(Path(path).with_name('technical.json'),now)
+        return render_patterns(sidecar(Path(path).parent,symbol),now,symbol=symbol)
     if screen=='plan':
         from .technical_ai_view import render_plan
-        return render_plan(Path(path).with_name('technical.json'),now)
+        return render_plan(sidecar(Path(path).parent,symbol),now,symbol=symbol)
     if screen=='history':
         from .technical_ai_view import render_history
-        return render_history(Path(path).with_name('technical-history.json'),now)
+        return render_history(sidecar(Path(path).parent,symbol,'technical-history'),now,symbol=symbol)
     try:
         path=Path(path)
         if path.stat().st_size>100000:raise ValueError('oversize')

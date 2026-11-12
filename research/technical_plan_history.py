@@ -2,6 +2,7 @@
 import copy,hashlib,json,math,os,tempfile
 from pathlib import Path
 from .technical_trade_scenarios import validate as validate_plan
+from .technical_assets import SYMBOLS
 
 BAR=900000
 LIMIT=64
@@ -19,12 +20,14 @@ def validate(value):
     start=value.get('started_ms');checked=value.get('checked_ms');records=value.get('records');discarded=value.get('discarded')
     if type(start) is not int or type(checked) is not int or not 0<start<=checked or type(discarded) is not int or discarded<0 or not isinstance(records,list) or len(records)>LIMIT:
         raise ValueError('history_shape')
+    if value.get('symbol') is not None and value['symbol'] not in SYMBOLS:raise ValueError('history_market')
     ids=set()
     for r in records:
         if not isinstance(r,dict) or not isinstance(r.get('packet'),dict):raise ValueError('history_record')
         p=r['packet']
         if any(not isinstance(p.get(k),dict) for k in ('limits','features','ml','trade_scenarios')):raise ValueError('history_record')
         plan=validate_plan(p['trade_scenarios'],p)
+        if value.get('symbol') is not None and p['symbol']!=value['symbol']:raise ValueError('history_market')
         if not isinstance(p['ml'].get('model_id'),str) or not 1<=len(p['ml']['model_id'])<=100:raise ValueError('history_model_identity')
         if plan['status']!='conditional_only' or type(r.get('recorded_ms')) is not int or not start<=r['recorded_ms']<=checked or not p['as_of_ms']<=r['recorded_ms']<p['expires_ms']:
             raise ValueError('history_record_time')
@@ -77,6 +80,8 @@ def advance(previous,packet,capture,now_ms):
     if anchor is None or anchor[4]!=float(packet['close']):raise ValueError('history_current_anchor')
     state=copy.deepcopy(validate(previous)) if previous is not None else {'version':VERSION,'started_ms':now_ms,'checked_ms':now_ms,'discarded':0,'orders_enabled':False,'fills_confirmed':False,'records':[]}
     if state['checked_ms']>now_ms:raise ValueError('history_reordered')
+    if state.get('symbol',packet['symbol'])!=packet['symbol'] or any(r['packet']['symbol']!=packet['symbol'] for r in state['records']):raise ValueError('history_market')
+    state['symbol']=packet['symbol']
     if plan['status']=='conditional_only':
         core={k:copy.deepcopy(packet[k]) for k in ('feature_version','symbol','venue','signal_ms','as_of_ms','expires_ms','side','close','detected_patterns','limits','trade_scenarios')}
         core['features']={'atr_pct':packet['features']['atr_pct']}
