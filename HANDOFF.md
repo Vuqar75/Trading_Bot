@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — ML qualification installed and normal cycle checked
+
+The prepared `ab768de` qualification contract is installed in the existing free-analysis writer, publisher and Telegram renderer. All six candidate runtime files match in all three installed releases. The normal 12:01 UTC cycle published BTC/ETH/SOL without GPT or orders; ETH's new directional packet and history record carry `NO_TRADE` and failed economic qualification, and actual numerical replay matched exactly. All markets remain paused, research and Donchian disabled, one Telegram poller. Verified before/after on-host backups, preserved IDs and rollback procedure are documented in [PATTERN_QUALIFICATION_INSTALL_20261112.md](PATTERN_QUALIFICATION_INSTALL_20261112.md). No new training, backtest, paid request or trade.
+
 ## 2026-11-12 — ML qualification contract prepared, NOT installed
 
 Owner asked what follows. Existing forecast/cost evidence already answers the
