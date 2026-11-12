@@ -1,5 +1,22 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — fixed taker-volume response hypothesis registered
+
+Fetched/fast-forwarded98ac50a and accepted successful installed qualification
+ab768de; no reinstall/reverification. Owner authorized continued strategy work.
+TAKER_ABSORPTION_PROTOCOL.md freezes a distinct price/trade-volume response
+hypothesis before calculation: previous96 volume average, prior14ATR,
+1.5xvolume, |taker imbalance|>=.2, body<=.25ATR, one NEXT closed15m opposite
+break confirmation. Three original assets; same unmodified outcome helper,
+stop0.5..2%/2R/4h, base/stress, additional <=100notional cap,1x,<=5risk.
+No fitted ML or new threshold grid. Actual archived taker_buy_volume is not
+order-book OFI or proof of hidden orders. Primary Cont/Kukanov/Stoikov abstract
+explicitly distinguishes the noisier trade-volume input from its L2 findings.
+All original archives are already local. Hash receipt includes reused helpers.
+Continue directly to calculation, independent audit and publication; no VM,
+paid request, new source collector, installation or trading admission.
+
+
 ## 2026-11-12 — ML qualification installed and normal cycle checked
 
 The prepared `ab768de` qualification contract is installed in the existing free-analysis writer, publisher and Telegram renderer. All six candidate runtime files match in all three installed releases. The normal 12:01 UTC cycle published BTC/ETH/SOL without GPT or orders; ETH's new directional packet and history record carry `NO_TRADE` and failed economic qualification, and actual numerical replay matched exactly. All markets remain paused, research and Donchian disabled, one Telegram poller. Verified before/after on-host backups, preserved IDs and rollback procedure are documented in [PATTERN_QUALIFICATION_INSTALL_20261112.md](PATTERN_QUALIFICATION_INSTALL_20261112.md). No new training, backtest, paid request or trade.
