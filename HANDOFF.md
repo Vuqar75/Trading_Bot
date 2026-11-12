@@ -1,5 +1,25 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — sustained search: dynamic-exit RSI2 registered
+
+Owner explicitly asks continue until finding a candidate, not finish after one
+rejection. Next fixed batch addresses a different exit mechanism instead of
+reusing2R/4h for everything. Primary LarryConnors2009 DynamicExits and ChartSchool
+RSI2 read through availablewebtool; equity daily results not crypto evidence.
+RSI2 5/95 fresh crossing in SMA200trend, exit closed SMA5reversion, existing
+Account2%stop/funding/fees/1x/5risk.3TF15m/1h/4h, hold6h/12h/24h; source still
+pinned210archives. Research BTC0.001<=150 reuses prior approved isolated cap,
+ETH/SOL<=100; no working VM cap change. No grid for thresholds/target/side.
+
+RSI2_DYNAMIC_PROTOCOL.md / INPUTS freeze before development2025.18accounts
+(3assets3TF2execution); only2025used. SelectONE by frozen counts,positive
+both/scenario+bothhalves,besttrade,DD gates then stressnetranking. Publish
+selection BEFORE2026 evaluation; don't evaluate runners-up after failure.
+2026historyreused,so no pristineholdout/independentalpha claim. No model fit,
+paidrequest,VM/financialDB/budget/credential access or new pilot approval.
+Continue through development, selection receipt, selected validation and audit.
+
+
 ## 2026-11-12 — continued after failure: fixed funding unwind completed
 
 No new manual permission requested. Read prior maker CSV rather than redo old
