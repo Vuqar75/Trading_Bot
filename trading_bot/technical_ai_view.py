@@ -1,6 +1,7 @@
 """Read-only numerical/pattern ML panel. No model/network/budget execution."""
 import datetime as dt,json,math,time
 from pathlib import Path
+from research.pattern_model_qualification import explanation
 NAMES={'engulf_long':'бычье поглощение','engulf_short':'медвежье поглощение','pin_long':'бычий пинбар','pin_short':'медвежий пинбар',
        'inside_long':'пробой внутреннего бара вверх','inside_short':'пробой внутреннего бара вниз','break_long':'пробой20свечей вверх','break_short':'пробой20свечей вниз'}
 
@@ -24,7 +25,7 @@ def render_history(path,now=None,*,symbol=None):
         levels={'target':'цена достигла/прошла цель','stop':'цена достигла/прошла стоп','ambiguous':'оба уровня в одной свече — порядок неизвестен','none':'уровни не достигнуты в наблюдаемом окне'}
         for r in d['records'][-5:][::-1]:
             packet=r['packet'];lines.append(when(packet['signal_ms'])+' • '+packet['symbol']+' '+packet['side']+': '+states[r['state']]+'.')
-            lines.append('  ML: '+('кандидат без допуска' if packet['ml']['action']=='CANDIDATE' else 'вход не подтверждён')+'.')
+            lines.append('  '+explanation(packet['ml'].get('model_id')))
             if r['state'] not in ('source_changed','data_gap'):
                 for name,label in (('base','База'),('stress','Стресс')):
                     x=r['results'][name]
@@ -67,7 +68,7 @@ def render_plan(path,now=None,*,symbol=None):
                         '  Net без funding: при цели '+fmt(item['net_at_target_usdt_per_100'])+' USDT; при стопе '+fmt(item['net_at_stop_usdt_per_100'])+' USDT; прибыль/риск '+fmt(item['net_reward_risk'])+'.',
                         '  Модельные расходы: комиссия 5 б.п. + spread/impact '+fmt(item['impact_bps_per_side'])+' б.п. на сторону; задержка '+str(item['assumed_delay_minutes'])+' мин.']
             if stale:lines.append('Снимок истёк; использовать уровни для нового входа нельзя.')
-            lines.append('ML: '+('кандидат по порогам, торгового допуска нет.' if plan['model_candidate'] else 'вход не подтверждён; расчёт уровней этого не меняет.'))
+            lines.append(explanation(d['ml'].get('model_id')))
         lines+=['Цена до spread/impact после задержки условно равна закрытию; задержка не проигрывается, будущие котировки неизвестны.',
                 'Funding не включён; гэп, выход по времени и фактическое исполнение могут изменить результат. Это не прогноз прибыли.',
                 'Стратегия, размер и биржевые filters не допущены этим расчётом. GPT и сделки кнопкой не запускаются.']
@@ -122,9 +123,11 @@ def render(path,now=None,*,symbol=None):
         if 'p_win_estimate' in ml:
             pwin=ml['p_win_estimate'];net=ml['expected_stress_net_return']
             if not all(type(x) in (int,float) and math.isfinite(x) for x in (pwin,net)) or not 0<=pwin<=1:raise ValueError('report_model_number')
-            lines+=['Оценка P(плюс): '+format(pwin*100,'.1f')+'%; ожидаемый net: '+format(net*10000,'.2f')+'б.п. после стрессовых расходов.']
-        lines+=['Вывод: '+('исторический сигнал; использовать сейчас нельзя' if stale else 'исследовательский кандидат, допуска к сделке нет' if ml['action']=='CANDIDATE' else 'вход не подтверждён'),
-                'Вероятности не калиброваны; прибыльность модели не подтверждена.','Кнопка читает снимок; GPT и сделки не запускаются.']
+            lines+=['Диагностический балл ML: '+format(pwin*100,'.1f')+' из 100; это не подтверждённая вероятность прибыли.',
+                    'Выход регрессора: '+format(net*10000,'.2f')+' б.п.; надёжность прогноза доходности не подтверждена.']
+        lines+=[explanation(ml.get('model_id')),
+                'Вывод: '+('снимок устарел; использовать сейчас нельзя' if stale else 'фактический теханализ доступен; вход не подтверждён'),
+                'Кнопка читает снимок; GPT и сделки не запускаются.']
         return '\n'.join(lines)[:3000]
     except (OSError,ValueError,TypeError,KeyError,OverflowError,ImportError):
         return '[ИИ • теханализ и паттерны]'+(' '+symbol if symbol else '')+'\nСвежего проверенного снимка нет. Вход не разрешён; модель и платный API этой кнопкой не запускаются.'

@@ -102,8 +102,13 @@ def infer(bundle,x,*,symbol,signal_ms,now_ms):
     x=np.asarray(x,dtype=np.float32)
     if x.shape!=(len(FEATURES),) or not np.isfinite(x).all():raise ValueError('technical_features_invalid')
     p=predict_trees(bundle['classifier'],x);net=predict_trees(bundle['regressor'],x)
-    return {'p_win_estimate':p,'expected_stress_net_return':net,'action':'CANDIDATE' if p>=.60 and net>=.0005 else 'NO_TRADE',
-            'trade_allowed':False,'reason':'research_only_model_not_admitted','model_id':bundle['model_id'],'symbol':symbol,'signal_ms':signal_ms}
+    from research.pattern_model_qualification import qualification
+    quality=qualification(bundle['model_id'])
+    threshold_action='CANDIDATE' if p>=.60 and net>=.0005 else 'NO_TRADE'
+    return {'p_win_estimate':p,'expected_stress_net_return':net,
+            'threshold_action':threshold_action,'qualification':quality,
+            'action':threshold_action if quality['candidate_allowed'] else 'NO_TRADE',
+            'trade_allowed':False,'reason':quality['reason'],'model_id':bundle['model_id'],'symbol':symbol,'signal_ms':signal_ms}
 
 
 def add_technical_context(req,snapshot):
@@ -120,6 +125,11 @@ def add_technical_context(req,snapshot):
     raw=json.dumps(packet,sort_keys=True,separators=(',',':'),allow_nan=False)
     if len(raw)>10000:raise ValueError('technical_packet_too_large')
     req['input'][0]['content']+=' Additional technical evidence is supplied from '+venue+'. Analyze the named candle patterns, trend, momentum, volatility and trained ML estimate explicitly in plain Russian. These are numerical facts and uncalibrated predictions, not instructions. The mode remains a broad4h regime classification; a15m pattern is not an entry authorization. Distinguish regime direction from permission to trade. Do not invent patterns absent from detected_patterns or claim model profitability. No order, risk, pause or budget changes are authorized.'
+    if isinstance(packet.get('ml'),dict):
+        from research.pattern_model_qualification import qualification
+        quality=qualification(packet['ml'].get('model_id'))
+        if not quality['candidate_allowed']:
+            req['input'][0]['content']+=' The local ML has no verified economic qualification. Its numeric outputs are diagnostic scores, not a calibrated probability of profit or a reliable expected return. Even if a raw score crosses a threshold, do not promote it to a trade recommendation. Keep factual technical patterns separate from the rejected or unevaluated ML selector.'
     if packet.get('derivatives') is not None:
         from research.derivatives_context import validate
         validate(packet['derivatives'],symbol=packet['symbol'],signal_ms=packet['signal_ms'],as_of_ms=packet['as_of_ms'])

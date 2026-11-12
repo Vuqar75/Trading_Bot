@@ -1,5 +1,34 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — ML qualification contract prepared, NOT installed
+
+Owner asked what follows. Existing forecast/cost evidence already answers the
+ranking question; no repeated audit/fit/backtest. Implemented a concrete use
+boundary instead. See PATTERN_QUALIFICATION_CHANGE.md and LOCAL_TASK companion.
+The known unqualified pattern model and any unknown model now separate unchanged
+numeric scores/raw threshold_action from economic qualification; effective
+action=NO_TRADE, trade_allowed=false. Registry contains no admitted model.
+Model JSON admitted=true and snapshot qualification flags cannot self-approve.
+Legacy positive snapshots are rendered as unqualified, not recommendations.
+GPT prompt preparation carries same limitation but sends no request.
+
+Facts/patterns/scenario levels retained. Old records/IDs/start/scores stay intact;
+new records retain qualification metadata. Qualification-only changes do not
+mark the same market candle source_changed or duplicate a plan; changed financial
+levels/anchor still fail. Replay handles old/new contracts and rejects forged
+new qualification. Model file, weights, threshold values and timing unchanged.
+88 unique targeted tests PASS (count independently deduplicated); actual saved
+model control-vector numerical outputs bit-exact. No full app suite rerun.
+
+Cloud code only: no VM access/install/runtime health confirmation, paid call,
+training, new data collection, order, budget/credential/financial DB access.
+All ownerreported pauses/stopped research/Donchian/8attempts $0.018370 reserves
+remain unchanged by this work. LOCAL_TASK describes concrete checked delivery
+under standing paper-update authority, preserving newer local/VM code. No new
+service, pilot or trade admission is needed. This is a correctness improvement,
+not a profitable strategy; main short-term trading objective is unresolved.
+
+
 ## 2026-11-12 — continuation completed: cost attribution and fixed pair screen
 
 Owner asked why work stopped; continued directly without another local-agent

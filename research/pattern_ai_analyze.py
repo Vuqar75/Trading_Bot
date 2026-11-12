@@ -29,7 +29,10 @@ def analyze(bundle,capture,now_ms):
     long=bool(f[::2].any());short=bool(f[1::2].any());side=1 if long and not short else -1 if short and not long else 0
     if side:
         x=tech.vector(last,side,capture['symbol']);ml=tech.infer(bundle,x,symbol=capture['symbol'],signal_ms=signal_ms,now_ms=now_ms)
-    else:ml={'action':'NO_TRADE','trade_allowed':False,'reason':'no_unambiguous_detected_pattern','model_id':bundle['model_id'],'symbol':capture['symbol'],'signal_ms':signal_ms}
+    else:
+        from research.pattern_model_qualification import qualification
+        ml={'action':'NO_TRADE','threshold_action':'NO_TRADE','qualification':qualification(bundle['model_id']),
+            'trade_allowed':False,'reason':'no_unambiguous_detected_pattern','model_id':bundle['model_id'],'symbol':capture['symbol'],'signal_ms':signal_ms}
     packet={'schema':1,'feature_version':tech.VERSION,'symbol':capture['symbol'],'venue':'binance-usdm','as_of_ms':now_ms,'signal_ms':signal_ms,
             'expires_ms':signal_ms+bar,'timeframe':'15m','price_kind':'last_closed_candle_not_executable_quote','close':rows[-1][4],
             'side':'LONG' if side==1 else 'SHORT' if side==-1 else 'WAIT','detected_patterns':patterns,

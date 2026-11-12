@@ -28,7 +28,8 @@ class PatternAIContract(unittest.TestCase):
                 'train_label_end_ms':999,'classifier':leaf(.7),'regressor':leaf(.001),'model_id':'unit-model'}
     def test_inference_never_grants_trading(self):
         z=t.infer(self.bundle(),np.zeros(34),symbol='BTCUSDT',signal_ms=2000,now_ms=2001)
-        self.assertEqual(z['action'],'CANDIDATE');self.assertFalse(z['trade_allowed'])
+        self.assertEqual(z['threshold_action'],'CANDIDATE');self.assertEqual(z['action'],'NO_TRADE');self.assertFalse(z['trade_allowed'])
+        self.assertFalse(z['qualification']['candidate_allowed'])
     def test_stale_model_rejected(self):
         with self.assertRaisesRegex(ValueError,'model_stale'):t.infer(self.bundle(),np.zeros(34),symbol='BTCUSDT',signal_ms=10000,now_ms=10000)
     def test_future_training_rejected(self):

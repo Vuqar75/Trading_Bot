@@ -126,7 +126,15 @@ def packet_audit(bundle,packet):
     values=(ml.get('p_win_estimate'),ml.get('expected_stress_net_return'))
     if any(type(v) not in (int,float) or not np.isfinite(v) for v in values):return dict(result,status='missing_saved_predictions')
     pe=abs(p-values[0]);ne=abs(net-values[1]);action='CANDIDATE' if p>=.6 and net>=.0005 else 'NO_TRADE'
-    return dict(result,status='match' if max(pe,ne)<=1e-12 and action==ml.get('action') else 'prediction_mismatch',
+    # Old records keep their original threshold action. New records separate
+    # that arithmetic from economic qualification without changing scores.
+    action_matches=action==ml.get('action')
+    if 'qualification' in ml or 'threshold_action' in ml:
+        from research.pattern_model_qualification import qualification
+        quality=qualification(bundle['model_id'])
+        action_matches=(ml.get('threshold_action')==action and ml.get('qualification')==quality and
+                        ml.get('action')==(action if quality['candidate_allowed'] else 'NO_TRADE'))
+    return dict(result,status='match' if max(pe,ne)<=1e-12 and action_matches else 'prediction_mismatch',
                 p_win_replayed=p,stress_net_replayed=net,p_max_abs_error=pe,net_max_abs_error=ne,
                 p_gate_passes=p>=.6,net_gate_passes=net>=.0005,
                 input_sha256=hashlib.sha256(x.tobytes()).hexdigest(),orders_enabled=False)

@@ -88,13 +88,17 @@ def advance(previous,packet,capture,now_ms):
         # Preserve actual inputs for future numerical replay; never synthesize
         # the missing fields of older ATR-only records.
         core['features']=copy.deepcopy(packet['features'])
-        core['ml']={k:v for k,v in packet['ml'].items() if k in ('model_id','action','trade_allowed','p_win_estimate','expected_stress_net_return','symbol','signal_ms')}
+        core['ml']={k:copy.deepcopy(v) for k,v in packet['ml'].items() if k in ('model_id','action','trade_allowed','p_win_estimate','expected_stress_net_return','symbol','signal_ms','threshold_action','qualification')}
         model=core['ml'].get('model_id')
         if not isinstance(model,str) or not 1<=len(model)<=100:raise ValueError('history_model_identity')
         identity=digest([packet['symbol'],packet['signal_ms'],model])
         found=next((r for r in state['records'] if r['id']==identity),None)
         if found:
-            if found['packet']['trade_scenarios']!=plan or found['anchor_hash']!=digest(anchor):found['state']='source_changed'
+            # Qualification can change without a market revision. Preserve the
+            # original record; compare price/cost evidence, not its ML flag.
+            old_evidence={k:v for k,v in found['packet']['trade_scenarios'].items() if k!='model_candidate'}
+            new_evidence={k:v for k,v in plan.items() if k!='model_candidate'}
+            if old_evidence!=new_evidence or found['anchor_hash']!=digest(anchor):found['state']='source_changed'
         else:
             state['records'].append({'id':identity,'source_packet_id':packet.get('packet_id'),'recorded_ms':now_ms,'packet':core,'anchor_hash':digest(anchor),
                 'audit_start_ms':packet['signal_ms']+BAR,'audit_end_ms':packet['signal_ms']+16*BAR,
