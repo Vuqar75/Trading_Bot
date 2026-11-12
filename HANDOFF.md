@@ -1,5 +1,20 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continued next family: VWAP own-exit preregistration
+
+Without ownerrestart after negative RSI2 development, VWAP_DYNAMIC_PROTOCOL.md
+andINPUTS freeze next distinct mechanism.2TF15m/1h,3originalassets;closed2sigma
+reentry/body>.5ATR/RSI14<40or>60,expectedroom>=60bps atsignal AND delayedfill;
+UTC04..18 from4hwarmup/6hhold,notforeignoptimizedhourblacklist. CurrentVWAP
+closedmeanexit,2%stop,6hdeadline,oldfinancialAccount/caps/fees/funding. Standard
+weightedmoment bands,notforeign running-mean deviation math. Foreign5ae2853
+code statically read only; MEXC20x/TPfirst/claimedPnL not executed/transferred.
+2025development12accounts only;publishONEwinner before2026, no runnerupscan
+or thresholdmodification. Priorusedhistory/6choices selectionrisk disclosed.
+Continue to development/receipt/validationifaqualifiedwinnerexists,thenaudit;
+no VM/paid/newcollector/workingpause/budget/credential action.
+
+
 ## 2026-11-12 — RSI2 development finished; continue without owner restart
 
 Source-based dynamic exit batch e95bb02 completed2025 only:9asset/TFpairs,

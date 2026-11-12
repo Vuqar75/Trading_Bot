@@ -1,0 +1,16 @@
+{
+  "status": "registered_before_development",
+  "sha256": {
+    "VWAP_DYNAMIC_PROTOCOL.md": "466559b580da9ab7761f481557efd129d44a1f13bd1781793e0a65bc5e41cd89",
+    "research/vwap_dynamic.py": "dbc163f656f8bf845dd00321d0c47bcd41dd321f63891006cbc1388c5b2b7bb8",
+    "tests/test_vwap_dynamic.py": "453421452a93f88cc55380a686bf5940facd2a734fdea483ee22260d6c23e758",
+    "research/rsi2_dynamic.py": "f4c6a125e3e06c93d3a2f03b47aac8dfea9937c1b95d77b6316c9eb1582253c8",
+    "research/published_ema_transfer.py": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+    "research/rsi15m_verification.py": "ede8df529191ec20401cf0aa4043e967103e3dd62df7d708e32f40cc4464d040",
+    "research/rsi_crossasset.py": "6f8f8a64d34682ca4d3d9872d25bac357701bea9e1deda7ee8a3fb3140ca7be6",
+    "research/extreme_reversal.py": "3efecc43cced1ddc4f55f1234f6475dda994403fe3d88f9a1e21c4bb95da7317",
+    "research/taker_absorption.py": "1c2371c7342a13b50714394860ce2c97a96f48b50e1d0bf143b4ed9a7529e4d5",
+    "research/pattern_ai_results/sources.json": "469c09262b64de8a1ecd46f93167d15b627d5694172c0b0d67726550d0715136"
+  },
+  "foreign_source_sha256": "9a3b2e48fb7ef931188e44a55c7abb9abea125b3c01a6814760d4c6d46f7c9d2"
+}
