@@ -1,5 +1,14 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — fixed pooled cost-target ML registered before fits
+
+PANEL_NET_ML_PROTOCOL fixes same5coins, closed-hour common/residual/volume/funding
+features, two directional stressNET4hstop2% labels; July-Dec2025 monthly purged
+6month pooled HGBR with fixed Ridge control. Global1000/oneposition, cap100/1x,
+no2026/newdata/VM/APIbudget action. Distinct from old raw1hBTCETH model and
+sparse15mpatternRF, no retuning after outcomes. Code/versions frozen before fits.
+
+
 ## 2026-11-12 — daily recovery completed, rejected; no replay needed
 
 The a24bf82 fixed daily200/minute recovery policy failed development2025.
