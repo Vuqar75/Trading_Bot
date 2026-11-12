@@ -1,5 +1,25 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — direct continuation: one post-funding unwind test registered
+
+Owner challenged stopping after each failure. Continued directly without new
+manual instruction or repeat old backtests. Read saved maker_economics: among
+stress<=4h rows with break-even>30bps only BTCfamilyC1h/2h remains with3/1closed
+SHORT/BOTH duplicate paths. Not an adequate tradable sample; do not repeat
+maker arithmetic or relaunch these old paths. This is a read of prior results,
+not new independent strategy evidence.
+
+FUNDING_UNWIND_PROTOCOL.md registers a distinct already-settled funding input:
+|rate|>=3bps, contrarian side, decision at eventT then entryT+1/6min, no earning
+the earlier payout. Closed15mATR atT, same old unmodified outcome and reused
+100cap/1x/5risk/account replay. No fit or parameter sweep. Three original assets
+evaluated separately with predeclared counts,economics,segment,besttrade,DD gates;
+passing would be prospective-research candidate only, not trade permission.
+Previously used archive data; funding publication receipt times unknown.
+Frozen inputs include reused helpers and old CSV. Continue through calculation,
+independent financial/event audit and publication; no VM/paid/budget access.
+
+
 ## 2026-11-12 — fixed trade-volume confirmation test completed, rejected
 
 Accepted installed98ac50a/ab768de without repeat installation. Continued actual
