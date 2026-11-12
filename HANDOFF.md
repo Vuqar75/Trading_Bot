@@ -1,5 +1,31 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — one direction-normalization experiment completed, rejected
+
+Owner authorized the single predeclared comparison. Protocol/code published
+BEFORE firstfit as f4f46a3e9107e4f4a2267901a742431ce01d9598; receipt hashes
+unchanged. See PATTERN_DIRECTION_RESULTS.md and pattern_direction_results/.
+Completed all16originalpurgedmonthlyfolds (32newheadfits),50,628pairedcases,
+6monthtrain/originaltargets/costs/RF64depth5leaf40seed42jobs2. CachedrawRF
+controls reused, not refitted. No other representation/grid/threshold change.
+
+Candidate netMSE6.6050263e-5 vs raw6.5920138e-5 (+0.197%), globalconstant
+6.5711373e-5 (+0.516%). Brier0.19572013 vs raw0.19579946 (-0.0405%), below
+predeclared1%gain overBESTcontrol. Better netMSE than best monthlyreference
+only4/16 (<9). Noassetworse2%checkpasses; overall forecastscreenFAIL.
+Maxp0.53785955<0.60; originalp/netgate admits0cases. Economic screenFAIL;
+selectedmean/PnL undefined, not zero profit. No executedtrades/newreplay.
+No finalmodel export, runtime replacement, newpilot or tradeadmission.
+
+Independent tools/audit_pattern_direction.py verifies frozenhashes,sourceindex
+pairing,allfoldcuts/counts,MSE/Brier/gate/nonoverlap:PASS. Portable/sklearn
+paritymax1.12e-16 across160probevectors perhead.41targetedtestsPASS;no fullsuite
+repeat. Trainingelapsed~84seconds. Predictionarray~614KB; no duplicateinputs.
+No VM/financial/service/paidAPI/budget access. Allowner-reported pauses,
+stoppedstudy/Donchian,8attempts/$0.018370reserve and freeanalysis preserved.
+No installation task is needed for this rejected offline representation.
+Data already used by prior project research; no independent alpha claim.
+
 ## 2026-11-12 — direction-normalization experiment registered before fitting
 
 Owner authorized one fixed directed-feature comparison. PATTERN_DIRECTION_PROTOCOL.md

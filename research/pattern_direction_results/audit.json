@@ -1,0 +1,13 @@
+{
+  "paired_rows": 50628,
+  "folds_verified": 16,
+  "source_hashes": "match",
+  "predictions_hash": "match",
+  "independent_net_mse": 6.605026304695601e-05,
+  "independent_brier": 0.1957201309810691,
+  "gate_cases": 0,
+  "nonoverlap_cases": 0,
+  "training_performed_by_audit": false,
+  "new_market_or_provider_requests": false,
+  "status": "PASS"
+}
