@@ -1,5 +1,36 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — fixed trade-volume confirmation test completed, rejected
+
+Accepted installed98ac50a/ab768de without repeat installation. Continued actual
+strategy work, no new UI/service. Protocol/code/dependency hashes published
+BEFORE calculation as0363eda. See TAKER_ABSORPTION_RESULTS.md and resultdir.
+One fixed15m high-volume/low-body taker-imbalance setup, NEXT closed-bar
+opposite break, same unmodified old outcome/fees/ATRstop/2R/4h. This is a
+trade-volume proxy, not proven L2 absorption; primary Cont/Kukanov/Stoikov
+abstract specifically differentiates these inputs. No parameter/model grid.
+
+210pinned local sources match original;69minute volume archives reread with
+header,buy<=total,gaps/hash checks. No fresh market request.389setups,
+96confirmed signals:BTC48/ETH25/SOL23.35/25/23closed per scenario;BTC12cap
+refusals and1occupied, no increased cap. Net base/stressUSDT:BTC -7.0333/
+-10.0235,ETH -9.9522/-10.8835,SOL -.4013/-2.3320. SOLgrosspositive insufficient
+and not selected after costs;ETH/SOL fail>=30count. All4combinedstresssegments
+negative,without best negative;all MTM DD<2%(worst1.128%)doesn't rescue net.
+Fixed configuration rejected, no candidate or tradeadmission. Separate1000
+virtual accounts,<=100notional,1x,<=5estimatedrisk, historicalfilters proxy.
+
+6targetedtestsPASS; actualprefixcausality3assetsPASS. Independent audit389
+setups/166closedrecords verifies frozenhashes,sources,signalbinding,timing,
+nonoverlap,cost/funding/fills/capital/limits/periodcriteria:PASS. MTM path is
+runner-derived conservative bound, not independently source-replayed by audit.
+No model fit,newarchive,paidAPI,newcollector/deployment/order or local task.
+Existing VM,pauses,freeanalysis,stoppedresearch/Donchian and budget untouched;
+cloud has not read live credentials,financialDBs or budget. Past-used data,
+no independent alpha claim. Do not queue this completed test or tune it after
+results. Overall short-term profitable-bot objective remains unresolved.
+
+
 ## 2026-11-12 — fixed taker-volume response hypothesis registered
 
 Fetched/fast-forwarded98ac50a and accepted successful installed qualification

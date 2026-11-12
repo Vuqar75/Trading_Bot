@@ -1,0 +1,41 @@
+{
+  "status": "PASS",
+  "setups_verified": 389,
+  "closed_records_verified": 166,
+  "registered_source_hashes": "match",
+  "artifact_hashes": "match",
+  "scenarios": {
+    "BTCUSDT/base": {
+      "signals": 48,
+      "closed": 35,
+      "ledger_and_binding": "PASS"
+    },
+    "BTCUSDT/stress": {
+      "signals": 48,
+      "closed": 35,
+      "ledger_and_binding": "PASS"
+    },
+    "ETHUSDT/base": {
+      "signals": 25,
+      "closed": 25,
+      "ledger_and_binding": "PASS"
+    },
+    "ETHUSDT/stress": {
+      "signals": 25,
+      "closed": 25,
+      "ledger_and_binding": "PASS"
+    },
+    "SOLUSDT/base": {
+      "signals": 23,
+      "closed": 23,
+      "ledger_and_binding": "PASS"
+    },
+    "SOLUSDT/stress": {
+      "signals": 23,
+      "closed": 23,
+      "ledger_and_binding": "PASS"
+    }
+  },
+  "decision_matches": true,
+  "training_or_http_requests": 0
+}
