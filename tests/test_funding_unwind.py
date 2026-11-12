@@ -1,4 +1,6 @@
 import unittest
+import json
+from unittest.mock import patch
 
 import numpy as np
 
@@ -51,6 +53,18 @@ class FundingUnwindTests(unittest.TestCase):
         self.assertTrue(result['counts'])
         self.assertFalse(result['positive_base_stress'])
         self.assertFalse(all(result.values()))
+
+    def test_numpy_drawdown_does_not_break_durable_summary(self):
+        base = dict(closed=0, directions={-1: 0, 1: 0}, net=0, segments={'a': 0}, without_best=0, drawdown=np.float64(.01))
+        self.assertTrue(all(type(v) is bool for v in criteria(base, base).values()))
+        self.assertIn('drawdown_within_2pct', json.dumps(criteria(base, base)))
+
+    def test_summary_recovery_does_not_generate_fills(self):
+        from research import funding_unwind as module
+        with patch.object(module.common.execution, 'outcome', side_effect=AssertionError('new fill')):
+            account = module.account_from_saved([], self.prices(), False)
+        self.assertEqual(account['cash'], 1000)
+        self.assertEqual(account['closed'], 0)
 
 
 if __name__ == '__main__':

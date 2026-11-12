@@ -1,0 +1,45 @@
+{
+  "status": "PASS",
+  "actual_settled_source_events": "independently reread",
+  "frozen_sources": "match",
+  "verified": {
+    "BTCUSDT/base": {
+      "settled_signals": 0,
+      "closed": 0,
+      "funding_earned": 0,
+      "event_ledger": "PASS"
+    },
+    "BTCUSDT/stress": {
+      "settled_signals": 0,
+      "closed": 0,
+      "funding_earned": 0,
+      "event_ledger": "PASS"
+    },
+    "ETHUSDT/base": {
+      "settled_signals": 1,
+      "closed": 1,
+      "funding_earned": 0,
+      "event_ledger": "PASS"
+    },
+    "ETHUSDT/stress": {
+      "settled_signals": 1,
+      "closed": 1,
+      "funding_earned": 0,
+      "event_ledger": "PASS"
+    },
+    "SOLUSDT/base": {
+      "settled_signals": 23,
+      "closed": 23,
+      "funding_earned": 0,
+      "event_ledger": "PASS"
+    },
+    "SOLUSDT/stress": {
+      "settled_signals": 23,
+      "closed": 23,
+      "funding_earned": 0,
+      "event_ledger": "PASS"
+    }
+  },
+  "decisions": "match",
+  "new_http": 0
+}

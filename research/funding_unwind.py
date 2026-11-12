@@ -2,6 +2,7 @@
 import gzip
 import hashlib
 import json
+from collections import Counter
 from pathlib import Path
 import sys
 
@@ -38,42 +39,74 @@ def signals(trade, funding, start):
 
 
 def criteria(base, stress):
-    return {'counts': all(v['closed'] >= 30 and min(v['directions'].values()) >= 10 for v in (base, stress)),
+    checks = {'counts': all(v['closed'] >= 30 and min(v['directions'].values()) >= 10 for v in (base, stress)),
             'positive_base_stress': base['net'] > 0 and stress['net'] > 0,
             'stress_three_segments_positive': sum(n > 0 for n in stress['segments'].values()) >= 3,
             'stress_without_best_positive': stress['without_best'] > 0,
             'drawdown_within_2pct': max(base['drawdown'], stress['drawdown']) <= .02}
+    return {k: bool(v) for k, v in checks.items()}
 
 
-def main(root, out):
+def account_from_saved(records, mark, stress):
+    """Recover lost summary serialization only. Never generate a new fill."""
+    account = {'cash': 1000., 'peak': 1000., 'drawdown': 0.}
+    closed = [r['outcome'] for r in records if 'net' in r.get('outcome', {})]
+    for outcome in closed:
+        common.update_drawdown(account, outcome, mark, core.START, stress)
+    for k in ('gross', 'fees', 'impact', 'funding', 'liquidation_fee', 'net'):
+        account[k] = sum(r[k] for r in closed)
+    account['closed'] = len(closed)
+    account['directions'] = {str(side): sum(r['side'] == side for r in closed) for side in (-1, 1)}
+    account['rejections'] = dict(Counter(r.get('rejection') or r.get('outcome', {}).get('rejection') for r in records
+                                       if r.get('rejection') or r.get('outcome', {}).get('rejection')))
+    account['ignored_open'] = sum('ignored' in r for r in records)
+    account['exit_reasons'] = dict(Counter(r['reason'] for r in closed))
+    account['segments'] = {name: sum(r['net'] for r in closed if lo <= r['exit_ms'] < hi) for name, lo, hi in core.SEGMENTS}
+    account['without_best'] = account['net']-max((r['net'] for r in closed), default=0.)
+    return account
+
+
+def main(root, out, *, recover_saved=False):
     common.execution.r.START = core.START
     result, journals, sources, evaluations = {}, {}, {}, {}
+    if recover_saved:
+        journal_hash = hashlib.sha256((out/'journal.json.gz').read_bytes()).hexdigest()
+        journals = json.load(gzip.open(out/'journal.json.gz', 'rt'))
     for symbol in common.ASSETS:
         trade, mark, fund, proof, conflicts = core.load_data(root, symbol)
         if conflicts or not np.isfinite(trade).all() or not np.isfinite(mark).all():
             raise ValueError('source conflict/gap')
-        candidates = signals(trade, fund, core.START)
-        cut = 15*6000
-        prefix = signals(trade[:cut], [(t, r) for t, r in fund if t <= core.START+cut*core.M], core.START)
-        assert prefix == [r for r in candidates if r['T'] <= core.START+cut*core.M]
+        if not recover_saved:
+            candidates = signals(trade, fund, core.START)
+            cut = 15*6000
+            prefix = signals(trade[:cut], [(t, r) for t, r in fund if t <= core.START+cut*core.M], core.START)
+            assert prefix == [r for r in candidates if r['T'] <= core.START+cut*core.M]
         sources[symbol] = proof
         for stress in (False, True):
             key = symbol+('/stress' if stress else '/base')
-            journals[key], result[key] = common.replay(candidates, trade, mark, fund, symbol, stress)
+            if recover_saved:
+                result[key] = account_from_saved(journals[key], mark, stress)
+            else:
+                journals[key], result[key] = common.replay(candidates, trade, mark, fund, symbol, stress)
             print(key, result[key]['closed'], result[key]['net'], flush=True)
         check = criteria(result[symbol+'/base'], result[symbol+'/stress'])
         evaluations[symbol] = {'checks': check, 'candidate': all(check.values())}
     out.mkdir(parents=True, exist_ok=True)
-    raw = json.dumps(journals, sort_keys=True, separators=(',', ':')).encode()
-    with (out/'journal.json.gz').open('wb') as stream:
-        with gzip.GzipFile(fileobj=stream, mode='wb', mtime=0, filename='') as f:
-            f.write(raw)
+    if not recover_saved:
+        raw = json.dumps(journals, sort_keys=True, separators=(',', ':')).encode()
+        with (out/'journal.json.gz').open('wb') as stream:
+            with gzip.GzipFile(fileobj=stream, mode='wb', mtime=0, filename='') as f:
+                f.write(raw)
+    elif hashlib.sha256((out/'journal.json.gz').read_bytes()).hexdigest() != journal_hash:
+        raise ValueError('saved journal changed during recovery')
     summary = {'protocol': 'FUNDING_UNWIND_PROTOCOL.md', 'sources': sources, 'results': result,
-               'evaluations': evaluations, 'trading_admitted': False, 'fits': 0, 'prefix_causality': 'PASS',
+               'evaluations': evaluations, 'trading_admitted': False, 'fits': 0,
+               'prefix_causality': 'PASS_in_original_run' if recover_saved else 'PASS',
+               'recovered_summary_only': recover_saved,
                'journal_sha256': hashlib.sha256((out/'journal.json.gz').read_bytes()).hexdigest()}
     (out/'summary.json').write_text(json.dumps(summary, indent=2)+'\n')
     print(json.dumps(evaluations, indent=2))
 
 
 if __name__ == '__main__':
-    main(Path(sys.argv[1]), Path(sys.argv[2]))
+    main(Path(sys.argv[1]), Path(sys.argv[2]), recover_saved='--recover-saved-summary' in sys.argv[3:])

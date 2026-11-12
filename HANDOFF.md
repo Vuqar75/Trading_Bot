@@ -1,5 +1,37 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continued after failure: fixed funding unwind completed
+
+No new manual permission requested. Read prior maker CSV rather than redo old
+backtests: stress<=4h headroom>30bps has only BTC C1h/2h3/1closures (SHORT/BOTH
+duplicate), insufficient. Then one new funding-information hypothesis frozen
+0f2b6a7:actual |settled rate|>=3bps,contrarian4h,oldunchanged outcome/replay/
+100notional/1x/5risk. Before first outcome initial timestamp validation aborts
+because source event can be boundary+1ms; e1a8103 fixes forward1min rounding,
+then1/6min delay,ATRclosed<=actualevent. No parameter selected against PnL.
+
+See FUNDING_UNWIND_RESULTS.md, source receipts and full journal. BTC0signals,
+ETH1LONG net+1.1816/+1.1312USDT(base/stress),SOL23LONG net-8.5863/-9.5849.
+All3fail minimum30/10eachside;ETH single win not an edge,SOL negative. No
+SHORTevents at frozen threshold, no threshold lowering/side reversal after
+result. Allfunding earned=0:entryafterevent/hold<=4h between8hsettlements.
+AllMTM DD<=2%(max1.803%)not economicqualification. No candidate admitted.
+
+Full original outcomes finished and journal persisted, then summaryJSON failed
+on numpy.bool. Standardbool serialization corrected, summary recovered ONLY
+from saved outcomes+verified original marks; replay() patched to raise so no
+new fills/old backtest rerun. Original journalhash unchanged;pre-outcome hashes
+retained alongside post-outcome I/O fix receipt. Independent actual-funding
+archive audit verifies24signals/48closedrecords,eventavailability,no past
+payout,costs/fills/cash/limits/directions/periodcriteria:PASS.8targetedtestsPASS;
+actualprefix3assetsPASS in original run. No full app suite,newdata/API/fit.
+
+No VM/workingDB/credential/budget access or install; reported4pauses,stopped
+research/Donchian,paidtimersoff and8attempts/$0.018370 remain unchanged by this
+cloud work. No background experiment or local install task created for rejected
+rule. Overall profitable short-term bot objective unresolved; no success claim.
+
+
 ## 2026-11-12 — direct continuation: one post-funding unwind test registered
 
 Funding timestamp amendment BEFORE any result: original0f2b6a7 aborts in
