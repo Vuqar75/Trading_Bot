@@ -1,0 +1,10 @@
+{
+  "status": "registered_before_additional_warmup_and_policy_pnl",
+  "sha256": {
+    "DAILY_RECOVERY_PROTOCOL.md": "b2bc28dd220ab48ccca1995a591061ed21204addb5aa5e71a91795e9f4f2ef19",
+    "research/legacy_universe_data.py": "4197c33f664f453558a3386072912e38252df4b4695d2349ad5a15f097d2599f"
+  },
+  "existing_manifest_sha256": "a269e56fdf67f51a51fee7cc4eb68b62d1de369884d2431e1eb0d8339485d8db",
+  "additional_months": "2024-06..2024-11",
+  "additional_archives": 90
+}

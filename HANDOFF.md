@@ -1,5 +1,14 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — daily200 / minute recovery registered
+
+DAILY_RECOVERY_PROTOCOL fixes same5assetglobalwallet, completedDAILY200
+background and causalpartialhourRSI2 recovery, 2ATRstop withUSD5risk sizing,
+12hlimit, unchangedcosts/gates. AdditionalJune-Nov2024dailywarmup only,
+old195archivesreused. No2026untildevpasses, noVM/paidAPI/budget changes.
+Previous VWAP cohort definitively rejected; do not repeat or remove losers.
+
+
 ## 2026-11-12 — fixed legacy VWAP portfolio completed, continuing
 
 6bab392development2025globalone-positioncohort finished. Base59closesnet

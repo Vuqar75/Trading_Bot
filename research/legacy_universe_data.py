@@ -17,14 +17,15 @@ M=60000;H=60*M;BASE='https://data.binance.vision/data/futures/um/monthly'
 BUDGET=750*1024**2
 
 
-def month_range(end):
-    y,m=2024,12
+def month_range(end, start="2024-12"):
+    y,m=map(int,start.split("-"))
+    if not 1<=m<=12 or start>end:raise ValueError("month bounds")
     while f'{y}-{m:02d}'<=end:
         yield y,m
         y,m=(y+1,1) if m==12 else (y,m+1)
 
 
-def acquire(root,end='2025-12'):
+def acquire(root,end='2025-12',start='2024-12'):
     root=Path(root);root.mkdir(parents=True,exist_ok=True)
     if shutil.disk_usage(root).free<2*1024**3:raise ValueError('research disk budget')
     manifest_path=root/'manifest.json'
@@ -61,7 +62,7 @@ def acquire(root,end='2025-12'):
             return {'file':relative,'symbol':symbol,'kind':kind,'year':y,'month':m,'url':url,'sha256':digest,'bytes':len(raw)}
         except Exception as exc:
             return {'file':relative,'symbol':symbol,'kind':kind,'year':y,'month':m,'url':url,'error':type(exc).__name__+': '+str(exc)}
-    items=[(s,k,y,m) for s in ASSETS for y,m in month_range(end) for k in ('klines','markPriceKlines','fundingRate')]
+    items=[(s,k,y,m) for s in ASSETS for y,m in month_range(end,start) for k in ('klines','markPriceKlines','fundingRate')]
     results={k:v for k,v in cache.items()}
     with ThreadPoolExecutor(max_workers=4) as pool:
         for future in as_completed([pool.submit(one,item) for item in items]):
@@ -145,4 +146,4 @@ def supplement(root,symbol,kind,day):
 
 if __name__=='__main__':
     import sys
-    acquire(Path(sys.argv[1]),sys.argv[2] if len(sys.argv)>2 else '2025-12')
+    acquire(Path(sys.argv[1]),sys.argv[2] if len(sys.argv)>2 else '2025-12',sys.argv[3] if len(sys.argv)>3 else '2024-12')
