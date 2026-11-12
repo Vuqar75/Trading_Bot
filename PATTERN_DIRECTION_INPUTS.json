@@ -1,0 +1,13 @@
+{
+  "protocol": "PATTERN_DIRECTION_PROTOCOL.md",
+  "sha256": {
+    "PATTERN_DIRECTION_PROTOCOL.md": "ad11f6c01fe002132148557b076b87f61bba1f96ac6864cf21b7f9464bf4e9bd",
+    "research/pattern_direction_features.py": "e3366998947ad22aee2af360541a7af5e1e9b6e0ad69297d2f23480d952fabee",
+    "research/pattern_direction_experiment.py": "022cf3d58be19336e5c72fad8d1b8490fda37ce90037606077b1e948472ef1b8",
+    "research/pattern_ai_results/training_examples.npz": "4a314d378a1937e3c157397952e92cc24f0accd878f04e3fdd29c944c67ac8e6",
+    "research/pattern_ai_results/predictions.json.gz": "32adf1ddd7a270a0582650be33d6f01079853f36eed6df404b0f5a3f341f6e83",
+    "research/pattern_ai_results/summary.json": "ba695ff52d88c9b171297b9a25fc7cf1a304021563da08dbb62c8774165e7d78"
+  },
+  "runtime_changes_authorized": false,
+  "paid_calls_authorized": false
+}
