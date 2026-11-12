@@ -1,0 +1,3004 @@
+{
+  "stage": "development2025",
+  "selected": "daily200_hourly_rsi_minute_recovery",
+  "universe": [
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "LINKUSDT",
+    "DOTUSDT"
+  ],
+  "results": {
+    "base": {
+      "gross": -9.544426171227807,
+      "fees": 88.40472719838526,
+      "impact": 88.40472481226871,
+      "funding": -0.0775802261360377,
+      "liquidation_fee": 0.0,
+      "net": -186.43145840801782,
+      "closed": 976,
+      "long": 436,
+      "short": 540,
+      "cash": 813.568541591982,
+      "drawdown": 0.19051253977593344,
+      "open": null,
+      "pending": null,
+      "unresolved": null,
+      "exit_reasons": {
+        "mean_exit": 814,
+        "stop": 162
+      },
+      "rejections": {
+        "expired_or_gap_geometry": 95,
+        "risk_granularity_or_minimum_proxy": 3
+      },
+      "without_best": -192.25820790901784,
+      "mean_hold_hours": 1.965129781420765,
+      "max_hold_hours": 9.05,
+      "segments": {
+        "2025H1": -87.01663059051035,
+        "2025H2": -99.41482781750746,
+        "2026H1": 0.0,
+        "2026H2": 0.0
+      },
+      "by_asset": {
+        "XRPUSDT": {
+          "closed": 208,
+          "net": -22.564612487568674
+        },
+        "ADAUSDT": {
+          "closed": 178,
+          "net": -24.05836968854992
+        },
+        "DOGEUSDT": {
+          "closed": 176,
+          "net": -54.94720460830444
+        },
+        "LINKUSDT": {
+          "closed": 208,
+          "net": -55.00422418945999
+        },
+        "DOTUSDT": {
+          "closed": 206,
+          "net": -29.857047434134785
+        }
+      },
+      "without_best_asset": -163.86684592044915,
+      "active_months": 12,
+      "max_concurrent_positions": 1
+    },
+    "stress": {
+      "gross": -22.871197552886233,
+      "fees": 78.8861867310098,
+      "impact": 157.77235059081343,
+      "funding": -0.1757129618516275,
+      "liquidation_fee": 0.0,
+      "net": -259.7054478365611,
+      "closed": 872,
+      "long": 382,
+      "short": 490,
+      "cash": 740.294552163439,
+      "drawdown": 0.26223927563602417,
+      "open": null,
+      "pending": null,
+      "unresolved": null,
+      "exit_reasons": {
+        "mean_exit": 722,
+        "stop": 150
+      },
+      "rejections": {
+        "expired_or_gap_geometry": 262,
+        "risk_granularity_or_minimum_proxy": 3
+      },
+      "without_best": -267.2406877445611,
+      "mean_hold_hours": 2.03631498470948,
+      "max_hold_hours": 8.6,
+      "segments": {
+        "2025H1": -135.04908894961284,
+        "2025H2": -124.65635888694825,
+        "2026H1": 0.0,
+        "2026H2": 0.0
+      },
+      "by_asset": {
+        "XRPUSDT": {
+          "closed": 178,
+          "net": -30.567824441307323
+        },
+        "ADAUSDT": {
+          "closed": 166,
+          "net": -43.50091813111318
+        },
+        "DOGEUSDT": {
+          "closed": 159,
+          "net": -77.04134448440497
+        },
+        "LINKUSDT": {
+          "closed": 186,
+          "net": -72.19038695983718
+        },
+        "DOTUSDT": {
+          "closed": 183,
+          "net": -36.404973819898444
+        }
+      },
+      "without_best_asset": -229.1376233952538,
+      "active_months": 12,
+      "max_concurrent_positions": 1
+    }
+  },
+  "checks": {
+    "counts": true,
+    "positive_both": false,
+    "both_halves_positive": false,
+    "without_best_positive": false,
+    "drawdown": false,
+    "without_best_asset_positive": false,
+    "active_months": true
+  },
+  "candidate": false,
+  "trading_admitted": false,
+  "sources": {
+    "XRPUSDT": [
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2024-06.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2024-06.zip",
+        "sha256": "fd9055cb8a05ce268c24b91800682091232f0dc285b1240f57e2d66396eb6a5f",
+        "bytes": 753
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2024-07.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2024-07.zip",
+        "sha256": "68c8ac31b16c4b1f81a3b70860175e5163e76652ddea9ef1bb6e6f01a369a33e",
+        "bytes": 786
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2024-08.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2024-08.zip",
+        "sha256": "fa1318b6213cae7ff5ead4110c4d7c97c3103203b56b2607678e4527dd8ad906",
+        "bytes": 925
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2024-09.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2024-09.zip",
+        "sha256": "69faf312921ce5c88092d8c328b04dc006ea42dabfe68ad5fee542d28c0ae2ca",
+        "bytes": 861
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2024-10.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2024-10.zip",
+        "sha256": "f9d62565da4bf7d1caddc9cb09b1a73a4a312a7419c5c0439c662fc3f58dd993",
+        "bytes": 740
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2024-11.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2024-11.zip",
+        "sha256": "95c733e5ad58f4c26c75b71a2081de8f692a4ce271006b7f5b3c87854a848c70",
+        "bytes": 771
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2024-12.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2024-12.zip",
+        "sha256": "be526ba15c6c4c3ae8cddda1411a13f665f635be444c992efd2f66e6bbfa37d8",
+        "bytes": 805
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-01.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-01.zip",
+        "sha256": "b14759b7a99d6111f819790de938b2b0f3eeeaac57402c2e1ef71fd38302d26d",
+        "bytes": 743
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-02.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-02.zip",
+        "sha256": "927da57e3d0a92fa6e024c00397abac93ab5722ca7a353e92e493cfd28de2f3c",
+        "bytes": 862
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-03.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-03.zip",
+        "sha256": "690fb0f227c2b8b1467428b2e3340ea9928d8ef81ac461bd6f641f100dd21d66",
+        "bytes": 951
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-04.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-04.zip",
+        "sha256": "d47ea402f11ad727be1c1b4adfa8483698151509d90e9cb53b84b0a43ca67de8",
+        "bytes": 907
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-05.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-05.zip",
+        "sha256": "7c664b87b0ae630b033f67ab334a46d433374927e74445c56f4b3be7b9b23092",
+        "bytes": 895
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-06.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-06.zip",
+        "sha256": "5bfb1683c2b8c738a0059ee02078706585b62c1e430685af76e3796a0ee58613",
+        "bytes": 907
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-07.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-07.zip",
+        "sha256": "039ff5c8dab9d9f2633f1bd4d191e6a727d6d169d897b6cbcd7fc162ff374723",
+        "bytes": 817
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-08.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-08.zip",
+        "sha256": "07a8182394836928094bb6b476fef9e8858e234d0ff05ef41114ff25bab923ba",
+        "bytes": 910
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-09.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-09.zip",
+        "sha256": "1f09cb45eadb64731acaaae997167c54b76c3a08b367cd5acbd89f8562593ee3",
+        "bytes": 881
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-10.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-10.zip",
+        "sha256": "3fc5b1bcac5579e6cc49e17457282c6bfb970932d2aefcbc0c896d660b81a939",
+        "bytes": 952
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-11.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-11.zip",
+        "sha256": "22040d49b1cdce5337571f5641008a81f1374680226b7c7a5ae63d37dcc449fd",
+        "bytes": 983
+      },
+      {
+        "file": "fundingRate/XRPUSDT-fundingRate-2025-12.zip",
+        "symbol": "XRPUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/XRPUSDT/XRPUSDT-fundingRate-2025-12.zip",
+        "sha256": "21c4a5933de28ec693fbe3a43d9ae4504b762e70e7cc0e0de4afd46104abe7f0",
+        "bytes": 1007
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2024-06.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2024-06.zip",
+        "sha256": "6037c88969245bc20fdd61161976d16788b8760c51314cc750b8fe8c26bdf55e",
+        "bytes": 1559746
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2024-07.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2024-07.zip",
+        "sha256": "fa9522c88de7568fc2ca39dac841800fb7fd5b0d077a49c9db103483bdab7318",
+        "bytes": 1714550
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2024-08.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2024-08.zip",
+        "sha256": "faaf73419f5fa99b3f1aae6bfe0bbf43fa8e18caeeb87a5cacf0b451d74e3415",
+        "bytes": 1702936
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2024-09.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2024-09.zip",
+        "sha256": "fb4f51b21645be9705942ed7bfb69a01c16b5cc98590b52ffd8a2f71142e4225",
+        "bytes": 1607281
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2024-10.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2024-10.zip",
+        "sha256": "5a739dc9a458fef0e5aecfb457e3523686d451e598ead2df86adbb65b4144dd9",
+        "bytes": 1636869
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2024-11.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2024-11.zip",
+        "sha256": "f2177e1c6e95f5dff765dc5643abdcd6a151795947e69ea85b7eb7211ab926bd",
+        "bytes": 1764695
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2024-12.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2024-12.zip",
+        "sha256": "659add47d41b25189bfed69ae3052253df648443e2aa0376537ccece6a39d6ee",
+        "bytes": 1898405
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-01.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-01.zip",
+        "sha256": "79f499a9a556b712ea1c28bc83c5e8294160cc4b87561424db1d108f5e87661b",
+        "bytes": 1866486
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-02.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-02.zip",
+        "sha256": "6d75a5c0205f1cdee2dea2b616c04e3a7e88176126723237c1a5859843eb0fa0",
+        "bytes": 1680617
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-03.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-03.zip",
+        "sha256": "5354c5b2168ba9ebce28fee3c45a65ad4d3722c3cede41c53aef164bd68d119b",
+        "bytes": 1842007
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-04.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-04.zip",
+        "sha256": "5223fbd5576882ca2371fe4ffb0224674967cedf1427b82635cc9d01a6a232ab",
+        "bytes": 1760122
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-05.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-05.zip",
+        "sha256": "bc4eb9aed40935c8a21485218037f5de9c1919bea5524f9f4eb6e82efbd7bcee",
+        "bytes": 1803083
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-06.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-06.zip",
+        "sha256": "1aba24ca083027da84fabf5dce0a624d47fee0c36501ad5641b6a65e040b294e",
+        "bytes": 1719574
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-07.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-07.zip",
+        "sha256": "6f5f7faa96370dacb4792b18ce628d3ff8b0a5fa4cd10063e55065e03ff9f53d",
+        "bytes": 1848830
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-08.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-08.zip",
+        "sha256": "823e87bba1c53bebffd8074ee190adfae55c489936ff5d539fcdf54e1ea68633",
+        "bytes": 1831399
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-09.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-09.zip",
+        "sha256": "0f47e24c9e133c09d0df6756e224c2547d5e1ca3c9ba7af77232d1e9368330fb",
+        "bytes": 1726698
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-10.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-10.zip",
+        "sha256": "9ba37c1fb1bded7e554dbfc9221c126cdb8bf4c569b4b5c639e83bcda38b6b3e",
+        "bytes": 1818791
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-11.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-11.zip",
+        "sha256": "dd62352ab1fc3b2e8f5f235c7c775044432a493c8a5ab732f709acfe1c8f62bc",
+        "bytes": 1761064
+      },
+      {
+        "file": "minute/klines/XRPUSDT-1m-2025-12.zip",
+        "symbol": "XRPUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/XRPUSDT/1m/XRPUSDT-1m-2025-12.zip",
+        "sha256": "821efe300f5a66a68fe468e45fe9094431fac70b62a909c4aa7cc97239c4ce4c",
+        "bytes": 1748758
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2024-06.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2024-06.zip",
+        "sha256": "d497fee8feda4f8163dec1427d8c3198251dcaad1eef310173120fcb82a68dea",
+        "bytes": 742443
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2024-07.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2024-07.zip",
+        "sha256": "29103a09f93a3b70e09587c2e496d46d324ddc955ffb43fd84cb4605f3b20745",
+        "bytes": 791597
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2024-08.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2024-08.zip",
+        "sha256": "f35ec1fda8eb6b363e21d55499f7be351c356cde75fd3455c42ffe8ba5278579",
+        "bytes": 777578
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2024-09.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2024-09.zip",
+        "sha256": "9a0eb1e77159c0275128737432dbd8f31a0e9fd5edac6074ea1f6d317d29ce12",
+        "bytes": 734404
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2024-10.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2024-10.zip",
+        "sha256": "d533f8283d33fc2da04803e7e6c3ca5daab985f906f0cf17b21c76e3c8670576",
+        "bytes": 767286
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2024-11.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2024-11.zip",
+        "sha256": "4e09fd3989c855c0b6ecc29f490770979551254940f7effd09c20ee92be443c9",
+        "bytes": 826252
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2024-12.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2024-12.zip",
+        "sha256": "6515ec39d81bebd9c8803e4297a549a45fc7f2ec178653ef027b177c8119f4fb",
+        "bytes": 891705
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-01.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-01.zip",
+        "sha256": "bfc8661d4be5389c2763eb6e82f3f600d0620553f3ebe3193764486fab114549",
+        "bytes": 875038
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-02.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-02.zip",
+        "sha256": "703428345a68e30d8122caa914d91a087cfc099e152b029b3f3a82a1261038aa",
+        "bytes": 784374
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-03.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-03.zip",
+        "sha256": "4ad3a241496bdb0a0b61a7fcdeaff642fffe0578a89ca7d81d5db88d0302aa7b",
+        "bytes": 859290
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-04.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-04.zip",
+        "sha256": "f3490cde1eb5107653605c5f33069f5ebcb38e54c1e7c0b41429801c9c5fdc7a",
+        "bytes": 813396
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-05.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-05.zip",
+        "sha256": "ca69564f4a7ffa5d3dc9c86da85cc5b8c6a1383aed74a4fd9e835f8d6545e497",
+        "bytes": 835958
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-06.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-06.zip",
+        "sha256": "78c3b32636598ace530199c7950bde2a1f0f564b28731b9ea5605ed68514cf2d",
+        "bytes": 786223
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-07.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-07.zip",
+        "sha256": "e07e32f44d7ca4a07341effe1117812c3fe45a7c19486f83cf7244fc6d06eaf1",
+        "bytes": 867682
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-08.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-08.zip",
+        "sha256": "7d8d082fba16a876a860d1bea9444087799ddcf57b3434ee66d4e777222892a9",
+        "bytes": 843832
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-09.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-09.zip",
+        "sha256": "ea6a38f187d026765d59b144d2817bd66db5d60d1e4ab4a0deedce009562d26c",
+        "bytes": 789924
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-10.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-10.zip",
+        "sha256": "67fe229c43243286b3c5c4c7f37984a77de13752d546f1f8b66fcfa4002395ee",
+        "bytes": 834649
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-11.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-11.zip",
+        "sha256": "ca5eaaeb51e03925060739750d9847c1ab393cfcbf246882527c2379bce280a1",
+        "bytes": 814902
+      },
+      {
+        "file": "minute/markPriceKlines/XRPUSDT-1m-2025-12.zip",
+        "symbol": "XRPUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/XRPUSDT/1m/XRPUSDT-1m-2025-12.zip",
+        "sha256": "868966dbb09ae108b5236c685a7e421684a8b11d64f6f08736c6fe5b4d905a3a",
+        "bytes": 822505
+      }
+    ],
+    "ADAUSDT": [
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2024-06.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2024-06.zip",
+        "sha256": "01a5eecac131548ffaaff8ef1122c9a4828243a0979d91df40f319368b1177b3",
+        "bytes": 745
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2024-07.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2024-07.zip",
+        "sha256": "3e2cbc523d8fa9ccef3cd49b65ddbd08bc066dd2693139219b91b953fdc6ce85",
+        "bytes": 792
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2024-08.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2024-08.zip",
+        "sha256": "0e3e1bb39d7f78a63f1182f89d451a68777f2b57e7ca985448d8c8b12b8a6997",
+        "bytes": 923
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2024-09.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2024-09.zip",
+        "sha256": "387bb17d1ea7995270ce2769ec2c888bc8fa3d2110d5843888807254c40381d4",
+        "bytes": 840
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2024-10.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2024-10.zip",
+        "sha256": "a95896349b3447f08bb67b3167223cae41abcfebd1b106826bb89989c1dd2e18",
+        "bytes": 802
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2024-11.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2024-11.zip",
+        "sha256": "8ac7afd8541ae2fac72093d8b3713acb64f64bf0d859bf72be4c3a6f83a09dd2",
+        "bytes": 787
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2024-12.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2024-12.zip",
+        "sha256": "b15893bcb18cc762d191f337c0a44e7ea4acd1730067cdec9788ad9fbfc4b262",
+        "bytes": 829
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-01.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-01.zip",
+        "sha256": "ef6a5a286fc3d91fcdb479226500693ce9bc16ee39399ef09076a40349d2e399",
+        "bytes": 697
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-02.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-02.zip",
+        "sha256": "4bc50dceb5108bef8e51c417b13108595c64460d738080a619b60ce341718ed0",
+        "bytes": 871
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-03.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-03.zip",
+        "sha256": "3d0e98df673dad946ea8a6318d7b3f7189323127362f3aa80734a78d42aa5594",
+        "bytes": 924
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-04.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-04.zip",
+        "sha256": "0db8f973876decb78f7ef39c4114216c769c92e10ed5bbdae1ca148178b2104d",
+        "bytes": 896
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-05.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-05.zip",
+        "sha256": "2c2596eb60963e0970ccd887e4e7da52d6eed2ea2c33523407803fb7a28ff951",
+        "bytes": 905
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-06.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-06.zip",
+        "sha256": "c5cc8021595af02e572658ebbc6ee76210d0226e0d474bb354106b55b12edea9",
+        "bytes": 906
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-07.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-07.zip",
+        "sha256": "17222cc957c27ecb23eb4ab528fe954bf8da05256a38ffc9b04d06ffe1f26811",
+        "bytes": 784
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-08.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-08.zip",
+        "sha256": "f89ac9f7c6feb4a4ce110a7c40571cb1bdf0ac9ff273ee708216a2eb94ce5355",
+        "bytes": 858
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-09.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-09.zip",
+        "sha256": "2ea59a1d407e7c2888128227a070f68d4bd9bf25dc89066b92a217b7fe2eab45",
+        "bytes": 808
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-10.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-10.zip",
+        "sha256": "5b127fad9e89c53cece939b1ebafa4921f20ba47f10a7069e5eeb19ab2de63fb",
+        "bytes": 913
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-11.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-11.zip",
+        "sha256": "a70b35260554e81dc79aa1ed0448e2cafddbf1952bbac0120251184c09b548fa",
+        "bytes": 932
+      },
+      {
+        "file": "fundingRate/ADAUSDT-fundingRate-2025-12.zip",
+        "symbol": "ADAUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/ADAUSDT/ADAUSDT-fundingRate-2025-12.zip",
+        "sha256": "14d01f1b4dba807e178f3e21154c2b70e0d6a7921322dd082da59d7356e63879",
+        "bytes": 954
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2024-06.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2024-06.zip",
+        "sha256": "859e7286752154b62dcb8a1f7ce2a7ada039e67a5a7b4c859f5aad9ac653e93d",
+        "bytes": 1464917
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2024-07.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2024-07.zip",
+        "sha256": "43ae3232650c9dc7ec67974e9650f2f1dbdc0c76e7db4330753140fb2f339490",
+        "bytes": 1551980
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2024-08.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2024-08.zip",
+        "sha256": "d809ee15e508a7d764052cd97595d14717e01dad9e9b946f4b394b5d3bd7c42f",
+        "bytes": 1528954
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2024-09.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2024-09.zip",
+        "sha256": "a206d457fffb9d6574c3bdef41d19ae9f579880b2bb59868eadcde0c83d7a8ab",
+        "bytes": 1463588
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2024-10.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2024-10.zip",
+        "sha256": "55b3b8bb3e8eae40e805b9e3f9bfee63ee104aa72f823426c6b2241a62fbf2fb",
+        "bytes": 1510727
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2024-11.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2024-11.zip",
+        "sha256": "8f5820e2a0edbad4eec23bda98731db1ae65497d99824150c9952a069620f64f",
+        "bytes": 1641259
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2024-12.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2024-12.zip",
+        "sha256": "a86adac0baec7760c07306886599d5464e549405557e84634dbe355e5187b6c0",
+        "bytes": 1708062
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-01.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-01.zip",
+        "sha256": "cc67ac9c2fc7c05a97fed57c90c071e8dcf2c5def6859a946ebbaf6bbf2cac2c",
+        "bytes": 1691242
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-02.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-02.zip",
+        "sha256": "15df15731326945897977f6ddf0414a13533d8d7dd167e7a59cdc2fcda3b8d85",
+        "bytes": 1512502
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-03.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-03.zip",
+        "sha256": "aa98ac5adb06a3be6ed65340f2223597244d13c282b9600d4d6df1e5dd3feecc",
+        "bytes": 1682691
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-04.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-04.zip",
+        "sha256": "423f30b85f71463002fe00f65310e63196e48555f2a7d3c68c0888d83ace6fee",
+        "bytes": 1581393
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-05.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-05.zip",
+        "sha256": "84a5802110fd625b21754b87a00c462d3af9b6e07bd8d22c90feed6f921cf03d",
+        "bytes": 1648295
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-06.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-06.zip",
+        "sha256": "3a178ab37a2e232d3009e270832a50dfbb29d9f2ddfba8695391af74dd3de57d",
+        "bytes": 1551776
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-07.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-07.zip",
+        "sha256": "e017c9d37daa1f2fe3a254dbe5409f31ae1056037f969476ee6cf9eb7a908b01",
+        "bytes": 1656176
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-08.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-08.zip",
+        "sha256": "86c99b5d9c086b61db1f971b0b996ec35919169f7bf511ed852c4437cafd06f4",
+        "bytes": 1673153
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-09.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-09.zip",
+        "sha256": "49c661705b3edd784bd377b6d246708621593e441d2f31623f259542c3242b39",
+        "bytes": 1564568
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-10.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-10.zip",
+        "sha256": "ed34570f78990bb424befefd3fc4d4b3cabb515419b9b6788c7db908a5a381a1",
+        "bytes": 1624418
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-11.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-11.zip",
+        "sha256": "70859a6e2bac16816dc57897ed8803950211d7602b1d62e647076fd1dc8d1501",
+        "bytes": 1554593
+      },
+      {
+        "file": "minute/klines/ADAUSDT-1m-2025-12.zip",
+        "symbol": "ADAUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/ADAUSDT/1m/ADAUSDT-1m-2025-12.zip",
+        "sha256": "d00dc838513bf910a0d80ae913e4bedc2b9aa5e116503c6acf0ec4ffd7107dfe",
+        "bytes": 1559353
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2024-06.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2024-06.zip",
+        "sha256": "e92361a06a46914ea1bc5dadc5d36950648b33f50140e4db8ef001826f7ec75c",
+        "bytes": 735291
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2024-07.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2024-07.zip",
+        "sha256": "1a9f2288ade8809b6c8761071f7771a0630369b4c8021ab61969e76eaba49b12",
+        "bytes": 771400
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2024-08.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2024-08.zip",
+        "sha256": "df3f30efbae7050ef74832bfbe14d653306637f78e12b6afd5776772c60ccb0e",
+        "bytes": 752508
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2024-09.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2024-09.zip",
+        "sha256": "49d8954b855cb5a3d6e1025eeba973e0090267deecd42f358b4a0cd94153e28b",
+        "bytes": 722862
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2024-10.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2024-10.zip",
+        "sha256": "c7b072d251d15e6a3db591798fa56e912460b06ef3fa6707625ef6fb9a473e9c",
+        "bytes": 763432
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2024-11.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2024-11.zip",
+        "sha256": "cdd36c39d9d82d2b8d1951a6763af0069ebd40725bd09405bcfe8423dc6c8c99",
+        "bytes": 821292
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2024-12.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2024-12.zip",
+        "sha256": "82d93ad99e86a9196a841ec3bf4bbaf4c1c9183357fe5fceeac28161640aaaa1",
+        "bytes": 857063
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-01.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-01.zip",
+        "sha256": "551f2e70eae5387a515da5139538f6c50a49dfda487e160a96fe6cfcb1771f02",
+        "bytes": 857893
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-02.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-02.zip",
+        "sha256": "a30f0d7dbe55c614a4db02c53fb48fb750b5d32eab9d2e8a8fe7f0fe29d95c02",
+        "bytes": 738803
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-03.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-03.zip",
+        "sha256": "622505a3416c636534ea1e7745b615df7b562c4e6638a439b5920eefb9a33d7e",
+        "bytes": 815809
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-04.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-04.zip",
+        "sha256": "ee633ab030ea7944165cc9f07bfa6501211cf858c1ffab0b93aaa42846f2c6a2",
+        "bytes": 768444
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-05.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-05.zip",
+        "sha256": "b144f857e147cc49525a7ac1d7be559b7b70f9ff58373ed90f80fa2fbdce55b2",
+        "bytes": 807931
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-06.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-06.zip",
+        "sha256": "097d4d31147931e46416225a92fb21cec3ac35dbbdcc6d807e3b5b7cf0a228a4",
+        "bytes": 747716
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-07.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-07.zip",
+        "sha256": "775528262fa28c964cced1d43d8922cc59429b01697ebf3bee64dd10636583bb",
+        "bytes": 829633
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-08.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-08.zip",
+        "sha256": "c4eb0dd9d0314475fbc0c26acc4da7f1575bbb2414899567d48b307a955cd05a",
+        "bytes": 815282
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-09.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-09.zip",
+        "sha256": "976f71d5ed81993bca45587697360483a071f90a9e5f7f8ac5e6d31d5844d9d0",
+        "bytes": 761395
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-10.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-10.zip",
+        "sha256": "50ec1e360551ce9bc21b9e1baae5bd80137ad29a10e4e11e3845503e3f33f355",
+        "bytes": 790893
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-11.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-11.zip",
+        "sha256": "b2eb7a638d1a9c9b67a81c8dcc5dcdcdf6c85fe9709cd9a750fb69fa33a129a1",
+        "bytes": 752771
+      },
+      {
+        "file": "minute/markPriceKlines/ADAUSDT-1m-2025-12.zip",
+        "symbol": "ADAUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/ADAUSDT/1m/ADAUSDT-1m-2025-12.zip",
+        "sha256": "b6fb10285bdb245297f32bf2cd6d9910e314275126db499f92a6a1b680688875",
+        "bytes": 762004
+      }
+    ],
+    "DOGEUSDT": [
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2024-06.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2024-06.zip",
+        "sha256": "c6ba303e7c28db0a2bf2f8121482c7b8813793b860d2ef22ecd08dcd95e8185e",
+        "bytes": 785
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2024-07.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2024-07.zip",
+        "sha256": "4e9db7b8df1c75627ce56d4010fa84a93fce0162112a93696e98da5138d0f380",
+        "bytes": 816
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2024-08.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2024-08.zip",
+        "sha256": "7b44b34f863c02066dfbcf3d343e746ea84058a5d76a94d64c256b78358b89ac",
+        "bytes": 935
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2024-09.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2024-09.zip",
+        "sha256": "92bc33954530f8d7bcf13a41d736a9480f4082cd1220d976d4a01bdbb52452b4",
+        "bytes": 862
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2024-10.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2024-10.zip",
+        "sha256": "c038f18bf93552ca8432d04482839ab50d5b6e903c1b63083c335d479236ba22",
+        "bytes": 763
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2024-11.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2024-11.zip",
+        "sha256": "45d7e6671e7bb1efc2ed557fd7139135468d0bea7dbc7906fe0c8b727c2777a0",
+        "bytes": 798
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2024-12.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2024-12.zip",
+        "sha256": "5b94b4960510e5e217048ee5268038d60a6dbcf45755063790f9c35602231983",
+        "bytes": 897
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-01.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-01.zip",
+        "sha256": "be2ccf953a2fa5e84f49be601917340ba1b220b7ca42566f4066173633c80107",
+        "bytes": 871
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-02.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-02.zip",
+        "sha256": "fa3a34848d0a10af64b9e534bf9209ac317fe0da05378d622dc9d406ca88f69d",
+        "bytes": 872
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-03.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-03.zip",
+        "sha256": "3d9ac62d34961c5bd7b2e2b9f33abef0bcb295fdfae421bd38abab67598b2482",
+        "bytes": 958
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-04.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-04.zip",
+        "sha256": "ef81cc81573c727ba251f68e73593322ccf16db7055de77856b4dd5cd1e7cfc8",
+        "bytes": 895
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-05.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-05.zip",
+        "sha256": "408322bd25a392d3fb10b66ebf214e2d7c0426456bfa1d3dab79da804a511188",
+        "bytes": 912
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-06.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-06.zip",
+        "sha256": "5a18b464cd2d6a6e106c497a5e265327762cff0ee86ebcf8fd20e0150d5a67a5",
+        "bytes": 945
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-07.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-07.zip",
+        "sha256": "e56f1173899b2be5b35e14cdd61d6549dfed04bd2eacc1673285fbc067affe11",
+        "bytes": 827
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-08.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-08.zip",
+        "sha256": "c73e14c91a6e44f2a7a4795c845f54f0c82fac1529dd0852c66c52175d76ff53",
+        "bytes": 892
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-09.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-09.zip",
+        "sha256": "1105b391de748f50048b5590f6a5265fcb2a6354ec8a6ac3ba79b5ca734aa9cc",
+        "bytes": 882
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-10.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-10.zip",
+        "sha256": "6217d0bc8ab8abe35dd0c56d18cc008e8a8e36adef2be37ed9ccbf3c91c71d0a",
+        "bytes": 944
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-11.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-11.zip",
+        "sha256": "ea4b56653bb13210c5fbdeceb668f632b15a8fe6e7676d1afcbbcb5a019d92f4",
+        "bytes": 967
+      },
+      {
+        "file": "fundingRate/DOGEUSDT-fundingRate-2025-12.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOGEUSDT/DOGEUSDT-fundingRate-2025-12.zip",
+        "sha256": "8e84dea86eb7fe0cb7b2f9278f0df0479b68ae10ac9b6ade872372888769f874",
+        "bytes": 990
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2024-06.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2024-06.zip",
+        "sha256": "e7f4ad585a013a7cb46aa266c4d0140f9fc02a23d7077d36e79e42076efd9f17",
+        "bytes": 1686638
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2024-07.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2024-07.zip",
+        "sha256": "cac7c6189b7723fe228ee75695634a7224e2325a24e2fc066dae37cf4fe008e3",
+        "bytes": 1761429
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2024-08.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2024-08.zip",
+        "sha256": "5e7fd110ebd2cd99d3a43fb253206d96c6a2d694b16dbfd48e23a5b9076be49d",
+        "bytes": 1740466
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2024-09.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2024-09.zip",
+        "sha256": "c5a42879a278e4b12a69d4156b6a6dec4ee4bde53be9bdbf05e5a6d661cf0e72",
+        "bytes": 1675680
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2024-10.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2024-10.zip",
+        "sha256": "e37aeacb3b453a0800be4df79aae1b0637bd58441ba03e5fbd6f9b4bf8c7fc2a",
+        "bytes": 1796269
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2024-11.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2024-11.zip",
+        "sha256": "effde135f4c2497d6ccbc4b44d04e583dd3faeb21bb46f589e360aa2710b649b",
+        "bytes": 1892782
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2024-12.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2024-12.zip",
+        "sha256": "1f6b940265db6d595f294e5752616c564bbf00ede60c676abdc3093c3e4e9729",
+        "bytes": 1913496
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-01.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-01.zip",
+        "sha256": "221d5ef5c41fedfefc358790c0d5632b198b17d02187706c4a6de655019e06b5",
+        "bytes": 1888683
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-02.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-02.zip",
+        "sha256": "15cdc4c2fd8340f5957f72164ef6af28e01f3396daebdd3d73fbb7faf4e28c4f",
+        "bytes": 1675554
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-03.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-03.zip",
+        "sha256": "1a6f146aba835867a47220663d4cb72de99d6e8d166f4cb2bf145ca5ec7140d9",
+        "bytes": 1830184
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-04.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-04.zip",
+        "sha256": "05389c77e27693c6cc89c4f38f0afe1e945414c1c145d93e050b478f95e4a947",
+        "bytes": 1757299
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-05.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-05.zip",
+        "sha256": "9e0b44b6ac09e3c09ad1385e39aa690f9624b6b703f2691b1b3e9e7fada508c7",
+        "bytes": 1848516
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-06.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-06.zip",
+        "sha256": "d699cec9a9a89cb7b037c49943751806b5bc840335a7330b1d090494e247e6e9",
+        "bytes": 1746213
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-07.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-07.zip",
+        "sha256": "6c6858a61ec39254b54a40fd864bef0cacd99a3a244bb9b0e5cec0acbe6eb631",
+        "bytes": 1858636
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-08.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-08.zip",
+        "sha256": "1a69ffc39419bb27c12e019de4809e086e40bf620e40e8a044762ba62095026e",
+        "bytes": 1853649
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-09.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-09.zip",
+        "sha256": "34dac0a3873c158dd3e6126719e0e931ee305f6a1ce56e1a68c5c05b00284b3d",
+        "bytes": 1790216
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-10.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-10.zip",
+        "sha256": "c2e2ef77ee80bd0d0fef438a5f24dc2f4765de6e3ef0ab36797d1bfb20731bd5",
+        "bytes": 1853116
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-11.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-11.zip",
+        "sha256": "613eba1df328da3b171bd0fe975e2dd1047e0ac535c49a71aad0649ba3da4d6c",
+        "bytes": 1754855
+      },
+      {
+        "file": "minute/klines/DOGEUSDT-1m-2025-12.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOGEUSDT/1m/DOGEUSDT-1m-2025-12.zip",
+        "sha256": "c7d230dcded82fe00f47546094318bb67b7477fe202aac48075237f30cda8840",
+        "bytes": 1744400
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2024-06.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2024-06.zip",
+        "sha256": "3a276aed2077509660e00b19a6d2774d0d68b40dd5d97ec7c1e9d309d6c43b9f",
+        "bytes": 772001
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2024-07.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2024-07.zip",
+        "sha256": "8236eadcce1df09fca8f031768bd7e9a0037f2a0b2e822bef1d041d73e54d600",
+        "bytes": 808830
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2024-08.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2024-08.zip",
+        "sha256": "5f99f0ca3a504e1f74a74a37be03e1579bfea04b643b83f03b5caa0e94469c28",
+        "bytes": 794903
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2024-09.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2024-09.zip",
+        "sha256": "6f9cd9d392409e63bf9eea9a8189ed2141d4f8559a5e784c9309bc21ab378783",
+        "bytes": 763219
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2024-10.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2024-10.zip",
+        "sha256": "47d8916abaa039d4efda9a388399f0d2243376f0096c63923d3aeee916ca8704",
+        "bytes": 831674
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2024-11.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2024-11.zip",
+        "sha256": "6923236a08816da88a4fd355ec0a5c606903a85d0248a170f665180d80dba75f",
+        "bytes": 861544
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2024-12.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2024-12.zip",
+        "sha256": "8da2a04429bf153cba0a2a536c95a4fb7775271c11c87a32a2ae171eeaa8e650",
+        "bytes": 866419
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-01.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-01.zip",
+        "sha256": "44e18bd6ff4c6a67a2784d494b60bb8295064c4fc72c5cc58cdb8683f239cc20",
+        "bytes": 854118
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-02.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-02.zip",
+        "sha256": "66387878c83bd587bebeffca11b9eb2d10940cf0da7c88755a94e2bfe969113e",
+        "bytes": 754056
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-03.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-03.zip",
+        "sha256": "dfd10c8bb96637bc18efdb0c33f652b8349aa37a3c42aaf4c884d30ab5b3dde0",
+        "bytes": 815717
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-04.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-04.zip",
+        "sha256": "e0bd7a1ffd8eb01d70932566c3ff52fae9a6b1d03137467fec507ce5f4ef1d5d",
+        "bytes": 776573
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-05.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-05.zip",
+        "sha256": "d5039bb8ad66e0b1ca50d7453f58090a3502ee76991105f3598b39bcc937a111",
+        "bytes": 820620
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-06.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-06.zip",
+        "sha256": "d288b78f6f44dd2d1e508ced96cbb94cc63d092569ff4218e5736ad69a025fe9",
+        "bytes": 759290
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-07.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-07.zip",
+        "sha256": "faa4b26fed760df368d6aac5ea94bd6e3068ac600cb31cd93e3491cf9da065a4",
+        "bytes": 832287
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-08.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-08.zip",
+        "sha256": "370e726c0c955397054b3672c2036e774390554221148e7e248a23bd520b0c8a",
+        "bytes": 814648
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-09.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-09.zip",
+        "sha256": "b0c9753036e207e8d4d9e7855cc71dedda0bc46b51fe5b8e0e7638fcf0afc64a",
+        "bytes": 779734
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-10.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-10.zip",
+        "sha256": "8fee745a3a7a3a42b6eb5884398630dad891505fd7d3f785fb1237d428f4e941",
+        "bytes": 807398
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-11.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-11.zip",
+        "sha256": "e73ef522e95c4bb86f64a3ebdd42b551e9ed355acf614f07762c7241f6d61ad1",
+        "bytes": 765310
+      },
+      {
+        "file": "minute/markPriceKlines/DOGEUSDT-1m-2025-12.zip",
+        "symbol": "DOGEUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOGEUSDT/1m/DOGEUSDT-1m-2025-12.zip",
+        "sha256": "7ca74c2599f05c78fb7ac27106163ed6b6e28f45e46d65958980b3153e212c9b",
+        "bytes": 758330
+      }
+    ],
+    "LINKUSDT": [
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2024-06.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2024-06.zip",
+        "sha256": "ed259e3baf5dd43e03751fdfc78b35e5978c7c7dd01a61b0dbe29d0d09b2de83",
+        "bytes": 757
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2024-07.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2024-07.zip",
+        "sha256": "84fda29e97f5e126ab3d301d83aadd58a271b9cb7e128eae315629a43fec8040",
+        "bytes": 867
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2024-08.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2024-08.zip",
+        "sha256": "9cb25c7b945c3e0df7f40833e46c893ab10c9e4eff1fcbbd17967fe04571332d",
+        "bytes": 927
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2024-09.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2024-09.zip",
+        "sha256": "82f0d865cf2d02ab345c4254fe59ffeb3e5b6bae39bcb1a0d06dc67ff55a718a",
+        "bytes": 833
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2024-10.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2024-10.zip",
+        "sha256": "a79184eb05334084cc4a294881ee74f03556ee1a48115443bd29d77d97a598c1",
+        "bytes": 734
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2024-11.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2024-11.zip",
+        "sha256": "2d9fc1ace268513a0330a170216be245b9fbcc37ec405ba57cc11841bb8c438f",
+        "bytes": 803
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2024-12.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2024-12.zip",
+        "sha256": "db162585658485f1107d4d135a8a37714b7e8b33ce99f251ab537fa7c6cf0c61",
+        "bytes": 815
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-01.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-01.zip",
+        "sha256": "13713b66ca784964b080a68c8a944d758202e8ab454fba9bd8b42fc1c8fdb804",
+        "bytes": 765
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-02.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-02.zip",
+        "sha256": "92d748c5583035811fa307d7f0f039d2fdcaabf59c78095ba61f24426328e77c",
+        "bytes": 852
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-03.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-03.zip",
+        "sha256": "bb73dc71a95ee0127f66248f1912b605f8bccaaa52b318be42397b4263c42be7",
+        "bytes": 896
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-04.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-04.zip",
+        "sha256": "17f6f5f71e62fb2478167db581286c36f298d266b5b73a18d954bfca1a61c874",
+        "bytes": 832
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-05.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-05.zip",
+        "sha256": "7d3b60afb85860117409e2137884e2a01e45a22eb2e4d1353514244f83796002",
+        "bytes": 891
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-06.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-06.zip",
+        "sha256": "cbdf6273e84d457b4915139e41a278629cbdfc02855e290b6d9ff34218eb36a5",
+        "bytes": 953
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-07.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-07.zip",
+        "sha256": "56651da01247f19d5e63e6c40f8835934735e60915587068e325f2859101b7e4",
+        "bytes": 791
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-08.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-08.zip",
+        "sha256": "3fd351cfdd3aa11d1e280740f56a0a244112862fb3a583d7600d658339060f53",
+        "bytes": 865
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-09.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-09.zip",
+        "sha256": "5b90724992ead316299b755ec6ff59e70adb6a61dbfa93b58942470a7cf091df",
+        "bytes": 819
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-10.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-10.zip",
+        "sha256": "b13c0df55c83c64e2a8416bd059140f2fbbea0b3b73da9461abbded358c81160",
+        "bytes": 905
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-11.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-11.zip",
+        "sha256": "a964d712cdfecb1efeadaab133468d8658be24c420f3b91b91a51d183281fb19",
+        "bytes": 896
+      },
+      {
+        "file": "fundingRate/LINKUSDT-fundingRate-2025-12.zip",
+        "symbol": "LINKUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/LINKUSDT/LINKUSDT-fundingRate-2025-12.zip",
+        "sha256": "728b6a16940b6189bb1aa97f636160e9b66b4289a8cc1296cefc802e0d0ed098",
+        "bytes": 942
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2024-06.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2024-06.zip",
+        "sha256": "4dc8f960e667f59341220f58f8ed91c8d05ef30ff59a71dfec771b1398026e49",
+        "bytes": 1617095
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2024-07.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2024-07.zip",
+        "sha256": "7add8c2235fedaaef289ec0a6b08286c1aef1723f2b7949453e6169ec4b7ccdf",
+        "bytes": 1681949
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2024-08.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2024-08.zip",
+        "sha256": "321d1a4fd137fe5c6460c021f8123bbff7f62ba970d61d162686636b6a6c774a",
+        "bytes": 1674160
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2024-09.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2024-09.zip",
+        "sha256": "c326e8aa8783c7b88f9c318ed5991a9b01fdd91626b6f0f297d66bee26ff2c54",
+        "bytes": 1593671
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2024-10.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2024-10.zip",
+        "sha256": "286c2e5b30b664f02681d0381834c60b1b569bb99becdca420297cac34b7e368",
+        "bytes": 1658463
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2024-11.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2024-11.zip",
+        "sha256": "0e10d534cc08d408811d0d020639dee1b1f846201b05968a08c6eb06448ca7c7",
+        "bytes": 1690982
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2024-12.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2024-12.zip",
+        "sha256": "7b7d011009f47d56af6afb15c5b3bb2e63a5396281f7baed8b45730be5d3739d",
+        "bytes": 1827554
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-01.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-01.zip",
+        "sha256": "10796bbad1ecc89fb64b232da6b7a6882fbb8055f91bf37c0e7880ed59577571",
+        "bytes": 1781530
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-02.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-02.zip",
+        "sha256": "1b2e338ed1df75847bde8c73a45c8b6ca3fc2df064a4f02e9fe0988e7d1b9835",
+        "bytes": 1596727
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-03.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-03.zip",
+        "sha256": "19e81806ec7923a3c2a38c662972125c2ed042feadc9720737fbc291b5315e7c",
+        "bytes": 1743881
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-04.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-04.zip",
+        "sha256": "beba724c35e809724bb9b9dab20f0a3ebcf36931b5c5107df15966bff13f0d22",
+        "bytes": 1664056
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-05.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-05.zip",
+        "sha256": "0dd8666165ccf7f4ae3745738c62a9d7c065a108b7065f0e324df0682c668c88",
+        "bytes": 1731327
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-06.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-06.zip",
+        "sha256": "3623f1b63d531a2aac99791a022f43a93e87e7427a6b012ce34fa122959b5ca9",
+        "bytes": 1647004
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-07.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-07.zip",
+        "sha256": "a85e8972762b3a1f0e4fcb6e4fecbc332182d57a239e9979b94e0af094216c51",
+        "bytes": 1733107
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-08.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-08.zip",
+        "sha256": "a63f03b15c9b6443d268e5b46ffbc4a43e7cb302f9af097146b5ac7969fff49f",
+        "bytes": 1795054
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-09.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-09.zip",
+        "sha256": "841dc2449e7c95ec598c20d22941b583462f7f7176432b7ec3fb71a01f840dde",
+        "bytes": 1687511
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-10.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-10.zip",
+        "sha256": "073db49356b1fbad4f93e04abffc39e0223c4f2cd92d04c60ce6849e35a85d52",
+        "bytes": 1757846
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-11.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-11.zip",
+        "sha256": "bdd3893a3b0314d709f46fa6b7eacc23c6687bbdedfd423398f4ccf4950ee8cf",
+        "bytes": 1678172
+      },
+      {
+        "file": "minute/klines/LINKUSDT-1m-2025-12.zip",
+        "symbol": "LINKUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/LINKUSDT/1m/LINKUSDT-1m-2025-12.zip",
+        "sha256": "b852eb39ab43e7e4bb5bde406aeac0c5e09b880bdd6aa1d95c826c36b8b9365d",
+        "bytes": 1679860
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2024-06.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2024-06.zip",
+        "sha256": "7b821956cf5c066c7e2b8d8e62b981b3dbf016f1752d4d67b397fa2438f1019f",
+        "bytes": 856928
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2024-07.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2024-07.zip",
+        "sha256": "2fa46259530a6de92ac0a9724e28a6144e8a900a8b54580182f95564583d465b",
+        "bytes": 885701
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2024-08.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2024-08.zip",
+        "sha256": "1502fea6b36c0ab2bf02833d3321e5f3d9b03b4f34f7cc25e02a340d150c6d31",
+        "bytes": 892232
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2024-09.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2024-09.zip",
+        "sha256": "92441c106885ea59e2703ce3ec923b96b1da16f8f0c93c8f3b845ef999b19ae7",
+        "bytes": 865364
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2024-10.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2024-10.zip",
+        "sha256": "a6f2b840d1a8afdfaca4a591ef192ace4fb1924525db4f696a341e5c78458801",
+        "bytes": 948392
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2024-11.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2024-11.zip",
+        "sha256": "412f6a7044efe98886333a4916aac136dd422a5a0053f2004fad15c2f6b01c13",
+        "bytes": 914901
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2024-12.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2024-12.zip",
+        "sha256": "b6d0ad2a12f5671ae52b3bdc76eafe67ce965d22c8819d305a2162c4cebc32fc",
+        "bytes": 997081
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-01.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-01.zip",
+        "sha256": "ed4b95432464eb2d07a399f2bb0d00efcef8fdd4518c16f93e718087c0afe26c",
+        "bytes": 983457
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-02.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-02.zip",
+        "sha256": "17621a1d5a7d7c8e7704abc19c7aad455a79a92dec5b17e38756031eef1bbecc",
+        "bytes": 860902
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-03.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-03.zip",
+        "sha256": "b1581b263ee6ca57679bba2b83df2b940470ce63f752aaad4296a9530e97580d",
+        "bytes": 931850
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-04.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-04.zip",
+        "sha256": "0d02d468503cbd7c69d17712a3415180ee38ce445c368e0977f791484f23b040",
+        "bytes": 903194
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-05.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-05.zip",
+        "sha256": "3eaaf00dcd45a510f1327a31b2e1414d43cec23e4158a456bbb4f028d0ead14a",
+        "bytes": 941412
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-06.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-06.zip",
+        "sha256": "7ae69511740b13e6bccc0a83437d3526fbf33a1bf2061858bcb387c7631e4817",
+        "bytes": 885556
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-07.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-07.zip",
+        "sha256": "29dd59ee8e05f32082991c2f617b0761753569cb63edf07b01f7819b4529414c",
+        "bytes": 975421
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-08.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-08.zip",
+        "sha256": "072f31fc973b2d49ee397ae01c88cb582ecd7b35a40ef2e57df8a90b76bfc315",
+        "bytes": 927541
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-09.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-09.zip",
+        "sha256": "b37205f4a250ce52985908fed9638439e22b5a75b0d6b67e9bbdd6e59d6f3cf3",
+        "bytes": 850059
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-10.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-10.zip",
+        "sha256": "ca112506fcb2a2f703e078d528ff36c90aaf8bae825e51292f4abce59b6c72ae",
+        "bytes": 895117
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-11.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-11.zip",
+        "sha256": "1ed6f19594dd89205799c599d447962a5efd21c7df2f60010a0d92fabc3f7377",
+        "bytes": 871947
+      },
+      {
+        "file": "minute/markPriceKlines/LINKUSDT-1m-2025-12.zip",
+        "symbol": "LINKUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/LINKUSDT/1m/LINKUSDT-1m-2025-12.zip",
+        "sha256": "3664874f2a318491a6181b4c82d9169fc97d844f9542f570ec10b79b55b9339b",
+        "bytes": 899927
+      }
+    ],
+    "DOTUSDT": [
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2024-06.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2024-06.zip",
+        "sha256": "74c807aa155ced4a09f35881c9cd14d749eba85fa881015b0bfbe51d83d0980a",
+        "bytes": 831
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2024-07.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2024-07.zip",
+        "sha256": "7090fa6a4897521868240ab89b66effef5b91f955cf15f2decb9f7566e1859d0",
+        "bytes": 852
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2024-08.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2024-08.zip",
+        "sha256": "b586d2d240bdaeea90583e2d17bd93ea34d91e192b50334ef01f5a3a9895f331",
+        "bytes": 954
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2024-09.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2024-09.zip",
+        "sha256": "2d707e7208463b4fa1a648d824744582b1d8fd18f25870a620035e24a544333a",
+        "bytes": 820
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2024-10.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2024-10.zip",
+        "sha256": "8d02c52c75cbc6231cd64507ba544497d024dd8a6a50ff4dc85e837fc8e58213",
+        "bytes": 745
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2024-11.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2024-11.zip",
+        "sha256": "af1b00d617b7221fe77cb2d2e297a10f74d91d0924e0456214d2469de47e8763",
+        "bytes": 748
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2024-12.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2024-12.zip",
+        "sha256": "d43a9805d9674591a21710503f9a18a2bead6ad665ce224608d483d9a1fe600d",
+        "bytes": 809
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-01.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-01.zip",
+        "sha256": "b226f044688e19eb612fdef1ebd176cc0b53a74b59b5038ea1518c9ee6ada1bb",
+        "bytes": 740
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-02.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-02.zip",
+        "sha256": "549b7c16c6144d2e38a190abd66a04d683ad306e1c210237242d20de709e0165",
+        "bytes": 828
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-03.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-03.zip",
+        "sha256": "d483c0852c51f4ca6ec92fd28d1152a0c4dd57e9aa8184583e245218866fa692",
+        "bytes": 902
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-04.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-04.zip",
+        "sha256": "5b40f75448bacec8a9ae7eb22d083f8c6d3c7900ea31e5a441daa8d5e29072ce",
+        "bytes": 867
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-05.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-05.zip",
+        "sha256": "1d7a8909d74169ce338195da7f1a56da5417ac6f08df24e3690a87a15cdbcaf7",
+        "bytes": 891
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-06.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-06.zip",
+        "sha256": "e5f8e1fcbddf08273ccf9e35de972049183f0cb4ae07fedfec91b626abfcd95b",
+        "bytes": 925
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-07.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-07.zip",
+        "sha256": "3753fd6e7ee8b29f6be536496d28de9dd8d9b4dfc5a324504225fa095f37e80b",
+        "bytes": 810
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-08.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-08.zip",
+        "sha256": "d0a1f1ac7dd630cea38589a6d049e5bac7af9d65ad23e84da75a1652a3a54ed1",
+        "bytes": 873
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-09.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-09.zip",
+        "sha256": "2f57f9596fdb060cb4233b90688ce804046040d944027a2b6a2e4bafd9df3a20",
+        "bytes": 790
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-10.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-10.zip",
+        "sha256": "60b3830b6269e2d80698d21a8226bcf11af3d67256a31bcee0267c3280dc8689",
+        "bytes": 958
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-11.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-11.zip",
+        "sha256": "eef8656cd63a8b278ff0285d81373381186cebe7af82a99d9d204e118ce23b08",
+        "bytes": 980
+      },
+      {
+        "file": "fundingRate/DOTUSDT-fundingRate-2025-12.zip",
+        "symbol": "DOTUSDT",
+        "kind": "fundingRate",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/fundingRate/DOTUSDT/DOTUSDT-fundingRate-2025-12.zip",
+        "sha256": "8a28a6e22be8c34f99001e05c05fae14adf1c341dd7ecef788a451c4c89f09a9",
+        "bytes": 975
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2024-06.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2024-06.zip",
+        "sha256": "210594d0ff2405a079d944a4bf59963100f0d9091ed99e6b7fa51cae75cb2680",
+        "bytes": 1447010
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2024-07.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2024-07.zip",
+        "sha256": "bbe984cf8e7f10ec43bfdd29e37366209241eb0a2b795c60f7ef94280923e0d5",
+        "bytes": 1514188
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2024-08.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2024-08.zip",
+        "sha256": "710dbd240d41ceb7cc537500339f04f3b11cc9902c601ed96669e106ccf857b3",
+        "bytes": 1481148
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2024-09.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2024-09.zip",
+        "sha256": "e928c2a6b454e0406e43f49cf86a0ee6835f38cb42b7f4bebbe494d14befa8d5",
+        "bytes": 1415464
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2024-10.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2024-10.zip",
+        "sha256": "2a2ed73734eb52b89aa2dd47d995f5d359db535db6f62a610d25edc281048b7a",
+        "bytes": 1453155
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2024-11.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2024-11.zip",
+        "sha256": "9bdf3971f54d75d9252e028c6f10237d80b81202d0bd4d047804a8f6beea37f1",
+        "bytes": 1541418
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2024-12.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2024-12.zip",
+        "sha256": "60cced9fa87eedb207aa9feb12f7da72b0ed96c518d3b7e562ac2912287f9c3f",
+        "bytes": 1629461
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-01.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-01.zip",
+        "sha256": "f61312d47114b3cc3377c6784f8ec7650ad80629f9ad28c7d1b07d49e3768e9e",
+        "bytes": 1566260
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-02.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-02.zip",
+        "sha256": "5cab28fd69da43fd17effe71ea2f0d9ee1ec35887e3ef4dd92a1ef43d7cd84db",
+        "bytes": 1404293
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-03.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-03.zip",
+        "sha256": "56a27be9545a57b290d007ada0ab8c9ca54dee1a22a4fbebf6e96f5a7ff54988",
+        "bytes": 1523325
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-04.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-04.zip",
+        "sha256": "8ac27d908793f064d194cd790c2d0a0e0a984016ffa10c1db87802e285658347",
+        "bytes": 1459183
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-05.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-05.zip",
+        "sha256": "f8740685ef340f491da036e34f2867e0f866378fd50c6891c9684af8c7cada33",
+        "bytes": 1524751
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-06.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-06.zip",
+        "sha256": "f7dcc8fad15e60f74415cb6de6418416f5f4f2fa8e40b6dcecaeb651a0d78bef",
+        "bytes": 1443000
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-07.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-07.zip",
+        "sha256": "48e30c9f06df74a2bcd80f8592c58004e75dadee94f7964f03b6e2166ca9f6ca",
+        "bytes": 1528731
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-08.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-08.zip",
+        "sha256": "9388360802233286f0b64ae3a304e6f554309fd4d84d1877b19b771cbf46b221",
+        "bytes": 1518555
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-09.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-09.zip",
+        "sha256": "b69fef614932df57ef6c77055cfcc9c4eeb1da4f35094138a0c155296d3adafe",
+        "bytes": 1454301
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-10.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-10.zip",
+        "sha256": "310f521d09f2be569962c90dc26d36cac1b292acf10f8c7545705bf7890dbd9e",
+        "bytes": 1512095
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-11.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-11.zip",
+        "sha256": "902c97f1dec04c5cb5d9e753d7028e2309ca573781b2b3be7347ba730637b172",
+        "bytes": 1456662
+      },
+      {
+        "file": "minute/klines/DOTUSDT-1m-2025-12.zip",
+        "symbol": "DOTUSDT",
+        "kind": "klines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/klines/DOTUSDT/1m/DOTUSDT-1m-2025-12.zip",
+        "sha256": "41ead1fa624c6825d9d89152d100ad1bd17d8d90b77139ea2f7d1840f2852457",
+        "bytes": 1442986
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2024-06.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2024-06.zip",
+        "sha256": "31e65274670548a6637ecfacd349cd3d2a885dbda9adb1c8bd34e2d01ae84ac5",
+        "bytes": 797509
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2024-07.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2024-07.zip",
+        "sha256": "36651e04f6bd05c0e0bbf279fbe4565269fc29a182b38bd259c8db59cdbee684",
+        "bytes": 840425
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2024-08.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2024-08.zip",
+        "sha256": "b888d55a7e2764ff90d9365afc3d6614f20b247f4ff0f2bdf0755a4e859e7786",
+        "bytes": 816742
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2024-09.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2024-09.zip",
+        "sha256": "df24afc57a4544129b48694f358991ea0131ed8bf0309ff5a235507efc30b3b4",
+        "bytes": 790997
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2024-10.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2024-10.zip",
+        "sha256": "bbab2094c099a2f8817906787b0b08e154a9426b7be0df66a11fde7e3e6a5e95",
+        "bytes": 836957
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2024-11.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2024-11.zip",
+        "sha256": "2f5585b26266c4b6f9c020d7dcac2181ed8be2993b5b494fd344e178b3b5cdb2",
+        "bytes": 866121
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2024-12.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2024,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2024-12.zip",
+        "sha256": "78d62925d237ea84c279baa794a0af98ce43bc36007411415644e3ecf9ea8be3",
+        "bytes": 919670
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-01.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 1,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-01.zip",
+        "sha256": "07ca902ed2276977b78235787967afb2ecb3d4405a51d4f503e7e76a2870226f",
+        "bytes": 890701
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-02.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 2,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-02.zip",
+        "sha256": "737300b5148051206e3abf7f320a61d3f652e58e9589f433e797ae874abe0f95",
+        "bytes": 773214
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-03.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 3,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-03.zip",
+        "sha256": "a24ff43446defaa89fb884a8cfa31daf51b3bff99082e8c2bd5bebd048c2bb9d",
+        "bytes": 834537
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-04.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 4,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-04.zip",
+        "sha256": "50f6b42257adee70ea6efd5b671b51256952f0d9a87641310a846dd1c3c9bfdb",
+        "bytes": 800604
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-05.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 5,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-05.zip",
+        "sha256": "d1eaac4454985f85015a9a6712f51cc4612741a0ead2f687f3f3ac7699617393",
+        "bytes": 842471
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-06.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 6,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-06.zip",
+        "sha256": "1160df57954edd8e0a12994822792b37d77adaca796986bb64abbb4180afd2f8",
+        "bytes": 784982
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-07.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 7,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-07.zip",
+        "sha256": "e75f18516b928c6cc7429f9c9772e3ae4cc2b26bdf257c3afd78b615079d4a7d",
+        "bytes": 859653
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-08.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 8,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-08.zip",
+        "sha256": "f09b94e2697471a86ce3ec6f327fd5dee5883faa7f7ca0258e5af41df2ebc653",
+        "bytes": 831746
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-09.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 9,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-09.zip",
+        "sha256": "919d3868da48457e249b56e213c76ce207aa497a320bda6b223ff0eec7c8f755",
+        "bytes": 796407
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-10.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 10,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-10.zip",
+        "sha256": "c6819e9a861f41e6c63f5ada02c5ef8418648708b9951dd18ecc6006e2182fdf",
+        "bytes": 814412
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-11.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 11,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-11.zip",
+        "sha256": "4aa4f0e077e7e595c0fc39726884c04b2ca046d79c5096bbce3803a923ceed3e",
+        "bytes": 782897
+      },
+      {
+        "file": "minute/markPriceKlines/DOTUSDT-1m-2025-12.zip",
+        "symbol": "DOTUSDT",
+        "kind": "markPriceKlines",
+        "year": 2025,
+        "month": 12,
+        "url": "https://data.binance.vision/data/futures/um/monthly/markPriceKlines/DOTUSDT/1m/DOTUSDT-1m-2025-12.zip",
+        "sha256": "0e212ed455accabe996daaa15c6b437b4b295eb4b60d67ce848bd6d5f3cf73bd",
+        "bytes": 774338
+      }
+    ]
+  },
+  "manifest_sha256": "8e1e9f61c2472d5ee1a102020b87d78728469b9156e3aac80a6549bab76b99fc",
+  "journal_sha256": "1aa2633f9c6af30b08f71ba5e31f2e9615023641da314efd20e7e4f572ad9c61"
+}

@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "checked": {
+    "base": {
+      "closed": 976,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "stress": {
+      "closed": 872,
+      "fill_cost_funding_capital": "PASS"
+    }
+  },
+  "total_closed": 1848,
+  "new_simulations": 0
+}

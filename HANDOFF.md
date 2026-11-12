@@ -1,5 +1,16 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — daily recovery completed, rejected; no replay needed
+
+The a24bf82 fixed daily200/minute recovery policy failed development2025.
+Base976closed/net-186.4314584;stress872/net-259.7054478USDT, gross itself
+negative. Independent audit1848closedPASS, actualsymbolfunding/sharedcash/
+ATRUSD5risk/causalgeometry. Sources285archives236676944bytes preserved.
+No2026download/evaluation. No losingcoin deletion, threshold revision,
+VM/trading/paidAPI/budget action. Durable per-cost receipts permit recovery
+without replay. DAILY_RECOVERY_RESULTS.md and full journal saved.
+
+
 ## 2026-11-12 — unused warmup mark boundary corrected before PnL
 
 Initialsource load stopped before any PnL: XRP2024-08-12 missing2warmupmark

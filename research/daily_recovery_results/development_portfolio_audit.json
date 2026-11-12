@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "shared_cash": "verified",
+  "single_position": "verified",
+  "source_symbol_funding": "verified",
+  "without_best_asset": "verified",
+  "candidate": false,
+  "new_simulations": 0
+}

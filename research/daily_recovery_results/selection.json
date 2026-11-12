@@ -1,0 +1,13 @@
+{
+  "candidate": false,
+  "development_summary_sha256": "b7a58c1d2f65f0dc82168a10101658ec8a05d2696fcd4a2c68241981beca97c1",
+  "policy": "daily200_hourly_rsi_minute_recovery",
+  "universe": [
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "LINKUSDT",
+    "DOTUSDT"
+  ],
+  "trading_admitted": false
+}
