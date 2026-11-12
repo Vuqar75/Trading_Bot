@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "forecasts_reproduced": 88240,
+  "stress_executions_matched_to_targets": 404,
+  "purged_monthly_training": "PASS",
+  "training_only_scaler": "PASS",
+  "actual_symbol_funding": "PASS",
+  "shared_capital": "PASS",
+  "selected": null,
+  "refits": 0,
+  "new_api_calls": 0
+}

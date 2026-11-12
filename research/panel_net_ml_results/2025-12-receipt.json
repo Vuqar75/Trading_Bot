@@ -1,0 +1,16 @@
+{
+  "signature": "17455bcea9b81e7120b8f4a1e88f227d684cf1e70de887f4a106679c3f7f86fc",
+  "train_start_ms": 1748736000000,
+  "test_start_ms": 1764547200000,
+  "test_end_ms": 1767225600000,
+  "maximum_training_label_end_ms": 1764543960000,
+  "train_rows": 21940,
+  "test_rows": 3700,
+  "predictions_sha256": "c658978ed86edc09dcead5321347c864f1a0a836fd08196f57a7fcee06df39e0",
+  "models_sha256": {
+    "2025-12-HGBR--1.joblib": "cd158b9d1805171651d793b6efac48b551284af7954a7c058892978222443b50",
+    "2025-12-HGBR-1.joblib": "8c32a693031e46bad7020ed09447e965fb5284838f6ac2443ad9ef6d8e6697a8",
+    "2025-12-Ridge--1.joblib": "60bb48cf564869a793c63184801b6efb2f517f2daaa106ebc8ad44f82b6f16b6",
+    "2025-12-Ridge-1.joblib": "d6ac102f377b68ec3489205b9ae4a1475ac783477c0979207ae996de9ca63b96"
+  }
+}

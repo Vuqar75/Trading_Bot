@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "checked": {
+    "HGBR/base": {
+      "closed": 218,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "HGBR/stress": {
+      "closed": 214,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "Ridge/base": {
+      "closed": 195,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "Ridge/stress": {
+      "closed": 190,
+      "fill_cost_funding_capital": "PASS"
+    }
+  },
+  "total_closed": 817,
+  "new_simulations": 0
+}

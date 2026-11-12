@@ -1,5 +1,15 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — raw pooled ML rejected; one causal error correction registered
+
+Frozen ba1a92a produced HGBR218/214 closes net-24.39396/-55.08352,
+Ridge195/190 net-39.81860/-49.75655. Audits817fills and88240forecasts PASS,
+404actualstressfills exactlymatch targets. No2026/noVM/paid actions.
+PANEL_NET_CALIBRATION_PROTOCOL fixes one past-OOS-only daily-error penalty
+before its outcomes; reuses forecasts, no refitting, all losers retained.
+This is development iteration after knownfailure, not independentvalidation.
+
+
 ## 2026-11-12 — fixed pooled cost-target ML registered before fits
 
 PANEL_NET_ML_PROTOCOL fixes same5coins, closed-hour common/residual/volume/funding
