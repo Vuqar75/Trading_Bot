@@ -1,5 +1,20 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — fixed legacy VWAP portfolio completed, continuing
+
+6bab392development2025globalone-positioncohort finished. Base59closesnet
+-11.7252;stress48net-8.0116USDT. Globalcapital1000,not5independentwallets.
+AllCHECKSUM195inputsverified,sourcefundcadence/pricecoveragecomplete. No2026
+cohortdownload. Portfolioindependentcash/nonoverlap/knownroomranking/actual
+symbolfunding/withoutbestasset auditPASS. Fullresultslegacy_vwap_results.
+Do not remove losingADA/DOT or changeVWAP/room/hours after these results.
+Next distinct source-information issue: mixed-timeframe long-term DAILYtrend
+with minute-monitoredpartialhourRSI,not pretending200hourbarsare200days and
+not waitinganentirehourforanalreadyobservablereversal. It requires additional
+closed-dailywarmup andmust befullypreregistered before PnL. Samefixedcohort,
+no side/asset/hyperparameterselection. No VM/APIpaid/AIbudget action.
+
+
 ## 2026-11-12 — legacy cohort acquired and execution frozen before PnL
 
 195officialUMmonthlyZIPs Dec2024-Dec2025 for fixedXRP/ADA/DOGE/LINK/DOT,

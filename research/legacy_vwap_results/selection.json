@@ -1,0 +1,13 @@
+{
+  "candidate": false,
+  "development_summary_sha256": "1c86765af3203dab0f3fb16f8d60965caaaba071deff1d3f8f650a225b54677a",
+  "policy": "legacy_vwap_1h_fixed",
+  "universe": [
+    "XRPUSDT",
+    "ADAUSDT",
+    "DOGEUSDT",
+    "LINKUSDT",
+    "DOTUSDT"
+  ],
+  "trading_admitted": false
+}
