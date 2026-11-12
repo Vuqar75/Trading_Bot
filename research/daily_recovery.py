@@ -201,7 +201,7 @@ def run(root,out,stage):
     core.START=start;core.BEGIN=begin;core.END=end;core.N=(end-start)//M
     markets,data,proofs={},{},{}
     for symbol in ASSETS:
-        trade,mark,volume,fund,proof=source.load(root,symbol,start,begin,end)
+        trade,mark,volume,fund,proof=source.load(root,symbol,start,begin,end,require_mark_from=begin)
         markets[symbol]=(trade,mark,volume,fund);proofs[symbol]=proof
         data[symbol]=features(trade,start)
         cut=1440*205+317

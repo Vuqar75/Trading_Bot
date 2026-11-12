@@ -1,5 +1,12 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — unused warmup mark boundary corrected before PnL
+
+Initialsource load stopped before any PnL: XRP2024-08-12 missing2warmupmark
+minutes. Features need tradeOHLCV,notmark. Explicit loader option requires
+complete marks from executionbegin; preserves unusedNaNs,defaults strict.
+Execution/protocol receipt repinned before first simulation.
+
 ## 2026-11-12 — daily200 recovery execution frozen before first PnL
 
 285 official archives,236676944bytes,allCHECKSUMmatch. Existing195 reused,

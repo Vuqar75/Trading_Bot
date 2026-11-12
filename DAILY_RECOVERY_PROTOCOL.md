@@ -50,3 +50,10 @@ Only if development passes: publish result receipt BEFORE downloading2026;
 validation Jan-Oct2026, warmup June2025, SAME policy and analogous gates. No
 runner-up. No live admission: any eventual candidate remains offline pending
 separate owner activation. Existing paper pauses and AI budget untouched.
+
+Pre-PnL data-boundary amendment: first load stopped on two missing XRP mark-price
+minutes on 2024-08-12, inside warmup only; no performance was calculated. Daily
+and hourly features use trade prices, NOT mark prices. Require complete trade
+OHLCV for entire warmup, complete mark prices and funding for ALL execution
+minutes starting Jan1. Preserve unused warmup mark NaNs; do not interpolate or
+pretend they were observed. Default loader remains strict for earlier studies.

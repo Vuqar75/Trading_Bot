@@ -37,6 +37,16 @@ class LegacyDataTests(unittest.TestCase):
                 root=Path(d);self.fixture(root,funding,missing)
                 with self.assertRaises(ValueError):load(root,'XRPUSDT',0,0,2*M)
 
+    def test_unused_warmup_mark_not_imputed_or_used_for_execution(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);self.fixture(root,missing=True)
+            import numpy as np
+            # Fixture missing final mark minute: boundary cannot conceal a trading gap.
+            with self.assertRaises(ValueError):load(root,'XRPUSDT',0,M,2*M,require_mark_from=M)
+            # The gap may be outside the execution range only; array remains NaN.
+            trade,mark,v,fund,_=load(root,'XRPUSDT',0,2*M,2*M,require_mark_from=2*M)
+            self.assertTrue(np.isnan(mark[1]).all())
+
     def test_source_revision_not_silently_accepted(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);self.fixture(root);(root/'klines.zip').write_bytes(b'changed')

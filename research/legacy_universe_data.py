@@ -74,7 +74,7 @@ def acquire(root,end='2025-12',start='2024-12'):
     if payload['unavailable']:raise ValueError('public archive acquisition incomplete; receipts preserved')
 
 
-def load(root,symbol,start,begin,end):
+def load(root,symbol,start,begin,end,require_mark_from=None):
     if symbol not in ASSETS:raise ValueError('unregistered asset')
     manifest=json.loads((root/'manifest.json').read_text());n=(end-start)//M
     trade=np.full((n,4),np.nan);mark=trade.copy();volume=np.full(n,np.nan);fund=[];proof=[]
@@ -112,7 +112,10 @@ def load(root,symbol,start,begin,end):
         gap=b[0]-a[0]
         if gap<=0 or min(abs(gap-a[2]*H),abs(gap-b[2]*H))>1000:raise ValueError('funding gap or cadence contradiction')
     if not fund or fund[0][0]>begin or fund[-1][0]<end-fund[-1][2]*H-1000:raise ValueError('funding edge coverage')
-    if not np.isfinite(trade).all() or not np.isfinite(mark).all() or not np.isfinite(volume).all():
+    required_start=start if require_mark_from is None else require_mark_from
+    if not start<=required_start<=begin:raise ValueError('mark coverage boundary')
+    required_mark=mark[(required_start-start)//M:]
+    if not np.isfinite(trade).all() or not np.isfinite(required_mark).all() or not np.isfinite(volume).all():
         missing={'trade':int(np.isnan(trade[:,0]).sum()),'mark':int(np.isnan(mark[:,0]).sum()),'volume':int(np.isnan(volume).sum())}
         missing['dates']={kind:sorted(set(dt.datetime.fromtimestamp((start+int(i)*M)/1000,dt.timezone.utc).date().isoformat() for i in np.flatnonzero(np.isnan(a[:,0]))))[:10]
                           for kind,a in (('trade',trade),('mark',mark))}
