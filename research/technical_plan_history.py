@@ -26,6 +26,7 @@ def validate(value):
         if not isinstance(r,dict) or not isinstance(r.get('packet'),dict):raise ValueError('history_record')
         p=r['packet']
         if any(not isinstance(p.get(k),dict) for k in ('limits','features','ml','trade_scenarios')):raise ValueError('history_record')
+        if not p['features'] or len(p['features'])>30 or any(not isinstance(k,str) or type(v) not in (int,float) or not math.isfinite(v) for k,v in p['features'].items()):raise ValueError('history_feature_evidence')
         plan=validate_plan(p['trade_scenarios'],p)
         if value.get('symbol') is not None and p['symbol']!=value['symbol']:raise ValueError('history_market')
         if not isinstance(p['ml'].get('model_id'),str) or not 1<=len(p['ml']['model_id'])<=100:raise ValueError('history_model_identity')
@@ -84,8 +85,10 @@ def advance(previous,packet,capture,now_ms):
     state['symbol']=packet['symbol']
     if plan['status']=='conditional_only':
         core={k:copy.deepcopy(packet[k]) for k in ('feature_version','symbol','venue','signal_ms','as_of_ms','expires_ms','side','close','detected_patterns','limits','trade_scenarios')}
-        core['features']={'atr_pct':packet['features']['atr_pct']}
-        core['ml']={k:v for k,v in packet['ml'].items() if k in ('model_id','action','trade_allowed','p_win_estimate','expected_stress_net_return')}
+        # Preserve actual inputs for future numerical replay; never synthesize
+        # the missing fields of older ATR-only records.
+        core['features']=copy.deepcopy(packet['features'])
+        core['ml']={k:v for k,v in packet['ml'].items() if k in ('model_id','action','trade_allowed','p_win_estimate','expected_stress_net_return','symbol','signal_ms')}
         model=core['ml'].get('model_id')
         if not isinstance(model,str) or not 1<=len(model)<=100:raise ValueError('history_model_identity')
         identity=digest([packet['symbol'],packet['signal_ms'],model])

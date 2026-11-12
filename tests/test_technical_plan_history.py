@@ -92,6 +92,13 @@ class PlanHistoryTest(unittest.TestCase):
         second=advance(first,other,raw,p['as_of_ms'])
         self.assertEqual(len(second['records']),2)
 
+    def test_all_original_features_retained_without_backfilling_old_records(self):
+        p=self.packet();state=advance(None,p,self.capture(),p['as_of_ms'])
+        self.assertEqual(state['records'][0]['packet']['features'],p['features'])
+        old=copy.deepcopy(state);old['records'][0]['packet']['features']={'atr_pct':p['features']['atr_pct']}
+        resumed=advance(old,p,self.capture(),p['as_of_ms'])
+        self.assertEqual(resumed['records'][0]['packet']['features'],{'atr_pct':p['features']['atr_pct']})
+
     def test_no_backdated_registration_future_candles_or_reordering(self):
         p=self.packet()
         with self.assertRaisesRegex(ValueError,'stale'):advance(None,p,self.capture(),p['expires_ms'])

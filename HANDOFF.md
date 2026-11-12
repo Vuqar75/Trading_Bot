@@ -1,5 +1,51 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — diagnosis of near-constant ML forecasts
+
+Owner reported24plans,allNO_TRADE,p~21..26.5%,net~-0.31%,then requested audit.
+Fetched2a055c7. See MODEL_FLATNESS_AUDIT_20261112.md,
+research/pattern_ai_results/runtime_diagnostic.json and
+MODEL_RUNTIME_AUDIT_LOCAL_TASK.md. No model training, tuning, fresh market/API
+capture, provider request, VM/unit/financial/budget access or weight change.
+
+Validated semantic model identity and original69,515compact inputs. Final
+May-Octpurged training population18,759rows has positive fraction25.604%,mean
+stress-target -0.306783% per overlapping counterfactual. Restored sklearn C
+trees WITHOUT fit:2048portable/nativeprobes per head,maxerror0. All1541class
+leaf values match original bootstrap positive fractions exactly;682regleaves
+match targetmeans within5.86e-17. Saved weights/label polarity/order verified.
+
+18fixedhistoricalwindows on21SHA-matched local archives,558cases acrossall3
+assets: pattern disagreements0,training/runtimefeaturemaxerror1.863e-9;
+true1m vs15m reconstruction error<=5.33e-15. No inference bug found in inspected
+code/data. This does NOT prove the24actualVMvectors match: they were not
+available here. Their reported ranges are consistent with the trained forest.
+
+Regressor largestleaf mean rowshare90.36%;central80%netpredictions
+-0.313228..-0.299584%,prediction/targetvarianceratio0.631%(NOT R2). It does not
+split on side;one explicitpatternsplit among618internalnodes. Direction can
+still be encoded indirectly. Strong shrinkage is learned model behavior.
+On50,628cachedpurgedOOFforecasts,RFnetMSE is0.318%worse than past-only global
+mean(0.310%worse than per-assetmean);classBrier0.962%/0.691%better. No alpha,
+independence,significance or profitable-selection claim. Gate lowering is not
+supported. Old positive-tail failure remains PATTERN_AI_FORECAST_QUALITY.md.
+
+Found observability limitation: history kept ATR only, so old records cannot
+fully replay ML. Fixed writer to retain ALL original feature fields for NEW
+records; no imputation/backfill of old records, no ID/start/level/schema reset.
+Snapshot-only diagnostic can replay full packets without sklearn, flag WAIT,
+partial evidence,model/feature/pattern/time/prediction mismatches. Source model
+and scoring are untouched. Local task first audits saved VM public files,
+then delivers only this evidence-retention improvement to existing free writer.
+
+196targetedtestsPASS isolatedHOME/no credentials/IP sockets blocked;after final
+packet-schema refinement26diagnostic+historytestsPASS. Full suite/backtests not
+rerun; archive feature checks are reconstruction,not trading replay. NumPy2.3.5,
+sklearn1.8.0. No claim that this cloud installed code or read the live budget.
+Fourmarketpauses/stopped studies/Donchian and ownerreported8attempts/$0.018370
+reserve preserved by this work. No new trade authorization. Directed-feature
+normalization is an identified next hypothesis,not trained/admitted here.
+
 ## 2026-11-12 — BTC/ETH/SOL installed
 
 The `cafcee4099dc4a1bf9a721fe32f5ec8001012cf0` multi-asset candidate is installed on the existing server and publisher; the existing Telegram integration commit is `5a6dec3de24ed7866cf868cbc7d2a7b105de55bc`. BTC, ETH and SOL were successfully captured and published in the ordinary 05:46 UTC free cycle. The BTC history start and both existing plan IDs were preserved. Paid requests and automatic trading were not enabled; all four working markets remain paused, and study and Donchian remain disabled. Read [AI_MULTI_ASSET_INSTALL_20261112.md](AI_MULTI_ASSET_INSTALL_20261112.md) for checks, rollback locations and the verified one-time external backup. Periodic coverage of technical histories and cross-host recovery of the host-bound archive remain unconfirmed.
