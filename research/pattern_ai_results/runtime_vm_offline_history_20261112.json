@@ -1,0 +1,67 @@
+{
+  "model_id": "2a0ecbe3351f44f36ce59c336b4e28d089841de21fa5ec915276117fe3d713bc",
+  "model_sha256": "cc3ee2473b4ba5c24bd7f555b47acf4d32cdfe72f414aabc89c744bb7afa8277",
+  "model_changed": false,
+  "training_performed": false,
+  "network_used": false,
+  "orders_enabled": false,
+  "snapshots": [
+    {
+      "file": "offline-history.json",
+      "sha256": "ecf743b2389d002cf31fbbb3573461d118e3ed8924aeabe7227c6a31a942fb20",
+      "checks": [
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794481200000,
+          "status": "match",
+          "p_win_replayed": 0.2360302588704465,
+          "stress_net_replayed": -0.0030340276459279256,
+          "p_max_abs_error": 0.0,
+          "net_max_abs_error": 0.0,
+          "p_gate_passes": false,
+          "net_gate_passes": false,
+          "input_sha256": "ee2cd1d280bcd77824b4b5d191ed4c12eb0e8235ddc12f681379037ea6ea6230",
+          "orders_enabled": false
+        }
+      ]
+    },
+    {
+      "file": "offline-history-ETHUSDT.json",
+      "sha256": "7afec0dbe8d30acedf39907d6bfb068d420a953f9a5b800896d8f380963054d2",
+      "checks": [
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794481200000,
+          "status": "match",
+          "p_win_replayed": 0.242192369452326,
+          "stress_net_replayed": -0.0030340276459279256,
+          "p_max_abs_error": 0.0,
+          "net_max_abs_error": 0.0,
+          "p_gate_passes": false,
+          "net_gate_passes": false,
+          "input_sha256": "be3548a98f88d4e4570e8cc58c19e129d37ccc65b8d5e4a4dbf61939b6dbe50a",
+          "orders_enabled": false
+        }
+      ]
+    },
+    {
+      "file": "offline-history-SOLUSDT.json",
+      "sha256": "ac92311b8343bc03cb459750943d55d2605488bd4db9e28cef47d3937e0282fb",
+      "checks": [
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794481200000,
+          "status": "match",
+          "p_win_replayed": 0.26210579001080503,
+          "stress_net_replayed": -0.0030340276459279256,
+          "p_max_abs_error": 0.0,
+          "net_max_abs_error": 0.0,
+          "p_gate_passes": false,
+          "net_gate_passes": false,
+          "input_sha256": "4755163a56bab9e4a28a494a70ad4d12764f496b4cb3b41f2fccbde9549e3263",
+          "orders_enabled": false
+        }
+      ]
+    }
+  ]
+}

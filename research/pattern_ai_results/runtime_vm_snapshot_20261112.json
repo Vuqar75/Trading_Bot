@@ -1,0 +1,265 @@
+{
+  "model_id": "2a0ecbe3351f44f36ce59c336b4e28d089841de21fa5ec915276117fe3d713bc",
+  "model_sha256": "cc3ee2473b4ba5c24bd7f555b47acf4d32cdfe72f414aabc89c744bb7afa8277",
+  "model_changed": false,
+  "training_performed": false,
+  "network_used": false,
+  "orders_enabled": false,
+  "snapshots": [
+    {
+      "file": "technical.json",
+      "sha256": "abeab9ba25655c4e8447de9eb446faede30f521bb43cefe679c81c694fcaf5f9",
+      "checks": [
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794481200000,
+          "status": "match",
+          "p_win_replayed": 0.2360302588704465,
+          "stress_net_replayed": -0.0030340276459279256,
+          "p_max_abs_error": 0.0,
+          "net_max_abs_error": 0.0,
+          "p_gate_passes": false,
+          "net_gate_passes": false,
+          "input_sha256": "ee2cd1d280bcd77824b4b5d191ed4c12eb0e8235ddc12f681379037ea6ea6230",
+          "orders_enabled": false
+        }
+      ]
+    },
+    {
+      "file": "technical-ETHUSDT.json",
+      "sha256": "05a58b2c8a79322856f16eba11f3dd0efbbd78a805cf0f5ef703e8667f6168a6",
+      "checks": [
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794481200000,
+          "status": "match",
+          "p_win_replayed": 0.242192369452326,
+          "stress_net_replayed": -0.0030340276459279256,
+          "p_max_abs_error": 0.0,
+          "net_max_abs_error": 0.0,
+          "p_gate_passes": false,
+          "net_gate_passes": false,
+          "input_sha256": "be3548a98f88d4e4570e8cc58c19e129d37ccc65b8d5e4a4dbf61939b6dbe50a",
+          "orders_enabled": false
+        }
+      ]
+    },
+    {
+      "file": "technical-SOLUSDT.json",
+      "sha256": "c638c77793d5a41f5dd61c820b12c08ed1cdc8dcc384155c9d011aaebfc80fb1",
+      "checks": [
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794481200000,
+          "status": "match",
+          "p_win_replayed": 0.26210579001080503,
+          "stress_net_replayed": -0.0030340276459279256,
+          "p_max_abs_error": 0.0,
+          "net_max_abs_error": 0.0,
+          "p_gate_passes": false,
+          "net_gate_passes": false,
+          "input_sha256": "4755163a56bab9e4a28a494a70ad4d12764f496b4cb3b41f2fccbde9549e3263",
+          "orders_enabled": false
+        }
+      ]
+    },
+    {
+      "file": "technical-history.json",
+      "sha256": "7c1e1408b183793cd73f6c710d0120e98af51b281a6650646730f5b41977b45a",
+      "checks": [
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794456900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794460500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794464100000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794465900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794466800000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794468600000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794474900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794476700000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794477600000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794481200000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        }
+      ]
+    },
+    {
+      "file": "technical-history-ETHUSDT.json",
+      "sha256": "36eb40495a1442eaf13d7e1c7e445db9717014e00568eada0947298436bf33b9",
+      "checks": [
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794462300000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794464100000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794465900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794469500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794474900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794477600000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794478500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794479400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794481200000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        }
+      ]
+    },
+    {
+      "file": "technical-history-SOLUSDT.json",
+      "sha256": "834ef312ce5a73f0664462c81474035f39cf093896529d59a3985bb77452266e",
+      "checks": [
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794461400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794465900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794467700000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794469500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794470400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794472200000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794473100000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794474900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794475800000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794479400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794481200000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        }
+      ]
+    }
+  ]
+}

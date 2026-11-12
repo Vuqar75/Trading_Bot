@@ -1,0 +1,226 @@
+{
+  "model_id": "2a0ecbe3351f44f36ce59c336b4e28d089841de21fa5ec915276117fe3d713bc",
+  "model_sha256": "cc3ee2473b4ba5c24bd7f555b47acf4d32cdfe72f414aabc89c744bb7afa8277",
+  "model_changed": false,
+  "training_performed": false,
+  "network_used": false,
+  "orders_enabled": false,
+  "snapshots": [
+    {
+      "file": "technical.json",
+      "sha256": "419e3e9bcbbd2fb761c7929f3fb9dc01c7379965ec5bead27c4e9e30de5aa747",
+      "checks": [
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794480300000,
+          "status": "no_direction",
+          "feature_evidence": "full"
+        }
+      ]
+    },
+    {
+      "file": "technical-ETHUSDT.json",
+      "sha256": "d6539d1932e918048ff97e7927d810a700d920926ee1f0a57b7f2fcc0f93a8d1",
+      "checks": [
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794480300000,
+          "status": "no_direction",
+          "feature_evidence": "full"
+        }
+      ]
+    },
+    {
+      "file": "technical-SOLUSDT.json",
+      "sha256": "65099777e682751d72bf35ad7694232273ded2fa221de6f872f58d51a66b2225",
+      "checks": [
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794480300000,
+          "status": "no_direction",
+          "feature_evidence": "full"
+        }
+      ]
+    },
+    {
+      "file": "technical-history.json",
+      "sha256": "7721ebb87b8aef38b6082b52e2977d30311d8c5c053c26e3e87e85ec68720de8",
+      "checks": [
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794456900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794460500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794464100000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794465900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794466800000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794468600000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794474900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794476700000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "BTCUSDT",
+          "signal_ms": 1794477600000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        }
+      ]
+    },
+    {
+      "file": "technical-history-ETHUSDT.json",
+      "sha256": "6bfade536c8340ca416aa9287201e88ce1f0efd95fdb3c56d0834d6c269278b2",
+      "checks": [
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794462300000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794464100000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794465900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794469500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794474900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794477600000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794478500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "ETHUSDT",
+          "signal_ms": 1794479400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        }
+      ]
+    },
+    {
+      "file": "technical-history-SOLUSDT.json",
+      "sha256": "88b2a5731ed9f845d94733652e340d2514fed055691653835dc949a9abb62a28",
+      "checks": [
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794461400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794465900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794467700000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794469500000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794470400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794472200000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794473100000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794474900000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794475800000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        },
+        {
+          "symbol": "SOLUSDT",
+          "signal_ms": 1794479400000,
+          "status": "insufficient_feature_evidence",
+          "retained_features": 1
+        }
+      ]
+    }
+  ]
+}

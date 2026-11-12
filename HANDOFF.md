@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — actual VM model replay and history evidence installed
+
+Completed `MODEL_RUNTIME_AUDIT_LOCAL_TASK.md`: read-only copies of saved published VM snapshots and the installed model were diagnosed without a market or paid API request. Three actual full BTC/ETH/SOL directional forecasts matched exactly; initial WAIT snapshots had no numerical forecast and 30 older ATR-only records could not be replayed. The existing free writer alone received the prepared `ef24f696240901d3ffc44adb5c122c468215917a` history-evidence module, with no service restart or change to model, thresholds, timer, budget or market pauses. A consistent pre-change technical backup was verified locally, old IDs and starts preserved, and isolated full-feature writer/replay checks passed. Details, limitations and backup location: [MODEL_RUNTIME_VM_AUDIT_20261112.md](MODEL_RUNTIME_VM_AUDIT_20261112.md).
+
 ## 2026-11-12 — diagnosis of near-constant ML forecasts
 
 Owner reported24plans,allNO_TRADE,p~21..26.5%,net~-0.31%,then requested audit.
