@@ -184,11 +184,15 @@ class UnifiedQueue:
                     view=parts[1] if len(parts)==2 else 'summary'
                     buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('Позиции и действия','/adaptive positions'),('Результаты и издержки','/adaptive results'),('Почему нет сделки','/adaptive why'),('Данные и здоровье','/adaptive health'),('Обновить','/adaptive'))]
                     self._notify(render(view),buttons=buttons)
-                elif command == '/ai' and len(parts)<=2 and (len(parts)==1 or parts[1] in ('why','metrics','sources','costs','patterns','plan')):
+                elif command == '/ai' and len(parts)<=2 and (len(parts)==1 or parts[1] in ('why','metrics','sources','costs','patterns','plan','history')):
                     from .ai_screens import render_screen
                     screen=parts[1] if len(parts)==2 else 'main'
                     buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('Теханализ и паттерны','/ai patterns'),('Почему такое решение','/ai why'),('Метрики рынка','/ai metrics'),('Источники и новости','/ai sources'),('Расходы и состояние','/ai costs'),('Обновить','/ai'))]
                     if screen=='patterns':buttons[0]=[('Расчёт сделки',{'command':'/ai plan','market':mode,'expires':now+86400,'kind':'view'})]
+                    if screen=='plan':buttons.insert(1,[('Наблюдение за уровнями',{'command':'/ai history','market':mode,'expires':now+86400,'kind':'view'})])
+                    if screen=='history':
+                        buttons[0]=[('Расчёт сделки',{'command':'/ai plan','market':mode,'expires':now+86400,'kind':'view'})]
+                        buttons[-1]=[('Обновить',{'command':'/ai history','market':mode,'expires':now+86400,'kind':'view'})]
                     self._notify(render_screen(screen),buttons=buttons)
                 elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):

@@ -81,9 +81,39 @@ def publish_technical(source=None,target=None,*,now=None,gid=None):
     return True
 
 
+def publish_history(source=None,target=None,*,now=None,gid=None):
+    """Read-only price-level observations; separate from the AI budget/report."""
+    from research.technical_plan_history import validate,MAX_BYTES
+    source=Path(source) if source is not None else SOURCE.with_name('technical-history.json')
+    target=Path(target) if target is not None else TARGET.with_name('technical-history.json')
+    now=time.time() if now is None else now
+    if any(p.is_symlink() for p in (source,source.parent,target,target.parent)):raise ValueError('symlink_report_rejected')
+    fd=os.open(source,os.O_RDONLY|os.O_NOFOLLOW)
+    with os.fdopen(fd,'rb') as f:raw=f.read(MAX_BYTES+1)
+    if len(raw)>MAX_BYTES:raise ValueError('history_size')
+    d=validate(json.loads(raw))
+    if not -5000<=now*1000-d['checked_ms']<=1800000:raise ValueError('history_stale')
+    if target.exists():
+        old_raw=target.read_bytes()
+        if old_raw==raw:return False
+        old=validate(json.loads(old_raw))
+        if old['started_ms']!=d['started_ms'] or old['checked_ms']>=d['checked_ms']:raise ValueError('history_reordered_or_reset')
+    fd,tmp=tempfile.mkstemp(prefix='.technical-history-',dir=target.parent)
+    try:
+        with os.fdopen(fd,'wb') as f:f.write(raw);f.flush();os.fsync(f.fileno())
+        if gid is None:gid=grp.getgrnam('tradingbot').gr_gid
+        os.chmod(tmp,0o640);os.chown(tmp,os.geteuid(),gid);os.replace(tmp,target)
+        fd=os.open(target.parent,os.O_RDONLY|os.O_DIRECTORY)
+        try:os.fsync(fd)
+        finally:os.close(fd)
+    finally:
+        if os.path.exists(tmp):os.unlink(tmp)
+    return True
+
+
 if __name__ == '__main__':
     good=False;changed=False
-    for function in (publish,publish_technical):
+    for function in (publish,publish_technical,publish_history):
         try:changed=function() or changed;good=True
         except (OSError,ValueError,KeyError,TypeError):pass
     if not good:raise SystemExit('AI_REPORT_NOT_PUBLISHED')

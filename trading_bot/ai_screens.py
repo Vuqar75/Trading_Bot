@@ -30,6 +30,9 @@ def render_screen(screen='main',path=REPORT,now=None):
     if screen=='plan':
         from .technical_ai_view import render_plan
         return render_plan(Path(path).with_name('technical.json'),now)
+    if screen=='history':
+        from .technical_ai_view import render_history
+        return render_history(Path(path).with_name('technical-history.json'),now)
     try:
         path=Path(path)
         if path.stat().st_size>100000:raise ValueError('oversize')

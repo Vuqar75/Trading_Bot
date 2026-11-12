@@ -1,5 +1,43 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — bounded history and price-level observation
+
+Fetched exact8998e1b installation report; no reinstall of completed fa16c3c
+or repeated Git repair. Owner asked to continue. See AI_PLAN_HISTORY_20261112.md
+and AI_PLAN_HISTORY_LOCAL_TASK.md.
+
+Completed automatic bounded technical-history.json update inside the EXISTING
+free capture, separate read-only publisher, and /ai history button from /ai plan.
+WAIT no longer erases old plans. Store64latest fresh plans, actual recording
+time, model/packet identity, anchor/path hashes, base/stress observations.
+No new process/timer/API request, budget/financial DB/account, training or ML
+change. History is not included in the GPT context or snapshot/model identity.
+
+Audit interval is15min..4h AFTER SIGNAL,15closed15m bars. First15min and the
+last1/6min of hypothetical4h AFTER delayed entry are unobserved. Price beyond
+levels is NOT a fill, PnL or model-accuracy label. Both barriers in same bar =>
+ambiguous; gaps block conclusions; source corrections permanently invalidate
+record. PnLnull/fillsfalse/ordersfalse. Register only fresh packets; no historical
+import as prospective plans. Idempotent per symbol/signal/model, bounded pruning
+count exposed. Whole history atomic0600 under existing writer lock; corrupt file
+not reset; free current analysis continues with plan_history=unavailable.
+
+171targeted checksPASS with temporary HOME, no credentials, IP sockets denied;
+18new checks including both directions, ambiguity, source revisions, gaps,
+restart/atomic failure, publication and existing free-server/cache/paid guard.
+After refresh/invalid-container refinements31history+inlinechecksPASS. Financial code untouched,
+no full suite or historical strategy rerun. No real/public/paid market requests
+were made by this cloud task. Old budget/keys/locks were not opened.
+
+Not installed on VM from cloud (no VM access). Latest owner-confirmed installed
+code remains fa16c3c / bot74205ace, documented8998e1b. All pauses/stopped study/
+Donchian and paid boundaries remain as owner reported. Sole budget reported8
+attempts/$0.018370 reserved, unchanged by this work. Use existing authorized
+rollout for delivery. History starts with next free capture; do not manufacture
+plans/trades. Local JSON survives process restart but needs separate verified
+backup; existing host-bound budget archive was NOT expanded. Periodic technical
+history backup must be checked, not assumed. No profitability admission.
+
 ## 2026-11-12 — AI trade scenarios installed
 
 See `AI_TRADE_SCENARIOS_INSTALL_20261112.md`. Installed the unchanged

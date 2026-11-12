@@ -6,6 +6,7 @@ import tempfile
 import threading
 import time
 import unittest
+from unittest.mock import patch
 from pathlib import Path
 
 from trading_bot.app import TelegramTransport
@@ -180,6 +181,21 @@ class InlineTelegramTests(unittest.TestCase):
         for market in ('spot','futures','futures_cross','margin_cross'):
             self.assertEqual(self.q.pending(market),[])
         self.assertEqual(self.q.db.execute("SELECT count(*) FROM unified_proposals WHERE status='OPEN'").fetchone()[0],0)
+
+    def test_plan_history_navigation_is_authorized_read_only(self):
+        now=time.time();self.q.receive(1,True,'/ai plan',now=now)
+        button=next(b for row in self.keyboard() for b in row if b['text']=='Наблюдение за уровнями')
+        with patch('trading_bot.ai_screens.render_screen',return_value='no fills or PnL') as render:
+            self.q.receive(2,False,'',now=now+1,callback_data=button['callback_data'])
+            self.assertEqual(render.call_count,0)
+            self.q.receive(3,True,'',now=now+1,callback_data=button['callback_data'])
+            self.q.receive(3,True,'',now=now+1,callback_data=button['callback_data'])
+        self.assertEqual(render.call_count,1);self.assertEqual(render.call_args.args,('history',))
+        refresh=next(b for row in self.keyboard() for b in row if b['text']=='Обновить')
+        with patch('trading_bot.ai_screens.render_screen',return_value='same history') as render:
+            self.q.receive(4,True,'',now=now+2,callback_data=refresh['callback_data'])
+        self.assertEqual(render.call_args.args,('history',))
+        self.assertEqual(self.q.db.execute('SELECT count(*) FROM unified_jobs').fetchone()[0],0)
 
     def test_expired_sent_menu_is_removed_even_after_restart(self):
         now=time.time();self.q.receive(1,True,'/mode',now=now-121);self.t.flush(self.q)

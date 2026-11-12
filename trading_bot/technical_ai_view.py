@@ -5,6 +5,35 @@ NAMES={'engulf_long':'бычье поглощение','engulf_short':'медв�
        'inside_long':'пробой внутреннего бара вверх','inside_short':'пробой внутреннего бара вниз','break_long':'пробой20свечей вверх','break_short':'пробой20свечей вниз'}
 
 
+def render_history(path,now=None):
+    try:
+        from research.technical_plan_history import validate,MAX_BYTES
+        p=Path(path);now=time.time() if now is None else now
+        if p.is_symlink() or p.stat().st_size>MAX_BYTES:raise ValueError('history_size')
+        d=validate(json.loads(p.read_bytes()))
+        if d['checked_ms']>now*1000+5000:raise ValueError('history_future')
+        when=lambda x:dt.datetime.fromtimestamp(x/1000,dt.timezone(dt.timedelta(hours=4))).strftime('%d.%m %H:%M Баку')
+        lines=['[ИИ • наблюдение за уровнями]'+(' • УСТАРЕЛО' if now*1000-d['checked_ms']>1800000 else ''),
+               'Начало сохранения: '+when(d['started_ms'])+'; проверка: '+when(d['checked_ms'])+'.',
+               'Это движение цены, не исполнения, сделки или PnL.']
+        if not d['records']:lines.append('Однозначные планы пока не сохранены.')
+        states={'watching':'наблюдение продолжается','complete':'окно завершено','data_gap':'не хватает свечей; вывод не подтверждён','source_changed':'источник изменил данные; вывод не подтверждён'}
+        levels={'target':'цена достигла/прошла цель','stop':'цена достигла/прошла стоп','ambiguous':'оба уровня в одной свече — порядок неизвестен','none':'уровни не достигнуты в наблюдаемом окне'}
+        for r in d['records'][-5:][::-1]:
+            packet=r['packet'];lines.append(when(packet['signal_ms'])+' • '+packet['symbol']+' '+packet['side']+': '+states[r['state']]+'.')
+            lines.append('  ML: '+('кандидат без допуска' if packet['ml']['action']=='CANDIDATE' else 'вход не подтверждён')+'.')
+            if r['state'] not in ('source_changed','data_gap'):
+                for name,label in (('base','База'),('stress','Стресс')):
+                    x=r['results'][name]
+                    lines.append('  '+label+': '+levels[x['level']]+'; свечей '+str(x['observed_bars'])+'/15'+('; '+when(x['first_bar_ms']) if x['first_bar_ms'] is not None else '')+'.')
+        lines+=['Окно: от 15 минут до 4 часов после сигнала. Первые 15 минут исключены: исполнение и задержка внутри свечи неизвестны.',
+                'Касание/пересечение уровня не подтверждает исполнение. По этим данным нельзя считать прибыль или точность ML.',
+                'Хранятся последние 64 плана; удалено старых: '+str(d['discarded'])+'. Кнопка читает файл, не вызывает GPT.']
+        return '\n'.join(lines)[:3400]
+    except (OSError,ValueError,KeyError,TypeError,ArithmeticError,ImportError):
+        return '[ИИ • наблюдение за уровнями]\nПроверенной истории нет. Сделки и прибыль по отсутствующим данным не восстанавливаются.'
+
+
 def render_plan(path,now=None):
     """Read saved arithmetic only; never fetch a quote or create a trade."""
     try:
