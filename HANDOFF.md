@@ -1,5 +1,17 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — quota recovery: read completed VWAP, no repeated simulation
+
+999ee3edevelopment completed before quota interruption. Saved12accounts/journal/
+selectionnull recovered intact; only independent audit run after continuation.
+746closedrecordsPASS. All15mnegative;ETH1hbase/stress+4.9598/+6.6652 with7/6
+closes passes economics but fails count/direction requirement;BTC1h6/4closes
+also underpowered. No loweringthresholds or pretending6trades is a workingbot.
+VWAP_DYNAMIC_RESULTS.md fulltable;2026NOTcomputed,selectionnull preserved.
+No paid/newdata/VM/model/budget/credential/DB action. Continue next distinct
+rangecontraction/failedbreak family instead of stopping after this failure.
+
+
 ## 2026-11-12 — continued next family: VWAP own-exit preregistration
 
 Without ownerrestart after negative RSI2 development, VWAP_DYNAMIC_PROTOCOL.md
