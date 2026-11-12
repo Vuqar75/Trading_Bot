@@ -1,5 +1,39 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continuation completed: cost attribution and fixed pair screen
+
+Owner asked why work stopped; continued directly without another local-agent
+handoff. PATTERN_COST_BOUND_20261112.md / cost_bound.json reuse saved 50,628
+OOF cases. New directed regressor net-only component selects291 cases, NOT
+jointgate trades: same-path zero-cost gross+funding averages -2.509bps base,
+-6.597bps stress. Lower fees alone do not rescue those saved selections;
+changing execution might change paths, so this is not an all-strategy claim.
+
+One distinct relative-value mechanism was then preregistered and published as
+2b588d7 BEFORE calculation. See PAIR_REVERSION_RESULTS.md and source receipt.
+BTC/ETH fixed15m ratio extremes, prior96bars, +/-2sigma crossing and >=35bps
+hypothesized gross move, opposite equal-dollar legs, fixed4h hold. Reused140
+pinned local trade/mark/funding inputs; no market-data downloads. Primary
+NBERw7032 abstract read; its equity results are not crypto efficacy evidence.
+745 nonoverlapping pairs per scenario (331ETHshort/414ETHlong). Mean net
+-19.3534bps base / -29.0320bps stress on combined gross-notional. Gross+funding
+only +0.655/+0.978bps; fees~10bps plus impact~10/20bps. All4stresssegments
+negative, stress without best negative. Configuration rejected, no tuning.
+
+Independent audit verifies1,490pair observations/two legs/funding/boundaries,
+frozen published hashes/pinned sources, accounting, nonoverlap and criteria:
+PASS.5targetedtestsPASS; actual-array prefix causalityPASS. No model fits or
+old backtest reruns. Normalized return screen only, no exchange-lot feasibility,
+stop/5USDT risk approval, funded-account ledger or trade admission. No need to
+build/install a new pair router for this rejected hypothesis. Overall profitable
+short-term bot objective remains unresolved; no success/alpha claim.
+
+No cloud access to VM, live health/budget/credentials/config/financial DBs;
+ownerreported pauses, stoppedstudy/Donchian,8attempts/$0.018370reserve and
+freeanalysis not changed by this work. No paid calls, deployment or test trades.
+The two completed checks are reproducible and must not be queued again.
+
+
 ## 2026-11-12 — continuation: cost bound and one relative-value screen registered
 
 Owner asked to continue without another manual restart. Saved direction-normalized

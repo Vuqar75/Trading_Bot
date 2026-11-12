@@ -1,0 +1,19 @@
+{
+  "status": "PASS",
+  "frozen_inputs": "match",
+  "cases_sha256": "match",
+  "verified": {
+    "base": {
+      "pairs": 745,
+      "both_leg_accounting": "PASS",
+      "timing_and_nonoverlap": "PASS"
+    },
+    "stress": {
+      "pairs": 745,
+      "both_leg_accounting": "PASS",
+      "timing_and_nonoverlap": "PASS"
+    }
+  },
+  "screen_pass": false,
+  "new_requests": 0
+}

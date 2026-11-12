@@ -1,0 +1,71 @@
+{
+  "source_uncompressed_sha256": "d75ed65446495e43462742cbf66a021d7b07c596d32ce15790d0f47459849b45",
+  "unit": "mean bps per entry reference notional",
+  "scope": "same saved paths; component filters are NOT the joint probability/net admission gate",
+  "zero_cost_is_resimulation": false,
+  "results": {
+    "all_oof": {
+      "n": 50628,
+      "base": {
+        "gross": -0.8318013516411702,
+        "fees": 9.999479790596926,
+        "impact": 9.999479582645483,
+        "funding": -0.00190081870438828,
+        "liquidation_fee": 0.0,
+        "net": -20.832661543587967,
+        "same_path_zero_cost": -0.8337021703455585
+      },
+      "stress": {
+        "gross": -0.5485790902400686,
+        "fees": 9.999452478560396,
+        "impact": 19.99890440854061,
+        "funding": -0.0030885670635659892,
+        "liquidation_fee": 0.0,
+        "net": -30.550024544404643,
+        "same_path_zero_cost": -0.5516676573036345
+      }
+    },
+    "old_net_component_only": {
+      "n": 224,
+      "base": {
+        "gross": -11.463863690163135,
+        "fees": 10.0092924062218,
+        "impact": 10.00928954025481,
+        "funding": 0.11810598314326792,
+        "liquidation_fee": 0.0,
+        "net": -31.36433965349648,
+        "same_path_zero_cost": -11.345757707019867
+      },
+      "stress": {
+        "gross": -8.591959033549738,
+        "fees": 10.007263922462824,
+        "impact": 20.014519252965535,
+        "funding": 0.1774987302293587,
+        "liquidation_fee": 0.0,
+        "net": -38.436243478748736,
+        "same_path_zero_cost": -8.414460303320379
+      }
+    },
+    "aligned_net_component_only": {
+      "n": 291,
+      "base": {
+        "gross": -2.470048621152084,
+        "fees": 9.998685035822666,
+        "impact": 9.998684418309498,
+        "funding": -0.0387067237450294,
+        "liquidation_fee": 0.0,
+        "net": -22.50612479902928,
+        "same_path_zero_cost": -2.5087553448971134
+      },
+      "stress": {
+        "gross": -6.636097213859732,
+        "fees": 10.001055297778413,
+        "impact": 20.002103959458545,
+        "funding": 0.03909409937740052,
+        "liquidation_fee": 0.0,
+        "net": -36.60016237171929,
+        "same_path_zero_cost": -6.597003114482331
+      }
+    }
+  }
+}

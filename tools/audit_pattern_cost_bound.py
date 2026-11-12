@@ -21,7 +21,11 @@ def main():
         if [(r['T'], r['symbol']) for r in rows] != [(int(t), assets[int(s)]) for t, s in zip(x['T'], x['symbol'])]:
             raise ValueError('row identity mismatch')
     refs = json.load(gzip.open(src / 'predictions.json.gz', 'rt'))
-    with np.load(ROOT / 'research/pattern_direction_results/predictions.npz', allow_pickle=False) as p:
+    direction = ROOT / 'research/pattern_direction_results'
+    summary = json.loads((direction/'summary.json').read_text())
+    if hashlib.sha256((direction/'predictions.npz').read_bytes()).hexdigest() != summary['predictions_sha256']:
+        raise ValueError('direction prediction hash')
+    with np.load(direction/'predictions.npz', allow_pickle=False) as p:
         indices = p['source_index'].copy()
         aligned = indices[p['pred_net'] >= .0005]
     if [(rows[i]['T'], rows[i]['symbol']) for i in indices] != [(r['T'], r['symbol']) for r in refs]:
