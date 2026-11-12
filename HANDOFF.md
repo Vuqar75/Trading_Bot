@@ -1,5 +1,19 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — OI response/control development finished, continue search
+
+fec3f46fixed2025H2batchcompleted12accountsandpercasecheckpoint. price_controls
+allnegative;OI-filterETHstress+1.7633butbase-.8031with12/11closures;BTC6closures
+negative,SOL13negative. Selectionnull,2026notcomputed. Independentledger/
+sourceOIlag/knownanchor/geometryauditPASS, fullcounts/artifacts in
+OI_response_results. No relaxingOIthresholds/counts or creditingOIwitha
+price-onlyeffect. No newdata/VM/API/fit/budget action. Next avenue considers
+an explicitly fixed liquid legacy-alt universe for the unchanged1hVWAP
+policy, to test frequency/diversification of the retained rareETH1hpositive
+lead; must preregister before downloading/seeing newassetreturns. Not an
+admission of the rejected original3assetbatch or a hiddenassetwinnerselection.
+
+
 ## 2026-11-12 — continued search: OI response/control registered with checkpoints
 
 OI_RESPONSE_PROTOCOL.md/INPUTS freezes15mshock1.5pastATR+closedrecovery,

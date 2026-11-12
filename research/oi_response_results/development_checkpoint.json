@@ -1,0 +1,17 @@
+{
+  "signature": "550fc059829d0c1fe18f0a853f2c2fc578c1e818f71b0d6da0191dbdb95d6fd0",
+  "cases": {
+    "BTCUSDT/price_control/base": "2f1b6594646b9887dc7132af3fbaccae83dc01152368d5ec04c06f1b0882bbcb",
+    "BTCUSDT/price_control/stress": "94394a0d875b8e49992da537a57000e335cabef8351cf8b1b6e558cea90c4c75",
+    "BTCUSDT/oi_filter/base": "acad56b3739ee2df8b504dca175bf8dd336eed5904dc8d44f328790dfdb2c53b",
+    "BTCUSDT/oi_filter/stress": "4c201e65ca84601e6d095017717d119a54b7d65f268b4c83aca2e1a5de38cc5f",
+    "ETHUSDT/price_control/base": "92355def36fca2542462f218b5ea88d493e8235f71eb9a4dee9e42be6d6d44e6",
+    "ETHUSDT/price_control/stress": "64f85639c460dcb1ab0fcde5cc8b34277682f6a579320de252c4a35d63181fd7",
+    "ETHUSDT/oi_filter/base": "22d479bcfe92970ae4d2f0b5de0114b92ba95b061903f1d7226c34dcb8c23cc5",
+    "ETHUSDT/oi_filter/stress": "32394ba0d25b01d8bcef0559738c7aacd1e567e5556ccb18ee6e6cb2f7654d0a",
+    "SOLUSDT/price_control/base": "881682b8c5bf292cae68df2f7b01087d3593754b9af5c54755f929d1f9a9d3c8",
+    "SOLUSDT/price_control/stress": "4c52c1a32d99145e10b5b0013d168b7862b58ddedb791bf2fa650efcdce289e3",
+    "SOLUSDT/oi_filter/base": "5a10a5a663ae897467f1e61e574f4b663625356e5821bc577af12c9bfc707d8b",
+    "SOLUSDT/oi_filter/stress": "f7dc518e97b694932f5af7f8cfab483f3e2c9702255743a9674b632b4e50bfbd"
+  }
+}
