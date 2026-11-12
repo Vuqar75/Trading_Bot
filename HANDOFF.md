@@ -1,12 +1,28 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continuing: fixed legacy-alt shared-capital VWAP cohort registered
+
+Before any newassetreturn, LEGACY_VWAP_PROTOCOL.md/ACQUISITION_INPUTS fixes
+XRP/ADA/DOGE/LINK/DOT and UNCHANGED1hVWAP signals/exits.1hselectedretrospectively
+fromrarepositiveETHlead,explicitdevelopmentdecision,not independentalpha.
+OneGLOBAL1000account/oneposition;simultaneoussignals rankedknownVWAPdistance,
+notfuturePnL, no gapfallback. Cap100forall/1x/5risk,coarsewholeqty strategy/
+min50proxy must not be called verifiedexchangefilters. >=30/10side,bothhalves,
+withoutbesttradeANDwithoutbestasset,DD2,>=6activemonths. No assetwinner picking.
+AcquireonlyDec2024..Dec2025first fromofficialUMVision+CHECKSUM,<=750MiBraw/
+32MiBfile/4concurrent,cacheoncloudnotWindows,>=2GiBfree. Publicdata only,no
+credential/FAPIgeo-bypass/paidresource.2026onlyafterdevelopmentreceiptpasses.
+3targetedtestsPASS fornewsource cadence/coverage/immutability. Executioncode
+andreceivedmanifestwillbefrozenBEFOREfirstPnL;noVM/pauses/budgetchanges.
+
+
 ## 2026-11-12 — OI response/control development finished, continue search
 
 fec3f46fixed2025H2batchcompleted12accountsandpercasecheckpoint. price_controls
 allnegative;OI-filterETHstress+1.7633butbase-.8031with12/11closures;BTC6closures
 negative,SOL13negative. Selectionnull,2026notcomputed. Independentledger/
 sourceOIlag/knownanchor/geometryauditPASS, fullcounts/artifacts in
-OI_response_results. No relaxingOIthresholds/counts or creditingOIwitha
+oi_response_results. No relaxingOIthresholds/counts or creditingOIwitha
 price-onlyeffect. No newdata/VM/API/fit/budget action. Next avenue considers
 an explicitly fixed liquid legacy-alt universe for the unchanged1hVWAP
 policy, to test frequency/diversification of the retained rareETH1hpositive
