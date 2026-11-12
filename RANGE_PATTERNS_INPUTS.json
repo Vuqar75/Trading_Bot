@@ -1,0 +1,14 @@
+{
+  "status": "registered_before_development",
+  "sha256": {
+    "RANGE_PATTERNS_PROTOCOL.md": "1b7f2db3c6fadd2f26188ffa4672b11c6f78f5285cd38361123bc4a3fbb49635",
+    "research/range_patterns.py": "c9f249a7a136495852712abda98864c3cb4b5a9bf072d525f8de84efd7952ea8",
+    "tests/test_range_patterns.py": "a3fa8a20abd64882fe863c7e7345d4c1a800f52f67b82f4c6eba5a70b8a4d59c",
+    "research/rsi2_dynamic.py": "f4c6a125e3e06c93d3a2f03b47aac8dfea9937c1b95d77b6316c9eb1582253c8",
+    "research/published_ema_transfer.py": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+    "research/rsi15m_verification.py": "ede8df529191ec20401cf0aa4043e967103e3dd62df7d708e32f40cc4464d040",
+    "research/rsi_crossasset.py": "6f8f8a64d34682ca4d3d9872d25bac357701bea9e1deda7ee8a3fb3140ca7be6",
+    "research/extreme_reversal.py": "3efecc43cced1ddc4f55f1234f6475dda994403fe3d88f9a1e21c4bb95da7317",
+    "research/pattern_ai_results/sources.json": "469c09262b64de8a1ecd46f93167d15b627d5694172c0b0d67726550d0715136"
+  }
+}

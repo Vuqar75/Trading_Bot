@@ -1,5 +1,18 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continued fixed two-family range-pattern batch registered
+
+RANGE_PATTERNS_PROTOCOL.md/INPUTS freeze NR7(nextclosedbarbreak+SMA200,
+EMA10trendexit) and20baroldextreme4+age failedbreak(EMA5meanexit),3TF3assets.
+36developmentaccounts2025only. Own knownsetup/signalbar stop>0<=2%,rawdelayed
+trigger must survive; oldAccountfinancials,1x/5risk,BTC150research/others100.
+This is an independent intraday adaptation,not claimed authorstock/futuresPnL.
+PublishONEdevelopmentwinner BEFORE2026,never runnerup validation. Prior data
+reused/multiplefamiliesselectionrisk explicit.6newtargetedtestsPASS before
+results,including last-age/currentexclusion/dualSweep/gapguard/stop/exitkind.
+Same active ownerrequest continues; no VM/paid/newdata/model/budget action.
+
+
 ## 2026-11-12 — quota recovery: read completed VWAP, no repeated simulation
 
 999ee3edevelopment completed before quota interruption. Saved12accounts/journal/

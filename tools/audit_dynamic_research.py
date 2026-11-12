@@ -36,13 +36,14 @@ def audit(summary_path):
             entry_context = scheduled[(p['signal_ms'], side)]['selected_pair']
             if entry_context.get('action') != 'entry' or entry_context['entry_side'] != side:
                 raise ValueError('entry evidence')
-            if p['reason']=='mean_exit':
+            if p['reason'] in ('mean_exit','trend_exit'):
                 signal = scheduled.get((p['exit_ms']-delay, 0))
                 if signal is None:
                     raise ValueError('mean exit signal missing')
                 context = signal['selected_pair']
                 line = context.get('exit_line', context.get('sma5'))
-                if not (context['close'] > line if side==1 else context['close'] < line):
+                reached=(context['close'] > line if side==1 else context['close'] < line) if p['reason']=='mean_exit' else (context['close'] < line if side==1 else context['close'] > line)
+                if not reached:
                     raise ValueError('mean not reached on closed bar')
             if p['reason']=='time' and p['exit_ms'] != p['deadline_ms']:
                 raise ValueError('time exit')
@@ -56,7 +57,15 @@ def audit(summary_path):
                 raise ValueError('minimum notional proxy')
             if q*p['entry']+p['entry_fee'] > cash+1e-8:
                 raise ValueError('capital')
-            same(p['stop'], p['entry']*(1-.02*side))
+            if 'stop_reference' in p:
+                same(p['stop'],entry_context['stop_reference'])
+                same(p['trigger_reference'],entry_context['trigger_reference'])
+                distance=side*(p['entry']-p['stop'])/p['entry']
+                if not 0<distance<=.02 or side*(p['entry_reference']-p['trigger_reference'])<=0:
+                    raise ValueError('known stop or delayed trigger')
+                same(p['estimated_risk'],q*p['entry']*(distance+2*(.0005+impact)+.0021))
+            else:
+                same(p['stop'], p['entry']*(1-.02*side))
             same(p['entry'], p['entry_reference']*(1+side*impact))
             same(p['exit'], p['exit_reference']*(1-side*impact))
             same(p['fees'], .0005*q*(p['entry']+p['exit']))
