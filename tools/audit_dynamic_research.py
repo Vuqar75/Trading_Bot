@@ -69,10 +69,13 @@ def audit(summary_path):
                 raise ValueError('capital')
             if 'candidates' in entry_context:
                 candidates=entry_context['candidates'];atr_recovery=p.get('stop_rule')=='volatility_two_atr'
-                ordered=sorted(candidates,key=lambda r:(-r['score' if atr_recovery else 'room'],r['symbol']))
+                net_model=entry_context.get('rank_rule')=='predicted_net'
+                ordered=sorted(candidates,key=lambda r:(-r['predicted_net'],r['symbol'],-r['entry_side'])) if net_model else sorted(candidates,key=lambda r:(-r['score' if atr_recovery else 'room'],r['symbol']))
                 if not ordered or ordered[0]['symbol']!=asset or ordered[0]['entry_side']!=side:raise ValueError('portfolio chose future/other candidate')
                 for candidate in candidates:
-                    if atr_recovery:
+                    if net_model:
+                        if candidate['predicted_net']<.0005:raise ValueError('below net forecast threshold')
+                    elif atr_recovery:
                         same(candidate['room'],candidate['entry_side']*(candidate['entry_mean']-candidate['close'])/candidate['close'])
                         same(candidate['score'],candidate['entry_side']*(candidate['entry_mean']-candidate['close'])/candidate['atr'])
                     else:same(candidate['room'],abs(candidate['vwap']/candidate['close']-1))

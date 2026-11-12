@@ -1,0 +1,22 @@
+{
+  "status": "frozen_before_first_fit_or_pnl",
+  "sha256": {
+    "PANEL_NET_ML_PROTOCOL.md": "fcc35b4c704975c940e706866422d68d4bf00edf681117071c0297dda86d9c50",
+    "research/panel_net_ml.py": "917ca2a81298fe242572c22f406e5b3bfb201e5457df7ffcdffaa936601aeef7",
+    "research/legacy_universe_data.py": "818af52d63335c2dd84084f5f7329101c3cd2decf0a4b0ff95758a26e7d00a9b",
+    "research/legacy_vwap.py": "d62fea75e343ce1727cb32c10e03ddec089a54da968e21b95f8685b2e32ba5dd",
+    "research/rsi2_dynamic.py": "f4c6a125e3e06c93d3a2f03b47aac8dfea9937c1b95d77b6316c9eb1582253c8",
+    "research/published_ema_transfer.py": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+    "research/rsi15m_verification.py": "ede8df529191ec20401cf0aa4043e967103e3dd62df7d708e32f40cc4464d040",
+    "research/extreme_reversal.py": "3efecc43cced1ddc4f55f1234f6475dda994403fe3d88f9a1e21c4bb95da7317",
+    "research/technical_patterns.py": "638b4a832222a202d8faac90c079914019d28a292915973c30863435187b2798",
+    "tests/test_panel_net_ml.py": "549d1eb2e515431a583b65ff2b89a16b83d5f44680d79bcf52370815d948e265",
+    "tools/audit_panel_net_ml.py": "d0b9a977aed9ca71bbc54c8362219af14bf5b4b00ae64dbb2d7c1cee28b0c908",
+    "tools/audit_dynamic_research.py": "c42f4813bfeac2ba820742e760973e44ed2b2f5556a75d40e2bef188b1389ecb"
+  },
+  "versions": {
+    "numpy": "2.3.5",
+    "sklearn": "1.8.0"
+  },
+  "manifest_sha256": "8e1e9f61c2472d5ee1a102020b87d78728469b9156e3aac80a6549bab76b99fc"
+}
