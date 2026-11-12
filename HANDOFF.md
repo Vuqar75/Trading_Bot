@@ -1,5 +1,22 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continuation: cost bound and one relative-value screen registered
+
+Owner asked to continue without another manual restart. Saved direction-normalized
+net-component selection is examined for cost attribution only: no retraining or
+relabeling. See tools/audit_pattern_cost_bound.py and cost_bound.json. This cannot
+resimulate a different maker/taker path or turn component filters into joint gates.
+
+PAIR_REVERSION_PROTOCOL.md freezes one distinct offline BTC/ETH pair-reversion
+screen before its first calculation. Two opposite equal-dollar legs, prior-only
+96x15m ratio statistics, new +/-2-sigma crossing and hypothesized gross move
+>=35bps, fixed4h hold, original two delay/impact scenarios, both-leg funding.
+No parameter search, new model, service, collector, real/paper execution or VM
+allocation change. Historical normalized returns are NOT lot-feasible fills.
+Initial source/hash receipt in PAIR_REVERSION_INPUTS.json. Continue directly
+through calculation, independent audit and result publication in this same task.
+
+
 ## 2026-11-12 — one direction-normalization experiment completed, rejected
 
 Owner authorized the single predeclared comparison. Protocol/code published

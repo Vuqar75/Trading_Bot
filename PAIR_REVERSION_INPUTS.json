@@ -1,0 +1,9 @@
+{
+  "status": "registered_before_first_calculation",
+  "sha256": {
+    "PAIR_REVERSION_PROTOCOL.md": "5c962f6de8d89f5a7a380e081a4a3a837e8203f771d2e65cdaad58af65eb8ed3",
+    "research/pair_reversion_screen.py": "7c9b2bad6cc135668ca76d213bc6d97c6fe5c91632db2c792f81ef954afa1e10",
+    "tests/test_pair_reversion_screen.py": "c058cf7c083292701ae7802b775bd67b21c4756e6d9abbc801890863b3cd6eb2",
+    "research/pattern_ai_results/sources.json": "469c09262b64de8a1ecd46f93167d15b627d5694172c0b0d67726550d0715136"
+  }
+}
