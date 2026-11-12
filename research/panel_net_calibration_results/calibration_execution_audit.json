@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "directional_forecasts_checked": 88240,
+  "eligible_adjusted_forecasts": 22,
+  "independent_daily_penalties": 1472,
+  "stress_fills_matched": 4,
+  "selected": null,
+  "refits": 0
+}
