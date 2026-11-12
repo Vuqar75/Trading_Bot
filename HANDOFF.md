@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — BTC/ETH/SOL installed
+
+The `cafcee4099dc4a1bf9a721fe32f5ec8001012cf0` multi-asset candidate is installed on the existing server and publisher; the existing Telegram integration commit is `5a6dec3de24ed7866cf868cbc7d2a7b105de55bc`. BTC, ETH and SOL were successfully captured and published in the ordinary 05:46 UTC free cycle. The BTC history start and both existing plan IDs were preserved. Paid requests and automatic trading were not enabled; all four working markets remain paused, and study and Donchian remain disabled. Read [AI_MULTI_ASSET_INSTALL_20261112.md](AI_MULTI_ASSET_INSTALL_20261112.md) for checks, rollback locations and the verified one-time external backup. Periodic coverage of technical histories and cross-host recovery of the host-bound archive remain unconfirmed.
+
 ## 2026-11-12 — free technical analysis for BTC/ETH/SOL
 
 Fetched ae9ab47 confirmed installed history. Owner asked to continue.
