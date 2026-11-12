@@ -1,5 +1,18 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continued: NR7 standing conditional order registered
+
+NR7_CONDITIONAL_PROTOCOL.md/INPUTS fixes source-faithful ordertiming before
+results:NR7knownsetup,SMA200direction,priorATR>=60bpscost-awareness,standing
+stop-marketactiveafter1/6min,TTLoneTF. Triggergapadverseproxy+impact,known
+oppositesetupstop<=2%,intraminutefillwindowexplicit,entry→stoppessimism,
+uncertainentryfundingdebitonly. OwnEMA10exit,old6/12/24hdeadline/financecaps.
+Not a pure delayattribution:infoset/filter different and explicitlynew.
+9dev2025variants18accounts,freezeONEbefore2026,samegatesnorunnerups.
+5targetedtestsPASS,sourceknownbeforetriggerandfundinguncertaintytested.
+No VM/API/newdata/model/budget action;sameownerrequestcontinues.
+
+
 ## 2026-11-12 — range close-confirmation development finished, continuing
 
 724fdf7 fixed NR7/soup closed-entry batch completed36accounts2025. Allstress

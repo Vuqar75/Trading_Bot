@@ -1,0 +1,15 @@
+{
+  "status": "registered_before_development",
+  "sha256": {
+    "NR7_CONDITIONAL_PROTOCOL.md": "a2785c6aff8ceb9aa8161fee20c2a66d1a1eee41032eddd5f705649b2700d7a7",
+    "research/nr7_conditional.py": "7062ba608bbf38ce9ec5d3619ada70d7f882f57813a5b50c851e8bce1b79644b",
+    "tests/test_nr7_conditional.py": "07314be3a5d425c7481b07c51dc11090573d5c0426145a436cb2684fb3e6665a",
+    "research/rsi2_dynamic.py": "f4c6a125e3e06c93d3a2f03b47aac8dfea9937c1b95d77b6316c9eb1582253c8",
+    "research/published_ema_transfer.py": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+    "research/rsi15m_verification.py": "ede8df529191ec20401cf0aa4043e967103e3dd62df7d708e32f40cc4464d040",
+    "research/rsi_crossasset.py": "6f8f8a64d34682ca4d3d9872d25bac357701bea9e1deda7ee8a3fb3140ca7be6",
+    "research/extreme_reversal.py": "3efecc43cced1ddc4f55f1234f6475dda994403fe3d88f9a1e21c4bb95da7317",
+    "research/technical_patterns.py": "638b4a832222a202d8faac90c079914019d28a292915973c30863435187b2798",
+    "research/pattern_ai_results/sources.json": "469c09262b64de8a1ecd46f93167d15b627d5694172c0b0d67726550d0715136"
+  }
+}

@@ -26,16 +26,24 @@ def audit(summary_path):
         stress = key.endswith('stress'); impact = .001 if stress else .0005
         delay = (6 if stress else 1)*60000
         cash, prior_exit = 1000., -1
-        scheduled = {(r['time_ms'], r['desired']): r for r in journal['signals'] if r['action']=='scheduled'}
+        scheduled = {(r['time_ms'], r['desired']): r for r in journal['signals'] if r['action'] in ('scheduled','scheduled_conditional')}
         for p in journal['trades']:
             q, side = p['qty'], p['sign']
-            if p['entry_ms'] != p['signal_ms']+delay or p['entry_ms'] < prior_exit or p['exit_ms'] > p['deadline_ms']:
+            conditional='entry_window_end' in p
+            timing_ok=(p['activation_ms']==p['signal_ms']+delay and p['activation_ms']<=p['entry_ms']<p['order_expiry_ms'] and
+                       p['entry_window_end']==p['entry_ms']+60000 and p['entry_window_end']<=p['order_expiry_ms']) if conditional else p['entry_ms']==p['signal_ms']+delay
+            if not timing_ok or p['entry_ms'] < prior_exit or p['exit_ms'] > p['deadline_ms']:
                 raise ValueError('timing/nonoverlap')
             if (p['signal_ms'], side) not in scheduled:
                 raise ValueError('queue entry missing')
             entry_context = scheduled[(p['signal_ms'], side)]['selected_pair']
             if entry_context.get('action') != 'entry' or entry_context['entry_side'] != side:
                 raise ValueError('entry evidence')
+            if conditional:
+                o,h,l,_=p['entry_bar_ohlc'];trigger=entry_context['trigger_reference']
+                if not (h>trigger if side==1 else l<trigger):raise ValueError('conditional trigger not crossed')
+                same(p['entry_reference'],max(o,trigger) if side==1 else min(o,trigger))
+                same(p['activation_ms'],entry_context['activation_ms']);same(p['order_expiry_ms'],entry_context['expiry_ms'])
             if p['reason'] in ('mean_exit','trend_exit'):
                 signal = scheduled.get((p['exit_ms']-delay, 0))
                 if signal is None:
@@ -61,7 +69,8 @@ def audit(summary_path):
                 same(p['stop'],entry_context['stop_reference'])
                 same(p['trigger_reference'],entry_context['trigger_reference'])
                 distance=side*(p['entry']-p['stop'])/p['entry']
-                if not 0<distance<=.02 or side*(p['entry_reference']-p['trigger_reference'])<=0:
+                boundary_bad=(side*(p['entry_reference']-p['trigger_reference'])<0) if conditional else (side*(p['entry_reference']-p['trigger_reference'])<=0)
+                if not 0<distance<=.02 or boundary_bad:
                     raise ValueError('known stop or delayed trigger')
                 same(p['estimated_risk'],q*p['entry']*(distance+2*(.0005+impact)+.0021))
             else:
