@@ -1,5 +1,18 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — range close-confirmation development finished, continuing
+
+724fdf7 fixed NR7/soup closed-entry batch completed36accounts2025. Allstress
+negative, selectednull;2026notcomputed. Ownstops andEMAexits did not rescue
+this particular close-confirmation adaptation. Independent dynamic-auditPASS
+(fullclosedcount in range_patterns_results/development_audit.json), no new
+simulations. Preserve all raw/journal/results; no rule/threshold edits.
+Next distinct source-timing question: a stop-entry order standing at the
+PREVIOUSLY known NR7 boundary, instead of waiting an entire confirmationbar.
+Must be preregistered; causalstandingorder,adverse1m/gap/stop ordering,not
+an optimistic retrospective touchfill. Sameownerrequest, no permissionpause.
+
+
 ## 2026-11-12 — continued fixed two-family range-pattern batch registered
 
 RANGE_PATTERNS_PROTOCOL.md/INPUTS freeze NR7(nextclosedbarbreak+SMA200,
