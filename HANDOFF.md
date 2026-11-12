@@ -1,5 +1,26 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — technical plan history installed
+
+See `AI_PLAN_HISTORY_INSTALL_20261112.md`. Installed unchanged runtime
+`9b05eb4cbdd3df339b4c0ec00df118fcc045fd15` on the existing AI analysis,
+publisher and Telegram paths; bot integration commit
+`7adce0b597f0b81ff5d1f47835209b59bb1ac2ff`. Only the Spot process hosting the
+single poller restarted, under coordinated backup and timed recovery. The
+first normal free capture started history at 03:46:26 UTC / 07:46:26 Baku,
+`started_ms=1794455186000`; current WAIT left zero plans. Existing publisher
+exposed the validated history; `/ai plan` to `/ai history`, refresh,
+authorization, replay and no-network/no-job checks passed as the bot user.
+Receipt by the owner was not asserted.
+
+A one-time host-encrypted separate-prefix external history copy was downloaded,
+decrypted and validated: ciphertext SHA-256
+`da152901eb09650a31525664a7d14e327c6e1c4204123115d9fbeb2eeabcfc41`.
+Existing periodic backups do NOT include this file; no timer was added.
+All four markets remain paused, study/Donchian stopped, one poller, no pending
+jobs. Budget unchanged at eight attempts/$0.018370 reserved; no new paid call.
+Price-level observations are not executions or PnL; no 4h wait is required.
+
 ## 2026-11-12 — bounded history and price-level observation
 
 Fetched exact8998e1b installation report; no reinstall of completed fa16c3c
