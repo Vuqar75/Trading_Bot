@@ -1,5 +1,20 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — legacy cohort acquired and execution frozen before PnL
+
+195officialUMmonthlyZIPs Dec2024-Dec2025 for fixedXRP/ADA/DOGE/LINK/DOT,
+163832135bytes,allCHECKSUMmatch,zeroerrors. No2026download,priceperformance
+not inspected. Publicdata only,no newpaidresource. LEGACY_VWAP_EXECUTION_INPUTS
+pinsreceivedmanifest andportfolio/executionhelpers BEFORE firstPnL. Source
+loader supports variable actualfundingintervals and explicit diagnosed daily
+missing-only supplements (no replacingobservations), addedbefore firstPnL.
+OneGLOBALaccount,knownroomranking,oneposition,nofallback,coarseqty/min50proxy,
+fixedoriginalVWAP1h.6targetedtestsPASS forsourcecadence/coverage/immutability
+andsharedcash/symbolfunding/ranking/quantity. Development2025 followsnow;
+ifpassing,publishreceiptbefore any2026newassetdata;otherwise no silentcohort
+orparameterchanges. Existing VM/pauses/AIbudget untouched.
+
+
 ## 2026-11-12 — continuing: fixed legacy-alt shared-capital VWAP cohort registered
 
 Before any newassetreturn, LEGACY_VWAP_PROTOCOL.md/ACQUISITION_INPUTS fixes

@@ -1,0 +1,18 @@
+{
+  "status": "registered_before_first_new_asset_pnl",
+  "sha256": {
+    "LEGACY_VWAP_PROTOCOL.md": "94b3f876416880ae5ffea3dd3f9785171deb5501b3dc9d9c3fc570b0c5503c0c",
+    "research/legacy_vwap.py": "d62fea75e343ce1727cb32c10e03ddec089a54da968e21b95f8685b2e32ba5dd",
+    "research/legacy_universe_data.py": "ada014706af5599cccb38c3933e78eb3cfdb3aa4d7cc7145acfee7876c098166",
+    "tests/test_legacy_vwap.py": "5cd2d3d5ff3d679488f404e4d249213aa3251014ad08863212140f435a4f7141",
+    "tests/test_legacy_universe_data.py": "7e1401ae0c820c0c8cd4dbbe0118e9411aee71f5bf0b14e4b6ce84dc7c64668b",
+    "research/vwap_dynamic.py": "dbc163f656f8bf845dd00321d0c47bcd41dd321f63891006cbc1388c5b2b7bb8",
+    "research/rsi2_dynamic.py": "f4c6a125e3e06c93d3a2f03b47aac8dfea9937c1b95d77b6316c9eb1582253c8",
+    "research/published_ema_transfer.py": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+    "research/rsi15m_verification.py": "ede8df529191ec20401cf0aa4043e967103e3dd62df7d708e32f40cc4464d040",
+    "research/extreme_reversal.py": "3efecc43cced1ddc4f55f1234f6475dda994403fe3d88f9a1e21c4bb95da7317"
+  },
+  "development_manifest_sha256": "a269e56fdf67f51a51fee7cc4eb68b62d1de369884d2431e1eb0d8339485d8db",
+  "source_files": 195,
+  "source_bytes": 163832135
+}

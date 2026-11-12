@@ -57,16 +57,20 @@ def audit(summary_path):
                     raise ValueError('mean not reached on closed bar')
             if p['reason']=='time' and p['exit_ms'] != p['deadline_ms']:
                 raise ValueError('time exit')
-            asset = key.split('/')[0] if '/' in key else summary['selected'].split('/')[0]
+            asset = p.get('symbol') or (key.split('/')[0] if '/' in key else summary['selected'].split('/')[0])
             cap = 150 if asset=='BTCUSDT' else 100
             if q*max(p['entry'], p['mark_entry']) > cap+1e-8 or p['estimated_risk'] > 5+1e-8:
                 raise ValueError('risk/cap')
-            step = .01 if asset=='SOLUSDT' else .001
+            step = .01 if asset=='SOLUSDT' else .001 if asset in ('BTCUSDT','ETHUSDT') else 1
             same(q/step, round(q/step))
-            if q*p['mark_entry'] < {'BTCUSDT':50,'ETHUSDT':20,'SOLUSDT':5}[asset]-1e-8:
+            if q*p['mark_entry'] < {'BTCUSDT':50,'ETHUSDT':20,'SOLUSDT':5}.get(asset,50)-1e-8:
                 raise ValueError('minimum notional proxy')
             if q*p['entry']+p['entry_fee'] > cash+1e-8:
                 raise ValueError('capital')
+            if 'candidates' in entry_context:
+                candidates=entry_context['candidates'];ordered=sorted(candidates,key=lambda r:(-r['room'],r['symbol']))
+                if not ordered or ordered[0]['symbol']!=asset or ordered[0]['entry_side']!=side:raise ValueError('portfolio chose future/other candidate')
+                for candidate in candidates:same(candidate['room'],abs(candidate['vwap']/candidate['close']-1))
             if 'stop_reference' in p:
                 same(p['stop'],entry_context['stop_reference'])
                 distance=side*(p['entry']-p['stop'])/p['entry']
