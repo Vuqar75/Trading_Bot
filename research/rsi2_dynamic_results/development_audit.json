@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "checked": {
+    "BTCUSDT/15/base": {
+      "closed": 715,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "BTCUSDT/15/stress": {
+      "closed": 715,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "BTCUSDT/240/base": {
+      "closed": 54,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "BTCUSDT/240/stress": {
+      "closed": 54,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "BTCUSDT/60/base": {
+      "closed": 199,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "BTCUSDT/60/stress": {
+      "closed": 199,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "ETHUSDT/15/base": {
+      "closed": 717,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "ETHUSDT/15/stress": {
+      "closed": 717,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "ETHUSDT/240/base": {
+      "closed": 60,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "ETHUSDT/240/stress": {
+      "closed": 60,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "ETHUSDT/60/base": {
+      "closed": 186,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "ETHUSDT/60/stress": {
+      "closed": 187,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "SOLUSDT/15/base": {
+      "closed": 717,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "SOLUSDT/15/stress": {
+      "closed": 718,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "SOLUSDT/240/base": {
+      "closed": 59,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "SOLUSDT/240/stress": {
+      "closed": 60,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "SOLUSDT/60/base": {
+      "closed": 208,
+      "fill_cost_funding_capital": "PASS"
+    },
+    "SOLUSDT/60/stress": {
+      "closed": 209,
+      "fill_cost_funding_capital": "PASS"
+    }
+  },
+  "total_closed": 5834,
+  "new_simulations": 0
+}

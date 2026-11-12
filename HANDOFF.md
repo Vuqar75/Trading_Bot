@@ -1,5 +1,17 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — RSI2 development finished; continue without owner restart
+
+Source-based dynamic exit batch e95bb02 completed2025 only:9asset/TFpairs,
+18accounts,allnegativebase/stress,selectionnull. No2026validation computed.
+RSI2_DYNAMIC_RESULTS.md and fulljournals preserved. OwnSMA5exit genuinelyused;
+not the old2R helper.5targetedtestsPASS,actualprefixPASS;independent5834closed
+records queue/time/meanexit/fills/fees/funding/capital/size/min/stop auditPASS.
+No refit,newdata,VM/API/budget action. This failed batch is not a point to ask
+owner to continue; next distinct preregistered own-exit VWAP hypothesis follows.
+Do not weaken RSI thresholds,chooseone side,or evaluate2026runners-up.
+
+
 ## 2026-11-12 — sustained search: dynamic-exit RSI2 registered
 
 Owner explicitly asks continue until finding a candidate, not finish after one
