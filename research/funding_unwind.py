@@ -21,13 +21,16 @@ def signals(trade, funding, start):
     atr = rma(np.maximum(h-l, np.maximum(abs(h-prev), abs(l-prev))), 14)
     result, seen = [], set()
     for t, rate in funding:
-        if t in seen or t % (15*core.M) or not np.isfinite(rate):
+        if type(t) is not int or t in seen or not isinstance(rate, (int, float, np.floating)) or not np.isfinite(rate):
             raise ValueError('funding identity or rate')
         seen.add(t)
         i = (t-start)//(15*core.M)-1
         if abs(rate) < .0003 or i < 0 or i >= len(c) or not np.isfinite(atr[i]):
             continue
-        result.append({'T': t, 'funding_event_ms': t, 'funding_rate': rate,
+        # Archive settlement stamps can be boundary+1ms. Never floor the
+        # entry to an earlier open: conservatively ceil the decision to1min.
+        decision = ((t+core.M-1)//core.M)*core.M
+        result.append({'T': decision, 'funding_event_ms': t, 'funding_rate': rate,
                        'side': -1 if rate > 0 else 1, 'atr_pct': float(atr[i]/c[i]),
                        'last_closed_price_ms': start+(i+1)*15*core.M,
                        'settled_funding_is_earned': False})

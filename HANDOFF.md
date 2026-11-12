@@ -2,6 +2,15 @@
 
 ## 2026-11-12 — direct continuation: one post-funding unwind test registered
 
+Funding timestamp amendment BEFORE any result: original0f2b6a7 aborts in
+signal validation before first outcome. Archives contain actual settlement
+stamps+1ms; exact15m alignment was an implementation assumption, not source
+corruption. Preserve raw event, round decision FORWARD to1min, then old1/6min
+entry. ATR uses only15mcloses<=raw event. Threshold/sign/outcome/limits unchanged.
+6targeted testsPASS, added+1ms causal alignment case. Receipt replaced with
+new hashes before running any outcomes; original retained inGit. No parameters
+chosen against PnL, no older backtest repeated. Continue same authorized task.
+
 Owner challenged stopping after each failure. Continued directly without new
 manual instruction or repeat old backtests. Read saved maker_economics: among
 stress<=4h rows with break-even>30bps only BTCfamilyC1h/2h remains with3/1closed

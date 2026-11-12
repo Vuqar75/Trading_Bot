@@ -31,10 +31,18 @@ class FundingUnwindTests(unittest.TestCase):
     def test_missing_warmup_not_imputed(self):
         self.assertEqual(signals(self.prices(), [(3*BAR, .001)], 0), [])
 
-    def test_duplicate_invalid_or_unaligned_funding_rejected(self):
-        for funding in ([(30*BAR, .001), (30*BAR, .001)], [(30*BAR, float('nan'))], [(30*BAR+1, .001)]):
+    def test_duplicate_invalid_funding_rejected(self):
+        for funding in ([(30*BAR, .001), (30*BAR, .001)], [(30*BAR, float('nan'))], [(30*BAR+.1, .001)]):
             with self.assertRaises(ValueError):
                 signals(self.prices(), funding, 0)
+
+    def test_actual_millisecond_stamp_rounds_decision_forward(self):
+        event = 30*BAR+1
+        signal = signals(self.prices(), [(event, .0004)], 0)[0]
+        self.assertEqual(signal['funding_event_ms'], event)
+        self.assertEqual(signal['last_closed_price_ms'], 30*BAR)
+        self.assertEqual(signal['T'], 30*BAR+M)
+        self.assertGreater(signal['T']+M, event+M)
 
     def test_count_pass_does_not_hide_failed_economics(self):
         base = dict(closed=40, directions={-1: 20, 1: 20}, net=1, segments={'a': 1, 'b': 1, 'c': 1, 'd': -1}, without_best=1, drawdown=.01)

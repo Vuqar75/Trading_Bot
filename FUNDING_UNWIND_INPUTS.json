@@ -1,9 +1,9 @@
 {
-  "status": "registered_before_first_calculation",
+  "status": "amended_before_first_outcome_after_timestamp_validation_abort",
   "sha256": {
-    "FUNDING_UNWIND_PROTOCOL.md": "a156ec53ca01a7bda2f94907377eaf37f860241e1bbcc67975b834d0bea22f6f",
-    "research/funding_unwind.py": "6d773f1d341de52f2583f437d978bbcdb7af8c5ca9afed798295459bb14974bc",
-    "tests/test_funding_unwind.py": "542503eb2763febcb2163de2f9981055dd874ec71dca14e7265e18185fd75d3b",
+    "FUNDING_UNWIND_PROTOCOL.md": "f2f5a5109ebf3fe679185ffc8370188d932991fb02b366de55895747e532a0da",
+    "research/funding_unwind.py": "0580ad28a966efe1acc73c0477c599ff79295b336d64951f273597daf84c2ce3",
+    "tests/test_funding_unwind.py": "86ab6baf4e4dc302672cf9c8038b5f158b0e178e31899e259a94ed6ef7a9740b",
     "research/taker_absorption.py": "1c2371c7342a13b50714394860ce2c97a96f48b50e1d0bf143b4ed9a7529e4d5",
     "research/pattern_ai_experiment.py": "7510448b5476be18cb53a015c5b1cf223825aeb6a499694760f19858220c2222",
     "research/rsi_crossasset.py": "6f8f8a64d34682ca4d3d9872d25bac357701bea9e1deda7ee8a3fb3140ca7be6",
@@ -11,5 +11,6 @@
     "research/technical_patterns.py": "638b4a832222a202d8faac90c079914019d28a292915973c30863435187b2798",
     "research/pattern_ai_results/sources.json": "469c09262b64de8a1ecd46f93167d15b627d5694172c0b0d67726550d0715136",
     "research/maker_economics.csv": "75a3b15b4481049964a28e5fcfe2f5c8e0ada342640d2afde932ddc4133543fd"
-  }
+  },
+  "original_preregistration": "0f2b6a7"
 }
