@@ -1,5 +1,19 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — continued search: OI response/control registered with checkpoints
+
+OI_RESPONSE_PROTOCOL.md/INPUTS freezes15mshock1.5pastATR+closedrecovery,
+fixedpre-shockEMA20anchor,costgeometrynetreward>=netstoprisk,knownsetup/
+confirmationstop<=2%,old6hAccount. price_control and oi_filter(drop>=1%in1h)
+sharevalidmetricsgrid;naturalOIunits,NOTUSDnotional. SourceOIend<=signal-15min,
+fresh<=5min;anchorbeforetheshock. No claim thatOIaloneprovesliquidation.
+Metricscachealready2025Jun30..2026Oct31;dev2025H2only,positiveQ3andQ4,
+min30/10side,etc;selectONEasset/variantbefore2026.5targetedtestsPASS before
+results. Eachcasehash/signaturecheckpoint survivesquota without new fills;
+corrupted/orphanpartsnot silentlyoverwritten. No fit,newdata/API/VM/budget/
+credential actions;continue todev/selection/selectedvalidation/audit.
+
+
 ## 2026-11-12 — NR7 conditional development completed, no pause for owner
 
 c92701d18development2025accountsfinished:allbase/stressnegative,selectionnull,

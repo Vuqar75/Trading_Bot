@@ -1,0 +1,17 @@
+{
+  "status": "registered_before_development",
+  "sha256": {
+    "OI_RESPONSE_PROTOCOL.md": "bc6b4e6a9ed4f82cada18ece308467771a163ccfe35d6df9bacb5d30244be61d",
+    "research/oi_response.py": "d37912711fa0fa6c80c2510118a919334bc10a7e4664ffd099bf5d51e5ecf70a",
+    "tests/test_oi_response.py": "15eb9e17c2d994aa2b9c612f8ef90c57604e04bc5b9a3d8ed9a58935b25adc17",
+    "research/rsi2_dynamic.py": "f4c6a125e3e06c93d3a2f03b47aac8dfea9937c1b95d77b6316c9eb1582253c8",
+    "research/published_ema_transfer.py": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+    "research/rsi15m_verification.py": "ede8df529191ec20401cf0aa4043e967103e3dd62df7d708e32f40cc4464d040",
+    "research/rsi_crossasset.py": "6f8f8a64d34682ca4d3d9872d25bac357701bea9e1deda7ee8a3fb3140ca7be6",
+    "research/extreme_reversal.py": "3efecc43cced1ddc4f55f1234f6475dda994403fe3d88f9a1e21c4bb95da7317",
+    "research/derivative_metrics_data.py": "59ae849850597b36a5b23e0e45aa06470e75f3ce74902907cfe2e9b78f0d2cd2",
+    "research/technical_patterns.py": "638b4a832222a202d8faac90c079914019d28a292915973c30863435187b2798",
+    "research/pattern_ai_results/sources.json": "469c09262b64de8a1ecd46f93167d15b627d5694172c0b0d67726550d0715136",
+    "research/derivative_feature_results/source_manifest.json": "8b75f06ef929a3ab30221b78a741473b8e791e19313c31f67a5b0c17abb246b2"
+  }
+}

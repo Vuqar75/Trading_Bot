@@ -50,7 +50,9 @@ def audit(summary_path):
                     raise ValueError('mean exit signal missing')
                 context = signal['selected_pair']
                 line = context.get('exit_line', context.get('sma5'))
-                reached=(context['close'] > line if side==1 else context['close'] < line) if p['reason']=='mean_exit' else (context['close'] < line if side==1 else context['close'] > line)
+                if p['reason']=='mean_exit' and 'exit_anchor' in p:
+                    reached=context['close']>=line if side==1 else context['close']<=line
+                else:reached=(context['close'] > line if side==1 else context['close'] < line) if p['reason']=='mean_exit' else (context['close'] < line if side==1 else context['close'] > line)
                 if not reached:
                     raise ValueError('mean not reached on closed bar')
             if p['reason']=='time' and p['exit_ms'] != p['deadline_ms']:
@@ -67,12 +69,25 @@ def audit(summary_path):
                 raise ValueError('capital')
             if 'stop_reference' in p:
                 same(p['stop'],entry_context['stop_reference'])
-                same(p['trigger_reference'],entry_context['trigger_reference'])
                 distance=side*(p['entry']-p['stop'])/p['entry']
-                boundary_bad=(side*(p['entry_reference']-p['trigger_reference'])<0) if conditional else (side*(p['entry_reference']-p['trigger_reference'])<=0)
+                boundary_bad=False
+                if 'trigger_reference' in p:
+                    same(p['trigger_reference'],entry_context['trigger_reference'])
+                    boundary_bad=(side*(p['entry_reference']-p['trigger_reference'])<0) if conditional else (side*(p['entry_reference']-p['trigger_reference'])<=0)
                 if not 0<distance<=.02 or boundary_bad:
                     raise ValueError('known stop or delayed trigger')
                 same(p['estimated_risk'],q*p['entry']*(distance+2*(.0005+impact)+.0021))
+                if 'exit_anchor' in p:
+                    same(p['exit_anchor'],entry_context['exit_anchor'])
+                    end,start=entry_context['oi_end_ms'],entry_context['oi_start_ms'];setup=entry_context['setup_end_ms']
+                    if not (0<=setup-end<=300000 and 0<=setup-3600000-start<=300000 and end<=p['signal_ms']-900000 and entry_context['anchor_asof_ms']<=setup-900000):
+                        raise ValueError('OI/anchor lookahead')
+                    drop=entry_context['oi_after']/entry_context['oi_before']-1;same(drop,entry_context['oi_drop'])
+                    if p['variant']=='oi_filter' and drop>-.01:raise ValueError('OI filter')
+                    def stress_net(reference):
+                        fill=reference*(1-side*.001)
+                        return side*(fill-p['entry'])-.0005*(p['entry']+fill)
+                    if not stress_net(p['exit_anchor'])>0 or stress_net(p['exit_anchor'])+1e-8 < -stress_net(p['stop']):raise ValueError('entry cost geometry')
             else:
                 same(p['stop'], p['entry']*(1-.02*side))
             same(p['entry'], p['entry_reference']*(1+side*impact))
