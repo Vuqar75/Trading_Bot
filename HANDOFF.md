@@ -1,5 +1,13 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-12 — daily200 recovery execution frozen before first PnL
+
+285 official archives,236676944bytes,allCHECKSUMmatch. Existing195 reused,
+90warmup archives added. Five causal/source/risk tests PASS, three loader
+tests PASS. Exact code/auditor/source manifest pinned in DAILY_RECOVERY_EXECUTION_INPUTS.
+Development2025 now follows with resumable base/stress receipts.
+No live/paid/API-budget changes.
+
 ## 2026-11-12 — daily200 / minute recovery registered
 
 DAILY_RECOVERY_PROTOCOL fixes same5assetglobalwallet, completedDAILY200

@@ -68,10 +68,29 @@ def audit(summary_path):
             if q*p['entry']+p['entry_fee'] > cash+1e-8:
                 raise ValueError('capital')
             if 'candidates' in entry_context:
-                candidates=entry_context['candidates'];ordered=sorted(candidates,key=lambda r:(-r['room'],r['symbol']))
+                candidates=entry_context['candidates'];atr_recovery=p.get('stop_rule')=='volatility_two_atr'
+                ordered=sorted(candidates,key=lambda r:(-r['score' if atr_recovery else 'room'],r['symbol']))
                 if not ordered or ordered[0]['symbol']!=asset or ordered[0]['entry_side']!=side:raise ValueError('portfolio chose future/other candidate')
-                for candidate in candidates:same(candidate['room'],abs(candidate['vwap']/candidate['close']-1))
-            if 'stop_reference' in p:
+                for candidate in candidates:
+                    if atr_recovery:
+                        same(candidate['room'],candidate['entry_side']*(candidate['entry_mean']-candidate['close'])/candidate['close'])
+                        same(candidate['score'],candidate['entry_side']*(candidate['entry_mean']-candidate['close'])/candidate['atr'])
+                    else:same(candidate['room'],abs(candidate['vwap']/candidate['close']-1))
+            if p.get('stop_rule')=='volatility_two_atr':
+                atr=entry_context['atr'];fill=p['entry']
+                distance=min(.05,max(.005,2*atr/fill))
+                same(p['stop_atr'],atr);same(p['stop_pct'],distance)
+                same(p['stop'],fill*(1-side*distance))
+                same(p['estimated_risk'],q*fill*(distance+2*(.0005+impact)+.0021))
+                if not (entry_context['hour_source_end_ms']<=p['signal_ms']<entry_context['expiry_ms']
+                        and entry_context['daily_source_end_ms']<=p['signal_ms']
+                        and p['entry_ms']<entry_context['expiry_ms']):raise ValueError('hour/day lookahead or expiry')
+                previous,current=entry_context['partial_rsi_previous'],entry_context['partial_rsi']
+                if not (previous<5<=current if side==1 else previous>95>=current):raise ValueError('RSI recovery absent')
+                if not side*(entry_context['close']-entry_context['daily_sma200'])>0:raise ValueError('daily trend absent')
+                if not side*(entry_context['previous_close']-entry_context['daily_sma200'])>0:raise ValueError('prior daily trend absent')
+                if not (side*(fill-entry_context['daily_sma200'])>0 and side*(entry_context['entry_mean']-fill)/fill>=.006 and atr/fill>=.006):raise ValueError('delayed recovery geometry')
+            elif 'stop_reference' in p:
                 same(p['stop'],entry_context['stop_reference'])
                 distance=side*(p['entry']-p['stop'])/p['entry']
                 boundary_bad=False

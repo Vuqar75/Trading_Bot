@@ -1,0 +1,20 @@
+{
+  "status": "registered_before_policy_first_pnl",
+  "sha256": {
+    "DAILY_RECOVERY_PROTOCOL.md": "b2bc28dd220ab48ccca1995a591061ed21204addb5aa5e71a91795e9f4f2ef19",
+    "research/daily_recovery.py": "486be53f797232d9a42b37ab9e3c407872ec1d6f7ac546325ace71a7146bc7b8",
+    "research/legacy_universe_data.py": "4197c33f664f453558a3386072912e38252df4b4695d2349ad5a15f097d2599f",
+    "research/legacy_vwap.py": "d62fea75e343ce1727cb32c10e03ddec089a54da968e21b95f8685b2e32ba5dd",
+    "research/rsi2_dynamic.py": "f4c6a125e3e06c93d3a2f03b47aac8dfea9937c1b95d77b6316c9eb1582253c8",
+    "research/published_ema_transfer.py": "38a9cc8a4a57c84a23fa487a3cd4c7d6b7d16a40afc53392c882c636e685801e",
+    "research/rsi15m_verification.py": "ede8df529191ec20401cf0aa4043e967103e3dd62df7d708e32f40cc4464d040",
+    "research/extreme_reversal.py": "3efecc43cced1ddc4f55f1234f6475dda994403fe3d88f9a1e21c4bb95da7317",
+    "research/technical_patterns.py": "638b4a832222a202d8faac90c079914019d28a292915973c30863435187b2798",
+    "tests/test_daily_recovery.py": "89c14afc0da41480d28c79ca7f612c285cb1339092e588cee9c6364a5add217a",
+    "tools/audit_dynamic_research.py": "a23e4f614d31636010dc9c7ec128fb6e05fd0f2bacf3e97d6c91d3d756053878",
+    "tools/audit_legacy_vwap.py": "ffeffd5c05fe3609428d602b2b827b2d6b584f0ebf70b8141f31e228ee8486b5"
+  },
+  "development_manifest_sha256": "8e1e9f61c2472d5ee1a102020b87d78728469b9156e3aac80a6549bab76b99fc",
+  "source_files": 285,
+  "source_bytes": 236676944
+}
