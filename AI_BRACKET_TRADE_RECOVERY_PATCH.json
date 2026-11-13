@@ -1,0 +1,13 @@
+{
+  "purpose": "public_trade_cursor_recovery_and_admission",
+  "base": "405d458",
+  "runtime_sha256": {
+    "research/ai_limit_feed.py": "1fff971d14f25d03c8b82b1b1d6b053c672e2d3801bc8453553754716ec06493",
+    "research/ai_limit_runtime.py": "5e2fd900c0cdb517c8734d52b553b632a330d6a0d138644fd9e9fe3e4c94bf55",
+    "research/ai_limit_book.py": "3f2573363e124cbd790f1fca2a5b35a0a808038be294be5a1575d08ee60ad5db"
+  },
+  "targeted_tests": 43,
+  "database_migration": false,
+  "financial_policy_changed": false,
+  "live_vm_installation": false
+}

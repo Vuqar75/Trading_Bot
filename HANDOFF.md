@@ -1,5 +1,28 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-13 — trade stream recovery/admission patch prepared, NOT installed here
+
+Continued from installed cancellation report405d458. Found a reproducible runtime
+bug: market_error was cleared in the same cycle that detected TRADE_GAP. Now
+unconfirmed stream blocks the existing paid analyst gate; fresh contiguous trade
+confirmation is required after any failure. An idle-only public snapshot can
+advance a lagging cursor without replaying any events. Active partial-risk plans
+never reseed, keep normal remainder cancellation and independent quote protection.
+New durable gap evidence separates ID discontinuity, stale/future rows and fetch
+latency. The exact cause of the historical16:02:40 cancellation remains unknown.
+
+43 targeted tests PASS, including8 new recovery/admission scenarios. No paid or
+public network calls, working ledger/budget access, forced trades or pause/timer
+changes here. Runtime changes only feed/runtime/book, preserving b307714+c96ad52.
+See AI_BRACKET_TRADE_RECOVERY.md and hash manifest for one concrete local install
+pass. Cloud checkout has no authorized VM connection: code publication is NOT
+installation. Local operator must first inspect current risk and retain protection,
+backup/restore, switch only flat, verify ordinary cycles, restore existing timer
+state, externally restore fresh ledger backup and publish actual result. No new
+permission for an already authorized checked paper update is needed; no request
+for keys/login and no extra model call for verification.
+
+
 ## 2026-11-13 — cancellation cause confirmed and patch installed
 
 The actual 69466.2 BTCUSDT entry was canceled at 16:02:40.266 Baku because of `TRADE_GAP` (a gap or stale public trade stream); the original ledger recorded that cause, and does not prove a more specific exchange failure. Plan `32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0` had no fill and released its entire reserve. Installed `c96ad52` into the separate paper and Telegram releases; verified the actual `/ai orders` text, previous IDs, one poller, four pauses and externally restored backup. No AI request or test trade was made. At 16:33 Baku there was no open paper position. See [AI_BRACKET_CANCEL_INSTALL_20261113.md](AI_BRACKET_CANCEL_INSTALL_20261113.md) for hashes, exact times, backup and rollback.

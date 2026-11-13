@@ -121,14 +121,33 @@ class Poller:
                 old=b.get('filters:'+symbol)
                 if old is None or b.clock()-old['as_of_ms']>=60000:b.refresh_filters(symbol,self.feed.filters(symbol))
                 events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
-                if gap:b.trade_gap(symbol,'noncontiguous_or_stale_public_trades_no_backfills')
+                report=getattr(self.feed,'trade_report',{}).get(symbol,{})
+                if gap:
+                    b.trade_gap(symbol,'noncontiguous_or_stale_public_trades_no_backfills',evidence=report)
+                    # Reset a lagging cursor ONLY while financially idle. The
+                    # bootstrap batch is never replayed into execution. A later
+                    # contiguous, fresh poll must confirm the stream first.
+                    if b.active() is None:
+                        _,reset_cursor,_=self.feed.trades(symbol)
+                        if reset_cursor is None or (cursor is not None and reset_cursor<cursor):raise ValueError('trade_resync_cursor_regression')
+                        cursor=reset_cursor
+                        report={**report,'idle_resync':getattr(self.feed,'trade_report',{}).get(symbol,{})}
+                        events=[]
                 for event in events:b.market('trade',event)
-                with b.transaction():b.set('trade_cursor:'+symbol,cursor);b.set('market_error:'+symbol,None)
+                last_event=events[-1]['event_ms'] if events else b.get('trade_confirmed_ms:'+symbol)
+                healthy=not gap and last_event is not None and 0<=b.clock()-last_event<=5000
+                with b.transaction():
+                    b.set('trade_cursor:'+symbol,cursor);b.set('trade_feed:'+symbol,report)
+                    b.set('trade_confirmed_ms:'+symbol,last_event if healthy else None)
+                    b.set('market_error:'+symbol,None if healthy else 'public_trade_stream_unconfirmed')
             except (ValueError,KeyError,OSError,TypeError):
-                with b.transaction():b.set('market_error:'+symbol,'public_market_unconfirmed')
+                with b.transaction():
+                    b.set('market_error:'+symbol,'public_market_unconfirmed')
+                    b.set('trade_confirmed_ms:'+symbol,None)
         b.pulse();self.funding_ready()
         result=b.snapshot();result['market_errors']={s:b.get('market_error:'+s) for s in SYMBOLS};result['funding_error']=b.get('funding_error')
         result['last_trade_gap']=b.get('last_trade_gap')
+        result['trade_feeds']={s:b.get('trade_feed:'+s) for s in symbols}
         return result
 
 
@@ -202,7 +221,7 @@ def main():
                             try:ingest(book,trusted(args.response,args.analyst_uid))
                             except (ValueError,OSError,KeyError,TypeError):
                                 with book.transaction():book.set('analyst_ingest_error','response_unavailable_or_invalid')
-                        result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap')}
+                        result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds')}
                         atomic(args.public,result)
                         if book.clock()>=next_backup:
                             folder=book.root/'backups';folder.mkdir(mode=0o700,exist_ok=True)
