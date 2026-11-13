@@ -1,5 +1,15 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-14 — read-only check of scheduled 00:02 Baku AI cycle
+
+At 00:46 Baku checked the VM without starting an AI call, trade or test or changing any service. Analyst ran 00:02:07–00:02:28 and saved an actual `gpt-6-luna` SHORT response, request ID `bracket:2c7a46b26422fe875ca54e4471851785e6b1d8e5cf492f5f83e519966eda51aa`. Usage: 3204 input, 1163 output tokens; reserve $0.002557; estimated API cost $0.0009019, not a provider invoice. Total budget reservation 12 attempts/$0.028894.
+
+The validated BTCUSDT paper plan `2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af` was armed at 00:02:30.604 Baku, entry 69466.2, TP 68651.6, SL 69571.2. It was canceled without any fill at 00:04:15.442 due to `TRADE_GAP`; 0.001 BTC and 69.64681212 virtual USDT reserve were released. Contemporaneous saved diagnostics show one stale trade of 98, oldest 6092 ms, no ID discontinuity, no future rows, 245 ms fetch; batch SHA-256 `d6fba467c02d3848ac883bcd984ffaac45d6d282d88ab2fafd9bda92ab784095`. This does not establish an exchange outage. No position, residual entry, protective exit, margin or funding buffer remained. The paper protection service was active but no open position existed to exercise it.
+
+Ledger was balanced, free virtual cash 1000.009063312815389811 USDT, still two fills and one funding event from the earlier closed position: gross 0.0769999, fees 0.06880730005, funding +0.000870712865389811, net +0.009063312815389811 USDT. These are modeled paper results, not live execution or evidence of strategy profitability. At 00:46 the BTC feed had recovered: 82 consecutive rows, zero stale/future and no gap, `market_errors.BTCUSDT=null`; earlier intermittent stale rows remain fail-closed. Paper-service and analyst timer were active; next opportunity 04:02 Baku, subject to gates.
+
+The latest saved external-backup receipt at 00:27:27 Baku reported two downloaded chunks restored and validated by the existing backup process, preserving three plans, two fills, one funding event and balances. Manifest SHA-256 `a13ee5a7b16eb5b188876f4e3246e83b2301866806f51cdf0a76032b3fa56072`; host-bound encryption remains a cross-host limitation. No new model request, retry, paper test trade, service change or full test suite was performed for this check.
+
 ## 2026-11-13 — read-only check of scheduled 20:02 Baku AI cycle
 
 At 20:46 Baku checked the existing VM without triggering a request or changing services. `ai-bracket-analyst.service` ran 20:02:03–20:02:15 Baku and saved/published an actual `gpt-6-luna` response: `WAIT`, no candidate plans and conflicting 15m versus 1H/4H context; news coverage remains limited. No new paper order or position was created. Request ID `bracket:ed0dcad5f161d60ba25d221566bbc89eec6242d1ebfd959b77c48b26d791913e`; usage 3101 input/366 output tokens, reserve $0.002523, estimated API cost $0.0004931. Total sole-budget reservation $0.026337 across 11 attempts; no provider invoice or historical unknown charges inferred.
