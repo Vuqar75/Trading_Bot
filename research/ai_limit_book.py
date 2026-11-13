@@ -8,6 +8,7 @@ import time
 from decimal import Decimal, ROUND_DOWN
 
 from trading_bot.paper_wallet_ledger import PaperWalletLedger
+from trading_bot.ai_bracket_cancellation import describe as describe_cancellation
 from .ai_limit_plan import canonical,digest,dec,positive,text,integer,quote,fresh,filters,validate,context,VERSION
 
 APP_ID=0x41494252
@@ -143,8 +144,23 @@ class Book:
             self.set('quote:'+p['symbol'],current);self.set('filters:'+p['symbol'],snapshot['filters']);self.message(ident,{'status':'WORKING','plan_id':ident,'symbol':p['symbol']})
             return dict(s)
 
-    def cancel_entry(self,p,s,reason,now):
+    def cancel_entry(self,p,s,reason,now,*,detail=None):
         value=dec(s['reserved'])
+        if (value>0 or dec(s['remaining'])>0) and s.get('entry_cancellation') is None:
+            causes=[reason]
+            if reason=='EXPIRED_OR_PAUSED':
+                causes=[]
+                if now>=p['expires_ms']:causes.append('EXPIRED')
+                if self.get('paused'):causes.append('PAUSE')
+                if self.get('blocked'):causes.append('BLOCKED')
+                if not causes:causes=[reason]
+            record={'reason':reason,'causes':causes,'at_ms':now,'quantity':s['remaining'],
+                'reserve_released_usdt':s['reserved'],'evidence':'recorded_at_cancellation','precise':causes!=['EXPIRED_OR_PAUSED']}
+            if reason=='EXPIRED_OR_PAUSED':record['guards']={'expires_ms':p['expires_ms'],'paused':self.get('paused'),'blocked':self.get('blocked')}
+            if detail is None and 'BLOCKED' in causes:detail=self.get('blocked')
+            if detail is not None:record['detail']=detail
+            s['entry_cancellation']=record
+            self.message(p['plan_id']+':entry-canceled',{'kind':'ENTRY_CANCELED','plan_id':p['plan_id'],'symbol':p['symbol'],**record})
         if value:
             self.post(p['plan_id']+':cancel-entry','CANCEL_REMAINDER',{'reason':reason},[('reserved',-value),('free',value)],now)
         s['remaining']='0';s['reserved']='0'
@@ -279,8 +295,9 @@ class Book:
                         quote(self.get('quote:'+symbol),symbol,now,entry=True);filters(self.get('filters:'+symbol),now)
                         due=self.get('next_due:'+symbol)
                         if now-self.get('funding_through')>120000 or (due is not None and due<=now and due>self.get('funding_through')):raise ValueError('funding_coverage_stale')
-                    except (ValueError,TypeError,KeyError):
-                        self.cancel_entry(p,s,'ENTRY_EVIDENCE_STALE',now);volume=Decimal(0)
+                    except (ValueError,TypeError,KeyError) as error:
+                        detail=str(error) if str(error) in ('stale_or_future_market_data','stale_filters','funding_coverage_stale','mark_price_divergence','entry_book_liquidity_missing') else 'entry_evidence_invalid'
+                        self.cancel_entry(p,s,'ENTRY_EVIDENCE_STALE',now,detail=detail);volume=Decimal(0)
                     qty=min(dec(s['remaining']),volume)
                     if qty>0:self.fill(p,s,'ENTRY',qty,dec(p['entry']),event['event_ms'],key+':entry','LIMIT_TRADE_THROUGH')
                     self.protect(p,s,now)
@@ -331,7 +348,7 @@ class Book:
             self.verify();now=self.clock();items=[]
             for p,s in self.plans():
                 items.append({'plan_id':p['plan_id'],'symbol':p['symbol'],'direction':p['direction'],'entry':p['entry'],'stop':p['stop'],'target':p['target'],
-                    'provenance':p['provenance'],'thesis':p['decision']['thesis'],'expires_ms':p['expires_ms'],**s,
+                    'provenance':p['provenance'],'thesis':p['decision']['thesis'],'expires_ms':p['expires_ms'],**s,'entry_cancellation':describe_cancellation(self.db,p,s),
                     'net_provisional':text(dec(s['gross'])-dec(s['fees'])+dec(s['funding']))})
             return {'version':VERSION,'paper_only':True,'as_of_ms':now,'paused':self.get('paused'),'blocked':self.get('blocked'),
                 'quote_asof_ms':{sym:(self.get('quote:'+sym) or {}).get('event_ms') for sym in ('BTCUSDT','ETHUSDT','SOLUSDT')},'api_summary':self.get('last_api_summary'),'funding_through_ms':self.get('funding_through'),'analyst_last':self.get('analyst_last'),'balances':{k:text(self.balance(k)) for k in ('free','reserved','margin','funding_buffer')},

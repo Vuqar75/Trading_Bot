@@ -1,5 +1,33 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-13 — cancellation diagnostics fixed locally; actual second reason awaits VM read
+
+Владелец подтвердил первый SHORT закрытым12:14:02Баку, сверка12:14:18,
+net+0.00906331виртуальногоUSDT. Следующий настоящий AI-план16:02 был SHORT:
+вход69466.2/TP68652.4/SL69572; к16:13 CANCELED без исполнения, позиций/остатка0.
+Это сообщения владельца, не свежая VM-проверка этой облачной среды.
+Платный цикл16:02 НЕ повторять. Глобальные резервы по отчёту$0.023814.
+
+По поручению владельца исправлена потеря причины отмены: она УЖЕ записывалась
+в ledger/CANCEL_REMAINDER, но не попадала в snapshot/экран. Теперь прошлые
+причины читаются из ledger, новые дополнительно сохраняются в state с первым
+временем/количеством/guards/detail. UI показывает причину/времяБаку и отличает
+отменённый остаток частичного входа. Не угадывать точную ветку legacy
+EXPIRED_OR_PAUSED и не переписывать прошлые записи.
+
+35целевых тестов PASS. Только3runtime-файла, без миграции/изменения правил,
+капитала, уровня риска или API. Патч включает b307714 idle-tick fix.
+AI_BRACKET_CANCEL_PATCH.json содержит hashes; AI_BRACKET_CANCEL_DIAGNOSTICS.md
+содержит точный серверный проход. Helper можно сначала выполнить standalone
+mode=ro/query_only на VM для входа69466.2, без установки/остановки/бюджета.
+
+Установка патча и фактическая причина16:02 пока НЕ подтверждены: здесь нет
+авторизованного VM-подключения. Нужен финальный проход через существующую
+локалку: сначала read-only причина, затем безопасная установка3файлов и
+публикация. Не останавливать защитный сервис с открытой позицией. Не создавать
+сделку ради проверки и не повторять обучение/старые исследования.
+
+
 ## 2026-11-13 — AI limit/TP/SL paper contour installed; real answer and open paper SHORT
 
 Installed and enabled the existing isolated bracket paper service and bounded analyst timer. Runtime is verified `e0e1ecf` plus the tested idle-event storage fix `b307714ab97c112cd92a749ef5ca0e644a089993`; the separately installed chunked external backup helper is `b25c85e`. The first real `gpt-6-luna` response and usage were saved in the sole existing budget, then the BTCUSDT SHORT limit filled in the virtual paper ledger. At the 11:50 Baku observation: OPEN 0.001 BTC, entry 68845.8, SL 69159.3, TP 67490.4, no remaining entry. Do not stop the protective paper service while position/risk is outstanding. Actual current state can change: inspect `/ai orders BTCUSDT` and `/var/lib/ai-bracket-public/orders.json`.

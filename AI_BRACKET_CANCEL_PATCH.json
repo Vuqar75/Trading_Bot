@@ -1,0 +1,14 @@
+{
+  "purpose": "cancellation_diagnostics_only",
+  "base": "79a2f49",
+  "runtime_sha256": {
+    "research/ai_limit_book.py": "ec4e1077b2762cf915b03790dbd2db0541f6fb596a88fdefba36e669b31b52a2",
+    "trading_bot/ai_bracket_cancellation.py": "5d0136ff81758480cc4ce5bcb1518f4100c0ac59021c1134537676343d8ec4cc",
+    "trading_bot/ai_bracket_view.py": "2fcdf519655f18b9f0955c9947261a9482fa90f690fbe2116589a9851f55ee39"
+  },
+  "targeted_tests": 35,
+  "database_migration": false,
+  "trading_rules_changed": false,
+  "live_vm_installation": false,
+  "live_cancel_reason_confirmed": false
+}

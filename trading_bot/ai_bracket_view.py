@@ -7,6 +7,8 @@ import time
 from decimal import Decimal
 
 REPORT=Path('/var/lib/ai-bracket-public/orders.json')
+from .ai_bracket_cancellation import label as cancellation_label
+
 STATES={'WORKING':'лимитный вход ожидает исполнения','PARTIAL':'вход исполнен частично','OPEN':'позиция открыта',
         'EXIT_PENDING':'защитный выход ещё не исполнен полностью','RECONCILING':'рыночная позиция закрыта; funding ещё сверяется',
         'CLOSED':'позиция закрыта, расчёт завершён','CANCELED':'вход отменён, позиции нет'}
@@ -46,6 +48,14 @@ def render(path=None,now=None,*,symbol='BTCUSDT'):
                 'Лимит входа '+chosen['entry']+'; TP '+chosen['target']+'; SL '+chosen['stop']+' USDT.',
                 'Открыто: '+chosen['open_qty']+' '+symbol[:-4]+'. Остаток входа: '+chosen['remaining']+'.',
                 ('Итог net: ' if state=='CLOSED' else 'Учтённый net, предварительно: ')+chosen['net_provisional']+' USDT.']
+            cancellation=chosen.get('entry_cancellation')
+            if cancellation is not None or state=='CANCELED':
+                title='Причина отмены входа: ' if chosen.get('opened_ms') is None else 'Причина отмены остатка входа: '
+                lines.append(title+cancellation_label(cancellation)+'.')
+                if cancellation and type(cancellation.get('at_ms')) is int:
+                    zone=dt.timezone(dt.timedelta(hours=4))
+                    when=dt.datetime.fromtimestamp(cancellation['at_ms']/1000,zone).strftime('%d.%m %H:%M:%S Баку')
+                    lines.append('Отмена: '+when+'.')
             if chosen['provenance']['kind']=='fixture':lines.append('ПРОВЕРОЧНЫЙ ПРИМЕР: ответ модели и рыночный поток имитированы.')
             else:lines.append('Аналитик: '+chosen['provenance']['model']+'.')
             thesis=' '.join(chosen['thesis'].split());thesis=re.sub(r'https?://\S+','[источник]',thesis)
