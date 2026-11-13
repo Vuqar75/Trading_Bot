@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-13 — trade-stream recovery installed and observed
+
+Installed exact `4fb90fa` into `/opt/tradingbot-ai-brackets-4fb90fa` for the existing paper and analyst services; no Telegram release change. The 43 targeted Linux tests passed. After a flat-state, verified-backup switch, ordinary public cycles showed stale batches correctly blocking admission and subsequent fresh contiguous batches clearing it, without fabricated trades or extra AI requests. At 16:55 Baku BTC stream was confirmed; intermittent stale rows still occur and must remain fail-closed. Prior IDs, balances and four working-market pauses were preserved; analyst timer restored. External ledger backup was downloaded and verified on isolated restore. See [AI_BRACKET_TRADE_RECOVERY_INSTALL_20261113.md](AI_BRACKET_TRADE_RECOVERY_INSTALL_20261113.md) for measured cycles, hashes and rollback. Historical 16:02 gap's exact source remains unknown.
+
 ## 2026-11-13 — trade stream recovery/admission patch prepared, NOT installed here
 
 Continued from installed cancellation report405d458. Found a reproducible runtime
