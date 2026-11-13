@@ -5,8 +5,10 @@ read-only in a temporary directory; this script never starts another writer.
 """
 import hashlib
 import gzip
+import base64
 import json
 import os
+import shutil
 import sqlite3
 import subprocess
 import tempfile
@@ -20,6 +22,15 @@ from research import adaptive_regular_backup as existing
 SOURCE = Path('/var/lib/ai-bracket-study/paper.sqlite')
 WORK = Path('/var/lib/tradingbot-ai-budget-backup')
 PREFIX = 'paper-backups/daily/ai-bracket-study/'
+CHUNK_BYTES = 2_000_000
+
+
+def file_hash(path):
+    digest = hashlib.sha256()
+    with Path(path).open('rb') as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def inspect(path):
@@ -71,38 +82,61 @@ def main():
             with closing(sqlite3.connect(copied)) as dst:
                 src.backup(dst)
         summary = inspect(copied)
-        raw = copied.read_bytes()
-        if len(raw) > 64_000_000:
+        if copied.stat().st_size > 2_000_000_000:
             raise ValueError('bracket_archive_too_large')
         # systemd-creds limits one plaintext credential to 1 MiB. Wrap a random
-        # data key with the host key and authenticate the compressed SQLite.
+        # data key with the host key and authenticate bounded compressed chunks.
         key = os.urandom(32)
-        nonce = os.urandom(12)
         result = subprocess.run(['systemd-creds', 'encrypt', '--with-key=host', '--name=AI_BRACKET_BACKUP', '-', '-'],
                                 input=key, capture_output=True, timeout=60)
         if result.returncode:
             raise ValueError('bracket_encryption_failed')
-        wrapped = result.stdout
-        ciphertext = AESGCM(key).encrypt(nonce, gzip.compress(raw, mtime=0), b'ai-bracket-v1')
-        envelope = b'AIBR1' + len(wrapped).to_bytes(4, 'big') + wrapped + nonce + ciphertext
+        compressed = temp / 'snapshot.gz'
+        with copied.open('rb') as src, compressed.open('wb') as out:
+            with gzip.GzipFile(fileobj=out, mode='wb', mtime=0) as gz:
+                shutil.copyfileobj(src, gz, 1024 * 1024)
         existing.PREFIX = PREFIX
-        obj, sha, downloaded = existing.transfer(envelope, {'created_utc_ms': int(time.time() * 1000)})
-        if downloaded[:5] != b'AIBR1':
+        stamp = int(time.time() * 1000)
+        pieces = []
+        with compressed.open('rb') as stream:
+            for number in range(1_000_000):
+                chunk = stream.read(CHUNK_BYTES)
+                if not chunk:
+                    break
+                nonce = os.urandom(12)
+                aad = b'ai-bracket-v2:' + number.to_bytes(8, 'big')
+                blob = nonce + AESGCM(key).encrypt(nonce, chunk, aad)
+                name, digest, downloaded = existing.transfer(blob, {'created_utc_ms': stamp})
+                (temp / ('chunk-' + str(number))).write_bytes(downloaded)
+                pieces.append({'object': name, 'sha256': digest})
+        if not pieces:
             raise ValueError('bracket_restore_format')
-        n = int.from_bytes(downloaded[5:9], 'big')
+        manifest = {'version': 'ai-bracket-backup-v2', 'wrapped_key': base64.b64encode(result.stdout).decode(),
+                    'chunks': pieces, 'sqlite_sha256': file_hash(copied), 'summary': summary}
+        obj, sha, downloaded = existing.transfer(json.dumps(manifest, sort_keys=True).encode(), {'created_utc_ms': stamp})
+        saved = json.loads(downloaded)
+        if saved != manifest:
+            raise ValueError('bracket_manifest_mismatch')
         result = subprocess.run(['systemd-creds', 'decrypt', '--name=AI_BRACKET_BACKUP', '-', '-'],
-                                input=downloaded[9:9+n], capture_output=True, timeout=60)
+                                input=base64.b64decode(saved['wrapped_key'], validate=True), capture_output=True, timeout=60)
         if result.returncode:
             raise ValueError('bracket_restore_key')
-        restored_raw = gzip.decompress(AESGCM(result.stdout).decrypt(downloaded[9+n:21+n], downloaded[21+n:], b'ai-bracket-v1'))
-        if hashlib.sha256(restored_raw).digest() != hashlib.sha256(raw).digest():
-            raise ValueError('bracket_restore_hash')
+        restored_gz = temp / 'restored.gz'
+        with restored_gz.open('wb') as out:
+            for number, piece in enumerate(saved['chunks']):
+                blob = (temp / ('chunk-' + str(number))).read_bytes()
+                if hashlib.sha256(blob).hexdigest() != piece['sha256']:
+                    raise ValueError('bracket_chunk_hash')
+                out.write(AESGCM(result.stdout).decrypt(blob[:12], blob[12:], b'ai-bracket-v2:' + number.to_bytes(8, 'big')))
         restored = temp / 'isolated-restored.sqlite'
-        restored.write_bytes(restored_raw)
+        with gzip.open(restored_gz, 'rb') as src, restored.open('wb') as out:
+            shutil.copyfileobj(src, out, 1024 * 1024)
+        if file_hash(restored) != saved['sqlite_sha256']:
+            raise ValueError('bracket_restore_hash')
         if inspect(restored) != summary:
             raise ValueError('bracket_restore_mismatch')
         receipt = {'object': obj, 'sha256': sha, 'captured_ms': int(time.time() * 1000),
-                   'sqlite_sha256': hashlib.sha256(raw).hexdigest(), 'host_bound': True, 'summary': summary}
+                   'sqlite_sha256': saved['sqlite_sha256'], 'host_bound': True, 'chunks': len(pieces), 'summary': summary}
         pending = WORK / 'bracket-success.next'
         pending.write_text(json.dumps(receipt, sort_keys=True) + '\n')
         os.chmod(pending, 0o600)
