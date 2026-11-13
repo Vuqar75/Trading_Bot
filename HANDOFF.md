@@ -1,5 +1,11 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-13 — AI limit/TP/SL paper contour installed; real answer and open paper SHORT
+
+Installed and enabled the existing isolated bracket paper service and bounded analyst timer. Runtime is verified `e0e1ecf` plus the tested idle-event storage fix `b307714ab97c112cd92a749ef5ca0e644a089993`; the separately installed chunked external backup helper is `b25c85e`. The first real `gpt-6-luna` response and usage were saved in the sole existing budget, then the BTCUSDT SHORT limit filled in the virtual paper ledger. At the 11:50 Baku observation: OPEN 0.001 BTC, entry 68845.8, SL 69159.3, TP 67490.4, no remaining entry. Do not stop the protective paper service while position/risk is outstanding. Actual current state can change: inspect `/ai orders BTCUSDT` and `/var/lib/ai-bracket-public/orders.json`.
+
+All four working markets remain paused, older study/Donchian disabled, no real/Testnet orders. Total reserved budget $0.021125 of $0.25; next scheduled opportunity initially 08:02 UTC, subject to the existing gates. Both the new ledger and original budget have externally downloaded, isolated-restore-verified host-bound backups. Read [AI_LIMIT_BRACKETS_INSTALL_20261113.md](AI_LIMIT_BRACKETS_INSTALL_20261113.md) for exact data, costs, rollback, protective-service and backup limitations; do not repeat the first paid request.
+
 ## 2026-11-13 — новый AI limit/TP/SL paper-контур готов локально; сервер ещё не обновлён
 
 Последнее указание владельца: реализовать анализ ИИ → лимитный вход → TP/SL
