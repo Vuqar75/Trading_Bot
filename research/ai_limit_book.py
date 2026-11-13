@@ -97,7 +97,7 @@ class Book:
     def pause(self,enabled=True):
         if type(enabled) is not bool:raise ValueError('invalid_pause')
         with self.transaction():
-            self.set('paused',enabled)
+            self.set('paused',enabled);self.set('operator_pause_recorded',enabled)
             active=self.active()
             if enabled and active:
                 p,s=active;self.cancel_entry(p,s,'PAUSE',self.clock());self.finalize(p,s,self.clock());self.save(p,s)

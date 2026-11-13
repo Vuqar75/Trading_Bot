@@ -157,6 +157,13 @@ def uid(value):
     return int(value) if str(value).isdigit() else pwd.getpwnam(value).pw_uid
 
 
+def activate_initial(book,enabled):
+    if not enabled:return
+    with book.transaction():
+        if not book.plans() and book.get('activation_recorded') is None and book.get('operator_pause_recorded') is not True:
+            book.set('paused',False);book.set('activation_recorded',book.clock())
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='action',required=True)
     p=sub.add_parser('serve');p.add_argument('--state',required=True);p.add_argument('--public',required=True);p.add_argument('--response',required=True)
@@ -166,6 +173,7 @@ def main():
     p=sub.add_parser('recover-answer');p.add_argument('--budget-state',required=True);p.add_argument('--response-id',required=True);p.add_argument('--capture',required=True);p.add_argument('--output',required=True)
     p=sub.add_parser('status');p.add_argument('--state',required=True)
     p=sub.add_parser('pause');p.add_argument('--state',required=True)
+    p=sub.add_parser('resume');p.add_argument('--state',required=True)
     p=sub.add_parser('close');p.add_argument('--state',required=True);p.add_argument('--plan-id',required=True)
     p=sub.add_parser('backup');p.add_argument('--state',required=True);p.add_argument('--target',required=True)
     args=parser.parse_args();os.umask(0o077)
@@ -182,9 +190,7 @@ def main():
         try:
             if args.action=='serve':
                 # On restart this flag MUST NOT override an operator pause.
-                if args.enable_paper and not book.plans() and book.get('activation_recorded') is None:
-                    book.pause(False)
-                    with book.transaction():book.set('activation_recorded',book.clock())
+                activate_initial(book,args.enable_paper)
                 running=[True]
                 def stop(*_):running[0]=False
                 signal.signal(signal.SIGTERM,stop);signal.signal(signal.SIGINT,stop)
@@ -208,6 +214,7 @@ def main():
                         time.sleep(2)
                 finally:worker.close()
             elif args.action=='pause':book.pause(True);result=book.snapshot()
+            elif args.action=='resume':book.pause(False);result=book.snapshot()
             elif args.action=='close':book.request_close(args.plan_id);result=book.snapshot()
             elif args.action=='backup':result={'backup':str(book.backup(args.target))}
             else:result=book.snapshot()

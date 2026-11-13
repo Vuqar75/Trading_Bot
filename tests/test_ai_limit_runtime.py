@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from research import ai_limit_plan as p
 from research.ai_limit_feed import Feed
-from research.ai_limit_runtime import atomic,trusted,ingest
+from research.ai_limit_runtime import atomic,trusted,ingest,activate_initial
 from research.ai_limit_demo import capture,book_quote,demo
 from trading_bot.ai_bracket_view import render
 from trading_bot.unified_queue import UnifiedQueue
@@ -31,6 +31,19 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(p.verify_context(s,T),s)
         cap['candles'].append([T,'100','101','99','100','1'])
         with self.assertRaisesRegex(ValueError,'candle'):p.context(cap,book_quote(T),f,{'coverage':'limited','high_risk_until_ms':0,'items':[]},T)
+
+    def test_first_activation_is_atomic_and_cannot_override_any_operator_pause(self):
+        from research.ai_limit_book import Book
+        with tempfile.TemporaryDirectory() as temp:
+            a=Book(Path(temp)/'normal',clock=lambda:T)
+            try:
+                activate_initial(a,True);self.assertFalse(a.get('paused'));self.assertEqual(a.get('activation_recorded'),T)
+                a.pause(True);activate_initial(a,True);self.assertTrue(a.get('paused'))
+            finally:a.close()
+            b=Book(Path(temp)/'paused-before-first-start',clock=lambda:T)
+            try:
+                b.pause(True);activate_initial(b,True);self.assertTrue(b.get('paused'));self.assertIsNone(b.get('activation_recorded'))
+            finally:b.close()
 
     def test_rest_book_without_update_id_and_funding_schedule_cannot_block_quote(self):
         def fetch(path,params):

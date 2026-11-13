@@ -88,7 +88,7 @@ changes pair/pause. The old rejected ML model stays blocked and old working
 market commands keep their own meaning. Emergency pause/close of this new
 account is via the dedicated runtime CLI as its OS user, not legacy `/close`.
 
-65 affected Linux tests passed, including existing queue/asset/screen tests.
+66 affected Linux tests passed, including existing queue/asset/screen tests.
 `systemd-analyze verify` passed for the three provided units; no actual systemd
 service/reboot was tested in this cloud container. The synthetic end-to-end
 trace covers source→request→test transport→sole test journal→publisher→entry
@@ -134,6 +134,7 @@ Useful commands (run as aibracket, with PYTHONPATH pointing to pinned checkout):
 ```bash
 python3 -B -m research.ai_limit_runtime status --state /var/lib/ai-bracket-study
 python3 -B -m research.ai_limit_runtime pause --state /var/lib/ai-bracket-study
+python3 -B -m research.ai_limit_runtime resume --state /var/lib/ai-bracket-study
 python3 -B -m research.ai_limit_runtime close --state /var/lib/ai-bracket-study --plan-id ACTUAL_ID
 python3 -B -m research.ai_limit_runtime backup --state /var/lib/ai-bracket-study --target NEW_BACKUP_PATH
 ```
@@ -149,3 +150,7 @@ computed entry/SL/TP, size/risk cap and cost-adjusted R/R. The model selects one
 exact source-ID triple or WAIT based on the technical/fundamental evidence.
 It cannot select a different unvetted triple. These alternatives are not a
 profit forecast or a revival of previously rejected ML strategy permissions.
+
+Initial activation is atomic and cannot override an operator pause, including a
+pause recorded before the very first service start. Explicit resume never
+clears a funding conflict or financial block.

@@ -26,7 +26,7 @@ shared lock, cap$0.25/max$0.003640/2000output/6daily; старые lock/reserve 
 systemd разделяют пользователей aibracket и adaptiveai, сохраняют автономную
 защиту при недоступном ИИ и не требуют домашнего компьютера после установки.
 
-Проверено65 целевых Linux-тестов (включая существующие UI/queue/multi-asset),
+Проверено66 целевых Linux-тестов (включая существующие UI/queue/multi-asset),
 systemd-analyze verify3units. Полный synthetic E2E прошёл через context/request/
 исходный ТЕСТОВЫЙ бюджет/publisher/частичные LONG+SHORT/TP/gapSL/WAIT/restore/UI.
 ZERO реальных GPT/real/Testnet/рабочих paper-ордеров. Итоги имитации не доходность.
