@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-13 — cancellation cause confirmed and patch installed
+
+The actual 69466.2 BTCUSDT entry was canceled at 16:02:40.266 Baku because of `TRADE_GAP` (a gap or stale public trade stream); the original ledger recorded that cause, and does not prove a more specific exchange failure. Plan `32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0` had no fill and released its entire reserve. Installed `c96ad52` into the separate paper and Telegram releases; verified the actual `/ai orders` text, previous IDs, one poller, four pauses and externally restored backup. No AI request or test trade was made. At 16:33 Baku there was no open paper position. See [AI_BRACKET_CANCEL_INSTALL_20261113.md](AI_BRACKET_CANCEL_INSTALL_20261113.md) for hashes, exact times, backup and rollback.
+
 ## 2026-11-13 — cancellation diagnostics fixed locally; actual second reason awaits VM read
 
 Владелец подтвердил первый SHORT закрытым12:14:02Баку, сверка12:14:18,
