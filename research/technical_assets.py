@@ -2,7 +2,7 @@
 from pathlib import Path
 
 SYMBOLS=('BTCUSDT','ETHUSDT','SOLUSDT')
-VIEWS=('patterns','plan','history')
+VIEWS=('patterns','plan','history','orders')
 
 
 def symbol(value):

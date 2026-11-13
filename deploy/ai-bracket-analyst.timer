@@ -1,0 +1,12 @@
+[Unit]
+Description=At most six AI paper plan opportunities per day, original global cap
+
+[Timer]
+OnCalendar=*-*-* 00,04,08,12,16,20:02:00 UTC
+Persistent=false
+AccuracySec=10
+RandomizedDelaySec=0
+Unit=ai-bracket-analyst.service
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,36 @@
+[Unit]
+Description=Budget-limited AI bracket analyst using original server credential
+Wants=network-online.target
+After=network-online.target ai-bracket-paper.service
+ConditionPathExists=/var/lib/tradingbot-ai-executor/server-owner.json
+ConditionPathExists=/var/lib/ai-bracket-public/orders.json
+ConditionPathExists=/etc/credstore.encrypted/tradingbot-ai.cred
+
+[Service]
+Type=oneshot
+User=adaptiveai
+Group=adaptiveai
+WorkingDirectory=/opt/tradingbot-ai-brackets
+Environment=PYTHONPATH=/opt/tradingbot-ai-brackets
+Environment=TZ=UTC
+LoadCredentialEncrypted=TRADING_BOT_AI:/etc/credstore.encrypted/tradingbot-ai.cred
+ExecStart=/usr/bin/python3 -B -m research.ai_limit_runtime analyst-once --budget-state /var/lib/tradingbot-ai-executor --paper-public /var/lib/ai-bracket-public/orders.json --output /var/lib/tradingbot-ai-executor-public/bracket-response.json --paper-uid aibracket --symbol BTCUSDT --authorized-once
+TimeoutStartSec=150
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=169.254.169.254
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/ai-bracket-study -/var/lib/donchian-observer -/var/lib/adaptive-shadow
+ReadWritePaths=/var/lib/tradingbot-ai-executor /var/lib/tradingbot-ai-executor-public
+MemoryMax=128M
+CPUQuota=20%
+TasksMax=16
+LogRateLimitIntervalSec=1min
+LogRateLimitBurst=5

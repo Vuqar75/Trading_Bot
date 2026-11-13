@@ -8,10 +8,10 @@ import time
 from decimal import Decimal, ROUND_DOWN
 
 from trading_bot.paper_wallet_ledger import PaperWalletLedger
-from .ai_limit_plan import canonical,digest,dec,positive,text,integer,quote,fresh,filters,validate,VERSION
+from .ai_limit_plan import canonical,digest,dec,positive,text,integer,quote,fresh,filters,validate,context,VERSION
 
 APP_ID=0x41494252
-CUSTOM={'bracket_meta','bracket_plans','bracket_inputs','bracket_fills','bracket_funding','bracket_messages'}
+CUSTOM={'bracket_meta','bracket_plans','bracket_inputs','bracket_fills','bracket_funding','bracket_messages','bracket_sources'}
 BASE={'ledger_meta','wallet_state','ledger_events','ledger_postings','transfer_proposals'}
 B='ai_bracket:'
 
@@ -44,10 +44,11 @@ class Book:
                 self.db.execute('CREATE TABLE bracket_inputs(id TEXT PRIMARY KEY,fingerprint TEXT NOT NULL,payload TEXT NOT NULL)')
                 self.db.execute('CREATE TABLE bracket_fills(id TEXT PRIMARY KEY,plan_id TEXT NOT NULL REFERENCES bracket_plans(id),kind TEXT NOT NULL,stamp INTEGER NOT NULL,qty TEXT NOT NULL,price TEXT NOT NULL,fee TEXT NOT NULL,reason TEXT NOT NULL)')
                 self.db.execute('CREATE TABLE bracket_funding(id TEXT PRIMARY KEY,fingerprint TEXT NOT NULL,payload TEXT NOT NULL)')
+                self.db.execute('CREATE TABLE bracket_sources(id TEXT PRIMARY KEY,capture TEXT NOT NULL)')
                 self.db.execute('CREATE TABLE bracket_messages(id TEXT PRIMARY KEY,payload TEXT NOT NULL)')
                 self.db.execute("CREATE TRIGGER immutable_bracket_plan_payload BEFORE UPDATE OF id,payload ON bracket_plans BEGIN SELECT RAISE(ABORT,'immutable plan'); END")
                 self.db.execute("CREATE TRIGGER immutable_bracket_plan_delete BEFORE DELETE ON bracket_plans BEGIN SELECT RAISE(ABORT,'immutable plan'); END")
-                for table in ('bracket_inputs','bracket_fills','bracket_funding','bracket_messages'):
+                for table in ('bracket_inputs','bracket_fills','bracket_funding','bracket_messages','bracket_sources'):
                     for verb in ('UPDATE','DELETE'):
                         self.db.execute(f"CREATE TRIGGER immutable_{table}_{verb.lower()} BEFORE {verb} ON {table} BEGIN SELECT RAISE(ABORT,'immutable bracket evidence'); END")
                 now=integer(clock());self.set('version',VERSION);self.set('paused',True);self.set('blocked',None);self.set('started_ms',now)
@@ -101,6 +102,15 @@ class Book:
             if enabled and active:
                 p,s=active;self.cancel_entry(p,s,'PAUSE',self.clock());self.finalize(p,s,self.clock());self.save(p,s)
 
+    def register_source(self,snapshot,capture):
+        expected=context(capture,snapshot['quote'],snapshot['filters'],snapshot['news'],snapshot['as_of_ms'])
+        if expected!=snapshot:raise ValueError('source_context_recomputation_failed')
+        with self.transaction():
+            prior=self.db.execute('SELECT capture FROM bracket_sources WHERE id=?',(snapshot['snapshot_id'],)).fetchone()
+            if prior:
+                if json.loads(prior[0])!=capture:raise ValueError('source_capture_conflict')
+            else:self.db.execute('INSERT INTO bracket_sources VALUES(?,?)',(snapshot['snapshot_id'],canonical(capture)))
+
     def accept(self,snapshot,decision,*,provenance,execution_quote=None):
         if not isinstance(provenance,dict) or set(provenance)!={'kind','response_id','model'} or provenance['kind'] not in ('fixture','budget_response'):raise ValueError('analyst_provenance_required')
         if not all(isinstance(provenance[k],str) and 1<=len(provenance[k])<=150 for k in ('response_id','model')):raise ValueError('analyst_provenance_required')
@@ -112,16 +122,20 @@ class Book:
                 if oldplan['provenance']!=provenance or oldplan['snapshot']!=snapshot or oldplan['decision']!=decision:raise ValueError('plan_provenance_conflict')
                 return json.loads(prior[1])
             p=validate(snapshot,decision,now)
+            if provenance['kind']=='budget_response' and not self.db.execute('SELECT 1 FROM bracket_sources WHERE id=?',(snapshot['snapshot_id'],)).fetchone():raise ValueError('source_capture_not_registered')
             if p['direction']=='WAIT':
+                self.set('analyst_last',{'status':'WAIT','symbol':p['symbol'],'thesis':decision['thesis'],'as_of_ms':now,'provenance':provenance})
                 self.message(ident,{'status':'WAIT','thesis':decision['thesis'],'symbol':p['symbol']})
                 return {'status':'WAIT','plan_id':ident}
             current=execution_quote or self.get('quote:'+p['symbol']) or snapshot['quote']
-            quote(current,p['symbol'],now);filters(snapshot['filters'],now)
+            quote(current,p['symbol'],now,entry=True);filters(snapshot['filters'],now)
             if not (dec(p['entry'])<dec(current['ask']) if p['direction']=='LONG' else dec(p['entry'])>dec(current['bid'])):raise ValueError('limit_would_take_now')
             if self.get('paused') or self.get('blocked') or self.active():raise ValueError('entry_paused_blocked_or_busy')
-            if self.get('funding_through')<now:raise ValueError('funding_coverage_missing')
+            due=self.get('next_due:'+p['symbol'])
+            if now-self.get('funding_through')>120000 or (due is not None and due<=now and due>self.get('funding_through')) or (provenance['kind']=='budget_response' and due is None):raise ValueError('funding_coverage_missing')
             if self.balance('free')<dec(p['reserve']):raise ValueError('insufficient_paper_cash')
             p['provenance']=provenance
+            self.set('analyst_last',{'status':'PLAN','symbol':p['symbol'],'thesis':decision['thesis'],'as_of_ms':now,'provenance':provenance})
             s={'status':'WORKING','armed_ms':now,'remaining':p['quantity'],'open_qty':'0','reserved':p['reserve'],
                 'buffer':'0','gross':'0','fees':'0','funding':'0','opened_ms':None,'last_fill_ms':None,'close_reason':None}
             self.db.execute('INSERT INTO bracket_plans VALUES(?,?,?)',(ident,canonical(p),canonical(s)))
@@ -172,18 +186,18 @@ class Book:
         try:quote(book,p['symbol'],now)
         except (ValueError,TypeError,KeyError):return
         side=1 if p['direction']=='LONG' else -1;mark=dec(book['mark'])
-        if side*(mark-dec(p['stop']))<=0:s['close_reason']='SL'
+        if side*(mark-dec(p['stop']))<=0 or side*(dec(book['bid' if side==1 else 'ask'])-dec(p['stop']))<=0:s['close_reason']='SL'
         if s['opened_ms'] is not None and now>=s['opened_ms']+p['hold_ms'] and not s['close_reason']:s['close_reason']='TIME'
         if not s['close_reason']:return
         s['status']='EXIT_PENDING';self.cancel_entry(p,s,s['close_reason'],now)
-        sidekey='bid' if side==1 else 'ask';consumed=self.get('used-quote:'+p['symbol']+':'+book['id']+':'+sidekey,'0')
+        sidekey='bid' if side==1 else 'ask';consumed=self.get('used-quote:'+p['symbol']+':'+book.get('liquidity_id',book['id'])+':'+sidekey,'0')
         available=max(Decimal(0),dec(book[sidekey+'_qty'])-dec(consumed));step=dec(p['snapshot']['filters']['step_size'])
         qty=(min(dec(s['open_qty']),available)/step).to_integral_value(rounding=ROUND_DOWN)*step
         if qty<=0:return
         price=dec(book[sidekey])*(1-side*dec(p['stop_slippage']))
         key='market:'+p['plan_id']+':'+book['id']+':'+s['open_qty']
         self.fill(p,s,'EXIT',qty,price,now,key,s['close_reason'])
-        self.set('used-quote:'+p['symbol']+':'+book['id']+':'+sidekey,text(dec(consumed)+qty))
+        self.set('used-quote:'+p['symbol']+':'+book.get('liquidity_id',book['id'])+':'+sidekey,text(dec(consumed)+qty))
 
     def trade_gap(self,symbol,detail):
         with self.transaction():
@@ -225,7 +239,7 @@ class Book:
         if kind not in ('quote','trade'):raise ValueError('market_kind')
         symbol=event.get('symbol')
         if symbol not in ('BTCUSDT','ETHUSDT','SOLUSDT') or not isinstance(event.get('id'),str) or not 1<=len(event['id'])<=120:raise ValueError('market_identity')
-        key=kind+':'+symbol+':'+event['id'];fingerprint=digest(event)
+        key=kind+':'+symbol+':'+event['id'];fingerprint=digest({k:v for k,v in event.items() if k!='received_ms'})
         with self.transaction():
             old=self.db.execute('SELECT fingerprint FROM bracket_inputs WHERE id=?',(key,)).fetchone()
             if old:
@@ -257,8 +271,9 @@ class Book:
                     if qty>0:self.fill(p,s,'EXIT',qty,dec(p['target']),event['event_ms'],key+':target','TP')
                 elif dec(s['remaining']) and entry_cross and event['buyer_maker']==(side==1) and event['event_ms']<p['expires_ms']:
                     try:
-                        quote(self.get('quote:'+symbol),symbol,now);filters(self.get('filters:'+symbol),now)
-                        if now-self.get('funding_through')>120000:raise ValueError('funding_coverage_stale')
+                        quote(self.get('quote:'+symbol),symbol,now,entry=True);filters(self.get('filters:'+symbol),now)
+                        due=self.get('next_due:'+symbol)
+                        if now-self.get('funding_through')>120000 or (due is not None and due<=now and due>self.get('funding_through')):raise ValueError('funding_coverage_stale')
                     except (ValueError,TypeError,KeyError):
                         self.cancel_entry(p,s,'ENTRY_EVIDENCE_STALE',now);volume=Decimal(0)
                     qty=min(dec(s['remaining']),volume)
@@ -266,6 +281,11 @@ class Book:
                     self.protect(p,s,now)
             self.finalize(p,s,now);self.save(p,s)
             return {'status':s['status']}
+
+    def quantity_at(self,plan_id,stamp):
+        fills=self.db.execute('SELECT * FROM bracket_fills WHERE plan_id=? AND stamp<=? ORDER BY rowid',(plan_id,stamp)).fetchall()
+        qty=sum((dec(f['qty'])*(1 if f['kind']=='ENTRY' else -1) for f in fills if f['kind']=='ENTRY' or f['stamp']<stamp),Decimal(0))
+        return qty,any(f['stamp']==stamp for f in fills)
 
     def funding(self,start_ms,through_ms,events):
         with self.transaction():
@@ -284,16 +304,15 @@ class Book:
                     self.set('blocked','funding_history_conflict');self.message('funding-conflict:'+digest(event),{'status':'BLOCKED','reason':'funding_history_conflict'})
                     return {'status':'funding_history_conflict'}
                 if old:continue
-                if stamp<=self.get('funding_through'):
+                if stamp<=self.get('funding_through') and any(p['symbol']==event['symbol'] and self.quantity_at(p['plan_id'],stamp)[0]>0 for p,s in self.plans()):
                     self.set('blocked','late_missing_funding_event');return {'status':'late_missing_funding_event'}
                 self.db.execute('INSERT INTO bracket_funding VALUES(?,?,?)',(key,digest(event),canonical(event)))
                 for p,s in self.plans():
                     if p['symbol']!=event['symbol']:continue
-                    fills=self.db.execute('SELECT * FROM bracket_fills WHERE plan_id=? AND stamp<=? ORDER BY rowid',(p['plan_id'],stamp)).fetchall()
-                    qty=sum((dec(f['qty'])*(1 if f['kind']=='ENTRY' else -1) for f in fills if f['kind']=='ENTRY' or f['stamp']<stamp),Decimal(0))
+                    qty,ambiguous=self.quantity_at(p['plan_id'],stamp)
                     if qty<=0:continue
                     side=1 if p['direction']=='LONG' else -1;value=-side*qty*dec(event['mark'])*rate
-                    if any(f['stamp']==stamp for f in fills):value=min(value,Decimal(0))
+                    if ambiguous:value=min(value,Decimal(0))
                     if value:self.post('funding:'+key+':'+p['plan_id'],'FUNDING',event,[('free',value),('external:funding',-value)],now)
                     s['funding']=text(dec(s['funding'])+value);self.save(p,s)
             self.set('funding_through',max(through_ms,self.get('funding_through')))
@@ -310,7 +329,7 @@ class Book:
                     'provenance':p['provenance'],'thesis':p['decision']['thesis'],'expires_ms':p['expires_ms'],**s,
                     'net_provisional':text(dec(s['gross'])-dec(s['fees'])+dec(s['funding']))})
             return {'version':VERSION,'paper_only':True,'as_of_ms':now,'paused':self.get('paused'),'blocked':self.get('blocked'),
-                'funding_through_ms':self.get('funding_through'),'balances':{k:text(self.balance(k)) for k in ('free','reserved','margin','funding_buffer')},
+                'quote_asof_ms':{sym:(self.get('quote:'+sym) or {}).get('event_ms') for sym in ('BTCUSDT','ETHUSDT','SOLUSDT')},'api_summary':self.get('last_api_summary'),'funding_through_ms':self.get('funding_through'),'analyst_last':self.get('analyst_last'),'balances':{k:text(self.balance(k)) for k in ('free','reserved','margin','funding_buffer')},
                 'plans':items[-30:],'fills':self.db.execute('SELECT count(*) FROM bracket_fills').fetchone()[0],'ledger_balanced':True,
                 'execution_model':'strict_trade_through_and_book_market_not_exchange_fills'}
 

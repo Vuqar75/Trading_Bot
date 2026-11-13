@@ -28,6 +28,9 @@ def render_screen(screen='main',path=REPORT,now=None,*,symbol='BTCUSDT'):
     try:symbol=asset_symbol(symbol)
     except ValueError:return '[ИИ] Актив не поддерживается. Доступны BTCUSDT, ETHUSDT, SOLUSDT.'
     if screen not in VIEWS and symbol!='BTCUSDT':return '[ИИ] Сохранённые GPT-ответы и бюджетный экран относятся только к BTCUSDT.'
+    if screen=='orders':
+        from .ai_bracket_view import render as render_orders
+        return render_orders(now=now,symbol=symbol)
     if screen=='patterns':
         from .technical_ai_view import render as render_patterns
         return render_patterns(sidecar(Path(path).parent,symbol),now,symbol=symbol)

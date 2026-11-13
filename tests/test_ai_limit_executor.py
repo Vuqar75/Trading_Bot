@@ -49,13 +49,27 @@ class LimitExecutorTests(unittest.TestCase):
         with sqlite3.connect(self.state/'experiment-budget.db') as db:db.execute('INSERT INTO api_attempts VALUES(?,?,?,NULL)',('prior',246000,2))
         with self.assertRaisesRegex(ValueError,'budget_exhausted'):self.run_one()
         self.assertEqual(self.calls,0)
+    def test_bad_usage_schema_and_missing_credential_fail_before_reservation(self):
+        with sqlite3.connect(self.state/'experiment-budget.db') as db:db.execute('CREATE TABLE api_usage(wrong TEXT)')
+        with self.assertRaisesRegex(ValueError,'usage_schema'):self.run_one()
+        with sqlite3.connect(self.state/'experiment-budget.db') as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM api_attempts').fetchone()[0],1);db.execute('DROP TABLE api_usage')
+        def missing():raise ValueError('credential_missing')
+        with self.assertRaisesRegex(ValueError,'credential_missing'):e.once(self.state,self.s,authorized=True,secret=missing,clock=lambda:T)
+        with sqlite3.connect(self.state/'experiment-budget.db') as db:self.assertEqual(db.execute('SELECT count(*) FROM api_attempts').fetchone()[0],1)
+        self.assertEqual(self.calls,0)
+
+    def test_test_budget_can_never_use_real_http_transport(self):
+        (self.state/'.TEST_ONLY_BUDGET').write_text('test')
+        with self.assertRaisesRegex(ValueError,'cannot_send_http'):e.once(self.state,self.s,authorized=True,clock=lambda:T)
+
     def test_invalid_model_response_is_retained_but_cannot_create_order(self):
         self.d['entry_level']='invented'
-        with self.assertRaisesRegex(ValueError,'unknown_level'):self.run_one()
-        with self.assertRaisesRegex(ValueError,'unknown_level'):self.run_one()
+        result=self.run_one();self.assertFalse(result['admission']['allowed']);self.assertEqual(result['admission']['reason'],'unknown_level')
+        self.assertEqual(self.run_one(),result)
         self.assertEqual(self.calls,1)
         with sqlite3.connect(self.state/'experiment-budget.db') as db:
-            self.assertEqual(db.execute('SELECT count(*) FROM bracket_api_requests WHERE raw_response IS NOT NULL AND result IS NULL').fetchone()[0],1)
+            self.assertEqual(db.execute('SELECT count(*) FROM bracket_api_requests WHERE raw_response IS NOT NULL AND result IS NOT NULL').fetchone()[0],1)
 
 
 if __name__=='__main__':unittest.main()

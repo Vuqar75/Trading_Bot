@@ -184,7 +184,7 @@ class UnifiedQueue:
                     view=parts[1] if len(parts)==2 else 'summary'
                     buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (('Позиции и действия','/adaptive positions'),('Результаты и издержки','/adaptive results'),('Почему нет сделки','/adaptive why'),('Данные и здоровье','/adaptive health'),('Обновить','/adaptive'))]
                     self._notify(render(view),buttons=buttons)
-                elif command == '/ai' and len(parts)<=3 and (len(parts)==1 or parts[1] in ('why','metrics','sources','costs','patterns','plan','history')) and (len(parts)<3 or (parts[1] in ('patterns','plan','history') and parts[2].upper() in ('BTC','ETH','SOL','BTCUSDT','ETHUSDT','SOLUSDT'))):
+                elif command == '/ai' and len(parts)<=3 and (len(parts)==1 or parts[1] in ('why','metrics','sources','costs','patterns','plan','history','orders')) and (len(parts)<3 or (parts[1] in ('patterns','plan','history','orders') and parts[2].upper() in ('BTC','ETH','SOL','BTCUSDT','ETHUSDT','SOLUSDT'))):
                     from .ai_screens import render_screen
                     from research.technical_assets import SYMBOLS,VIEWS,symbol as asset_symbol
                     screen=parts[1] if len(parts)>=2 else 'main'
@@ -200,13 +200,16 @@ class UnifiedQueue:
                         buttons=[[(label,{'command':cmd,'market':mode,'expires':now+86400,'kind':'view'})] for label,cmd in (
                             ('Теханализ и паттерны',technical_command('patterns')),('Расчёт сделки',technical_command('plan')),
                             ('Наблюдение за уровнями',technical_command('history')),('GPT / режим BTC','/ai'),('Обновить',technical_command(screen)))]
+                    if screen in ('patterns','plan','history','orders'):
+                        buttons.insert(1,[('Лимитный paper-план / TP / SL',{'command':technical_command('orders'),'market':mode,'expires':now+86400,'kind':'view'})])
+                    if screen=='orders':buttons[-1]=[('Обновить',{'command':technical_command('orders'),'market':mode,'expires':now+86400,'kind':'view'})]
                     if screen in VIEWS:
                         buttons.insert(1,[(symbol[:-4],{'command':technical_command(screen,symbol),'market':mode,'expires':now+86400,'kind':'view'}) for symbol in SYMBOLS])
                     view_text=render_screen(screen) if asset=='BTCUSDT' else render_screen(screen,symbol=asset)
                     if screen in VIEWS:view_text+='\nВыбор BTC/ETH/SOL меняет только анализ, не торговую пару и паузы.'
                     self._notify(view_text,buttons=buttons)
                 elif command == '/ai':
-                    self._notify('Теханализ: /ai patterns BTCUSDT, ETHUSDT или SOLUSDT. Также /ai plan и /ai history с активом. GPT-режим /ai относится только к BTCUSDT.')
+                    self._notify('Теханализ: /ai patterns BTCUSDT, ETHUSDT или SOLUSDT. Также /ai plan, /ai history и /ai orders с активом. GPT-режим /ai относится только к BTCUSDT.')
                 elif command == '/mode' and len(parts) <= 2:
                     if len(parts) == 2 and parts[1] in ('spot', 'futures', 'futures_cross','margin_cross'):
                         mode = parts[1]

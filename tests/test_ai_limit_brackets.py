@@ -108,6 +108,27 @@ class BracketTests(unittest.TestCase):
         changed={**event,'rate':'.002'};result=self.b.funding(T,self.now,[changed])
         self.assertEqual(result['status'],'funding_history_conflict');self.assertEqual(self.b.balance('free'),balance)
 
+    def test_zero_liquidity_stop_is_pending_and_fresh_mark_cannot_reuse_book_size(self):
+        p=self.fill_entry();self.quote('empty-stop','95','0')
+        self.assertEqual(self.b.active()[1]['status'],'EXIT_PENDING')
+        self.assertEqual(plan.dec(self.b.active()[1]['open_qty']),plan.dec(p['quantity']))
+        self.quote('now-liquid','95','2');self.assertEqual(plan.dec(self.b.active()[1]['open_qty']),0)
+
+    def test_fresh_bid_can_stop_even_when_mark_temporarily_diverges(self):
+        self.fill_entry();self.now+=100
+        self.b.market('quote',{'id':'basis-gap','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,
+            'bid':'90','ask':'90.1','bid_qty':'2','ask_qty':'2','mark':'100'})
+        self.assertEqual(plan.dec(self.b.active()[1]['open_qty']),0)
+
+    def test_after_commit_crash_and_new_received_time_do_not_duplicate_fill(self):
+        self.accept();self.now+=100
+        event={'id':'committed','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True}
+        self.b.fault=lambda point:(_ for _ in ()).throw(RuntimeError('after')) if point=='after_commit' else None
+        with self.assertRaises(RuntimeError):self.b.market('trade',event)
+        self.b.fault=lambda point:None;self.now+=100
+        self.assertEqual(self.b.market('trade',{**event,'received_ms':self.now})['status'],'duplicate')
+        self.assertEqual(self.b.snapshot()['fills'],1)
+
     def test_context_mismatch_stale_and_invented_levels_rejected(self):
         s,d=snapshot();d['stop_level']='invented'
         with self.assertRaisesRegex(ValueError,'unknown_level'):plan.validate(s,d,self.now)

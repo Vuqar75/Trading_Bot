@@ -1,0 +1,41 @@
+[Unit]
+Description=Isolated AI limit/TP/SL paper executor (no model credentials)
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/opt/tradingbot-ai-brackets/research/ai_limit_runtime.py
+
+[Service]
+Type=simple
+User=aibracket
+Group=aibracket
+WorkingDirectory=/opt/tradingbot-ai-brackets
+Environment=PYTHONPATH=/opt/tradingbot-ai-brackets
+Environment=TZ=UTC
+UnsetEnvironment=OPENAI_API_KEY TRADING_BOT_AI CREDENTIALS_DIRECTORY
+StateDirectory=ai-bracket-study
+StateDirectoryMode=0700
+ExecStart=/usr/bin/python3 -B -m research.ai_limit_runtime serve --state /var/lib/ai-bracket-study --public /var/lib/ai-bracket-public/orders.json --response /var/lib/tradingbot-ai-executor-public/bracket-response.json --analyst-uid adaptiveai --enable-paper
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+IPAddressDeny=169.254.169.254
+InaccessiblePaths=-/var/lib/tradingbot -/var/lib/tradingbot-ai-executor -/etc/credstore.encrypted -/var/lib/donchian-observer -/var/lib/adaptive-shadow
+ReadWritePaths=/var/lib/ai-bracket-study /var/lib/ai-bracket-public
+MemoryMax=128M
+CPUQuota=20%
+TasksMax=16
+LogRateLimitIntervalSec=1min
+LogRateLimitBurst=5
+
+[Install]
+WantedBy=multi-user.target

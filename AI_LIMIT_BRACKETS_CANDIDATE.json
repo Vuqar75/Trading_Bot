@@ -1,0 +1,43 @@
+{
+  "version": "ai-limit-brackets-v1",
+  "status": "offline_candidate_verified_not_vm_installed",
+  "branch": "research/ai-limit-brackets",
+  "sha256": {
+    "research/ai_limit_plan.py": "16f1f6b5788189ae0811fdca3b8677df363e04ebaa640166445c79d760e813b2",
+    "research/ai_limit_book.py": "0ecc19220ce2ee22ea9b94167973d927efb01a82459b6134507539f20a64f8b5",
+    "research/ai_limit_executor.py": "82a0e8dad20d68c54aab1cae9503e741088c984da6b66b055be11befe342a30b",
+    "research/ai_limit_feed.py": "c9408e47501555fdcd762960d956bb096369322ddce30dd58fa74525bbe2c0e2",
+    "research/ai_limit_runtime.py": "0c385c49e70df95500d124f7cfa5a09a5b795b32f32d5404b7043b01cf1126b4",
+    "research/ai_limit_demo.py": "88d152a877445ca3ce9d574d40b2417ddad99701d2790b9d8a78973d00b02e32",
+    "research/technical_assets.py": "017fac4558e76f40f6d760cf1c4d8a9ff5db90c90322fa307817075625f0f910",
+    "trading_bot/ai_bracket_view.py": "05d823f93915c4315a68b29f6e2c40df3efe89f7fea3e6746468cdcee898e767",
+    "trading_bot/ai_screens.py": "2911bb1179e94db1a75ee6c5e5d15211efd8ad8a8a070e7f65100068fe9b3129",
+    "trading_bot/unified_queue.py": "fe16f3772c599ea5b90701f6470fdd1a1f382b9621a9f7e40f12aa8db6f9d039",
+    "trading_bot/paper_wallet_ledger.py": "88da0e32f827111f5f40c88d648f2c157f366d3287f830bb851eb49f2067998c",
+    "research/adaptive_server_once.py": "1d4583a98f61b7b1c9325f25c11140dd644997745f6bae2af95c8f75019480dd",
+    "research/adaptive_budget_resilience.py": "0bb32aa0b1a1f5a3c659180720cc75c5f92e051ac3d095c7ff595b5e239bc997",
+    "research/adaptive_api_transport.py": "d5f26f602e2a51044162e884a9c46932b8d52b9c7063c09011fbb4982a605cc1",
+    "research/adaptive_shadow.py": "19f7c24caf852e5ae0d130edb1d9951b9c2680f65c21e755a8149a6e205f20ef",
+    "research/derivatives_context.py": "9060a4756f0a9017a6dd0752ff4b0c99ab044776d2153111ded033b0252cb948",
+    "deploy/ai-bracket-analyst.service": "b8721a974fb78b4350257eea72c042a24840f9d7bd16655e38087d87145068b5",
+    "deploy/ai-bracket-analyst.timer": "14efeae91b79105480cd19e294cbb29245f374f2ec33b621a297df83994058be",
+    "deploy/ai-bracket-paper.service": "db2156cbab6747a9c9635f1d56a39c6f7085121e92fb6db82918184bde4fec6d",
+    "tests/test_ai_limit_brackets.py": "ea8c1f2fac982dfe2407dc1882cd378606814767a1fa247f700c16a200bac669",
+    "tests/test_ai_limit_executor.py": "72e2681ae5766171b758d0c1f5b528bc97d08c344e5e38e30055e468d83af51d",
+    "tests/test_ai_limit_runtime.py": "d480c79fed38791ecfcc0722be0aa222138a5b48ecb7f03dba9b4c5bbae299e7",
+    "AI_LIMIT_BRACKETS.md": "0ea865d488c953ecd856c054ae5e98152ad244e8b70e20041b754d1e850ffb97"
+  },
+  "targeted_linux_tests": 65,
+  "systemd_analyze_verify": "PASS_configuration_only",
+  "synthetic_e2e": "PASS_fixture_not_strategy_profit",
+  "real_model_calls": 0,
+  "vm_changes": false,
+  "working_market_pause_changes": false,
+  "real_or_testnet_orders": 0,
+  "local_access": {
+    "gcloud": false,
+    "ssh_agent": false,
+    "ssh_config": false,
+    "known_hosts": false
+  }
+}
