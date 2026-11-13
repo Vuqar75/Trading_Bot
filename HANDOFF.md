@@ -5725,3 +5725,16 @@ See PUBLISHED_EMA_TRANSFER_PROTOCOL.md, PUBLISHED_EMA_TRANSFER_REPORT.md and res
 Both fixed transfer schedules fail. Including explicit end-of-period unrealized mark estimates, 14d/10d BTC base/stress net -35.056768/-48.772226 USDT and ETH -101.365321/-131.736305; 7d/28d BTC -49.742246/-69.031610 and ETH -162.718174/-205.737703. All four combined stress segments negative for both schedules; drawdowns exceed 2%; only 53.85%-69.23% of completed base positions close within 24 hours, below 90%. No candidate, installation, automatic entries or further sweep. Current BTC filter/cap proxy caused thousands of repeated hourly refusals, not independent regime changes. Actual source, financial and execution limitations are in the report.
 
 Audit checked 182 selections, 128452 hourly signal records, 3013 closed trades, 1979 reversal double-fills and 124 same-exposure EMA-pair switches in base; 8 focused tests passed. One metadata-only correction changed train start from first close to the start of its first bar, with the original D: choices archive retained; no results recomputed. Raw data/cache and full outputs remain on D:/TradingBot-ML-work/ema-transfer; committed compact archives preserve choices, signals, events, ledger, summary and audit. No VM, real/Testnet orders, paid API, operating configuration, budget, credentials or financial history were touched.
+
+## 2026-11-13 — NEW owner-authorized AI limit/TP/SL path, implementation in progress
+
+Branch research/ai-limit-brackets continues existing history. New ai_limit_plan,
+ai_limit_book, ai_limit_executor form an isolated paper policy; old failed ML
+qualification/working-market pauses remain unchanged.19 targeted tests passed:
+strict model/source binding, partial trade-through fills, restart/gap SL, late
+funding, single exposure, ledger restore, original-budget no-retry recovery.
+No real API/model call or VM action. Runner/provider/UI/deployment acceptance
+still being implemented; this commit is NOT an installed or profitable system.
+No second active budget: executor requires original ACTIVE_SERVER journal and
+shared lock; all old locks/reserves remain. Continue implementation, do not
+repeat old backtests or claim fixtures are live AI decisions/trades.
