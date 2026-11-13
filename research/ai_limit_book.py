@@ -253,10 +253,15 @@ class Book:
             times=self.get('last_market');stream=kind+':'+symbol
             if event['event_ms']<times.get(stream,0):raise ValueError('market_out_of_order')
             times[stream]=event['event_ms'];self.set('last_market',times)
-            self.db.execute('INSERT INTO bracket_inputs VALUES(?,?,?)',(key,fingerprint,canonical(event)))
             if kind=='quote':self.set('quote:'+symbol,event)
             active=self.active()
+            # When no position or entry exists, there is no financial action to
+            # replay. Keep the latest quote, monotonic timestamp and feed cursor,
+            # but do not accumulate an unbounded archive of idle market ticks.
+            # Once a plan exists every relevant tick is durably recorded before
+            # any execution/protection, preserving revision and replay checks.
             if not active or active[0]['symbol']!=symbol:return {'status':'recorded'}
+            self.db.execute('INSERT INTO bracket_inputs VALUES(?,?,?)',(key,fingerprint,canonical(event)))
             p,s=active
             if now>=p['expires_ms'] or self.get('paused') or self.get('blocked'):self.cancel_entry(p,s,'EXPIRED_OR_PAUSED',now)
             # Protection has priority over discretionary TP and new entry.

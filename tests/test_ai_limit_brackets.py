@@ -43,6 +43,22 @@ class BracketTests(unittest.TestCase):
         p=self.accept(side);self.trade('entry','98.9' if side=='LONG' else '101.1',p['quantity'],side=='LONG')
         return p
 
+    def test_idle_ticks_do_not_accumulate_or_fill_after_arming(self):
+        self.quote('idle-quote', '100')
+        self.trade('idle-trade', '98.9')
+        self.assertEqual(self.b.db.execute('SELECT count(*) FROM bracket_inputs').fetchone()[0], 0)
+        self.assertEqual(self.b.get('quote:BTCUSDT')['id'], 'idle-quote')
+        prior = {'id':'idle-trade','symbol':'BTCUSDT','event_ms':self.now,
+                 'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True}
+        self.b.close(); self.b = Book(self.root, clock=lambda:self.now)
+        self.now += 1
+        self.accept()
+        self.b.market('trade', prior)
+        self.assertEqual(self.b.snapshot()['fills'], 0)
+        self.assertEqual(self.b.market('trade', prior)['status'], 'duplicate')
+        self.trade('new-active-trade', '98.9')
+        self.assertEqual(self.b.snapshot()['fills'], 1)
+
     def test_limit_touch_is_not_fill_and_duplicate_trade_cannot_fill_twice(self):
         self.accept();self.trade('touch','99')
         self.assertEqual(self.b.snapshot()['fills'],0)
