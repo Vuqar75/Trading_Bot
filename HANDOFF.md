@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-14 — bounded monotonic trade-feed diagnostics installed
+
+The isolated paper worker runs `fc05e7dfb74b6c1544e0d932c01f587023c0f543`; the analyst remains `a0518b9` with its existing timer and budget. Diagnostics separately time public HTTP requests, parsing, grouped finance/SQLite, publication and sleep, retaining only bounded prior cycles and a single replaceable last-gap record. Forty-four targeted Linux tests passed and 20 ordinary post-install cycles were fresh with no new DATA_GAP; this does not verify behaviour with open risk. A previous gap saturated the 1000-row response, but its initiating cause remains unknown; no behavioural fix or relaxed freshness limit was installed. External backup was downloaded and restored after the switch; the paper ledger remained flat and balanced. See [AI_BRACKET_PHASE_DIAGNOSTICS_INSTALL_20261114.md](AI_BRACKET_PHASE_DIAGNOSTICS_INSTALL_20261114.md) for timing, evidence locations, exact backup and recovery boundaries.
+
 ## 2026-11-14 — trade-feed delay investigation remains open
 
 At 14:13–14:16 Baku, the isolated ledger was flat and balanced; paper service and analyst timer were active. Read-only evidence distinguishes long poll intervals outside the timed poller from a separate slow aggregate quote block; exact causes remain unproven. A 55-second snapshot sample had 19 contiguous cycles with no gap, and bounded process sampling confirmed the normal two-second sleep and variable poll waits, without attribution to a particular endpoint. No change or restart was made. Runtime remains `a0518b989e97485863a92becf95dfafa98acb26e`; this is not a fix. See [AI_BRACKET_DELAY_OBSERVATIONS_20261114.md](AI_BRACKET_DELAY_OBSERVATIONS_20261114.md) for measured events, hashes, limitations, and precise remaining instrumentation and verification. Do not claim healthy active-risk behaviour from the idle sample.
