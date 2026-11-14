@@ -51,13 +51,24 @@ class TradeRecoveryTests(unittest.TestCase):
         self.poller.phase_history.append({'started_ns':123,'sleep_ms':2001,'publish_ms':4})
         self.feed.http_timings.append({'path':'/fapi/v1/ticker/bookTicker','http_ms':5,'parse_ms':1,'started_ns':123,'ended_ns':456})
         self.batches=[[self.row(10,6000)],[self.row(100)]]
-        result=self.poller.cycle();diag=result['last_trade_gap']['source']['phase_diagnostics']
+        result=self.poller.cycle();diag=self.book.get('last_gap_phase_diagnostics')['diagnostics']
+        self.assertNotIn('phase_diagnostics',result['last_trade_gap']['source'])
         self.assertEqual(diag['clock'],'monotonic_ns')
         self.assertEqual(diag['prior_cycles'][0]['sleep_ms'],2001)
         self.assertEqual(diag['http_recent'][0]['http_ms'],5)
         self.assertIn('filters_refresh_ms',diag['phases_ms'])
         self.assertEqual(self.book.balance('reserved'),0)
         self.assertEqual(result['fills'],0)
+
+    def test_diagnostic_storage_is_single_bounded_record(self):
+        self.book.trade_gap('BTCUSDT','first',evidence={'gap':True},phase_evidence={'cycle':1})
+        self.now+=1
+        self.book.trade_gap('BTCUSDT','second',evidence={'gap':True},phase_evidence={'cycle':2})
+        self.assertEqual(self.book.get('last_gap_phase_diagnostics')['diagnostics'],{'cycle':2})
+        count=self.book.db.execute("SELECT count(*) FROM bracket_meta WHERE key='last_gap_phase_diagnostics'").fetchone()[0]
+        self.assertEqual(count,1)
+        rows=self.book.db.execute('SELECT payload FROM bracket_messages').fetchall()
+        self.assertFalse(any('phase_evidence' in row[0] or '"cycle"' in row[0] for row in rows))
 
     def test_slow_filter_refresh_is_measured_without_changing_admission(self):
         import time

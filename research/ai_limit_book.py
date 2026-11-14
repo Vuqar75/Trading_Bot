@@ -215,10 +215,11 @@ class Book:
         self.fill(p,s,'EXIT',qty,price,now,key,s['close_reason'])
         self.set('used-quote:'+p['symbol']+':'+book.get('liquidity_id',book['id'])+':'+sidekey,text(dec(consumed)+qty))
 
-    def trade_gap(self,symbol,detail,*,evidence=None):
+    def trade_gap(self,symbol,detail,*,evidence=None,phase_evidence=None):
         with self.transaction():
             now=self.clock();record={'kind':'DATA_GAP','symbol':symbol,'detail':str(detail)[:160],'at_ms':now}
             if evidence is not None:record['source']=evidence
+            if phase_evidence is not None:self.set('last_gap_phase_diagnostics',{'symbol':symbol,'at_ms':now,'diagnostics':phase_evidence})
             self.message('trade-gap:'+symbol+':'+str(now),record)
             self.set('last_trade_gap',record)
             active=self.active()

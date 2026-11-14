@@ -151,7 +151,9 @@ class Poller:
                 report['history_contiguous']=type(report.get('requested_after_id')) is int and not bool(report.get('discontinuities'))
                 report['execution_gap']=bool(gap)
                 if gap:
-                    b.trade_gap(symbol,'noncontiguous_or_stale_public_trades_no_backfills',evidence=report)
+                    gap_evidence={k:v for k,v in report.items() if k!='phase_diagnostics'}
+                    b.trade_gap(symbol,'noncontiguous_or_stale_public_trades_no_backfills',evidence=gap_evidence,
+                                phase_evidence=report['phase_diagnostics'])
                     # Reset a lagging cursor ONLY while financially idle. The
                     # bootstrap batch is never replayed into execution. A later
                     # contiguous, fresh poll must confirm the stream first.
