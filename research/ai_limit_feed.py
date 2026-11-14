@@ -61,7 +61,7 @@ class Feed:
         if last_id is not None:params['fromId']=last_id+1
         started=self.clock();raw=self.fetch('/fapi/v1/aggTrades',params);now=self.clock()
         if not isinstance(raw,list) or len(raw)>1000:raise ValueError('trade_list')
-        events=[];prior=last_id;gap=False;discontinuities=[];stale=0;future=0;ages=[]
+        events=[];prior=last_id;gap=False;discontinuities=[];stale=0;future=0;ages=[];stale_times=[]
         for r in raw:
             ident=integer(r['a']);stamp=integer(r['T'])
             if prior is not None and ident!=prior+1:
@@ -72,6 +72,7 @@ class Feed:
             positive(r['p']);positive(r['q']);ages.append(now-stamp)
             if not 0<=now-stamp<=5000:
                 stale+=int(now-stamp>5000);future+=int(stamp>now)
+                if now-stamp>5000:stale_times.append(stamp)
                 gap=True;continue
             item={'id':str(ident),'symbol':symbol,'event_ms':stamp,'received_ms':now,'price':r['p'],'qty':r['q'],'buyer_maker':r['m']}
             positive(item['price']);positive(item['qty']);fresh(item,now);events.append(item)
@@ -79,6 +80,7 @@ class Feed:
             'fetch_ms':now-started,'rows':len(raw),'first_id':integer(raw[0]['a']) if raw else None,
             'last_id':prior,'oldest_age_ms':max(ages) if ages else None,'newest_age_ms':min(ages) if ages else None,
             'last_event_ms':integer(raw[-1]['T']) if raw else None,'stale_rows':stale,'future_rows':future,
+            'stale_first_ms':min(stale_times) if stale_times else None,'stale_last_ms':max(stale_times) if stale_times else None,
             'discontinuities':discontinuities,'batch_hash':digest(raw),'gap':gap}
         return events,prior,gap
     def funding(self,start,end,*,symbols=SYMBOLS):

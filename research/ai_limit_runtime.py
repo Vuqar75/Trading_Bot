@@ -89,6 +89,7 @@ class Poller:
     def __init__(self,book,feed,*,symbols=SYMBOLS):
         self.book=book;self.feed=feed;self.symbols=tuple(symbols);self.pool=ThreadPoolExecutor(max_workers=1)
         self.funding_job=None;self.next_funding_check=0;self.funding_cut=None;self.required_due=None
+        self.previous_timing={}
     def close(self):self.pool.shutdown(wait=True,cancel_futures=True)
     def funding_ready(self):
         b=self.book;now=b.clock()
@@ -113,15 +114,32 @@ class Poller:
         b=self.book;active=b.active();priority=[active[0]['symbol']] if active else []
         symbols=priority if priority else list(self.symbols)
         for symbol in symbols:
+            tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol)
             try:
-                q,due=self.feed.book(symbol);b.market('quote',q)
+                q,due=self.feed.book(symbol);quote_done=time.monotonic_ns();b.market('quote',q)
                 with b.transaction():
                     old=b.get('next_due:'+symbol)
                     if old is None or old>b.clock() or old<=b.get('funding_through'):b.set('next_due:'+symbol,due)
                 old=b.get('filters:'+symbol)
                 if old is None or b.clock()-old['as_of_ms']>=60000:b.refresh_filters(symbol,self.feed.filters(symbol))
-                events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
-                report=getattr(self.feed,'trade_report',{}).get(symbol,{})
+                active_before=b.active();events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
+                report=dict(getattr(self.feed,'trade_report',{}).get(symbol,{}))
+                report['poll_started_ms']=wall;report['quote_fetch_ms']=(quote_done-tick)//1000000
+                if previous is not None:
+                    report['previous_cycle']=previous
+                    report['poll_interval_ms']=max(0,wall-previous['poll_started_ms'])
+                armed=active_before[1]['armed_ms'] if active_before else None
+                report['active_armed_ms']=armed
+                # A stale, contiguous prefix ending before the current plan was
+                # armed cannot have filled or protected that plan. ID gaps,
+                # future rows and stale events after arming remain fail-closed.
+                prearm=bool(gap and armed is not None and report.get('stale_rows',0)>0
+                    and report.get('stale_last_ms') is not None and report['stale_last_ms']<=armed
+                    and type(report.get('requested_after_id')) is int
+                    and not report.get('discontinuities') and not report.get('future_rows',0))
+                if prearm:gap=False;report['ignored_prearm_stale_rows']=report['stale_rows']
+                report['history_contiguous']=type(report.get('requested_after_id')) is int and not bool(report.get('discontinuities'))
+                report['execution_gap']=bool(gap)
                 if gap:
                     b.trade_gap(symbol,'noncontiguous_or_stale_public_trades_no_backfills',evidence=report)
                     # Reset a lagging cursor ONLY while financially idle. The
@@ -133,13 +151,30 @@ class Poller:
                         cursor=reset_cursor
                         report={**report,'idle_resync':getattr(self.feed,'trade_report',{}).get(symbol,{})}
                         events=[]
-                for event in events:b.market('trade',event)
-                last_event=events[-1]['event_ms'] if events else b.get('trade_confirmed_ms:'+symbol)
-                healthy=not gap and last_event is not None and 0<=b.clock()-last_event<=5000
+                waiting=time.monotonic_ns()
                 with b.transaction():
+                    locked=time.monotonic_ns();active=b.active();skipped=0
+                    if prearm and (active is None or active_before[0]['plan_id']!=active[0]['plan_id']
+                                   or active[1]['armed_ms']!=armed):raise ValueError('active_plan_changed_during_batch')
+                    if active is None:
+                        # Ingestion and arming run in the same single writer;
+                        # the durable cursor and this no-risk check share the
+                        # transaction, so idle trades cannot become backfills.
+                        skipped=len(events)
+                    else:
+                        for event in events:b.market('trade',event)
+                    processed=time.monotonic_ns()
+                    last_event=events[-1]['event_ms'] if events else b.get('trade_confirmed_ms:'+symbol)
+                    healthy=not gap and last_event is not None and 0<=b.clock()-last_event<=5000
+                    report['batch_processing_ms']=(processed-locked)//1000000
+                    report['batch_lock_wait_ms']=(locked-waiting)//1000000
+                    report['idle_events_skipped']=skipped
                     b.set('trade_cursor:'+symbol,cursor);b.set('trade_feed:'+symbol,report)
                     b.set('trade_confirmed_ms:'+symbol,last_event if healthy else None)
                     b.set('market_error:'+symbol,None if healthy else 'public_trade_stream_unconfirmed')
+                self.previous_timing[symbol]={'poll_started_ms':wall,'total_ms':(time.monotonic_ns()-tick)//1000000,
+                    'batch_finalize_ms':(time.monotonic_ns()-processed)//1000000,'batch_processing_ms':report['batch_processing_ms'],
+                    'batch_lock_wait_ms':report['batch_lock_wait_ms'],'event_count':len(events),'idle_events_skipped':skipped}
             except (ValueError,KeyError,OSError,TypeError):
                 with b.transaction():
                     b.set('market_error:'+symbol,'public_market_unconfirmed')
@@ -155,7 +190,14 @@ def analyst(budget_state,paper_public,output,*,symbol,paper_uid,feed=None,clock=
     now=clock();status=trusted(paper_public,paper_uid)
     if status.get('version')!=VERSION or status.get('paper_only') is not True or status.get('ledger_balanced') is not True or not 0<=now-status['as_of_ms']<=15000:raise ValueError('paper_status_untrusted_or_stale')
     if status['paused'] or status['blocked'] or any(p['status'] not in ('CLOSED','CANCELED') for p in status['plans']):return {'status':'not_requested_paper_paused_or_busy'}
-    if status.get('funding_error') or now-status['funding_through_ms']>120000 or status.get('market_errors',{}).get(symbol):return {'status':'not_requested_market_or_funding_unconfirmed'}
+    if status.get('funding_error') or now-status['funding_through_ms']>120000 or status.get('market_errors',{}).get(symbol):
+        reasons=[]
+        if status.get('funding_error'):reasons.append('funding_error')
+        if now-status['funding_through_ms']>120000:reasons.append('funding_coverage_stale')
+        error=status.get('market_errors',{}).get(symbol)
+        if error:reasons.append(error if error in ('public_market_unconfirmed','public_trade_stream_unconfirmed') else 'market_unconfirmed')
+        return {'status':'not_requested_market_or_funding_unconfirmed','blocking_reasons':reasons,
+                'paper_as_of_ms':status['as_of_ms'],'funding_through_ms':status['funding_through_ms']}
     provider=feed or Feed(clock=clock);snapshot,capture=provider.snapshot(symbol)
     kwargs={'authorized':True,'clock':clock}
     if transport is not None:kwargs['transport']=transport
