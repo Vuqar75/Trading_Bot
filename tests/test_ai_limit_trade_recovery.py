@@ -20,7 +20,8 @@ class TradeRecoveryTests(unittest.TestCase):
             return self.batches.pop(0)
         self.feed=Feed(fetch=fetch,clock=lambda:self.now)
         self.feed.book=lambda symbol:({**snapshot()[0]['quote'],'id':str(self.now),'event_ms':self.now,'received_ms':self.now},self.now+100000)
-        self.feed.filters=lambda symbol:{**snapshot()[0]['filters'],'as_of_ms':self.now}
+        self.feed.filters=lambda symbol,force=False:{**snapshot()[0]['filters'],'as_of_ms':self.now}
+        self.book.set('filters:BTCUSDT',{**snapshot()[0]['filters'],'as_of_ms':self.now})
         self.poller=Poller(self.book,self.feed,symbols=('BTCUSDT',))
         # Funding is independently covered by existing bracket tests. Isolate
         # source admission deterministically without a background worker.
@@ -70,18 +71,84 @@ class TradeRecoveryTests(unittest.TestCase):
         rows=self.book.db.execute('SELECT payload FROM bracket_messages').fetchall()
         self.assertFalse(any('phase_evidence' in row[0] or '"cycle"' in row[0] for row in rows))
 
-    def test_slow_filter_refresh_is_measured_without_changing_admission(self):
-        import time
-        original=self.feed.filters
-        def slow(symbol):
-            time.sleep(.025)
-            return original(symbol)
+    def test_slow_filter_refresh_does_not_block_trade_poll(self):
+        import threading,time
+        gate=threading.Event();started=threading.Event()
+        def slow(symbol,force=False):
+            started.set();gate.wait(2)
+            return {**snapshot()[0]['filters'],'as_of_ms':self.now}
         self.feed.filters=slow
+        self.book.set('filters:BTCUSDT',{**snapshot()[0]['filters'],'as_of_ms':self.now-51000})
         self.book.set('trade_cursor:BTCUSDT',9);self.batches=[[self.row(10)]]
-        result=self.poller.cycle();diag=result['trade_feeds']['BTCUSDT']['phase_diagnostics']
-        self.assertGreaterEqual(diag['phases_ms']['filters_refresh_ms'],20)
-        self.assertFalse(result['trade_feeds']['BTCUSDT']['execution_gap'])
-        self.assertTrue(self.book.verify()['balanced'])
+        try:
+            begin=time.monotonic();result=self.poller.cycle();elapsed=time.monotonic()-begin
+            self.assertTrue(started.wait(1));self.assertLess(elapsed,.5)
+            self.assertTrue(result['trade_feeds']['BTCUSDT']['phase_diagnostics']['phases_ms']['filters_ready'])
+            self.assertFalse(result['trade_feeds']['BTCUSDT']['execution_gap'])
+            self.assertEqual(self.book.get('trade_cursor:BTCUSDT'),10)
+        finally:gate.set()
+
+    def test_failed_refresh_blocks_entry_and_retains_protection(self):
+        import threading
+        gate=threading.Event();started=threading.Event()
+        def failing(symbol,force=False):
+            started.set();gate.wait(2)
+            raise ValueError('public_market_unavailable')
+        self.feed.filters=failing;self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-failed-refresh','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.book.set('filters:BTCUSDT',{**snapshot()[0]['filters'],'as_of_ms':self.now-51000})
+        self.book.set('trade_cursor:BTCUSDT',9);self.batches=[[self.row(10)]]
+        try:
+            self.poller.cycle();self.assertTrue(started.wait(1));gate.set()
+            try:self.poller.filter_jobs['BTCUSDT'].result(timeout=1)
+            except ValueError:pass
+            self.now+=100;self.batches=[[self.row(11)]];result=self.poller.cycle()
+            state=self.book.active()[1]
+            self.assertEqual(state['remaining'],'0');self.assertEqual(state['open_qty'],'0.2')
+            self.assertEqual(result['market_errors']['BTCUSDT'],'public_filters_unconfirmed')
+            self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
+
+    def test_completed_changed_filters_cancel_entry_before_following_trade(self):
+        import threading
+        gate=threading.Event();started=threading.Event()
+        def slow(symbol,force=False):
+            started.set();gate.wait(2)
+            return {**snapshot()[0]['filters'],'as_of_ms':self.now,'tick_size':'0.02'}
+        self.feed.filters=slow;self.accept()
+        self.book.set('filters:BTCUSDT',{**snapshot()[0]['filters'],'as_of_ms':self.now-51000})
+        self.book.set('trade_cursor:BTCUSDT',9);self.batches=[[self.row(10)]]
+        try:
+            self.poller.cycle();self.assertTrue(started.wait(1));gate.set()
+            self.poller.filter_jobs['BTCUSDT'].result(timeout=1)
+            self.now+=100;self.batches=[[self.row(11,0,'98.9')]]
+            result=self.poller.cycle()
+            self.assertEqual(result['fills'],0)
+            self.assertEqual(self.book.plans()[0][1]['entry_cancellation']['reason'],'FILTERS_CHANGED')
+            self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
+
+    def test_filter_deadline_cancels_entry_but_keeps_partial_position_protected(self):
+        import threading
+        gate=threading.Event();started=threading.Event()
+        def slow(symbol,force=False):
+            started.set();gate.wait(2)
+            return {**snapshot()[0]['filters'],'as_of_ms':self.now}
+        self.feed.filters=slow;self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-filter','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.book.set('filters:BTCUSDT',{**snapshot()[0]['filters'],'as_of_ms':self.now-60001})
+        self.book.set('trade_cursor:BTCUSDT',9);self.batches=[[self.row(10)]]
+        try:
+            result=self.poller.cycle();self.assertTrue(started.wait(1))
+            state=self.book.active()[1]
+            self.assertEqual(state['remaining'],'0');self.assertEqual(state['open_qty'],'0.2')
+            self.assertEqual(state['entry_cancellation']['reason'],'ENTRY_EVIDENCE_STALE')
+            self.assertEqual(result['market_errors']['BTCUSDT'],'public_filters_unconfirmed')
+            self.now+=100
+            q={**snapshot()[0]['quote'],'id':'filter-stop','event_ms':self.now,'received_ms':self.now,'bid':'94','ask':'94.1','mark':'94'}
+            self.book.market('quote',q)
+            self.assertEqual(self.book.active()[1]['open_qty'],'0');self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
 
     def test_idle_backlog_reseeds_without_fills_then_requires_fresh_contiguous_poll(self):
         self.book.set('trade_cursor:BTCUSDT',9)

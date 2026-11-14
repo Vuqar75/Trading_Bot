@@ -54,9 +54,9 @@ class Feed:
         check_quote(value,symbol,now)
         due=integer(mark['nextFundingTime'])
         return value,due
-    def filters(self,symbol):
+    def filters(self,symbol,*,force=False):
         now=self.clock()
-        if self.cached_filters is None or now-self.cached_filters[0]>=60000:
+        if force or self.cached_filters is None or now-self.cached_filters[0]>=60000:
             self.cached_filters=(now,self.fetch('/fapi/v1/exchangeInfo',{}))
         matches=[s for s in self.cached_filters[1].get('symbols',[]) if s.get('symbol')==symbol]
         if len(matches)!=1 or matches[0].get('contractType')!='PERPETUAL' or matches[0].get('status')!='TRADING' or matches[0].get('marginAsset')!='USDT':raise ValueError('contract_not_trading')

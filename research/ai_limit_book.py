@@ -226,6 +226,16 @@ class Book:
             if active and active[0]['symbol']==symbol:
                 p,s=active;self.cancel_entry(p,s,'TRADE_GAP',now);self.protect(p,s,now);self.finalize(p,s,now);self.save(p,s)
 
+    def hold_unconfirmed_filters(self,symbol):
+        # Never leave an entry executable after its filter refresh deadline.
+        # Open exposure and its quote-based protection remain in force.
+        with self.transaction():
+            active=self.active()
+            if active and active[0]['symbol']==symbol:
+                p,s=active;now=self.clock()
+                self.cancel_entry(p,s,'ENTRY_EVIDENCE_STALE',now,detail='filters_refresh_unconfirmed')
+                self.protect(p,s,now);self.finalize(p,s,now);self.save(p,s)
+
     def refresh_filters(self,symbol,value):
         with self.transaction():
             filters(value,self.clock())

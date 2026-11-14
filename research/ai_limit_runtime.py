@@ -68,6 +68,7 @@ def ingest(book,envelope,*,allow_fixture=False):
     if result.get('decision') is not None and not diagnostic:
         book.register_source(result['snapshot'],capture)
         try:
+            if result['decision'].get('decision')!='WAIT' and book.get('market_error:'+result['snapshot']['symbol']):raise ValueError('entry_paused_blocked_or_busy')
             book.accept(result['snapshot'],result['decision'],provenance=provenance)
             status='WAIT' if result['decision']['decision']=='WAIT' else 'ACCEPTED'
         except ValueError as error:
@@ -90,8 +91,10 @@ class Poller:
     def __init__(self,book,feed,*,symbols=SYMBOLS):
         self.book=book;self.feed=feed;self.symbols=tuple(symbols);self.pool=ThreadPoolExecutor(max_workers=1)
         self.funding_job=None;self.next_funding_check=0;self.funding_cut=None;self.required_due=None
+        self.filter_pool=ThreadPoolExecutor(max_workers=1);self.filter_jobs={};self.filter_failed=set()
         self.previous_timing={};self.previous_mono={};self.phase_history=deque(maxlen=8);self.loop_phase={}
-    def close(self):self.pool.shutdown(wait=True,cancel_futures=True)
+    def close(self):
+        self.pool.shutdown(wait=True,cancel_futures=True);self.filter_pool.shutdown(wait=True,cancel_futures=True)
     def funding_ready(self):
         b=self.book;now=b.clock()
         if self.funding_job is not None and self.funding_job.done():
@@ -111,6 +114,21 @@ class Poller:
             self.required_due={s:b.get('next_due:'+s) for s in needed}
             self.funding_job=self.pool.submit(self.feed.funding,start,self.funding_cut,symbols=sorted(needed)) if needed else self.pool.submit(lambda:[])
             self.next_funding_check=now+30000
+    def filters_ready(self,symbol):
+        b=self.book;job=self.filter_jobs.get(symbol)
+        if job is not None and job.done():
+            try:
+                b.refresh_filters(symbol,job.result());self.filter_failed.discard(symbol)
+            except (ValueError,OSError,KeyError,TypeError):self.filter_failed.add(symbol)
+            del self.filter_jobs[symbol];job=None
+        current=b.get('filters:'+symbol);now=b.clock()
+        age=now-current['as_of_ms'] if isinstance(current,dict) and type(current.get('as_of_ms')) is int else None
+        if job is None and (age is None or age<0 or age>=50000):
+            self.filter_jobs[symbol]=self.filter_pool.submit(self.feed.filters,symbol,force=True)
+        ready=age is not None and 0<=age<60000 and symbol not in self.filter_failed
+        if not ready:b.hold_unconfirmed_filters(symbol)
+        return ready
+
     def cycle(self):
         b=self.book;active=b.active();priority=[active[0]['symbol']] if active else []
         symbols=priority if priority else list(self.symbols)
@@ -123,9 +141,9 @@ class Poller:
                     old=b.get('next_due:'+symbol)
                     if old is None or old>b.clock() or old<=b.get('funding_through'):b.set('next_due:'+symbol,due)
                 next_mark=time.monotonic_ns();phases['funding_due_sql_ms']=(next_mark-mark)//1000000;mark=next_mark
-                old=b.get('filters:'+symbol)
-                if old is None or b.clock()-old['as_of_ms']>=60000:b.refresh_filters(symbol,self.feed.filters(symbol))
+                filters_ready=self.filters_ready(symbol)
                 next_mark=time.monotonic_ns();phases['filters_refresh_ms']=(next_mark-mark)//1000000;mark=next_mark
+                phases['filters_ready']=filters_ready
                 active_before=b.active();events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
                 next_mark=time.monotonic_ns();phases['trades_total_ms']=(next_mark-mark)//1000000
                 report=dict(getattr(self.feed,'trade_report',{}).get(symbol,{}))
@@ -183,7 +201,7 @@ class Poller:
                     report['idle_events_skipped']=skipped
                     b.set('trade_cursor:'+symbol,cursor);b.set('trade_feed:'+symbol,report)
                     b.set('trade_confirmed_ms:'+symbol,last_event if healthy else None)
-                    b.set('market_error:'+symbol,None if healthy else 'public_trade_stream_unconfirmed')
+                    b.set('market_error:'+symbol,('public_filters_unconfirmed' if not filters_ready else (None if healthy else 'public_trade_stream_unconfirmed')))
                 self.loop_phase['poller_symbol_ms']=(time.monotonic_ns()-tick)//1000000
                 self.previous_timing[symbol]={'poll_started_ms':wall,'total_ms':(time.monotonic_ns()-tick)//1000000,
                     'batch_finalize_ms':(time.monotonic_ns()-processed)//1000000,'batch_processing_ms':report['batch_processing_ms'],
