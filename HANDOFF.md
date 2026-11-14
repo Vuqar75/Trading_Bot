@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-14 — idle poll delay fixed and installed
+
+04:02 Baku returned saved `WAIT` (one paid attempt); 08:02 skipped before HTTP with the old combined market/funding gate, whose exact historical branch was not recorded. No new paper plans or fills since 00:46. Diagnosed per-event idle transactions as a reproducible local delay; the original 00:04 stale event was after the order was armed, so its cancellation could not safely be ignored. Installed `a0518b989e97485863a92becf95dfafa98acb26e`: atomic idle cursor advance, safe pre-arm stale handling with strict continuity, unchanged active-risk fail-closed behavior and bounded timing/gate diagnostics. 54 targeted Linux tests passed; 12 initial live cycles were fresh with no gaps, which is not proof of all future active/source cases. Pauses, budget, schedule and prior ledger were preserved; the external backup was downloaded and restored. See [AI_BRACKET_POLL_CAUSE_INSTALL_20261114.md](AI_BRACKET_POLL_CAUSE_INSTALL_20261114.md) for evidence, limits and rollback.
+
 ## 2026-11-14 — read-only check of scheduled 00:02 Baku AI cycle
 
 At 00:46 Baku checked the VM without starting an AI call, trade or test or changing any service. Analyst ran 00:02:07–00:02:28 and saved an actual `gpt-6-luna` SHORT response, request ID `bracket:2c7a46b26422fe875ca54e4471851785e6b1d8e5cf492f5f83e519966eda51aa`. Usage: 3204 input, 1163 output tokens; reserve $0.002557; estimated API cost $0.0009019, not a provider invoice. Total budget reservation 12 attempts/$0.028894.
