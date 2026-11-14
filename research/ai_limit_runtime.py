@@ -18,7 +18,7 @@ import time
 
 from .ai_limit_book import Book
 from .ai_limit_feed import Feed
-from .ai_limit_plan import VERSION,SYMBOLS,canonical,digest,validate,context,integer
+from .ai_limit_plan import VERSION,SYMBOLS,canonical,digest,validate,context,integer,dec,quote as validate_quote
 from .ai_limit_executor import once,recover
 
 
@@ -88,14 +88,16 @@ def ingest(book,envelope,*,allow_fixture=False):
 
 
 class Poller:
-    def __init__(self,book,feed,*,symbols=SYMBOLS):
+    def __init__(self,book,feed,*,symbols=SYMBOLS,trade_executor=None,quote_executor=None):
         self.book=book;self.feed=feed;self.symbols=tuple(symbols);self.pool=ThreadPoolExecutor(max_workers=1)
         self.funding_job=None;self.next_funding_check=0;self.funding_cut=None;self.required_due=None
         self.filter_pool=ThreadPoolExecutor(max_workers=1);self.filter_jobs={};self.filter_failed=set()
+        self.trade_pool=trade_executor or ThreadPoolExecutor(max_workers=1);self.trade_jobs={}
+        self.quote_pool=quote_executor or ThreadPoolExecutor(max_workers=1);self.quote_jobs={}
         self.previous_timing={};self.previous_mono={};self.phase_history=deque(maxlen=8);self.loop_phase={}
         self.full_page_pending=False;self.full_page_streak={};self.drain_count=0;self.drain_deadline_ns=None
     def close(self):
-        self.pool.shutdown(wait=True,cancel_futures=True);self.filter_pool.shutdown(wait=True,cancel_futures=True)
+        self.pool.shutdown(wait=True,cancel_futures=True);self.filter_pool.shutdown(wait=True,cancel_futures=True);self.trade_pool.shutdown(wait=True,cancel_futures=True);self.quote_pool.shutdown(wait=True,cancel_futures=True)
     def funding_ready(self):
         b=self.book;now=b.clock()
         if self.funding_job is not None and self.funding_job.done():
@@ -150,7 +152,35 @@ class Poller:
         for symbol in symbols:
             tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol);phases={}
             try:
-                q,due=self.feed.book(symbol);quote_done=time.monotonic_ns();b.market('quote',q)
+                initial=b.active();quote_job=self.quote_jobs.get(symbol)
+                exposed=initial is not None and initial[0]['symbol']==symbol and dec(initial[1]['open_qty'])>0
+                if quote_job is not None or exposed:
+                    if quote_job is None:
+                        quote_job=(self.quote_pool.submit(self.feed.book,symbol),time.monotonic_ns())
+                        self.quote_jobs[symbol]=quote_job
+                    future,quote_started=quote_job
+                    if not future.done():
+                        try:validate_quote(b.get('quote:'+symbol),symbol,b.clock());quote_ready=True
+                        except (ValueError,KeyError,TypeError):quote_ready=False
+                        if not quote_ready and b.active() is not None:
+                            b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
+                            with b.transaction():b.set('market_error:'+symbol,'public_market_unconfirmed')
+                        self.loop_phase['quote_http_pending_ms']=(time.monotonic_ns()-quote_started)//1000000
+                        continue
+                    del self.quote_jobs[symbol]
+                    try:q,due=future.result()
+                    except (ValueError,KeyError,OSError,TypeError):
+                        if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
+                        raise
+                else:q,due=self.feed.book(symbol)
+                quote_done=time.monotonic_ns()
+                try:b.market('quote',q)
+                except (ValueError,KeyError,OSError,TypeError):
+                    if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
+                    raise
+                active_after_quote=b.active()
+                if active_after_quote is not None and active_after_quote[0]['symbol']==symbol and dec(active_after_quote[1]['open_qty'])>0 and symbol not in self.quote_jobs:
+                    self.quote_jobs[symbol]=(self.quote_pool.submit(self.feed.book,symbol),time.monotonic_ns())
                 mark=time.monotonic_ns();phases['quote_finance_ms']=(mark-quote_done)//1000000
                 with b.transaction():
                     old=b.get('next_due:'+symbol)
@@ -159,9 +189,51 @@ class Poller:
                 filters_ready=self.filters_ready(symbol)
                 next_mark=time.monotonic_ns();phases['filters_refresh_ms']=(next_mark-mark)//1000000;mark=next_mark
                 phases['filters_ready']=filters_ready
-                active_before=b.active();events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
+                active_before=b.active();job=self.trade_jobs.get(symbol)
+                # A slow public trade request must not hold quote protection
+                # while a position exists. The network thread never writes DB.
+                exposed=active_before is not None and active_before[0]['symbol']==symbol and dec(active_before[1]['open_qty'])>0
+                if job is not None or exposed:
+                    if job is None:
+                        requested=b.get('trade_cursor:'+symbol)
+                        def fetch_trades(symbol=symbol,requested=requested):
+                            values=self.feed.trades(symbol,requested)
+                            return (*values,dict(getattr(self.feed,'trade_report',{}).get(symbol,{})))
+                        job=(self.trade_pool.submit(fetch_trades),requested,time.monotonic_ns())
+                        self.trade_jobs[symbol]=job
+                    future,requested,started=job
+                    if not future.done():
+                        pending_ms=(time.monotonic_ns()-started)//1000000
+                        confirmed=b.get('trade_confirmed_ms:'+symbol)
+                        ready=(confirmed is not None and 0<=b.clock()-confirmed<=5000
+                               and filters_ready and b.get('market_error:'+symbol) is None)
+                        if not ready and b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='trade_http_unconfirmed')
+                        with b.transaction():
+                            if not ready:b.set('trade_confirmed_ms:'+symbol,None)
+                            b.set('market_error:'+symbol,None if ready else 'public_trade_stream_unconfirmed')
+                        self.loop_phase['trade_http_pending_ms']=pending_ms
+                        continue
+                    del self.trade_jobs[symbol]
+                    try:events,cursor,gap,report=future.result()
+                    except (ValueError,KeyError,OSError,TypeError):
+                        if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='trade_http_unconfirmed')
+                        raise
+                    if b.get('trade_cursor:'+symbol)!=requested:raise ValueError('trade_cursor_changed_while_pending')
+                    # Downloaded rows must still be fresh when the DB writer
+                    # receives them; old/future rows always remain fail-closed.
+                    delayed=[e for e in events if not 0<=b.clock()-e['event_ms']<=5000]
+                    if delayed:
+                        gap=True;events=[e for e in events if 0<=b.clock()-e['event_ms']<=5000]
+                        stamps=[e['event_ms'] for e in delayed if e['event_ms']<=b.clock()]
+                        report['stale_rows']=report.get('stale_rows',0)+len(stamps)
+                        if stamps:
+                            report['stale_first_ms']=min([report['stale_first_ms']] + stamps) if report.get('stale_first_ms') is not None else min(stamps)
+                            report['stale_last_ms']=max([report['stale_last_ms']] + stamps) if report.get('stale_last_ms') is not None else max(stamps)
+                        report['future_rows']=report.get('future_rows',0)+len(delayed)-len(stamps)
+                else:
+                    events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
+                    report=dict(getattr(self.feed,'trade_report',{}).get(symbol,{}))
                 next_mark=time.monotonic_ns();phases['trades_total_ms']=(next_mark-mark)//1000000
-                report=dict(getattr(self.feed,'trade_report',{}).get(symbol,{}))
                 full_page=report.get('rows')==1000
                 self.full_page_streak[symbol]=self.full_page_streak.get(symbol,0)+1 if full_page else 0
                 if full_page:

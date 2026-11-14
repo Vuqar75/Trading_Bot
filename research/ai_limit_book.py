@@ -226,14 +226,14 @@ class Book:
             if active and active[0]['symbol']==symbol:
                 p,s=active;self.cancel_entry(p,s,'TRADE_GAP',now);self.protect(p,s,now);self.finalize(p,s,now);self.save(p,s)
 
-    def hold_unconfirmed_backlog(self,symbol):
+    def hold_unconfirmed_backlog(self,symbol,*,detail='trade_backlog_unconfirmed'):
         # A full page cannot prove the cursor has reached the live stream.
         # Cancel unfilled entry only; open exposure remains protected.
         with self.transaction():
             active=self.active()
             if active and active[0]['symbol']==symbol:
                 p,s=active;now=self.clock()
-                self.cancel_entry(p,s,'ENTRY_EVIDENCE_STALE',now,detail='trade_backlog_unconfirmed')
+                self.cancel_entry(p,s,'ENTRY_EVIDENCE_STALE',now,detail=detail)
                 self.protect(p,s,now);self.finalize(p,s,now);self.save(p,s)
 
     def hold_unconfirmed_filters(self,symbol):

@@ -10,6 +10,16 @@ from research.ai_limit_runtime import Poller,analyst
 from tests.test_ai_limit_brackets import snapshot,T
 
 
+class InlineExecutor:
+    def submit(self,fn,*args,**kwargs):
+        from concurrent.futures import Future
+        result=Future()
+        try:result.set_result(fn(*args,**kwargs))
+        except BaseException as error:result.set_exception(error)
+        return result
+    def shutdown(self,**kwargs):pass
+
+
 class TradeRecoveryTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.now=T
@@ -22,7 +32,7 @@ class TradeRecoveryTests(unittest.TestCase):
         self.feed.book=lambda symbol:({**snapshot()[0]['quote'],'id':str(self.now),'event_ms':self.now,'received_ms':self.now},self.now+100000)
         self.feed.filters=lambda symbol,force=False:{**snapshot()[0]['filters'],'as_of_ms':self.now}
         self.book.set('filters:BTCUSDT',{**snapshot()[0]['filters'],'as_of_ms':self.now})
-        self.poller=Poller(self.book,self.feed,symbols=('BTCUSDT',))
+        self.poller=Poller(self.book,self.feed,symbols=('BTCUSDT',),trade_executor=InlineExecutor(),quote_executor=InlineExecutor())
         # Funding is independently covered by existing bracket tests. Isolate
         # source admission deterministically without a background worker.
         self.poller.funding_ready=lambda:None
@@ -130,6 +140,123 @@ class TradeRecoveryTests(unittest.TestCase):
         self.assertTrue(result['last_trade_gap']['source']['discontinuities'])
         self.assertEqual(result['market_errors']['BTCUSDT'],'public_trade_stream_unconfirmed')
         self.assertEqual(result['fills'],0)
+
+    def test_slow_trade_http_does_not_hold_next_quote_protection(self):
+        import threading,time
+        from concurrent.futures import ThreadPoolExecutor
+        self.poller.trade_pool=ThreadPoolExecutor(max_workers=1)
+        self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-slow-http','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.book.set('trade_cursor:BTCUSDT',9);quotes=[];gate=threading.Event();started=threading.Event()
+        def quote(symbol):
+            quotes.append(time.monotonic());stop=len(quotes)>1
+            q={**snapshot()[0]['quote'],'id':'slow-q-'+str(len(quotes)),'event_ms':self.now,'received_ms':self.now}
+            if stop:q.update(bid='94',ask='94.1',mark='94')
+            return q,self.now+100000
+        def slow(path,params):
+            started.set();gate.wait(2)
+            return [{'a':10,'T':self.now,'p':'100','q':'1','m':True}]
+        self.feed.book=quote;self.feed.fetch=slow
+        try:
+            begin=time.monotonic();self.poller.cycle();self.assertLess(time.monotonic()-begin,.5)
+            self.assertTrue(started.wait(1));self.assertEqual(self.book.active()[1]['open_qty'],'0.2')
+            self.now+=100;self.poller.cycle()
+            self.assertEqual(len(quotes),2);self.assertEqual(self.book.active()[1]['open_qty'],'0')
+            self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
+
+    def test_slow_quote_waits_safely_then_protects_on_fresh_quote(self):
+        import threading,time
+        from concurrent.futures import ThreadPoolExecutor
+        self.poller.quote_pool=ThreadPoolExecutor(max_workers=1)
+        self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-slow-quote','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.now+=6000;gate=threading.Event();started=threading.Event()
+        def slow(symbol):
+            started.set();gate.wait(2)
+            q={**snapshot()[0]['quote'],'id':'new-stop','event_ms':self.now,'received_ms':self.now,'bid':'94','ask':'94.1','mark':'94'}
+            return q,self.now+100000
+        self.feed.book=slow
+        try:
+            begin=time.monotonic();result=self.poller.cycle();self.assertLess(time.monotonic()-begin,.5)
+            self.assertTrue(started.wait(1));state=self.book.active()[1]
+            self.assertEqual(state['open_qty'],'0.2');self.assertEqual(state['remaining'],'0')
+            self.assertEqual(result['market_errors']['BTCUSDT'],'public_market_unconfirmed')
+            self.assertEqual(self.book.db.execute('SELECT count(*) FROM bracket_fills').fetchone()[0],1)
+            gate.set();self.poller.quote_jobs['BTCUSDT'][0].result(timeout=1)
+            self.now+=100;self.batches=[[]];self.poller.cycle()
+            self.assertEqual(self.book.active()[1]['open_qty'],'0');self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
+
+    def test_restart_after_pending_trade_request_keeps_position_and_cursor(self):
+        import threading
+        from concurrent.futures import ThreadPoolExecutor
+        self.poller.trade_pool=ThreadPoolExecutor(max_workers=1)
+        self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-restart-http','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.book.set('trade_cursor:BTCUSDT',9);gate=threading.Event();started=threading.Event()
+        def slow(path,params):
+            started.set();gate.wait(2)
+            return [{'a':10,'T':self.now,'p':'100','q':'1','m':True}]
+        self.feed.fetch=slow
+        try:
+            self.poller.cycle();self.assertTrue(started.wait(1))
+            gate.set();self.poller.close();path=self.book.root;self.book.close()
+            self.book=Book(path,clock=lambda:self.now)
+            self.assertEqual(self.book.get('trade_cursor:BTCUSDT'),9)
+            self.assertEqual(self.book.active()[1]['open_qty'],'0.2')
+            self.assertEqual(self.book.active()[1]['remaining'],'0')
+            self.assertEqual(self.book.db.execute('SELECT count(*) FROM bracket_fills').fetchone()[0],1)
+            self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
+
+    def test_stale_quote_wait_preserves_position_and_time_exit_state(self):
+        import threading
+        from concurrent.futures import ThreadPoolExecutor
+        self.poller.quote_pool=ThreadPoolExecutor(max_workers=1)
+        self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-time-http','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.now+=240*60000+100;gate=threading.Event();started=threading.Event()
+        def slow(symbol):
+            started.set();gate.wait(2)
+            q={**snapshot()[0]['quote'],'id':'time-fresh','event_ms':self.now,'received_ms':self.now}
+            return q,self.now+100000
+        self.feed.book=slow
+        try:
+            self.poller.cycle();self.assertTrue(started.wait(1))
+            state=self.book.active()[1]
+            self.assertEqual(state['status'],'EXIT_PENDING');self.assertEqual(state['close_reason'],'TIME')
+            self.assertEqual(state['open_qty'],'0.2')
+            self.assertEqual(self.book.db.execute('SELECT count(*) FROM bracket_fills').fetchone()[0],1)
+            gate.set();self.poller.quote_jobs['BTCUSDT'][0].result(timeout=1)
+            self.now+=100;self.batches=[[]];self.poller.cycle()
+            self.assertEqual(self.book.active()[1]['open_qty'],'0');self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
+
+    def test_slow_trade_result_is_rechecked_and_not_filled_late(self):
+        import threading
+        from concurrent.futures import ThreadPoolExecutor
+        self.poller.trade_pool=ThreadPoolExecutor(max_workers=1)
+        self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-late-http','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.book.set('trade_cursor:BTCUSDT',9);gate=threading.Event();started=threading.Event()
+        stamp=self.now
+        def slow(path,params):
+            started.set();gate.wait(2)
+            return [{'a':10,'T':stamp,'p':'98.9','q':'1','m':True}]
+        self.feed.fetch=slow
+        try:
+            self.poller.cycle();self.assertTrue(started.wait(1))
+            self.now+=6000;self.poller.cycle()
+            self.assertEqual(self.book.active()[1]['remaining'],'0')
+            self.assertEqual(self.book.active()[1]['open_qty'],'0.2')
+            gate.set();self.poller.trade_jobs['BTCUSDT'][0].result(timeout=1)
+            result=self.poller.cycle()
+            self.assertIsNotNone(result['market_errors']['BTCUSDT'])
+            self.assertEqual(self.book.active()[1]['open_qty'],'0.2')
+            self.assertEqual(self.book.db.execute('SELECT count(*) FROM bracket_fills').fetchone()[0],1)
+            self.assertTrue(self.book.verify()['balanced'])
+        finally:gate.set()
 
     def test_http_timing_records_latency_and_parse_without_payload(self):
         import time
