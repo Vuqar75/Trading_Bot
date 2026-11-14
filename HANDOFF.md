@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-14 — trade-feed delay investigation remains open
+
+At 14:13–14:16 Baku, the isolated ledger was flat and balanced; paper service and analyst timer were active. Read-only evidence distinguishes long poll intervals outside the timed poller from a separate slow aggregate quote block; exact causes remain unproven. A 55-second snapshot sample had 19 contiguous cycles with no gap, and bounded process sampling confirmed the normal two-second sleep and variable poll waits, without attribution to a particular endpoint. No change or restart was made. Runtime remains `a0518b989e97485863a92becf95dfafa98acb26e`; this is not a fix. See [AI_BRACKET_DELAY_OBSERVATIONS_20261114.md](AI_BRACKET_DELAY_OBSERVATIONS_20261114.md) for measured events, hashes, limitations, and precise remaining instrumentation and verification. Do not claim healthy active-risk behaviour from the idle sample.
+
 ## 2026-11-14 — read-only check of the 12:02 Baku AI cycle
 
 At 12:47–12:50 Baku the scheduled analyst cycle ran 12:02:07–12:02:22 and published a saved `WAIT` response, without network retry. The model cited conflicting LONG trend/resistance context and insufficient SHORT evidence; news coverage was limited. Request `bracket:bc69d562543f4b7116675036cd1cc7ea3cbf29bc82421382deacdcfeda0ec95a` used 3302 input and 605 output tokens; reserve $0.002589, estimated cost $0.0006327 (not a provider invoice). The sole journal held 14 attempts and $0.034137 in reservations. The cycle created no plan, order or fill; the last canceled plan on /ai orders belongs to an earlier cycle, not this WAIT.
