@@ -1,5 +1,6 @@
 """Public USD-M inputs only, allowlisted HTTPS, no credentials/POST/retries."""
 import json
+from collections import deque
 import time
 import urllib.error
 import urllib.parse
@@ -16,23 +17,33 @@ PATHS={'/fapi/v1/time','/fapi/v1/ticker/bookTicker','/fapi/v1/premiumIndex','/fa
 class Feed:
     def __init__(self,*,fetch=None,clock=lambda:int(time.time()*1000)):
         self.clock=clock;self.fetch=fetch or self.get;self.denied=None;self.cached_filters=None
-        self.trade_report={}
+        self.trade_report={};self.http_timings=deque(maxlen=64)
     def get(self,path,params):
         if self.denied:raise ValueError(self.denied)
         if path not in PATHS or set(params)-{'symbol','limit','fromId','startTime','endTime','interval','period'}:raise ValueError('public_endpoint_denied')
         if 'symbol' in params and params['symbol'] not in SYMBOLS:raise ValueError('symbol_denied')
         url=HOST+path+('?' +urllib.parse.urlencode(params) if params else '')
+        started=time.monotonic_ns();received=None;parsed=None;outcome='error'
         try:
             request=urllib.request.Request(url,headers={'User-Agent':'TradingBot-AI-Paper-Brackets/1.0'})
             with urllib.request.urlopen(request,timeout=8) as response:raw=response.read(3000001)
+            received=time.monotonic_ns()
         except urllib.error.HTTPError as error:
             status=error.code;error.close()
             if status in (401,403,451):self.denied='public_access_denied_http'+str(status)
             raise ValueError(self.denied or 'public_market_http_failure') from None
         except (OSError,TimeoutError):raise ValueError('public_market_unavailable') from None
-        if len(raw)>3000000:raise ValueError('public_response_size')
-        try:return json.loads(raw)
-        except ValueError:raise ValueError('public_response_json') from None
+        finally:
+            if received is None:self.http_timings.append({'path':path,'started_ns':started,'ended_ns':time.monotonic_ns(),'outcome':'error'})
+        try:
+            if len(raw)>3000000:raise ValueError('public_response_size')
+            try:result=json.loads(raw)
+            except ValueError:raise ValueError('public_response_json') from None
+            outcome='ok';return result
+        finally:
+            parsed=time.monotonic_ns()
+            self.http_timings.append({'path':path,'started_ns':started,'received_ns':received,'ended_ns':parsed,
+                'http_ms':(received-started)//1000000,'parse_ms':(parsed-received)//1000000,'outcome':outcome})
     def book(self,symbol):
         if symbol not in SYMBOLS:raise ValueError('symbol_denied')
         raw=self.fetch('/fapi/v1/ticker/bookTicker',{'symbol':symbol});mark=self.fetch('/fapi/v1/premiumIndex',{'symbol':symbol});now=self.clock()
@@ -59,7 +70,7 @@ class Feed:
         if symbol not in SYMBOLS:raise ValueError('symbol_denied')
         params={'symbol':symbol,'limit':1000}
         if last_id is not None:params['fromId']=last_id+1
-        started=self.clock();raw=self.fetch('/fapi/v1/aggTrades',params);now=self.clock()
+        started=self.clock();raw=self.fetch('/fapi/v1/aggTrades',params);now=self.clock();parse_started=time.monotonic_ns()
         if not isinstance(raw,list) or len(raw)>1000:raise ValueError('trade_list')
         events=[];prior=last_id;gap=False;discontinuities=[];stale=0;future=0;ages=[];stale_times=[]
         for r in raw:
@@ -81,7 +92,8 @@ class Feed:
             'last_id':prior,'oldest_age_ms':max(ages) if ages else None,'newest_age_ms':min(ages) if ages else None,
             'last_event_ms':integer(raw[-1]['T']) if raw else None,'stale_rows':stale,'future_rows':future,
             'stale_first_ms':min(stale_times) if stale_times else None,'stale_last_ms':max(stale_times) if stale_times else None,
-            'discontinuities':discontinuities,'batch_hash':digest(raw),'gap':gap}
+            'discontinuities':discontinuities,'batch_hash':digest(raw),'gap':gap,
+            'trade_validation_ms':(time.monotonic_ns()-parse_started)//1000000}
         return events,prior,gap
     def funding(self,start,end,*,symbols=SYMBOLS):
         # One continuous global coverage window is confirmed for ALL supported

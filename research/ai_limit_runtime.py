@@ -5,6 +5,7 @@ an LLM; model downtime cannot stop its persisted protective exits.
 """
 import argparse
 from concurrent.futures import ThreadPoolExecutor
+from collections import deque
 import json
 import os
 from pathlib import Path
@@ -89,7 +90,7 @@ class Poller:
     def __init__(self,book,feed,*,symbols=SYMBOLS):
         self.book=book;self.feed=feed;self.symbols=tuple(symbols);self.pool=ThreadPoolExecutor(max_workers=1)
         self.funding_job=None;self.next_funding_check=0;self.funding_cut=None;self.required_due=None
-        self.previous_timing={}
+        self.previous_timing={};self.previous_mono={};self.phase_history=deque(maxlen=8);self.loop_phase={}
     def close(self):self.pool.shutdown(wait=True,cancel_futures=True)
     def funding_ready(self):
         b=self.book;now=b.clock()
@@ -114,22 +115,31 @@ class Poller:
         b=self.book;active=b.active();priority=[active[0]['symbol']] if active else []
         symbols=priority if priority else list(self.symbols)
         for symbol in symbols:
-            tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol)
+            tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol);phases={}
             try:
                 q,due=self.feed.book(symbol);quote_done=time.monotonic_ns();b.market('quote',q)
+                mark=time.monotonic_ns();phases['quote_finance_ms']=(mark-quote_done)//1000000
                 with b.transaction():
                     old=b.get('next_due:'+symbol)
                     if old is None or old>b.clock() or old<=b.get('funding_through'):b.set('next_due:'+symbol,due)
+                next_mark=time.monotonic_ns();phases['funding_due_sql_ms']=(next_mark-mark)//1000000;mark=next_mark
                 old=b.get('filters:'+symbol)
                 if old is None or b.clock()-old['as_of_ms']>=60000:b.refresh_filters(symbol,self.feed.filters(symbol))
+                next_mark=time.monotonic_ns();phases['filters_refresh_ms']=(next_mark-mark)//1000000;mark=next_mark
                 active_before=b.active();events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
+                next_mark=time.monotonic_ns();phases['trades_total_ms']=(next_mark-mark)//1000000
                 report=dict(getattr(self.feed,'trade_report',{}).get(symbol,{}))
                 report['poll_started_ms']=wall;report['quote_fetch_ms']=(quote_done-tick)//1000000
+                if symbol in self.previous_mono:report['poll_interval_mono_ms']=(tick-self.previous_mono[symbol])//1000000
+                self.previous_mono[symbol]=tick
                 if previous is not None:
                     report['previous_cycle']=previous
                     report['poll_interval_ms']=max(0,wall-previous['poll_started_ms'])
                 armed=active_before[1]['armed_ms'] if active_before else None
                 report['active_armed_ms']=armed
+                report['phase_diagnostics']={'clock':'monotonic_ns','cycle_started_ns':tick,'phases_ms':phases,
+                    'http_recent':list(getattr(self.feed,'http_timings',deque()).copy())[-32:],
+                    'prior_cycles':list(self.phase_history)[-4:]}
                 # A stale, contiguous prefix ending before the current plan was
                 # armed cannot have filled or protected that plan. ID gaps,
                 # future rows and stale events after arming remain fail-closed.
@@ -172,6 +182,7 @@ class Poller:
                     b.set('trade_cursor:'+symbol,cursor);b.set('trade_feed:'+symbol,report)
                     b.set('trade_confirmed_ms:'+symbol,last_event if healthy else None)
                     b.set('market_error:'+symbol,None if healthy else 'public_trade_stream_unconfirmed')
+                self.loop_phase['poller_symbol_ms']=(time.monotonic_ns()-tick)//1000000
                 self.previous_timing[symbol]={'poll_started_ms':wall,'total_ms':(time.monotonic_ns()-tick)//1000000,
                     'batch_finalize_ms':(time.monotonic_ns()-processed)//1000000,'batch_processing_ms':report['batch_processing_ms'],
                     'batch_lock_wait_ms':report['batch_lock_wait_ms'],'event_count':len(events),'idle_events_skipped':skipped}
@@ -179,8 +190,11 @@ class Poller:
                 with b.transaction():
                     b.set('market_error:'+symbol,'public_market_unconfirmed')
                     b.set('trade_confirmed_ms:'+symbol,None)
-        b.pulse();self.funding_ready()
-        result=b.snapshot();result['market_errors']={s:b.get('market_error:'+s) for s in SYMBOLS};result['funding_error']=b.get('funding_error')
+        phase_start=time.monotonic_ns();b.pulse();phase_end=time.monotonic_ns()
+        self.loop_phase['pulse_finance_ms']=(phase_end-phase_start)//1000000;phase_start=phase_end
+        self.funding_ready();phase_end=time.monotonic_ns();self.loop_phase['funding_check_ms']=(phase_end-phase_start)//1000000
+        phase_start=time.monotonic_ns();result=b.snapshot();self.loop_phase['poller_snapshot_ms']=(time.monotonic_ns()-phase_start)//1000000
+        result['market_errors']={s:b.get('market_error:'+s) for s in SYMBOLS};result['funding_error']=b.get('funding_error')
         result['last_trade_gap']=b.get('last_trade_gap')
         result['trade_feeds']={s:b.get('trade_feed:'+s) for s in symbols}
         return result
@@ -258,21 +272,29 @@ def main():
                 worker=Poller(book,Feed(),symbols=args.symbols);next_backup=0
                 try:
                     while running[0]:
-                        result=worker.cycle()
+                        loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
+                        mark=time.monotonic_ns();result=worker.cycle();now=time.monotonic_ns();phase['poller_total_ms']=(now-mark)//1000000;mark=now
                         if Path(args.response).exists():
                             try:ingest(book,trusted(args.response,args.analyst_uid))
                             except (ValueError,OSError,KeyError,TypeError):
                                 with book.transaction():book.set('analyst_ingest_error','response_unavailable_or_invalid')
+                        now=time.monotonic_ns();phase['ingest_ms']=(now-mark)//1000000;mark=now
                         result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds')}
+                        now=time.monotonic_ns();phase['snapshot_ms']=(now-mark)//1000000;mark=now
                         atomic(args.public,result)
+                        now=time.monotonic_ns();phase['publish_ms']=(now-mark)//1000000;mark=now
                         if book.clock()>=next_backup:
                             folder=book.root/'backups';folder.mkdir(mode=0o700,exist_ok=True)
                             book.backup(folder/(str(book.clock())+'.sqlite'))
                             for old in sorted(folder.glob('[0-9]*.sqlite'))[:-24]:
                                 if not old.is_symlink() and old.stat().st_uid==os.geteuid():old.unlink()
                             next_backup=book.clock()+3600000
-                        if args.once:break
+                        now=time.monotonic_ns();phase['backup_ms']=(now-mark)//1000000;mark=now
+                        if args.once:
+                            worker.phase_history.append(phase);break
                         time.sleep(2)
+                        phase['sleep_ms']=(time.monotonic_ns()-mark)//1000000;phase['total_ms']=(time.monotonic_ns()-loop_start)//1000000
+                        worker.phase_history.append(phase)
                 finally:worker.close()
             elif args.action=='pause':book.pause(True);result=book.snapshot()
             elif args.action=='resume':book.pause(False);result=book.snapshot()

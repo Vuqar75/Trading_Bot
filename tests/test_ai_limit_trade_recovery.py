@@ -30,6 +30,48 @@ class TradeRecoveryTests(unittest.TestCase):
         return {'a':i,'T':self.now-age,'p':price,'q':qty,'m':True}
     def accept(self):
         s,d=snapshot();self.book.accept(s,d,provenance={'kind':'fixture','response_id':'recovery','model':'fixture'})
+    def test_http_timing_records_latency_and_parse_without_payload(self):
+        import time
+        class Response:
+            def __enter__(self): return self
+            def __exit__(self,*args): return False
+            def read(self,limit):
+                time.sleep(.025)
+                return b'{"serverTime":123}'
+        with patch('research.ai_limit_feed.urllib.request.urlopen',return_value=Response()):
+            self.assertEqual(self.feed.get('/fapi/v1/time',{}),{'serverTime':123})
+        row=self.feed.http_timings[-1]
+        self.assertGreaterEqual(row['http_ms'],20)
+        self.assertIn('parse_ms',row)
+        self.assertNotIn('serverTime',str(row))
+        self.assertEqual(row['outcome'],'ok')
+
+    def test_gap_records_bounded_monotonic_phase_history(self):
+        self.book.set('trade_cursor:BTCUSDT',9)
+        self.poller.phase_history.append({'started_ns':123,'sleep_ms':2001,'publish_ms':4})
+        self.feed.http_timings.append({'path':'/fapi/v1/ticker/bookTicker','http_ms':5,'parse_ms':1,'started_ns':123,'ended_ns':456})
+        self.batches=[[self.row(10,6000)],[self.row(100)]]
+        result=self.poller.cycle();diag=result['last_trade_gap']['source']['phase_diagnostics']
+        self.assertEqual(diag['clock'],'monotonic_ns')
+        self.assertEqual(diag['prior_cycles'][0]['sleep_ms'],2001)
+        self.assertEqual(diag['http_recent'][0]['http_ms'],5)
+        self.assertIn('filters_refresh_ms',diag['phases_ms'])
+        self.assertEqual(self.book.balance('reserved'),0)
+        self.assertEqual(result['fills'],0)
+
+    def test_slow_filter_refresh_is_measured_without_changing_admission(self):
+        import time
+        original=self.feed.filters
+        def slow(symbol):
+            time.sleep(.025)
+            return original(symbol)
+        self.feed.filters=slow
+        self.book.set('trade_cursor:BTCUSDT',9);self.batches=[[self.row(10)]]
+        result=self.poller.cycle();diag=result['trade_feeds']['BTCUSDT']['phase_diagnostics']
+        self.assertGreaterEqual(diag['phases_ms']['filters_refresh_ms'],20)
+        self.assertFalse(result['trade_feeds']['BTCUSDT']['execution_gap'])
+        self.assertTrue(self.book.verify()['balanced'])
+
     def test_idle_backlog_reseeds_without_fills_then_requires_fresh_contiguous_poll(self):
         self.book.set('trade_cursor:BTCUSDT',9)
         self.batches=[[self.row(10,6000)],[self.row(100,6000),self.row(101)]]
