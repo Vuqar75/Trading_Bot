@@ -17,7 +17,7 @@ PATHS={'/fapi/v1/time','/fapi/v1/ticker/bookTicker','/fapi/v1/premiumIndex','/fa
 class Feed:
     def __init__(self,*,fetch=None,clock=lambda:int(time.time()*1000)):
         self.clock=clock;self.fetch=fetch or self.get;self.denied=None;self.cached_filters=None
-        self.trade_report={};self.http_timings=deque(maxlen=64)
+        self.trade_report={};self.http_timings=deque(maxlen=64);self.weight_recent=None
     def get(self,path,params):
         if self.denied:raise ValueError(self.denied)
         if path not in PATHS or set(params)-{'symbol','limit','fromId','startTime','endTime','interval','period'}:raise ValueError('public_endpoint_denied')
@@ -26,7 +26,11 @@ class Feed:
         started=time.monotonic_ns();received=None;parsed=None;outcome='error'
         try:
             request=urllib.request.Request(url,headers={'User-Agent':'TradingBot-AI-Paper-Brackets/1.0'})
-            with urllib.request.urlopen(request,timeout=8) as response:raw=response.read(3000001)
+            with urllib.request.urlopen(request,timeout=8) as response:
+                raw=response.read(3000001)
+                headers=getattr(response,'headers',None)
+                value=headers.get('X-MBX-USED-WEIGHT-1M') if headers is not None else None
+                if value is not None and str(value).isdigit():self.weight_recent=(int(value),time.monotonic_ns())
             received=time.monotonic_ns()
         except urllib.error.HTTPError as error:
             status=error.code;error.close()
@@ -70,7 +74,7 @@ class Feed:
         if symbol not in SYMBOLS:raise ValueError('symbol_denied')
         params={'symbol':symbol,'limit':1000}
         if last_id is not None:params['fromId']=last_id+1
-        started=self.clock();raw=self.fetch('/fapi/v1/aggTrades',params);now=self.clock();parse_started=time.monotonic_ns()
+        started=self.clock();fetch_start_ns=time.monotonic_ns();raw=self.fetch('/fapi/v1/aggTrades',params);parse_started=time.monotonic_ns();now=self.clock()
         if not isinstance(raw,list) or len(raw)>1000:raise ValueError('trade_list')
         events=[];prior=last_id;gap=False;discontinuities=[];stale=0;future=0;ages=[];stale_times=[]
         for r in raw:
@@ -88,9 +92,11 @@ class Feed:
             item={'id':str(ident),'symbol':symbol,'event_ms':stamp,'received_ms':now,'price':r['p'],'qty':r['q'],'buyer_maker':r['m']}
             positive(item['price']);positive(item['qty']);fresh(item,now);events.append(item)
         self.trade_report[symbol]={'symbol':symbol,'requested_after_id':last_id,'started_ms':started,'received_ms':now,
-            'fetch_ms':now-started,'rows':len(raw),'first_id':integer(raw[0]['a']) if raw else None,
+            'fetch_ms':now-started,'fetch_monotonic_ms':(parse_started-fetch_start_ns)//1000000,'rows':len(raw),'first_id':integer(raw[0]['a']) if raw else None,
             'last_id':prior,'oldest_age_ms':max(ages) if ages else None,'newest_age_ms':min(ages) if ages else None,
-            'last_event_ms':integer(raw[-1]['T']) if raw else None,'stale_rows':stale,'future_rows':future,
+            'first_event_ms':integer(raw[0]['T']) if raw else None,
+            'last_event_ms':integer(raw[-1]['T']) if raw else None,
+            'last_event_age_ms':now-integer(raw[-1]['T']) if raw else None,'stale_rows':stale,'future_rows':future,
             'stale_first_ms':min(stale_times) if stale_times else None,'stale_last_ms':max(stale_times) if stale_times else None,
             'discontinuities':discontinuities,'batch_hash':digest(raw),'gap':gap,
             'trade_validation_ms':(time.monotonic_ns()-parse_started)//1000000}

@@ -93,6 +93,7 @@ class Poller:
         self.funding_job=None;self.next_funding_check=0;self.funding_cut=None;self.required_due=None
         self.filter_pool=ThreadPoolExecutor(max_workers=1);self.filter_jobs={};self.filter_failed=set()
         self.previous_timing={};self.previous_mono={};self.phase_history=deque(maxlen=8);self.loop_phase={}
+        self.full_page_pending=False;self.full_page_streak={};self.drain_count=0;self.drain_deadline_ns=None
     def close(self):
         self.pool.shutdown(wait=True,cancel_futures=True);self.filter_pool.shutdown(wait=True,cancel_futures=True)
     def funding_ready(self):
@@ -114,6 +115,20 @@ class Poller:
             self.required_due={s:b.get('next_due:'+s) for s in needed}
             self.funding_job=self.pool.submit(self.feed.funding,start,self.funding_cut,symbols=sorted(needed)) if needed else self.pool.submit(lambda:[])
             self.next_funding_check=now+30000
+    def sleep_after_cycle(self):
+        # At most two immediate catch-up cycles; each rechecks the quote and
+        # protective exits. Never start an extra cycle after the 1 s deadline.
+        now=time.monotonic_ns()
+        if not self.full_page_pending:
+            self.drain_count=0;self.drain_deadline_ns=None;return 2
+        weight=getattr(self.feed,'weight_recent',None)
+        if weight is None or not 0<=now-weight[1]<=5000000000 or weight[0]>=1000:
+            self.drain_count=0;self.drain_deadline_ns=None;return 2
+        if self.drain_deadline_ns is None:self.drain_deadline_ns=now+1000000000
+        if self.drain_count<2 and now<=self.drain_deadline_ns:
+            self.drain_count+=1;return 0
+        self.drain_count=0;self.drain_deadline_ns=None;return 2
+
     def filters_ready(self,symbol):
         b=self.book;job=self.filter_jobs.get(symbol)
         if job is not None and job.done():
@@ -130,7 +145,7 @@ class Poller:
         return ready
 
     def cycle(self):
-        b=self.book;active=b.active();priority=[active[0]['symbol']] if active else []
+        b=self.book;self.full_page_pending=False;active=b.active();priority=[active[0]['symbol']] if active else []
         symbols=priority if priority else list(self.symbols)
         for symbol in symbols:
             tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol);phases={}
@@ -147,6 +162,18 @@ class Poller:
                 active_before=b.active();events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
                 next_mark=time.monotonic_ns();phases['trades_total_ms']=(next_mark-mark)//1000000
                 report=dict(getattr(self.feed,'trade_report',{}).get(symbol,{}))
+                full_page=report.get('rows')==1000
+                self.full_page_streak[symbol]=self.full_page_streak.get(symbol,0)+1 if full_page else 0
+                if full_page:
+                    b.hold_unconfirmed_backlog(symbol)
+                    # Persist the page before its financial processing. If an
+                    # exception or restart occurs, the partial observation is
+                    # retained without moving the durable execution cursor.
+                    page={k:report.get(k) for k in ('requested_after_id','first_id','last_id','rows','first_event_ms','last_event_ms','started_ms','received_ms','fetch_ms','fetch_monotonic_ms','last_event_age_ms','newest_age_ms','oldest_age_ms','stale_rows','discontinuities','trade_validation_ms')}
+                    page['consecutive_full_pages']=self.full_page_streak[symbol];page['processing']='pending'
+                    with b.transaction():
+                        history=b.get('full_page_history:'+symbol,[])
+                        b.set('full_page_history:'+symbol,(history+[page])[-12:])
                 report['poll_started_ms']=wall;report['quote_fetch_ms']=(quote_done-tick)//1000000
                 if symbol in self.previous_mono:report['poll_interval_mono_ms']=(tick-self.previous_mono[symbol])//1000000
                 self.previous_mono[symbol]=tick
@@ -199,9 +226,17 @@ class Poller:
                     report['batch_processing_ms']=(processed-locked)//1000000
                     report['batch_lock_wait_ms']=(locked-waiting)//1000000
                     report['idle_events_skipped']=skipped
+                    if full_page:
+                        history=b.get('full_page_history:'+symbol,[])
+                        if not history or history[-1].get('started_ms')!=page['started_ms']:raise ValueError('page_history_changed')
+                        page.update({'gap':bool(gap),'cursor_after':cursor,'processing':'committed',
+                                     'batch_processing_ms':report['batch_processing_ms'],'batch_lock_wait_ms':report['batch_lock_wait_ms']})
+                        history[-1]=page;b.set('full_page_history:'+symbol,history)
+                        report['full_page_history']=history
                     b.set('trade_cursor:'+symbol,cursor);b.set('trade_feed:'+symbol,report)
                     b.set('trade_confirmed_ms:'+symbol,last_event if healthy else None)
-                    b.set('market_error:'+symbol,('public_filters_unconfirmed' if not filters_ready else (None if healthy else 'public_trade_stream_unconfirmed')))
+                    b.set('market_error:'+symbol,('public_filters_unconfirmed' if not filters_ready else ('public_trade_backlog_unconfirmed' if full_page else (None if healthy else 'public_trade_stream_unconfirmed'))))
+                self.full_page_pending=full_page and not gap and b.active() is None
                 self.loop_phase['poller_symbol_ms']=(time.monotonic_ns()-tick)//1000000
                 self.previous_timing[symbol]={'poll_started_ms':wall,'total_ms':(time.monotonic_ns()-tick)//1000000,
                     'batch_finalize_ms':(time.monotonic_ns()-processed)//1000000,'batch_processing_ms':report['batch_processing_ms'],
@@ -312,7 +347,7 @@ def main():
                         now=time.monotonic_ns();phase['backup_ms']=(now-mark)//1000000;mark=now
                         if args.once:
                             worker.phase_history.append(phase);break
-                        time.sleep(2)
+                        pause=worker.sleep_after_cycle();phase['sleep_requested_ms']=int(pause*1000);time.sleep(pause)
                         phase['sleep_ms']=(time.monotonic_ns()-mark)//1000000;phase['total_ms']=(time.monotonic_ns()-loop_start)//1000000
                         worker.phase_history.append(phase)
                 finally:worker.close()

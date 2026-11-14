@@ -31,6 +31,102 @@ class TradeRecoveryTests(unittest.TestCase):
         return {'a':i,'T':self.now-age,'p':price,'q':qty,'m':True}
     def accept(self):
         s,d=snapshot();self.book.accept(s,d,provenance={'kind':'fixture','response_id':'recovery','model':'fixture'})
+    def full_page(self,start):
+        return [self.row(i,0,'100') for i in range(start,start+1000)]
+
+    def test_full_pages_drain_is_bounded_and_history_persists(self):
+        self.book.set('trade_cursor:BTCUSDT',9)
+        self.batches=[self.full_page(10),self.full_page(1010),self.full_page(2010)]
+        self.feed.weight_recent=(100,1000000000)
+        with patch('research.ai_limit_runtime.time.monotonic_ns',return_value=1000000000):
+            for i in range(3):
+                result=self.poller.cycle()
+                self.assertEqual(result['market_errors']['BTCUSDT'],'public_trade_backlog_unconfirmed')
+                self.assertEqual(self.poller.sleep_after_cycle(),0 if i<2 else 2)
+        pages=self.book.get('full_page_history:BTCUSDT')
+        self.assertEqual([p['first_id'] for p in pages],[10,1010,2010])
+        self.assertEqual([p['cursor_after'] for p in pages],[1009,2009,3009])
+        self.assertEqual(pages[0]['requested_after_id'],9)
+        self.assertEqual(self.book.get('trade_cursor:BTCUSDT'),3009)
+        self.assertTrue(self.book.verify()['balanced'])
+
+    def test_full_page_history_is_bounded_and_durable(self):
+        self.book.set('trade_cursor:BTCUSDT',9)
+        self.batches=[self.full_page(10+1000*i) for i in range(13)]
+        for _ in range(13):self.poller.cycle();self.now+=1
+        pages=self.book.get('full_page_history:BTCUSDT')
+        self.assertEqual(len(pages),12);self.assertEqual(pages[0]['first_id'],1010)
+        self.assertEqual(pages[-1]['consecutive_full_pages'],13)
+        self.assertEqual(pages[-1]['processing'],'committed')
+        self.assertTrue(self.book.verify()['balanced'])
+
+    def test_slow_page_and_elapsed_drain_budget_force_normal_pause(self):
+        import time
+        old=self.feed.fetch
+        def slow(path,params):
+            time.sleep(.03);return old(path,params)
+        self.feed.fetch=slow;self.book.set('trade_cursor:BTCUSDT',9);self.batches=[self.full_page(10)]
+        self.poller.cycle();page=self.book.get('full_page_history:BTCUSDT')[-1]
+        self.assertGreaterEqual(page['fetch_monotonic_ms'],20)
+        self.feed.weight_recent=(100,1000000000)
+        with patch('research.ai_limit_runtime.time.monotonic_ns',side_effect=[1000000000,2100000001]):
+            self.assertEqual(self.poller.sleep_after_cycle(),0)
+            self.assertEqual(self.poller.sleep_after_cycle(),2)
+        self.assertTrue(self.book.verify()['balanced'])
+
+    def test_acceleration_requires_recent_low_shared_ip_weight(self):
+        self.poller.full_page_pending=True
+        with patch('research.ai_limit_runtime.time.monotonic_ns',return_value=10000000000):
+            self.feed.weight_recent=None;self.assertEqual(self.poller.sleep_after_cycle(),2)
+            self.feed.weight_recent=(1000,10000000000);self.assertEqual(self.poller.sleep_after_cycle(),2)
+            self.feed.weight_recent=(20,4000000000);self.assertEqual(self.poller.sleep_after_cycle(),2)
+            self.feed.weight_recent=(20,10000000000);self.assertEqual(self.poller.sleep_after_cycle(),0)
+
+    def test_full_page_cancels_pending_entry_without_fill(self):
+        self.accept();self.book.set('trade_cursor:BTCUSDT',9)
+        self.batches=[self.full_page(10)]
+        result=self.poller.cycle();state=self.book.plans()[0][1]
+        self.assertEqual(result['fills'],0);self.assertEqual(state['status'],'CANCELED')
+        self.assertEqual(state['entry_cancellation']['detail'],'trade_backlog_unconfirmed')
+        self.assertEqual(result['market_errors']['BTCUSDT'],'public_trade_backlog_unconfirmed')
+        self.assertTrue(self.book.verify()['balanced'])
+
+    def test_full_page_partial_position_keeps_protection_and_no_accelerated_drain(self):
+        self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-full','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.book.set('trade_cursor:BTCUSDT',9);self.batches=[self.full_page(10)]
+        self.poller.cycle();state=self.book.active()[1]
+        self.assertEqual(state['remaining'],'0');self.assertEqual(state['open_qty'],'0.2')
+        self.assertEqual(self.poller.sleep_after_cycle(),2)
+        self.now+=100
+        q={**snapshot()[0]['quote'],'id':'full-stop','event_ms':self.now,'received_ms':self.now,'bid':'94','ask':'94.1','mark':'94'}
+        self.book.market('quote',q);self.assertEqual(self.book.active()[1]['open_qty'],'0')
+        self.assertTrue(self.book.verify()['balanced'])
+
+    def test_full_page_survives_processing_error_without_cursor_advance(self):
+        self.accept();self.now+=100
+        self.book.market('trade',{'id':'partial-page-error','symbol':'BTCUSDT','event_ms':self.now,'received_ms':self.now,'price':'98.9','qty':'.2','buyer_maker':True})
+        self.book.set('trade_cursor:BTCUSDT',9);self.batches=[self.full_page(10)]
+        original=self.book.market
+        def fail_trade(kind,event):
+            if kind=='trade':raise ValueError('simulated_page_failure')
+            return original(kind,event)
+        with patch.object(self.book,'market',side_effect=fail_trade):result=self.poller.cycle()
+        page=self.book.get('full_page_history:BTCUSDT')[-1]
+        self.assertEqual(page['processing'],'pending');self.assertEqual(page['first_id'],10)
+        self.assertEqual(self.book.get('trade_cursor:BTCUSDT'),9)
+        self.assertEqual(result['market_errors']['BTCUSDT'],'public_market_unconfirmed')
+        self.assertEqual(self.book.active()[1]['open_qty'],'0.2')
+        self.assertTrue(self.book.verify()['balanced'])
+
+    def test_repeated_or_missing_page_id_is_still_a_gap(self):
+        self.book.set('trade_cursor:BTCUSDT',1009)
+        self.batches=[[self.row(1009),self.row(1010)],[self.row(5000)]]
+        result=self.poller.cycle()
+        self.assertTrue(result['last_trade_gap']['source']['discontinuities'])
+        self.assertEqual(result['market_errors']['BTCUSDT'],'public_trade_stream_unconfirmed')
+        self.assertEqual(result['fills'],0)
+
     def test_http_timing_records_latency_and_parse_without_payload(self):
         import time
         class Response:
