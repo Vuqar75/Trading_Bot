@@ -1,0 +1,17 @@
+# Bounded paper-feed catch-up — 2026-11-14
+
+The isolated paper runtime `215b49465030c1b9fe620fc3a8b4d1780a6bb759` is installed. The analyst remains on `a0518b9`. No additional model request, synthetic trade or change to pauses, budget or schedule was made.
+
+A full 1000-row page blocks new entries until the feed is confirmed. The unfilled entry remainder is canceled while an open position keeps its quote-based protection. Up to 12 full-page records per symbol are retained in `bracket_meta.full_page_history:BTCUSDT`, including requested cursor, first and last ID, event times and age, fetch and processing durations, page sequence and committed cursor. A pending page record is saved before financial processing, so an error does not erase that evidence or advance the cursor. ID differences are not treated as a count of lost trades.
+
+Only while flat, with no detected gap and a recent IP request-weight header below 1000, the existing worker can start up to two extra quote-first cycles without the usual two-second pause, within a one-second initiation window. Unknown, stale or high request-weight evidence disables acceleration. No accelerated catch-up occurs while a position is open. The [official Binance USD-M documentation](https://developers.binance.com/docs/derivatives/usds-margined-futures/market-data/rest-api/Compressed-Aggregate-Trades-List) specifies a 1000-row maximum, inclusive `fromId` and request weight 20. The threshold does not guarantee headroom against concurrent traffic from other processes.
+
+The one-second limit bounds when extra cycles may start, not the wall-clock duration of an HTTP request already in progress. Existing urllib socket timeouts are not a hard overall deadline. This is an unresolved technical limitation; sustained burst draining and live protection latency with open risk are not proven.
+
+Fifty-five targeted tests passed on temporary SQLite databases, including three full pages, a 12-page history bound, slow HTTP, deadline exhaustion, stale or high IP weight, duplicate or missing IDs, pending entry, partial position and protection, and recovery without cursor advancement or duplicate posting. One additional targeted test reopened the temporary database and verified the history and balanced ledger. These are simulated mechanics.
+
+The 55-second live observation covered 20 ordinary idle cycles, 8–105 rows each, no full page and no DATA_GAP. Trade fetch took 250–288 ms and poll intervals 2807–2961 ms. The stream recovered after the restart; live burst catch-up was not exercised. No position was opened for the check.
+
+The existing backup process uploaded, downloaded and verified an isolated SQLite restore before and after switching. The final receipt at 22:39:10.206 Baku had manifest SHA-256 `01434730ab50e03405361d0a37459385f7e976771834d1cac2cfd4f08ce1ca6f` and SQLite SHA-256 `0aa997cb8c692ceee8707cb699586b9d65b898bc8fa081178085266977c08dfc`. Three previous plans, two fills, one funding event and free balance 1000.0090633128153898110 virtual USDT were retained. Encryption is host-bound. Rollback metadata is `/var/lib/tradingbot-ai-budget-backup/bracket-pages-215b494`; do not stop protection with open risk or restore old ledger state over newer events.
+
+At the final check the paper service and analyst timer were active, ledger balanced, and no position, pending entry, reserve or pending exit existed. The next scheduled analyst opportunity is 15 November 00:02 Baku, subject to gates.

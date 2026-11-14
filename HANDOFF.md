@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-14 — bounded idle page catch-up and page evidence installed
+
+Paper runtime `215b49465030c1b9fe620fc3a8b4d1780a6bb759` keeps a durable, bounded 12-page full-response history and blocks entry on an unconfirmed full page. With no open position and recent low IP weight, at most two extra normal quote-first cycles may start inside a one-second window; no accelerated catch-up occurs with open risk. Stale/duplicate/missing-ID checks and five-second freshness remain fail-closed. The one-second limit bounds initiation, not the wall-clock duration of an already-running HTTP request; live high-rate protection latency is not proven. Fifty-five targeted temporary-database tests passed, plus one explicit history reopen test; 20 observed live cycles had no full page, so actual burst catch-up was not exercised. Backups before/after were downloaded and restored; ledger was flat and balanced. See [AI_BRACKET_BOUNDED_PAGE_INSTALL_20261114.md](AI_BRACKET_BOUNDED_PAGE_INSTALL_20261114.md) for evidence, API-rate boundary and rollback.
+
 ## 2026-11-14 — 24-hour AI bracket decisions and gaps audited
 
 At 22:22 Baku, six scheduled opportunities in the preceding 24 hours produced one validated SHORT canceled by DATA_GAP before any fill, four WAIT responses and one pre-model market/funding gate skip. From five saved snapshots, 246 bounded level combinations were checked: 7 passed and were offered; 188 first failed net reward/risk, 47 stop/volatility, and 4 buffered geometry. Six offered LONG candidates were collectively declined in two WAIT responses; two further WAITs had no candidates. The skipped window has no saved candidate snapshot. Five known responses estimated $0.0031884 with $0.012841 reserved; do not add these accounting views. No paper trade was executed in that interval.

@@ -59,6 +59,10 @@ class TradeRecoveryTests(unittest.TestCase):
         self.assertEqual(pages[-1]['consecutive_full_pages'],13)
         self.assertEqual(pages[-1]['processing'],'committed')
         self.assertTrue(self.book.verify()['balanced'])
+        path=self.book.root;self.book.close()
+        self.book=Book(path,clock=lambda:self.now)
+        self.assertEqual(self.book.get('full_page_history:BTCUSDT'),pages)
+        self.assertTrue(self.book.verify()['balanced'])
 
     def test_slow_page_and_elapsed_drain_budget_force_normal_pause(self):
         import time
