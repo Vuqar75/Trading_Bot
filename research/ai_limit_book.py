@@ -172,6 +172,10 @@ class Book:
             if reason=='EXPIRED_OR_PAUSED':record['guards']={'expires_ms':p['expires_ms'],'paused':self.get('paused'),'blocked':self.get('blocked')}
             if detail is None and 'BLOCKED' in causes:detail=self.get('blocked')
             if detail is not None:record['detail']=detail
+            if detail=='quote_http_unconfirmed':
+                diagnostic=self.get('last_quote_unconfirmed:'+p['symbol'])
+                if diagnostic is not None and 0<=now-diagnostic.get('at_ms',0)<=2000:
+                    record['quote_diagnostic']=diagnostic
             s['entry_cancellation']=record
             self.message(p['plan_id']+':entry-canceled',{'kind':'ENTRY_CANCELED','plan_id':p['plan_id'],'symbol':p['symbol'],**record})
         if value:

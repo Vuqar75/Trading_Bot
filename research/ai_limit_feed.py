@@ -17,7 +17,7 @@ PATHS={'/fapi/v1/time','/fapi/v1/ticker/bookTicker','/fapi/v1/premiumIndex','/fa
 class Feed:
     def __init__(self,*,fetch=None,clock=lambda:int(time.time()*1000)):
         self.clock=clock;self.fetch=fetch or self.get;self.denied=None;self.cached_filters=None
-        self.trade_report={};self.http_timings=deque(maxlen=64);self.weight_recent=None
+        self.quote_report={};self.trade_report={};self.http_timings=deque(maxlen=64);self.weight_recent=None
     def get(self,path,params):
         if self.denied:raise ValueError(self.denied)
         if path not in PATHS or set(params)-{'symbol','limit','fromId','startTime','endTime','interval','period'}:raise ValueError('public_endpoint_denied')
@@ -50,13 +50,27 @@ class Feed:
                 'http_ms':(received-started)//1000000,'parse_ms':(parsed-received)//1000000,'outcome':outcome})
     def book(self,symbol):
         if symbol not in SYMBOLS:raise ValueError('symbol_denied')
-        raw=self.fetch('/fapi/v1/ticker/bookTicker',{'symbol':symbol});mark=self.fetch('/fapi/v1/premiumIndex',{'symbol':symbol});now=self.clock()
+        started=time.monotonic_ns();report={'symbol':symbol,'started_ms':self.clock(),'phase':'book_http'};self.quote_report[symbol]=dict(report)
+        raw=self.fetch('/fapi/v1/ticker/bookTicker',{'symbol':symbol});book_done=time.monotonic_ns()
+        report.update(book_source_ms=raw.get('time') if type(raw.get('time')) is int else None,book_http_ms=(book_done-started)//1000000,phase='mark_http');self.quote_report[symbol]=dict(report)
+        mark=self.fetch('/fapi/v1/premiumIndex',{'symbol':symbol});now=self.clock()
+        report.update(mark_source_ms=mark.get('time') if type(mark.get('time')) is int else None,mark_http_ms=(time.monotonic_ns()-book_done)//1000000,received_ms=now,phase='validation')
+        reasons=[]
+        for name,value in [('book',raw.get('time')),('mark',mark.get('time'))]:
+            if type(value) is not int:reasons.append(name+'_time_invalid')
+            else:
+                report[name+'_age_ms']=now-value
+                if value>now:reasons.append(name+'_future')
+                elif now-value>5000:reasons.append(name+'_stale')
+        report['time_rejections']=reasons;self.quote_report[symbol]=dict(report)
+        if reasons:raise ValueError('stale_or_future_market_data')
         if raw.get('symbol')!=symbol or mark.get('symbol')!=symbol:raise ValueError('quote_symbol')
         event=min(integer(raw['time']),integer(mark['time']))
         value={'id':digest([raw,mark]),'liquidity_id':digest(raw),'symbol':symbol,'event_ms':event,'received_ms':now,
             'bid':raw['bidPrice'],'ask':raw['askPrice'],'bid_qty':raw['bidQty'],'ask_qty':raw['askQty'],'mark':mark['markPrice']}
         check_quote(value,symbol,now)
         due=integer(mark['nextFundingTime'])
+        report['phase']='accepted';self.quote_report[symbol]=dict(report)
         return value,due
     def filters(self,symbol,*,force=False):
         now=self.clock()

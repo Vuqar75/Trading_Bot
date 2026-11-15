@@ -175,6 +175,7 @@ class Poller:
                                 'at_ms':b.clock(),'kind':'pending_http','pending_mono_ms':(time.monotonic_ns()-quote_started)//1000000,
                                 'quote_source_ms':prior_quote.get('event_ms') if prior_quote else None,
                                 'quote_age_ms':b.clock()-prior_quote['event_ms'] if prior_quote else None,
+                                'quote_components':dict(getattr(self.feed,'quote_report',{}).get(symbol,{})),
                                 'http_recent':list(getattr(self.feed,'http_timings',[]))[-8:]})
                             b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                             with b.transaction():b.set('market_error:'+symbol,'public_market_unconfirmed')
@@ -191,6 +192,7 @@ class Poller:
                                 'pending_mono_ms':(time.monotonic_ns()-quote_started)//1000000,
                                 'quote_source_ms':prior_quote.get('event_ms') if prior_quote else None,
                                 'quote_age_ms':b.clock()-prior_quote['event_ms'] if prior_quote else None,
+                                'quote_components':dict(getattr(self.feed,'quote_report',{}).get(symbol,{})),
                                 'http_recent':list(getattr(self.feed,'http_timings',[]))[-8:]})
                             if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                             raise
