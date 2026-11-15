@@ -1,0 +1,1216 @@
+{
+  "start_ms": 1794597071595,
+  "end_ms": 1794769871595,
+  "requests": [
+    {
+      "request_id": "bracket:2c7a46b26422fe875ca54e4471851785e6b1d8e5cf492f5f83e519966eda51aa",
+      "snapshot_id": "2c7a46b26422fe875ca54e4471851785e6b1d8e5cf492f5f83e519966eda51aa",
+      "asof_ms": 1794600131717,
+      "received_ms": 1794600148462,
+      "long": 0,
+      "short": 1,
+      "decision": {
+        "decision": "SHORT",
+        "entry_level": "15m:resistance:1794564000000",
+        "max_hold_minutes": 120,
+        "news_ids": [
+          "0",
+          "1",
+          "2"
+        ],
+        "risks": [
+          "Текущая цена ниже лимитного входа: ордер может не исполниться.",
+          "Положительное соотношение taker buy/sell и высокие long/short ratios могут поддержать отскок или squeeze; снижение OI само по себе не задаёт направление.",
+          "Новостное покрытие ограничено; пункты 0–2 выглядят административными и не дают убедительного направленного сигнала."
+        ],
+        "snapshot_id": "2c7a46b26422fe875ca54e4471851785e6b1d8e5cf492f5f83e519966eda51aa",
+        "stop_level": "15m:resistance:1794568500000",
+        "target_level": "15m:support:1794560400000",
+        "thesis": "SHORT лимитно от указанного 15m-сопротивления: цена ниже него, а 1h и 4h закрытия ниже SMA20 и SMA40 поддерживают медвежий контекст. Стоп за следующим сопротивлением инвалидирует идею; цель расположена перед 15m-поддержкой. Фундаментальное покрытие ограничено.",
+        "valid_until_ms": 1794600900000
+      },
+      "admission": {
+        "allowed": true,
+        "reason": "validated_paper_plan"
+      },
+      "usage": {
+        "input_tokens": 3204,
+        "output_tokens": 1163,
+        "total_tokens": 4367
+      },
+      "request_sha256": "ba353f70c5056eb56520691a3759a4754f5a352c643916706ab7ccad5a1df707",
+      "snapshot_request_bound": true,
+      "plan": {
+        "id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+        "direction": "SHORT",
+        "entry": "69466.2",
+        "stop": "69571.2",
+        "target": "68651.6",
+        "state": {
+          "armed_ms": 1794600150604,
+          "buffer": "0",
+          "close_reason": null,
+          "entry_cancellation": {
+            "at_ms": 1794600255442,
+            "causes": [
+              "TRADE_GAP"
+            ],
+            "evidence": "recorded_at_cancellation",
+            "precise": true,
+            "quantity": "0.001",
+            "reason": "TRADE_GAP",
+            "reserve_released_usdt": "69.64681212"
+          },
+          "fees": "0",
+          "funding": "0",
+          "gross": "0",
+          "last_fill_ms": null,
+          "open_qty": "0",
+          "opened_ms": null,
+          "remaining": "0",
+          "reserved": "0",
+          "status": "CANCELED"
+        }
+      },
+      "paper_input_present": true
+    },
+    {
+      "request_id": "bracket:610f3851d09f9df32433e1d8b5ae3a98c6e6d452a83536288091d813354554e8",
+      "snapshot_id": "610f3851d09f9df32433e1d8b5ae3a98c6e6d452a83536288091d813354554e8",
+      "asof_ms": 1794614531028,
+      "received_ms": 1794614543267,
+      "long": 4,
+      "short": 0,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 60,
+        "news_ids": [
+          "0",
+          "1",
+          "2"
+        ],
+        "risks": [
+          "Цена ниже SMA20/SMA40 на 15m, 1h и 4h, что указывает на слабый контекст для LONG.",
+          "До целей предложенных LONG-планов находится ближайшее сопротивление 15m около 68450–68466; цели расположены выше него.",
+          "Новостное покрытие ограничено; заголовки 0–2 не дают достаточного фундаментального подтверждения."
+        ],
+        "snapshot_id": "610f3851d09f9df32433e1d8b5ae3a98c6e6d452a83536288091d813354554e8",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Ожидаю: все предложенные планы LONG направлены против слабого контекста старших таймфреймов, а их цели лежат за ближайшим сопротивлением 15m. В предоставленных новостях (0–2) нет убедительного направленного сигнала; фундаментальное покрытие ограничено.",
+        "valid_until_ms": 1794615300000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3499,
+        "output_tokens": 680,
+        "total_tokens": 4179
+      },
+      "request_sha256": "056dd31972776d46890b5473071f25db7ec772930477a7b499ef3c1786de89f8",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true
+    },
+    {
+      "request_id": "bracket:bc69d562543f4b7116675036cd1cc7ea3cbf29bc82421382deacdcfeda0ec95a",
+      "snapshot_id": "bc69d562543f4b7116675036cd1cc7ea3cbf29bc82421382deacdcfeda0ec95a",
+      "asof_ms": 1794643330898,
+      "received_ms": 1794643342221,
+      "long": 2,
+      "short": 0,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 30,
+        "news_ids": [],
+        "risks": [
+          "Краткосрочная и старшая структура слабая: цена ниже SMA40 на 15m, 1h и 4h.",
+          "Для предложенных LONG ближайшее сопротивление находится заметно ближе, чем указанный целевой уровень; соотношение риска и доходности в планах не устраняет этот конфликт.",
+          "Отрицательный перекос taker buy/sell и высокие long/short ratios могут усилить риск дальнейшего снижения.",
+          "Фундаментальное покрытие новостей ограничено; в доступных заголовках нет очевидного BTC-катализатора."
+        ],
+        "snapshot_id": "bc69d562543f4b7116675036cd1cc7ea3cbf29bc82421382deacdcfeda0ec95a",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Ждать: оба доступных плана LONG противоречат слабому контексту 1h/4h и имеют близкие уровни сопротивления над входом, тогда как цель стоит существенно выше. Убедительного основания для SHORT из этих данных тоже недостаточно; новости охвачены не полностью.",
+        "valid_until_ms": 1794644100000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3302,
+        "output_tokens": 605,
+        "total_tokens": 3907
+      },
+      "request_sha256": "37fc651cd88ed26e480d16a0d923d360a22cdffb7a2aa5fbfb40875574ef6843",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true
+    },
+    {
+      "request_id": "bracket:df3c794ed724675811b5f3fcb67a4e70f408bc036af1a83f2153c2ca665d5904",
+      "snapshot_id": "df3c794ed724675811b5f3fcb67a4e70f408bc036af1a83f2153c2ca665d5904",
+      "asof_ms": 1794657731202,
+      "received_ms": 1794657738779,
+      "long": 0,
+      "short": 0,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 15,
+        "news_ids": [],
+        "risks": [
+          "Список candidate_plans пуст; оснований выбирать конкретный лимитный вход нет.",
+          "Контекст 1h/4h слабый: цена ниже SMA20 и SMA40; краткосрочная цена близка к SMA20 на 15m, что не дает ясного преимущества направления.",
+          "OI снижается, а taker buy/sell ratio ниже 1; эти данные запаздывают и сами по себе не подтверждают направление.",
+          "Охват новостей ограничен и не подтверждает полноту фундаментальной картины."
+        ],
+        "snapshot_id": "df3c794ed724675811b5f3fcb67a4e70f408bc036af1a83f2153c2ca665d5904",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Ожидание: candidate_plans не предоставлены, поэтому выбирать уровни для пассивного лимитного входа нельзя. Технический контекст смешанный, убедительного сигнала для LONG или SHORT нет. Фундаментальное покрытие новостей ограничено.",
+        "valid_until_ms": 1794658500000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3100,
+        "output_tokens": 321,
+        "total_tokens": 3421
+      },
+      "request_sha256": "40861aabbdfdb4595a83abc19ec40432c51428a2965f03e827c71a518831097e",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true
+    },
+    {
+      "request_id": "bracket:cae836857722e6cda5c39f012bdd7b37dfb98bb299296dd1f34ea3c40b46e794",
+      "snapshot_id": "cae836857722e6cda5c39f012bdd7b37dfb98bb299296dd1f34ea3c40b46e794",
+      "asof_ms": 1794672130763,
+      "received_ms": 1794672138977,
+      "long": 0,
+      "short": 0,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 60,
+        "news_ids": [],
+        "risks": [
+          "Кандидатные планы отсутствуют; по правилам нельзя выбирать направление или задавать уровни сделки.",
+          "Цена ниже SMA20/SMA40 на 15m, 1h и 4h, но подтверждённого плана входа нет; возможны резкие отскоки и продолжение снижения.",
+          "Новостное покрытие ограничено и не подтверждено как полное; перечисленные новости не дают достаточной основы для торгового сигнала."
+        ],
+        "snapshot_id": "cae836857722e6cda5c39f012bdd7b37dfb98bb299296dd1f34ea3c40b46e794",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "WAIT: candidate_plans пуст. Рыночная цена ниже SMA20 и SMA40 на 15m, 1h и 4h, что указывает на слабый контекст, однако без предоставленного плана нельзя обосновать пассивный вход и выбрать уровни. Фундаментальное покрытие ограничено.",
+        "valid_until_ms": 1794672900000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3104,
+        "output_tokens": 366,
+        "total_tokens": 3470
+      },
+      "request_sha256": "2daf343f6f4bdf8c7fa2f16282d2d850a8d1d032c744d68add548ab94fb6221a",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true
+    },
+    {
+      "request_id": "bracket:a2317c38af17a64f819e3a5b5276f292bfc13ecee4dbb20064023619b6bad5ae",
+      "snapshot_id": "a2317c38af17a64f819e3a5b5276f292bfc13ecee4dbb20064023619b6bad5ae",
+      "asof_ms": 1794686530453,
+      "received_ms": 1794686544759,
+      "long": 2,
+      "short": 2,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 30,
+        "news_ids": [],
+        "risks": [
+          "Цена находится между ближайшими уровнями; предложенные цели проходят за промежуточными уровнями сопротивления или поддержки.",
+          "Контекст 1h/4h слабый, но текущий поток taker-покупок и соотношения длинных/коротких позиций дают противоречивые сигналы.",
+          "Покрытие новостей ограничено и не подтверждает полноту фундаментальной картины."
+        ],
+        "snapshot_id": "a2317c38af17a64f819e3a5b5276f292bfc13ecee4dbb20064023619b6bad5ae",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Жду: цена ниже SMA20/SMA40 на 1h и 4h, что указывает на слабый старший контекст, однако на 15m она выше SMA20, а данные деривативов неоднозначны. Среди предложенных планов не вижу убедительного входа с целью до ближайшего значимого противоположного уровня. В предоставленных новостях (ID 0–2) нет очевидного непосредственного катализатора для BTC; фундаментальное покрытие ограничено.",
+        "valid_until_ms": 1794687000000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3500,
+        "output_tokens": 984,
+        "total_tokens": 4484
+      },
+      "request_sha256": "6b469dd8983529b5a5f172a7c0946e11acd62ff668c9a6a4b9ffed23a1ccb60b",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true
+    },
+    {
+      "request_id": "bracket:116d982906b81178692a9923aacb196d95f3511d2b4c873d8ce9e94a09a4eff7",
+      "snapshot_id": "116d982906b81178692a9923aacb196d95f3511d2b4c873d8ce9e94a09a4eff7",
+      "asof_ms": 1794700931019,
+      "received_ms": 1794700941315,
+      "long": 4,
+      "short": 0,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 30,
+        "news_ids": [],
+        "risks": [
+          "Цена ниже SMA20 и SMA40 на 15m, 1h и 4h; лонг от ближайшей поддержки был бы против нисходящего контекста.",
+          "Повышенные long/short ratios могут указывать на уязвимость переполненной длинной позиции; taker buy/sell ratio сам по себе не подтверждает разворот.",
+          "Охват новостей ограничен: среди предоставленных сообщений нет очевидного прямого катализатора для BTC."
+        ],
+        "snapshot_id": "116d982906b81178692a9923aacb196d95f3511d2b4c873d8ce9e94a09a4eff7",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Ожидание: BTC торгуется ниже скользящих средних на 15m, 1h и 4h, поэтому доступные планы LONG от поддержки 63888 не подтверждены разворотом и конфликтуют с контекстом старших таймфреймов. Деривативные данные дают смешанный сигнал, а покрытие фундаментальных новостей ограничено.",
+        "valid_until_ms": 1794701700000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3492,
+        "output_tokens": 542,
+        "total_tokens": 4034
+      },
+      "request_sha256": "4f4bc9f9bb1714d847d77813ef82cd692a7f44f5dcaf94c54379d2683e09ae96",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true
+    },
+    {
+      "request_id": "bracket:606807ab8b0b8b9028437208adf617be934c864a08452193e3f57bd680d4cccd",
+      "snapshot_id": "606807ab8b0b8b9028437208adf617be934c864a08452193e3f57bd680d4cccd",
+      "asof_ms": 1794715331250,
+      "received_ms": 1794715345897,
+      "long": 4,
+      "short": 4,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 60,
+        "news_ids": [],
+        "risks": [
+          "Краткосрочный отскок противоречит более слабому контексту 1ч/4ч; деривативные метрики неоднозначны, а перевес длинных позиций и слабый taker buy/sell дают лишь ограниченные сигналы.",
+          "Ближайшие уровни сопротивления и поддержки делают предложенные цели неподходящими: они пересекают промежуточные уровни или требуют чрезмерного хода.",
+          "Фундаментальное покрытие новостей ограничено; доступные публикации ECB (ID 0, 1, 2) не дают достаточного основания для направленной сделки."
+        ],
+        "snapshot_id": "606807ab8b0b8b9028437208adf617be934c864a08452193e3f57bd680d4cccd",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Пропускаю сделку: цена выше ближайших 15м средних, но ниже 1ч/4ч средних, поэтому направления расходятся. Предложенные лонги нацелены далеко за ближайшие сопротивления, а шорты — за промежуточные поддержки; при таком конфликте условий предпочтительно ждать.",
+        "valid_until_ms": 1794716100000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3879,
+        "output_tokens": 926,
+        "total_tokens": 4805
+      },
+      "request_sha256": "8da776cfe6d915c52f843cc9d96e0afebcde344fb703ddd2e53691624f0a9a8f",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true,
+      "causal_check": {
+        "context_exact": true,
+        "input_snapshot_exact": true,
+        "candles_sha256": "40d0280b7ede16ad156dc07296dd59486a080e3ec01243b393de24b6caa3dac9",
+        "counts": {
+          "LONG": {
+            "tested": 103,
+            "net_reward_risk": 25,
+            "passed": 63,
+            "stop_vs_volatility": 15
+          },
+          "SHORT": {
+            "tested": 62,
+            "net_reward_risk": 23,
+            "passed": 22,
+            "stop_vs_volatility": 17
+          }
+        },
+        "ranks": {
+          "LONG_tested": 15,
+          "LONG_passed": 15,
+          "SHORT_tested": 6,
+          "SHORT_passed": 6
+        },
+        "candidates": [
+          {
+            "direction": "LONG",
+            "entry": "64547.4",
+            "stop": "63820.6",
+            "target": "76283.5",
+            "qty": "0.001",
+            "risk": "0.9903222297",
+            "rr": "11.64281147",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "64547.4",
+            "stop": "63820.6",
+            "target": "76143",
+            "qty": "0.001",
+            "risk": "0.9903222297",
+            "rr": "11.50100939",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "64547.4",
+            "stop": "63820.6",
+            "target": "76101.4",
+            "qty": "0.001",
+            "risk": "0.9903222297",
+            "rr": "11.45902386",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "64547.4",
+            "stop": "63820.6",
+            "target": "75480.3",
+            "qty": "0.001",
+            "risk": "0.9903222297",
+            "rr": "10.83216784",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64948",
+            "stop": "65632.4",
+            "target": "62023.7",
+            "qty": "0.001",
+            "risk": "0.9517462162",
+            "rr": "2.86255233",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64948",
+            "stop": "65924.7",
+            "target": "62023.7",
+            "qty": "0.001",
+            "risk": "1.24448481235",
+            "rr": "2.18919775",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64969",
+            "stop": "65632.4",
+            "target": "62023.7",
+            "qty": "0.001",
+            "risk": "0.9308008162",
+            "rr": "2.94946964",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64969",
+            "stop": "65924.7",
+            "target": "62023.7",
+            "qty": "0.001",
+            "risk": "1.22353941235",
+            "rr": "2.24379266",
+            "matches": true,
+            "arithmetic_ok": true
+          }
+        ]
+      }
+    },
+    {
+      "request_id": "bracket:9220256556a451ca0b24151aa3d8d735d25a1b0656c339b7f39890e88aab3ed8",
+      "snapshot_id": "9220256556a451ca0b24151aa3d8d735d25a1b0656c339b7f39890e88aab3ed8",
+      "asof_ms": 1794729731604,
+      "received_ms": 1794729757829,
+      "long": 4,
+      "short": 4,
+      "decision": {
+        "decision": "SHORT",
+        "entry_level": "15m:support:1794722400000",
+        "max_hold_minutes": 30,
+        "news_ids": [],
+        "risks": [
+          "Цель находится близко к поддержке 61956.3; возможен отскок до её достижения.",
+          "OI разнонаправлен по периодам, а данные 5m отсутствуют в захвате.",
+          "Фундаментальное покрытие новостей ограничено; среди предоставленных новостей нет явно связанной с BTC."
+        ],
+        "snapshot_id": "9220256556a451ca0b24151aa3d8d735d25a1b0656c339b7f39890e88aab3ed8",
+        "stop_level": "15m:resistance:1794726900000",
+        "target_level": "15m:support:1794707100000",
+        "thesis": "Предпочтителен пассивный шорт на ретесте 64141.1: цена ниже этой поддержки, а закрытие 15m и значения SMA 15m/1h/4h указывают на слабую структуру. Стоп за сопротивлением 64511.9, цель перед поддержкой 61956.3. Поток taker-продаж преобладает, при этом повышенные лонг/шорт-отношения добавляют риск резкого отскока; OI не даёт однозначного подтверждения.",
+        "valid_until_ms": 1794730500000
+      },
+      "admission": {
+        "allowed": true,
+        "reason": "validated_paper_plan"
+      },
+      "usage": {
+        "input_tokens": 3886,
+        "output_tokens": 1273,
+        "total_tokens": 5159
+      },
+      "request_sha256": "87ebcbbcf82897e2eb3d1ad746c153a57dc44c94684d03a8652f55b5e33dc6f8",
+      "snapshot_request_bound": true,
+      "plan": {
+        "id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+        "direction": "SHORT",
+        "entry": "64141.1",
+        "stop": "64542.2",
+        "target": "61986.6",
+        "state": {
+          "armed_ms": 1794729759981,
+          "buffer": "0",
+          "close_reason": null,
+          "entry_cancellation": {
+            "at_ms": 1794729761448,
+            "causes": [
+              "ENTRY_EVIDENCE_STALE"
+            ],
+            "detail": "quote_http_unconfirmed",
+            "evidence": "recorded_at_cancellation",
+            "precise": true,
+            "quantity": "0.001",
+            "reason": "ENTRY_EVIDENCE_STALE",
+            "reserve_released_usdt": "64.30786686"
+          },
+          "fees": "0",
+          "funding": "0",
+          "gross": "0",
+          "last_fill_ms": null,
+          "open_qty": "0",
+          "opened_ms": null,
+          "remaining": "0",
+          "reserved": "0",
+          "status": "CANCELED"
+        }
+      },
+      "paper_input_present": true,
+      "causal_check": {
+        "context_exact": true,
+        "input_snapshot_exact": true,
+        "candles_sha256": "08cc98a9d444562a7545728b0c88490a5a9662160ec807581db3af86b38cdd5c",
+        "counts": {
+          "LONG": {
+            "tested": 70,
+            "net_reward_risk": 18,
+            "passed": 38,
+            "stop_vs_volatility": 14
+          },
+          "SHORT": {
+            "tested": 64,
+            "net_reward_risk": 36,
+            "passed": 23,
+            "stop_vs_volatility": 5
+          }
+        },
+        "ranks": {
+          "LONG_tested": 14,
+          "LONG_passed": 14,
+          "SHORT_tested": 7,
+          "SHORT_passed": 7
+        },
+        "candidates": [
+          {
+            "direction": "LONG",
+            "entry": "63888",
+            "stop": "63262.9",
+            "target": "76320.6",
+            "qty": "0.001",
+            "risk": "0.88607151855",
+            "rr": "13.80061388",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "63888",
+            "stop": "63262.9",
+            "target": "76180.1",
+            "qty": "0.001",
+            "risk": "0.88607151855",
+            "rr": "13.64212809",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "63888",
+            "stop": "63262.9",
+            "target": "76138.5",
+            "qty": "0.001",
+            "risk": "0.88607151855",
+            "rr": "13.59520275",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "63888",
+            "stop": "63240.7",
+            "target": "76320.6",
+            "qty": "0.001",
+            "risk": "0.90823822965",
+            "rr": "13.46379232",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64141.1",
+            "stop": "64542.2",
+            "target": "61986.6",
+            "qty": "0.001",
+            "risk": "0.6647124311",
+            "rr": "2.9437389",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64141.1",
+            "stop": "64577.7",
+            "target": "61986.6",
+            "qty": "0.001",
+            "risk": "0.70026569885",
+            "rr": "2.794282",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64511.9",
+            "stop": "64978.3",
+            "target": "61986.6",
+            "qty": "0.001",
+            "risk": "0.73163087915",
+            "rr": "3.17998574",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64547.4",
+            "stop": "64978.3",
+            "target": "61986.6",
+            "qty": "0.001",
+            "risk": "0.69622317915",
+            "rr": "3.39256654",
+            "matches": true,
+            "arithmetic_ok": true
+          }
+        ]
+      }
+    },
+    {
+      "request_id": "bracket:3926c8b1b6181570d39845f96cc9235212af6f3fb56782e8204af3d2466a2dc6",
+      "snapshot_id": "3926c8b1b6181570d39845f96cc9235212af6f3fb56782e8204af3d2466a2dc6",
+      "asof_ms": 1794744129302,
+      "received_ms": 1794744150194,
+      "long": 4,
+      "short": 4,
+      "decision": {
+        "decision": "SHORT",
+        "entry_level": "15m:resistance:1794711600000",
+        "max_hold_minutes": 60,
+        "news_ids": [
+          "0",
+          "1",
+          "2"
+        ],
+        "risks": [
+          "Позиционирование участников смещено в лонг, а taker buy/sell ratio выше 1: возможен отскок или вынос стопа.",
+          "На 15m цена выше SMA20 и SMA40; откат к сопротивлению может не состояться.",
+          "Фундаментальный новостной охват ограничен; указанные заголовки ФРС не дают прямого сигнала для BTC."
+        ],
+        "snapshot_id": "3926c8b1b6181570d39845f96cc9235212af6f3fb56782e8204af3d2466a2dc6",
+        "stop_level": "15m:resistance:1794733200000",
+        "target_level": "15m:support:1794728700000",
+        "thesis": "Условный шорт лимиткой на ретесте сопротивления 65565: цена сейчас ниже него, а 4h остаётся ниже SMA20 и SMA40, что поддерживает медвежий контекст. Цель выбрана перед ближайшей существенной поддержкой 63738.9; стоп за сопротивлением 66093.2. Это сценарий отката, а не подтверждённый пробой вниз.",
+        "valid_until_ms": 1794744900000
+      },
+      "admission": {
+        "allowed": true,
+        "reason": "validated_paper_plan"
+      },
+      "usage": {
+        "input_tokens": 3881,
+        "output_tokens": 1453,
+        "total_tokens": 5334
+      },
+      "request_sha256": "37cd726c2b2e081061e0f0a67257bf54fffe58fe8690c2ec22ac1ef9cb03569b",
+      "snapshot_request_bound": true,
+      "plan": {
+        "id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+        "direction": "SHORT",
+        "entry": "65565",
+        "stop": "66127.9",
+        "target": "63773.6",
+        "state": {
+          "armed_ms": 1794744150924,
+          "buffer": "0",
+          "close_reason": null,
+          "entry_cancellation": {
+            "at_ms": 1794744232258,
+            "causes": [
+              "TRADE_GAP"
+            ],
+            "evidence": "recorded_at_cancellation",
+            "precise": true,
+            "quantity": "0.001",
+            "reason": "TRADE_GAP",
+            "reserve_released_usdt": "65.735469"
+          },
+          "fees": "0",
+          "funding": "0",
+          "gross": "0",
+          "last_fill_ms": null,
+          "open_qty": "0",
+          "opened_ms": null,
+          "remaining": "0",
+          "reserved": "0",
+          "status": "CANCELED"
+        }
+      },
+      "paper_input_present": true,
+      "causal_check": {
+        "context_exact": true,
+        "input_snapshot_exact": true,
+        "candles_sha256": "f785a77bee3f2c55800f8f37e26f57ab71857248d1882045d5097b0526b0407b",
+        "counts": {
+          "LONG": {
+            "tested": 138,
+            "stop_vs_volatility": 23,
+            "net_reward_risk": 39,
+            "passed": 76
+          },
+          "SHORT": {
+            "tested": 110,
+            "stop_vs_volatility": 18,
+            "net_reward_risk": 64,
+            "passed": 28
+          }
+        },
+        "ranks": {
+          "LONG_tested": 12,
+          "LONG_passed": 12,
+          "SHORT_tested": 10,
+          "SHORT_passed": 10
+        },
+        "candidates": [
+          {
+            "direction": "LONG",
+            "entry": "65242.5",
+            "stop": "64934.3",
+            "target": "76175.7",
+            "qty": "0.001",
+            "risk": "0.57519948285",
+            "rr": "18.64654258",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "65242.5",
+            "stop": "64934.3",
+            "target": "76134.1",
+            "qty": "0.001",
+            "risk": "0.57519948285",
+            "rr": "18.57425601",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "65242.5",
+            "stop": "64934.3",
+            "target": "75513",
+            "qty": "0.001",
+            "risk": "0.57519948285",
+            "rr": "17.49499661",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "65242.5",
+            "stop": "64934.3",
+            "target": "74736.7",
+            "qty": "0.001",
+            "risk": "0.57519948285",
+            "rr": "16.14605268",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "65565",
+            "stop": "66127.9",
+            "target": "61991",
+            "qty": "0.001",
+            "risk": "0.83259391395",
+            "rr": "4.05063674",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "65565",
+            "stop": "66127.9",
+            "target": "63305.7",
+            "qty": "0.001",
+            "risk": "0.83259391395",
+            "rr": "2.47080613",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "65565",
+            "stop": "66127.9",
+            "target": "63773.6",
+            "qty": "0.001",
+            "risk": "0.83259391395",
+            "rr": "1.9085465",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "65642",
+            "stop": "66127.9",
+            "target": "61991",
+            "qty": "0.001",
+            "risk": "0.75579411395",
+            "rr": "4.56385573",
+            "matches": true,
+            "arithmetic_ok": true
+          }
+        ]
+      }
+    },
+    {
+      "request_id": "bracket:e25787bc713c2a067ce7eca1a2ab4440a5b2359e69700f8c4778d993a9c30ac1",
+      "snapshot_id": "e25787bc713c2a067ce7eca1a2ab4440a5b2359e69700f8c4778d993a9c30ac1",
+      "asof_ms": 1794758528243,
+      "received_ms": 1794758538373,
+      "long": 4,
+      "short": 4,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 30,
+        "news_ids": [],
+        "risks": [
+          "Цена около 64671: лимитный LONG от сопротивления 64511.9 и SHORT от поддержки 64707.7 не дают убедительного входа по направлению.",
+          "Контекст 15m/4h слабый: цена ниже SMA20 15m и заметно ниже SMA20 4h; при этом поток taker-покупок повышен, а открытый интерес снижается — сигналы неоднозначны.",
+          "Новостное покрытие ограничено; новости с ID 0–2 не дают достаточного основания для направленной сделки."
+        ],
+        "snapshot_id": "e25787bc713c2a067ce7eca1a2ab4440a5b2359e69700f8c4778d993a9c30ac1",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Ожидание: предложенные уровни входа не дают ясного преимущества для пассивной сделки, а краткосрочные и старшие сигналы расходятся. Фундаментальное покрытие ограничено.",
+        "valid_until_ms": 1794759000000
+      },
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "usage": {
+        "input_tokens": 3886,
+        "output_tokens": 592,
+        "total_tokens": 4478
+      },
+      "request_sha256": "64224e7c045acc77f5b5ff01d9a14824ff53f2bdff728ea236a6db03ae88d306",
+      "snapshot_request_bound": true,
+      "plan": null,
+      "paper_input_present": true,
+      "causal_check": {
+        "context_exact": true,
+        "input_snapshot_exact": true,
+        "candles_sha256": "d888ad0179f352f83d720645c9620e7e4717788d835458326e7a29afad7c972b",
+        "counts": {
+          "LONG": {
+            "tested": 115,
+            "stop_vs_volatility": 12,
+            "net_reward_risk": 30,
+            "passed": 73
+          },
+          "SHORT": {
+            "tested": 90,
+            "net_reward_risk": 44,
+            "passed": 24,
+            "buffered_level_geometry": 2,
+            "stop_vs_volatility": 20
+          }
+        },
+        "ranks": {
+          "LONG_tested": 13,
+          "LONG_passed": 13,
+          "SHORT_tested": 10,
+          "SHORT_passed": 9
+        },
+        "candidates": [
+          {
+            "direction": "LONG",
+            "entry": "64511.9",
+            "stop": "64112",
+            "target": "76181.3",
+            "qty": "0.001",
+            "risk": "0.663766884",
+            "rr": "17.27048861",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "64511.9",
+            "stop": "64112",
+            "target": "76139.7",
+            "qty": "0.001",
+            "risk": "0.663766884",
+            "rr": "17.20784734",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "64511.9",
+            "stop": "64112",
+            "target": "75518.6",
+            "qty": "0.001",
+            "risk": "0.663766884",
+            "rr": "16.27259512",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "LONG",
+            "entry": "64511.9",
+            "stop": "64112",
+            "target": "74742.3",
+            "qty": "0.001",
+            "risk": "0.663766884",
+            "rr": "15.10364279",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64707.7",
+            "stop": "65591.6",
+            "target": "61985.4",
+            "qty": "0.001",
+            "risk": "1.1505602158",
+            "rr": "2.19290329",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64707.7",
+            "stop": "65594.1",
+            "target": "61985.4",
+            "qty": "0.001",
+            "risk": "1.15306396705",
+            "rr": "2.18814164",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64969",
+            "stop": "65591.6",
+            "target": "61985.4",
+            "qty": "0.001",
+            "risk": "0.8899395958",
+            "rr": "3.12795151",
+            "matches": true,
+            "arithmetic_ok": true
+          },
+          {
+            "direction": "SHORT",
+            "entry": "64969",
+            "stop": "65594.1",
+            "target": "61985.4",
+            "qty": "0.001",
+            "risk": "0.89244334705",
+            "rr": "3.11917603",
+            "matches": true,
+            "arithmetic_ok": true
+          }
+        ]
+      }
+    }
+  ],
+  "journal": [
+    {
+      "ms": 1794600127192,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794600148581,
+      "message": "{\"admission\":{\"allowed\":true,\"reason\":\"validated_paper_plan\"},\"decision\":\"SHORT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794600148707,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794614527193,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794614543402,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794614543522,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794628927193,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794628928059,
+      "message": "{\"status\":\"not_requested_market_or_funding_unconfirmed\"}"
+    },
+    {
+      "ms": 1794628928075,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794643327191,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794643342327,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794643342513,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794657727191,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794657738898,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794657739159,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794672127192,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794672139065,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794672139225,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794686527208,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794686544921,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794686545147,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794700927254,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794700941536,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794700941702,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794715327191,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794715346067,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794715346176,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794729721054,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794729758331,
+      "message": "{\"admission\":{\"allowed\":true,\"reason\":\"validated_paper_plan\"},\"decision\":\"SHORT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794729758599,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794744124795,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794744150355,
+      "message": "{\"admission\":{\"allowed\":true,\"reason\":\"validated_paper_plan\"},\"decision\":\"SHORT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794744150437,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    },
+    {
+      "ms": 1794758524818,
+      "message": "Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential..."
+    },
+    {
+      "ms": 1794758538599,
+      "message": "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+    },
+    {
+      "ms": 1794758538807,
+      "message": "Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential."
+    }
+  ],
+  "post_6937809": {
+    "gap_count_excluding_bootstrap": 0,
+    "gaps": [],
+    "quote_errors_retained": [
+      {
+        "at_ms": 1794768906022,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      },
+      {
+        "at_ms": 1794768906605,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      },
+      {
+        "at_ms": 1794768911099,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      },
+      {
+        "at_ms": 1794769032030,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      },
+      {
+        "at_ms": 1794769194670,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      },
+      {
+        "at_ms": 1794769374381,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      },
+      {
+        "at_ms": 1794769381080,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      },
+      {
+        "at_ms": 1794769687856,
+        "class": "ValueError",
+        "elapsed_ms": 0,
+        "reason": "stale_or_future_market_data",
+        "stage": "quote_request"
+      }
+    ],
+    "public_asof": 1794769992111,
+    "stream": {
+      "connected": true,
+      "duplicates": 0,
+      "highwater": 2831,
+      "last_fault": null,
+      "oldest_dequeued_wait_ms": 9,
+      "queued": 0,
+      "read_timeouts": 114,
+      "reason": null,
+      "received": 564637,
+      "reconnects": 1
+    },
+    "market_errors": {
+      "BTCUSDT": null,
+      "ETHUSDT": null,
+      "SOLUSDT": null
+    },
+    "balances": {
+      "free": "1000.009063312815389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "ledger_balanced": true,
+    "active": []
+  }
+}
