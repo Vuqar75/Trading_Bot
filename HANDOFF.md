@@ -6,6 +6,10 @@
 
 Действующие разрешения и ограничения сохраняются; повторного согласования проверенных paper-обновлений не требуется. Не останавливайте защиту при открытом риске, не ослабляйте проверки, не меняйте финансовую историю и не создавайте сделки ради теста. Отдельное разрешение требуется для реальной/Testnet-торговли, новых платных ресурсов или расходов сверх разрешённых лимитов, изменения капитала или риска и отключения защиты. Останавливайтесь только после выполнения критерия задачи, при конкретном внешнем блокере или необходимости нового разрешения; при нехватке квоты сохраните точную точку продолжения.
 
+## 2026-11-15 — registered prospective follow-up
+
+At 13:43 Baku the next scheduled AI opportunity was 16:02 Baku today. Actual Codex heartbeat automation `trading-bot-16-02` was created ACTIVE, one occurrence at **15 November 2026 16:47 Asia/Baku (12:47 UTC)**. It checks that cycle, full-loop/quote/WebSocket freshness, ledger and backup on runtime e1e7d43 or newer. Any new active order is followed within that run, without extra AI requests or a separate per-order automation. Remove the one-time automation after completion. This registration is not a change to VM analyst schedule. Owner's future-data registration requirement was added to AGENTS.md; report a concrete scheduling blocker if registration is unavailable, never substitute an intention for an active schedule.
+
 ## 2026-11-15 — full-loop latency correction installed and observed for four minutes
 
 Runtime `e1e7d43` installed in `/opt/tradingbot-ai-brackets-e1e7d43`, preserving SHORT selection. Cancellation at 12:02:41.448 Baku used last recorded quote source 12:02:36.385 (age 5063ms) while next quote HTTP was pending. Exact historical HTTP duration/outcome was not saved; do not call it a proven timeout or confuse successful aggTrade with fresh REST quote. New bounded quote-failure metadata records category, monotonic wait, source age and recent request phases; stream metadata separates receive/dequeue waiting.
