@@ -29,6 +29,19 @@ class BracketTests(unittest.TestCase):
         self.b=Book(self.root,clock=lambda:self.now)
         self.b.funding(T,T,[]);self.b.pause(False)
     def tearDown(self):self.b.close();self.temp.cleanup()
+    def test_direction_geometry_is_mirrored_and_costs_are_charged(self):
+        long_s,long_d=snapshot('LONG');short_s,short_d=snapshot('SHORT')
+        left=plan.validate(long_s,long_d,T);right=plan.validate(short_s,short_d,T)
+        from decimal import Decimal
+        self.assertLess(Decimal(left['stop']),Decimal(left['entry']))
+        self.assertGreater(Decimal(left['target']),Decimal(left['entry']))
+        self.assertGreater(Decimal(right['stop']),Decimal(right['entry']))
+        self.assertLess(Decimal(right['target']),Decimal(right['entry']))
+        self.assertEqual(left['fee'],right['fee'])
+        self.assertGreater(Decimal(left['risk_usdt']),0);self.assertGreater(Decimal(right['risk_usdt']),0)
+        self.assertLessEqual(Decimal(left['quantity'])*Decimal(left['entry']),100)
+        self.assertLessEqual(Decimal(right['quantity'])*Decimal(right['entry']),100)
+
     def accept(self,side='LONG'):
         s,d=snapshot(side);self.b.accept(s,d,provenance={'kind':'fixture','response_id':'fixture1','model':'fixture'})
         return self.b.active()[0]

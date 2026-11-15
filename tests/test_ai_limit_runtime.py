@@ -26,11 +26,31 @@ class RuntimeTests(unittest.TestCase):
             self.assertLessEqual(p.dec(candidate['quantity_cap'])*p.dec(candidate['entry']),100)
             self.assertLessEqual(p.dec(candidate['estimated_risk_usdt']),5)
             self.assertGreaterEqual(p.dec(candidate['net_reward_risk']),p.dec('1.5'))
+            decision={'snapshot_id':s['snapshot_id'],'decision':candidate['direction'],
+                      'entry_level':candidate['entry_level'],'stop_level':candidate['stop_level'],
+                      'target_level':candidate['target_level'],'valid_until_ms':s['expires_ms']-1,
+                      'max_hold_minutes':240,'thesis':'fixture','news_ids':[],'risks':[]}
+            checked=p.validate(s,decision,T)
+            self.assertEqual((checked['entry'],checked['stop'],checked['target'],checked['quantity']),
+                             (candidate['entry'],candidate['stop'],candidate['target'],candidate['quantity_cap']))
         self.assertTrue(all(x['confirmed_ms']<=T for x in s['levels']))
         self.assertGreater(p.dec(s['timeframes']['15m']['atr14']),0)
         self.assertEqual(p.verify_context(s,T),s)
         cap['candles'].append([T,'100','101','99','100','1'])
         with self.assertRaisesRegex(ValueError,'candle'):p.context(cap,book_quote(T),f,{'coverage':'limited','high_risk_until_ms':0,'items':[]},T)
+
+    def test_confirmed_targets_are_not_truncated_before_validation(self):
+        cap=capture(T);f={'as_of_ms':T,'tick_size':'.1','step_size':'.001','min_qty':'.001','min_notional':'50'}
+        attempts={};original=p.validate
+        def record(snapshot,decision,now):
+            key=(decision['decision'],decision['entry_level'],decision['stop_level'])
+            attempts.setdefault(key,set()).add(decision['target_level'])
+            return original(snapshot,decision,now)
+        with patch('research.ai_limit_plan.validate',side_effect=record):
+            result=p.context(cap,book_quote(T),f,{'coverage':'limited','high_risk_until_ms':0,'items':[]},T)
+        self.assertGreaterEqual(max(map(len,attempts.values())),4)
+        self.assertLessEqual(len(result['candidate_plans']),8)
+        self.assertTrue(all(p.dec(c['net_reward_risk'])>=p.dec('1.5') for c in result['candidate_plans']))
 
     def test_first_activation_is_atomic_and_cannot_override_any_operator_pause(self):
         from research.ai_limit_book import Book

@@ -134,7 +134,10 @@ def context(capture,book,exchange_filters,news,now):
         for e in entries:
             ep=dec(e['price'])
             stops=unique_prices(sorted([z for z in levels if z['kind']==('support' if side==1 else 'resistance') and side*(ep-dec(z['price']))>0],key=lambda z:(abs(ep-dec(z['price'])),z['id'])))[:2]
-            targets=unique_prices(sorted([z for z in levels if z['kind']==('resistance' if side==1 else 'support') and side*(dec(z['price'])-ep)>0],key=lambda z:(abs(ep-dec(z['price'])),z['id'])))[:3]
+            # Evaluate every confirmed opposite level in the already bounded
+            # context. The output remains capped at four per direction; risk,
+            # minimum size and reward/risk checks are unchanged.
+            targets=unique_prices(sorted([z for z in levels if z['kind']==('resistance' if side==1 else 'support') and side*(dec(z['price'])-ep)>0],key=lambda z:(abs(ep-dec(z['price'])),z['id'])))
             for stop_level in stops:
                 for target_level in targets:
                     d={'snapshot_id':result['snapshot_id'],'decision':direction,'entry_level':e['id'],'stop_level':stop_level['id'],

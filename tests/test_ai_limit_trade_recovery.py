@@ -44,6 +44,22 @@ class TradeRecoveryTests(unittest.TestCase):
     def full_page(self,start):
         return [self.row(i,0,'100') for i in range(start,start+1000)]
 
+    def test_replays_saved_burst_timing_without_real_trades(self):
+        # The 07:01 saved page timestamps spanned 31 ms for 1000 IDs.
+        # Synthetic prices; only timing, cursor and fail-closed mechanics.
+        first_now=self.now
+        first=[{'a':10+i,'T':first_now-4373+(31*i//999),'p':'100','q':'1','m':True} for i in range(1000)]
+        later_now=first_now+1089
+        second=[{'a':1010+i,'T':first_now-4342+(255*i//999),'p':'100','q':'1','m':True} for i in range(1000)]
+        self.book.set('trade_cursor:BTCUSDT',9);self.batches=[first,second,[{'a':5000,'T':later_now,'p':'100','q':'1','m':True}]]
+        first_result=self.poller.cycle()
+        self.assertEqual(first_result['trade_feeds']['BTCUSDT']['stale_rows'],0)
+        self.assertEqual(self.book.get('trade_cursor:BTCUSDT'),1009)
+        self.now=later_now;result=self.poller.cycle()
+        self.assertEqual(result['last_trade_gap']['source']['stale_rows'],1000)
+        self.assertEqual(result['market_errors']['BTCUSDT'],'public_trade_backlog_unconfirmed')
+        self.assertEqual(result['fills'],0);self.assertTrue(self.book.verify()['balanced'])
+
     def test_full_pages_drain_is_bounded_and_history_persists(self):
         self.book.set('trade_cursor:BTCUSDT',9)
         self.batches=[self.full_page(10),self.full_page(1010),self.full_page(2010)]
