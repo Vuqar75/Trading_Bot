@@ -97,7 +97,7 @@ class Poller:
         self.previous_timing={};self.previous_mono={};self.phase_history=deque(maxlen=8);self.loop_phase={}
         self.full_page_pending=False;self.full_page_streak={};self.drain_count=0;self.drain_deadline_ns=None
     def close(self):
-        self.pool.shutdown(wait=True,cancel_futures=True);self.filter_pool.shutdown(wait=True,cancel_futures=True);self.trade_pool.shutdown(wait=True,cancel_futures=True);self.quote_pool.shutdown(wait=True,cancel_futures=True)
+        getattr(self.feed,"close",lambda:None)();self.pool.shutdown(wait=True,cancel_futures=True);self.filter_pool.shutdown(wait=True,cancel_futures=True);self.trade_pool.shutdown(wait=True,cancel_futures=True);self.quote_pool.shutdown(wait=True,cancel_futures=True)
     def funding_ready(self):
         b=self.book;now=b.clock()
         if self.funding_job is not None and self.funding_job.done():
@@ -118,6 +118,7 @@ class Poller:
             self.funding_job=self.pool.submit(self.feed.funding,start,self.funding_cut,symbols=sorted(needed)) if needed else self.pool.submit(lambda:[])
             self.next_funding_check=now+30000
     def sleep_after_cycle(self):
+        if getattr(self.feed,"streaming",False):return .02
         # At most two immediate catch-up cycles; each rechecks the quote and
         # protective exits. Never start an extra cycle after the 1 s deadline.
         now=time.monotonic_ns()
@@ -154,7 +155,7 @@ class Poller:
             try:
                 initial=b.active();quote_job=self.quote_jobs.get(symbol)
                 exposed=initial is not None and initial[0]['symbol']==symbol and dec(initial[1]['open_qty'])>0
-                if quote_job is not None or exposed:
+                if quote_job is not None or exposed or getattr(self.feed,"streaming",False):
                     if quote_job is None:
                         quote_job=(self.quote_pool.submit(self.feed.book,symbol),time.monotonic_ns())
                         self.quote_jobs[symbol]=quote_job
@@ -166,12 +167,14 @@ class Poller:
                             b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                             with b.transaction():b.set('market_error:'+symbol,'public_market_unconfirmed')
                         self.loop_phase['quote_http_pending_ms']=(time.monotonic_ns()-quote_started)//1000000
-                        continue
-                    del self.quote_jobs[symbol]
-                    try:q,due=future.result()
-                    except (ValueError,KeyError,OSError,TypeError):
-                        if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
-                        raise
+                        if not quote_ready:continue
+                        q=b.get('quote:'+symbol);due=b.get('next_due:'+symbol)
+                    else:
+                        del self.quote_jobs[symbol]
+                        try:q,due=future.result()
+                        except (ValueError,KeyError,OSError,TypeError):
+                            if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
+                            raise
                 else:q,due=self.feed.book(symbol)
                 quote_done=time.monotonic_ns();stage='quote_apply'
                 try:b.market('quote',q)
@@ -194,7 +197,7 @@ class Poller:
                 # A slow public trade request must not hold quote protection
                 # while a position exists. The network thread never writes DB.
                 exposed=active_before is not None and active_before[0]['symbol']==symbol and dec(active_before[1]['open_qty'])>0
-                if job is not None or exposed:
+                if job is not None or (exposed and not getattr(self.feed,'streaming',False)):
                     if job is None:
                         requested=b.get('trade_cursor:'+symbol)
                         def fetch_trades(symbol=symbol,requested=requested):
@@ -292,8 +295,21 @@ class Poller:
                         # the durable cursor and this no-risk check share the
                         # transaction, so idle trades cannot become backfills.
                         skipped=len(events)
+                    elif (getattr(self.feed,'streaming',False) and not gap
+                          and all(0<=b.clock()-e['event_ms']<=5000 for e in events)
+                          and all((dec(e['price'])>=dec(active[0]['entry']) and dec(e['price'])<=dec(active[0]['target']))
+                                  if active[0]['direction']=='LONG' else
+                                  (dec(e['price'])<=dec(active[0]['entry']) and dec(e['price'])>=dec(active[0]['target']))
+                                  for e in events)):
+                        # Strict trade-through cannot execute anywhere in this
+                        # interval. Quote protection already ran; pulse follows.
+                        # Preserve source hash/cursor, not idle tick rows.
+                        report['non_actionable_events_skipped']=len(events)
                     else:
-                        for event in events:b.market('trade',event)
+                        for event in events:
+                            if not 0<=b.clock()-event['event_ms']<=5000:
+                                b.hold_unconfirmed_backlog(symbol,detail='processing_lag');gap=True;break
+                            b.market('trade',event)
                     processed=time.monotonic_ns()
                     last_event=events[-1]['event_ms'] if events else b.get('trade_confirmed_ms:'+symbol)
                     healthy=not gap and last_event is not None and 0<=b.clock()-last_event<=5000
@@ -412,7 +428,10 @@ def main():
                 running=[True]
                 def stop(*_):running[0]=False
                 signal.signal(signal.SIGTERM,stop);signal.signal(signal.SIGINT,stop)
-                worker=Poller(book,Feed(),symbols=args.symbols);next_backup=0
+                import sys
+                sys.path.insert(0,str(Path(__file__).resolve().parent.parent/"vendor"))
+                from .ai_limit_stream import StreamFeed
+                worker=Poller(book,StreamFeed(symbols=args.symbols).start(),symbols=args.symbols);next_backup=0
                 try:
                     while running[0]:
                         loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
