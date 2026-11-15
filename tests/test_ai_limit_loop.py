@@ -36,3 +36,30 @@ class LoopTests(unittest.TestCase):
      self.assertEqual(verify.call_count,1)
     self.assertTrue(b.verify()['balanced'])
    finally:b.close()
+
+ def test_quiet_socket_read_timeout_keeps_connection_and_cursor(self):
+  import json
+  from research.ai_limit_stream import StreamFeed
+  f=StreamFeed(symbols=['BTCUSDT'],clock=lambda:100000)
+  calls=[]
+  class Socket:
+   def recv(self):
+    calls.append(1)
+    if len(calls)<=3:raise TimeoutError()
+    f.stop.set()
+    return json.dumps({'e':'aggTrade','s':'BTCUSDT','a':1,'T':100000,'p':'100','q':'1','m':True})
+   def close(self):pass
+  f.connect=lambda url:Socket();f.run('BTCUSDT')
+  state=f.states['BTCUSDT']
+  self.assertEqual(state['read_timeouts'],3);self.assertEqual(state['reconnects'],1)
+  self.assertTrue(state['connected']);self.assertEqual(state['last'],1)
+  self.assertEqual(state['reason'],'bootstrap')
+ def test_true_socket_error_remains_latched_and_classified(self):
+  from research.ai_limit_stream import StreamFeed
+  f=StreamFeed(symbols=['BTCUSDT']);f.states['BTCUSDT']['fault']=False
+  class Socket:
+   def recv(self):f.stop.set();raise OSError('not stored')
+   def close(self):pass
+  f.connect=lambda url:Socket();f.run('BTCUSDT')
+  self.assertTrue(f.states['BTCUSDT']['fault']);self.assertFalse(f.states['BTCUSDT']['connected'])
+  self.assertEqual(f.states['BTCUSDT']['last_fault']['category'],'OSError')

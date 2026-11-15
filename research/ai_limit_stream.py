@@ -14,17 +14,19 @@ class StreamFeed(Feed):
         super().__init__(**kwargs)
         self.lock=threading.Lock();self.stop=threading.Event();self.capacity=capacity;self.batch=batch
         self.states={s:dict(queue=deque(),last=None,fault=True,reason='bootstrap',connected=False,highwater=0,duplicates=0,reconnects=0,received=0) for s in symbols}
-        self.connect=connect;self.threads=[]
+        self.connect=connect;self.threads=[];self.timeout_errors=(TimeoutError,)
     def start(self):
         if self.connect is None:
             import websocket
+            self.timeout_errors=(websocket.WebSocketTimeoutException,TimeoutError)
             self.connect=lambda url:websocket.create_connection(url,timeout=2,enable_multithread=True)
         for symbol in self.states:
             t=threading.Thread(target=self.run,args=(symbol,),daemon=True);t.start();self.threads.append(t)
         return self
-    def fail(self,symbol,reason):
+    def fail(self,symbol,reason,category=None):
         with self.lock:
             st=self.states[symbol];st['fault']=True;st['reason']=reason;st['connected']=False
+            st['last_fault']={'at_ms':self.clock(),'category':category or reason}
     def receive(self,symbol,raw):
         if raw.get('e')!='aggTrade' or raw.get('s')!=symbol or type(raw.get('m')) is not bool:raise ValueError('stream_shape')
         ident=integer(raw['a']);stamp=integer(raw['T']);positive(raw['p']);positive(raw['q'])
@@ -51,11 +53,17 @@ class StreamFeed(Feed):
                 with self.lock:
                     st=self.states[symbol];st['connected']=True;st['reconnects']+=1
                 while not self.stop.is_set():
-                    raw=ws.recv()
+                    try:raw=ws.recv()
+                    except self.timeout_errors:
+                        # A quiet socket/read deadline is not a disconnect or
+                        # evidence of missing IDs. Freshness is checked separately.
+                        with self.lock:
+                            st=self.states[symbol];st['read_timeouts']=st.get('read_timeouts',0)+1
+                        continue
                     if not raw:raise OSError('closed')
                     if len(raw)>65536:raise ValueError('stream_size')
                     self.receive(symbol,json.loads(raw))
-            except Exception:self.fail(symbol,'disconnect_or_invalid')
+            except Exception as error:self.fail(symbol,'disconnect_or_invalid',type(error).__name__)
             finally:
                 if ws is not None:
                     try:ws.close()
@@ -75,6 +83,7 @@ class StreamFeed(Feed):
                 rows=[st['queue'].popleft() for _ in range(min(self.batch,len(st['queue'])))]
             diag={k:st[k] for k in ('reason','connected','highwater','duplicates','reconnects','received')}
             diag['queued']=len(st['queue'])
+            diag['read_timeouts']=st.get('read_timeouts',0);diag['last_fault']=st.get('last_fault')
             diag['oldest_dequeued_wait_ms']=(time.monotonic_ns()-rows[0]['_received_ns'])//1000000 if rows else None
         parser=Feed(fetch=lambda *_:rows,clock=self.clock)
         events,cursor,gap=parser.trades(symbol,last_id)
