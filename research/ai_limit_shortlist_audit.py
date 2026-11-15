@@ -16,8 +16,9 @@ def compare(snapshot,pool):
         out.append({'offered':candidate,'intermediate_prices':crossing(snapshot,candidate),'nearer_valid_omitted':sorted(near,key=lambda c:abs(Decimal(c['target'])-Decimal(c['entry'])))})
     return out
 
-def analyse(envelope):
-    snap=envelope['analysis']['snapshot'];cap=envelope['capture'];pool=[];failures=[];nearest={};original=p.validate
+def analyse(envelope,*,plan_module=None):
+    module=plan_module or p
+    snap=envelope['analysis']['snapshot'];cap=envelope['capture'];pool=[];failures=[];nearest={};original=module.validate
     def capture(s,d,now):
         mapped={x['id']:Decimal(x['price']) for x in s['levels']}
         group=(d['decision'],d['entry_level'],d['stop_level'])
@@ -31,7 +32,7 @@ def analyse(envelope):
         note('passed')
         pool.append({'direction':d['decision'],**{k:d[k] for k in ('entry_level','stop_level','target_level')},**{k:checked[k] for k in ('entry','stop','target','quantity','risk_usdt','net_reward_risk')}})
         return checked
-    with patch.object(p,'validate',side_effect=capture):rebuilt=p.context(cap,snap['quote'],snap['filters'],snap['news'],snap['as_of_ms'])
+    with patch.object(module,'validate',side_effect=capture):rebuilt=module.context(cap,snap['quote'],snap['filters'],snap['news'],snap['as_of_ms'])
     if rebuilt!=snap:raise ValueError('context_reconstruction_mismatch')
     compared=compare(snap,pool);summary={}
     for direction in ('LONG','SHORT'):
@@ -39,3 +40,21 @@ def analyse(envelope):
         passed=[c for c in pool if c['direction']==direction]
         summary[direction]={'passing_variants':len(passed),'offered':len(selected),'distinct_entries_offered':len({c['offered']['entry'] for c in selected}),'offered_with_intermediate_levels':sum(bool(c['intermediate_prices']) for c in selected),'offered_with_nearer_valid_omitted':sum(bool(c['nearer_valid_omitted']) for c in selected),'distinct_omitted_nearer_targets':len({key(c) for x in selected for c in x['nearer_valid_omitted']}),'passing_without_intermediate':sum(not crossing(snap,c) for c in passed),'offered_with_clean_nearer_omitted':sum(any(not crossing(snap,c) for c in x['nearer_valid_omitted']) for x in selected)}
     return {'snapshot_id':snap['snapshot_id'],'asof_ms':snap['as_of_ms'],'request_id':envelope['analysis']['provenance']['response_id'],'capture_sha256':p.digest(cap),'source_candles_sha256':snap['source_candles_sha256'],'context_exact':True,'model_decision':envelope['analysis']['decision'],'summary':summary,'comparison':compared,'pool':pool,'rejections':failures,'nearest_raw_targets':list(nearest.values())}
+
+def enrich(result,snapshot,request_snapshot):
+    if request_snapshot!=snapshot:raise ValueError('saved_request_context_mismatch')
+    result['model_input_exact']=True
+    result['levels_as_sent']=request_snapshot['levels']
+    result['frames_as_sent']=request_snapshot['timeframes']
+    result['quote_as_sent']=request_snapshot['quote']
+    offered={key(c) for c in snapshot['candidate_plans']}
+    result['excluded']=[c for c in result['pool'] if key(c) not in offered]
+    for c in result['comparison']:
+        c['obstacles_as_sent']=[z for z in request_snapshot['levels'] if z['price'] in c['intermediate_prices'] and z['kind']==('resistance' if c['offered']['direction']=='LONG' else 'support')]
+        c['obstacles_confirmed_before_decision']=all(z['confirmed_ms']<=snapshot['as_of_ms'] for z in c['obstacles_as_sent'])
+    for direction in ('LONG','SHORT'):
+        selected=[c for c in snapshot['candidate_plans'] if c['direction']==direction]
+        result['summary'][direction]['excluded']=sum(c['direction']==direction for c in result['excluded'])
+        result['summary'][direction]['distinct_entries_pool']=len({c['entry'] for c in result['pool'] if c['direction']==direction})
+        result['summary'][direction]['distinct_entry_stop_offered']=len({(c['entry'],c['stop']) for c in selected})
+    return result

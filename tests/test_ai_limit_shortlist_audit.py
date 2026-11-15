@@ -13,3 +13,8 @@ class ShortlistAuditTests(unittest.TestCase):
   snap={'levels':[{'kind':'support','price':p} for p in ['100','95','90']]+[{'kind':'resistance','price':'96'}]}
   c={'direction':'SHORT','entry':'100','target':'90'}
   self.assertEqual(crossing(snap,c),['95'])
+
+ def test_enrichment_rejects_context_not_actually_sent(self):
+  from research.ai_limit_shortlist_audit import enrich
+  with self.assertRaisesRegex(ValueError,'saved_request_context_mismatch'):
+   enrich({}, {'snapshot_id':'original'}, {'snapshot_id':'other'})
