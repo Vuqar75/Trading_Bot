@@ -177,6 +177,16 @@ class Poller:
                             raise
                 else:q,due=self.feed.book(symbol)
                 quote_done=time.monotonic_ns();stage='quote_apply'
+                if getattr(self.feed,'streaming',False):
+                    accepted=b.get('quote:'+symbol)
+                    if accepted is not None and q['event_ms']<accepted['event_ms']:
+                        # REST quote components can publish an older timestamp.
+                        # Never overwrite a newer accepted quote or refresh its age.
+                        validate_quote(accepted,symbol,b.clock())
+                        with b.transaction():
+                            b.set('last_quote_regression:'+symbol,{'received_ms':b.clock(),
+                                  'discarded_ms':q['event_ms'],'retained_ms':accepted['event_ms']})
+                        q=accepted;phases['older_quote_discarded']=True
                 try:b.market('quote',q)
                 except (ValueError,KeyError,OSError,TypeError):
                     if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')

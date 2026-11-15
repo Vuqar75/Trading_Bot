@@ -74,3 +74,12 @@ class StreamTests(TradeRecoveryTests):
         self.assertTrue(f.trades('BTCUSDT',1)[2])
         f.trades('BTCUSDT');self.send(f,3)
         self.assertFalse(f.trades('BTCUSDT',2)[2])
+
+    def test_older_quote_cannot_replace_or_rejuvenate_current_quote(self):
+        from tests.test_ai_limit_brackets import snapshot
+        f=self.stream();self.bootstrap(f);self.poller.cycle()
+        original=self.book.get('quote:BTCUSDT');self.now+=100
+        f.book=lambda symbol:({**original,'id':'older','event_ms':original['event_ms']-1,'received_ms':self.now},self.now+100000)
+        self.poller.cycle()
+        self.assertEqual(self.book.get('quote:BTCUSDT'),original)
+        self.assertEqual(self.book.get('last_quote_regression:BTCUSDT')['discarded_ms'],original['event_ms']-1)
