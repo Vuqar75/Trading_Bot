@@ -35,9 +35,10 @@ class StreamFeed(Feed):
                 st['duplicates']+=1
                 # Identical ID replay cannot cause a second financial action.
                 # Revised duplicate is unconfirmed, even if no longer buffered.
-                if st.get('last_item')!=item:st['fault']=True;st['reason']='duplicate_or_revision'
+                if {k:v for k,v in st.get('last_item',{}).items() if not k.startswith('_')}!=item:st['fault']=True;st['reason']='duplicate_or_revision'
                 return
             if st['last'] is not None and ident!=st['last']+1:st['fault']=True;st['reason']='id_gap'
+            item['_received_ns']=time.monotonic_ns()
             st['last']=ident;st['last_item']=item;st['received']+=1
             if len(st['queue'])>=self.capacity:
                 st['fault']=True;st['reason']='overflow';st['queue'].clear()
@@ -74,10 +75,13 @@ class StreamFeed(Feed):
                 rows=[st['queue'].popleft() for _ in range(min(self.batch,len(st['queue'])))]
             diag={k:st[k] for k in ('reason','connected','highwater','duplicates','reconnects','received')}
             diag['queued']=len(st['queue'])
+            diag['oldest_dequeued_wait_ms']=(time.monotonic_ns()-rows[0]['_received_ns'])//1000000 if rows else None
         parser=Feed(fetch=lambda *_:rows,clock=self.clock)
         events,cursor,gap=parser.trades(symbol,last_id)
         self.trade_report[symbol]={**parser.trade_report[symbol],'transport':'websocket','stream':diag,'gap':bool(gap or fault)}
         return ([] if gap or fault else events),cursor,bool(gap or fault)
+    def pending(self):
+        with self.lock:return any(st["queue"] for st in self.states.values())
     def close(self):
         self.stop.set()
         for t in self.threads:t.join(timeout=3)

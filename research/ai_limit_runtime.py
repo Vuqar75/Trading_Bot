@@ -118,7 +118,8 @@ class Poller:
             self.funding_job=self.pool.submit(self.feed.funding,start,self.funding_cut,symbols=sorted(needed)) if needed else self.pool.submit(lambda:[])
             self.next_funding_check=now+30000
     def sleep_after_cycle(self):
-        if getattr(self.feed,"streaming",False):return .02
+        if getattr(self.feed,"streaming",False):
+            return .02 if self.feed.pending() else .1
         # At most two immediate catch-up cycles; each rechecks the quote and
         # protective exits. Never start an extra cycle after the 1 s deadline.
         now=time.monotonic_ns()
@@ -148,6 +149,11 @@ class Poller:
         return ready
 
     def cycle(self):
+        if getattr(self.feed,'streaming',False):
+            with self.book.grouped_transaction():return self._cycle()
+        return self._cycle()
+
+    def _cycle(self):
         b=self.book;self.full_page_pending=False;active=b.active();priority=[active[0]['symbol']] if active else []
         symbols=priority if priority else list(self.symbols)
         for symbol in symbols:
@@ -164,6 +170,12 @@ class Poller:
                         try:validate_quote(b.get('quote:'+symbol),symbol,b.clock());quote_ready=True
                         except (ValueError,KeyError,TypeError):quote_ready=False
                         if not quote_ready and b.active() is not None:
+                            prior_quote=b.get('quote:'+symbol)
+                            with b.transaction():b.set('last_quote_unconfirmed:'+symbol,{
+                                'at_ms':b.clock(),'kind':'pending_http','pending_mono_ms':(time.monotonic_ns()-quote_started)//1000000,
+                                'quote_source_ms':prior_quote.get('event_ms') if prior_quote else None,
+                                'quote_age_ms':b.clock()-prior_quote['event_ms'] if prior_quote else None,
+                                'http_recent':list(getattr(self.feed,'http_timings',[]))[-8:]})
                             b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                             with b.transaction():b.set('market_error:'+symbol,'public_market_unconfirmed')
                         self.loop_phase['quote_http_pending_ms']=(time.monotonic_ns()-quote_started)//1000000
@@ -172,7 +184,14 @@ class Poller:
                     else:
                         del self.quote_jobs[symbol]
                         try:q,due=future.result()
-                        except (ValueError,KeyError,OSError,TypeError):
+                        except (ValueError,KeyError,OSError,TypeError) as error:
+                            prior_quote=b.get('quote:'+symbol)
+                            with b.transaction():b.set('last_quote_unconfirmed:'+symbol,{
+                                'at_ms':b.clock(),'kind':'failed_http_or_validation','category':str(error) if str(error) in ('stale_or_future_market_data','quote_symbol','public_market_unavailable','public_market_http_failure') else type(error).__name__,
+                                'pending_mono_ms':(time.monotonic_ns()-quote_started)//1000000,
+                                'quote_source_ms':prior_quote.get('event_ms') if prior_quote else None,
+                                'quote_age_ms':b.clock()-prior_quote['event_ms'] if prior_quote else None,
+                                'http_recent':list(getattr(self.feed,'http_timings',[]))[-8:]})
                             if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                             raise
                 else:q,due=self.feed.book(symbol)
@@ -187,7 +206,9 @@ class Poller:
                             b.set('last_quote_regression:'+symbol,{'received_ms':b.clock(),
                                   'discarded_ms':q['event_ms'],'retained_ms':accepted['event_ms']})
                         q=accepted;phases['older_quote_discarded']=True
-                try:b.market('quote',q)
+                try:
+                    validate_quote(q,symbol,b.clock())
+                    if q!=b.get('quote:'+symbol):b.market('quote',q)
                 except (ValueError,KeyError,OSError,TypeError):
                     if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                     raise
@@ -196,9 +217,9 @@ class Poller:
                     self.quote_jobs[symbol]=(self.quote_pool.submit(self.feed.book,symbol),time.monotonic_ns())
                 mark=time.monotonic_ns();phases['quote_finance_ms']=(mark-quote_done)//1000000
                 stage='funding_due_sql'
-                with b.transaction():
-                    old=b.get('next_due:'+symbol)
-                    if old is None or old>b.clock() or old<=b.get('funding_through'):b.set('next_due:'+symbol,due)
+                old=b.get('next_due:'+symbol)
+                if old!=due and (old is None or old>b.clock() or old<=b.get('funding_through')):
+                    with b.transaction():b.set('next_due:'+symbol,due)
                 next_mark=time.monotonic_ns();phases['funding_due_sql_ms']=(next_mark-mark)//1000000;mark=next_mark
                 stage='filters';filters_ready=self.filters_ready(symbol)
                 next_mark=time.monotonic_ns();phases['filters_refresh_ms']=(next_mark-mark)//1000000;mark=next_mark
@@ -397,6 +418,28 @@ def analyst(budget_state,paper_public,output,*,symbol,paper_uid,feed=None,clock=
     return {'status':'published','admission':result['admission'],'decision':result['decision']['decision'] if result['decision'] else None,'network_retry':False}
 
 
+class ResponseReader:
+    """Reuse only an already-ingested atomic file identity; never repeat HTTP."""
+    def __init__(self):self.accepted=None
+    def apply(self,book,path,owner):
+        info=os.stat(path,follow_symlinks=False)
+        identity=(info.st_dev,info.st_ino,info.st_size,info.st_mtime_ns,info.st_ctime_ns,info.st_uid,info.st_mode)
+        if identity==self.accepted:return 'unchanged'
+        result=ingest(book,trusted(path,owner))
+        # Do not cache failed ingestion or a file replaced during the read.
+        after=os.stat(path,follow_symlinks=False)
+        if identity==(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns,after.st_uid,after.st_mode):self.accepted=identity
+        return result
+
+class Publisher:
+    def __init__(self):self.next_ns=0
+    def publish(self,path,result,*,force=False):
+        now=time.monotonic_ns()
+        if force or now>=self.next_ns:
+            atomic(path,result);self.next_ns=now+250000000;return True
+        return False
+
+
 def uid(value):
     return int(value) if str(value).isdigit() else pwd.getpwnam(value).pw_uid
 
@@ -441,19 +484,19 @@ def main():
                 import sys
                 sys.path.insert(0,str(Path(__file__).resolve().parent.parent/"vendor"))
                 from .ai_limit_stream import StreamFeed
-                worker=Poller(book,StreamFeed(symbols=args.symbols).start(),symbols=args.symbols);next_backup=0
+                worker=Poller(book,StreamFeed(symbols=args.symbols).start(),symbols=args.symbols);next_backup=0;reader=ResponseReader();publisher=Publisher()
                 try:
                     while running[0]:
                         loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
                         mark=time.monotonic_ns();result=worker.cycle();now=time.monotonic_ns();phase['poller_total_ms']=(now-mark)//1000000;mark=now
                         if Path(args.response).exists():
-                            try:ingest(book,trusted(args.response,args.analyst_uid))
+                            try:reader.apply(book,args.response,args.analyst_uid)
                             except (ValueError,OSError,KeyError,TypeError):
                                 with book.transaction():book.set('analyst_ingest_error','response_unavailable_or_invalid')
                         now=time.monotonic_ns();phase['ingest_ms']=(now-mark)//1000000;mark=now
                         result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds')}
                         now=time.monotonic_ns();phase['snapshot_ms']=(now-mark)//1000000;mark=now
-                        atomic(args.public,result)
+                        publisher.publish(args.public,result,force=args.once)
                         now=time.monotonic_ns();phase['publish_ms']=(now-mark)//1000000;mark=now
                         if book.clock()>=next_backup:
                             folder=book.root/'backups';folder.mkdir(mode=0o700,exist_ok=True)

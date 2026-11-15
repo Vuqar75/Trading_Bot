@@ -67,7 +67,10 @@ class Book:
     def balance(self,name):return self.ledger.balance(B+name)
     def plans(self):return [(json.loads(r['payload']),json.loads(r['state'])) for r in self.db.execute('SELECT * FROM bracket_plans ORDER BY rowid')]
     def active(self):
-        values=[(p,s) for p,s in self.plans() if s['status'] not in ('CLOSED','CANCELED')]
+        values=[]
+        for row in self.db.execute('SELECT payload,state FROM bracket_plans ORDER BY rowid'):
+            state=json.loads(row['state'])
+            if state['status'] not in ('CLOSED','CANCELED'):values.append((json.loads(row['payload']),state))
         if len(values)>1:raise ValueError('multiple_active_plans')
         return values[0] if values else None
     def save(self,p,s):self.db.execute('UPDATE bracket_plans SET state=? WHERE id=?',(canonical(s),p['plan_id']))
@@ -77,9 +80,18 @@ class Book:
     def transaction(self):
         with self.ledger.transaction():
             yield
-            if self.balance('free')<0:self.set('blocked','negative_paper_equity')
-            self.verify();self.fault('before_commit')
-        self.fault('after_commit')
+            if not getattr(self,'_grouped',False):
+                if self.balance('free')<0:self.set('blocked','negative_paper_equity')
+                self.verify();self.fault('before_commit')
+        if not getattr(self,'_grouped',False):self.fault('after_commit')
+
+    @contextmanager
+    def grouped_transaction(self):
+        if getattr(self,'_grouped',False):raise ValueError('nested_group_not_allowed')
+        with self.transaction():
+            self._grouped=True
+            try:yield
+            finally:self._grouped=False
 
     def post(self,id,kind,details,changes,now):
         entries=[(account if account.startswith('external:') else B+account,'USDT',v) for account,v in changes if v]
@@ -88,7 +100,8 @@ class Book:
     def verify(self):
         if not self.ledger.reconcile()['balanced']:raise ValueError('ledger_reconciliation_failed')
         expected=Decimal(1000)
-        for p,s in self.plans():expected+=dec(s['gross'])-dec(s['fees'])+dec(s['funding'])
+        for row in self.db.execute('SELECT state FROM bracket_plans ORDER BY rowid'):
+            state=json.loads(row['state']);expected+=dec(state['gross'])-dec(state['fees'])+dec(state['funding'])
         actual=sum((self.balance(k) for k in ('free','reserved','margin','funding_buffer')),Decimal(0))
         if actual!=expected:raise ValueError('paper_capital_mismatch')
         if any(self.balance(k)<0 for k in ('reserved','margin','funding_buffer')):raise ValueError('negative_reserve_or_margin')
