@@ -32,7 +32,9 @@ def analyse(envelope,*,plan_module=None):
         note('passed')
         pool.append({'direction':d['decision'],**{k:d[k] for k in ('entry_level','stop_level','target_level')},**{k:checked[k] for k in ('entry','stop','target','quantity','risk_usdt','net_reward_risk')}})
         return checked
-    with patch.object(module,'validate',side_effect=capture):rebuilt=module.context(cap,snap['quote'],snap['filters'],snap['news'],snap['as_of_ms'])
+    import inspect
+    options={'candidate_policy':snap.get('candidate_policy','distance-rr-v1')} if 'candidate_policy' in inspect.signature(module.context).parameters else {}
+    with patch.object(module,'validate',side_effect=capture):rebuilt=module.context(cap,snap['quote'],snap['filters'],snap['news'],snap['as_of_ms'],**options)
     if rebuilt!=snap:raise ValueError('context_reconstruction_mismatch')
     compared=compare(snap,pool);summary={}
     for direction in ('LONG','SHORT'):

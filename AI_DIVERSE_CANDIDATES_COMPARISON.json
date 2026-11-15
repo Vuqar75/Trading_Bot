@@ -1,0 +1,806 @@
+[
+  {
+    "snapshot_id_old": "606807ab8b0b8b9028437208adf617be934c864a08452193e3f57bd680d4cccd",
+    "snapshot_id_new": "d48ae0860355af85933e5a01e8fd801c035dde59a11342a23c4d7bc3434d480f",
+    "asof_ms": 1794715331250,
+    "policy": "entry-stop-nearest-v1",
+    "old": {
+      "LONG": {
+        "count": 4,
+        "entries": 1,
+        "pairs": 1,
+        "target_distance": [
+          "11736.1",
+          "11595.6",
+          "11554.0",
+          "10932.9"
+        ],
+        "rr": [
+          "11.6428",
+          "11.5010",
+          "11.4590",
+          "10.8322"
+        ],
+        "obstacle_counts": [
+          13,
+          11,
+          11,
+          10
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 2,
+        "pairs": 4,
+        "target_distance": [
+          "2924.3",
+          "2924.3",
+          "2945.3",
+          "2945.3"
+        ],
+        "rr": [
+          "2.8626",
+          "2.1892",
+          "2.9495",
+          "2.2438"
+        ],
+        "obstacle_counts": [
+          3,
+          3,
+          3,
+          3
+        ]
+      }
+    },
+    "new": {
+      "LONG": {
+        "count": 4,
+        "entries": 2,
+        "pairs": 4,
+        "target_distance": [
+          "2884.2",
+          "2884.2",
+          "1609.6",
+          "1901.9"
+        ],
+        "rr": [
+          "2.7089",
+          "1.6934",
+          "1.5282",
+          "1.8015"
+        ],
+        "obstacle_counts": [
+          5,
+          5,
+          2,
+          3
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 2,
+        "pairs": 4,
+        "target_distance": [
+          "2924.3",
+          "2924.3",
+          "1608.4",
+          "2945.3"
+        ],
+        "rr": [
+          "2.8626",
+          "2.1892",
+          "1.5125",
+          "2.2438"
+        ],
+        "obstacle_counts": [
+          3,
+          3,
+          1,
+          3
+        ]
+      }
+    },
+    "candidates_new": [
+      {
+        "direction": "LONG",
+        "entry_level": "15m:resistance:1794700800000",
+        "stop_level": "15m:support:1794690900000",
+        "target_level": "1h:resistance:1794646800000",
+        "entry": "64547.4",
+        "stop": "63820.6",
+        "target": "67431.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.7089",
+        "estimated_risk_usdt": "0.9903222297"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:resistance:1794700800000",
+        "stop_level": "15m:support:1794696300000",
+        "target_level": "1h:resistance:1794646800000",
+        "entry": "64547.4",
+        "stop": "63225.8",
+        "target": "67431.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.6934",
+        "estimated_risk_usdt": "1.5842303271"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794690900000",
+        "stop_level": "15m:support:1794696300000",
+        "target_level": "15m:resistance:1794711600000",
+        "entry": "63888",
+        "stop": "63225.8",
+        "target": "65497.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5282",
+        "estimated_risk_usdt": "0.9231158871"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794690900000",
+        "stop_level": "15m:support:1794693600000",
+        "target_level": "15m:resistance:1794686400000",
+        "entry": "63888",
+        "stop": "63203.6",
+        "target": "65789.9",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.8015",
+        "estimated_risk_usdt": "0.9452825982"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794691800000",
+        "stop_level": "15m:resistance:1794711600000",
+        "target_level": "15m:support:1794707100000",
+        "entry": "64948",
+        "stop": "65632.4",
+        "target": "62023.7",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.8626",
+        "estimated_risk_usdt": "0.9517462162"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794691800000",
+        "stop_level": "15m:resistance:1794686400000",
+        "target_level": "15m:support:1794707100000",
+        "entry": "64948",
+        "stop": "65924.7",
+        "target": "62023.7",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.1892",
+        "estimated_risk_usdt": "1.24448481235"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:support:1794674700000",
+        "stop_level": "15m:resistance:1794711600000",
+        "target_level": "15m:support:1794696300000",
+        "entry": "64969",
+        "stop": "65632.4",
+        "target": "63360.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5125",
+        "estimated_risk_usdt": "0.9308008162"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:support:1794674700000",
+        "stop_level": "15m:resistance:1794686400000",
+        "target_level": "15m:support:1794707100000",
+        "entry": "64969",
+        "stop": "65924.7",
+        "target": "62023.7",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.2438",
+        "estimated_risk_usdt": "1.22353941235"
+      }
+    ],
+    "bytes": 10567
+  },
+  {
+    "snapshot_id_old": "9220256556a451ca0b24151aa3d8d735d25a1b0656c339b7f39890e88aab3ed8",
+    "snapshot_id_new": "0395fe17b518ab314544be723a01889c58e5f6fe9af25f69c233632522666e62",
+    "asof_ms": 1794729731604,
+    "policy": "entry-stop-nearest-v1",
+    "old": {
+      "LONG": {
+        "count": 4,
+        "entries": 1,
+        "pairs": 2,
+        "target_distance": [
+          "12432.6",
+          "12292.1",
+          "12250.5",
+          "12432.6"
+        ],
+        "rr": [
+          "13.8006",
+          "13.6421",
+          "13.5952",
+          "13.4638"
+        ],
+        "obstacle_counts": [
+          13,
+          12,
+          11,
+          13
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 3,
+        "pairs": 4,
+        "target_distance": [
+          "2154.5",
+          "2154.5",
+          "2525.3",
+          "2560.8"
+        ],
+        "rr": [
+          "2.9437",
+          "2.7943",
+          "3.1800",
+          "3.3926"
+        ],
+        "obstacle_counts": [
+          3,
+          3,
+          4,
+          4
+        ]
+      }
+    },
+    "new": {
+      "LONG": {
+        "count": 4,
+        "entries": 3,
+        "pairs": 4,
+        "target_distance": [
+          "1646.7",
+          "1646.7",
+          "2840.1",
+          "2862.3"
+        ],
+        "rr": [
+          "1.6340",
+          "1.5941",
+          "1.6265",
+          "1.6630"
+        ],
+        "obstacle_counts": [
+          4,
+          4,
+          5,
+          5
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 3,
+        "pairs": 4,
+        "target_distance": [
+          "2154.5",
+          "2154.5",
+          "2525.3",
+          "1246.1"
+        ],
+        "rr": [
+          "2.9437",
+          "2.7943",
+          "3.1800",
+          "1.5033"
+        ],
+        "obstacle_counts": [
+          3,
+          3,
+          4,
+          2
+        ]
+      }
+    },
+    "candidates_new": [
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794690900000",
+        "stop_level": "15m:support:1794696300000",
+        "target_level": "15m:resistance:1794711600000",
+        "entry": "63888",
+        "stop": "63262.9",
+        "target": "65534.7",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.6340",
+        "estimated_risk_usdt": "0.88607151855"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794690900000",
+        "stop_level": "15m:support:1794693600000",
+        "target_level": "15m:resistance:1794711600000",
+        "entry": "63888",
+        "stop": "63240.7",
+        "target": "65534.7",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5941",
+        "estimated_risk_usdt": "0.90823822965"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794696300000",
+        "stop_level": "15m:support:1794707100000",
+        "target_level": "1h:resistance:1794675600000",
+        "entry": "63293.2",
+        "stop": "61926",
+        "target": "66133.3",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.6265",
+        "estimated_risk_usdt": "1.624620357"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794693600000",
+        "stop_level": "15m:support:1794707100000",
+        "target_level": "1h:resistance:1794675600000",
+        "entry": "63271",
+        "stop": "61926",
+        "target": "66133.3",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.6630",
+        "estimated_risk_usdt": "1.602362637"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:support:1794722400000",
+        "stop_level": "15m:resistance:1794726900000",
+        "target_level": "15m:support:1794707100000",
+        "entry": "64141.1",
+        "stop": "64542.2",
+        "target": "61986.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.9437",
+        "estimated_risk_usdt": "0.6647124311"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:support:1794722400000",
+        "stop_level": "15m:resistance:1794700800000",
+        "target_level": "15m:support:1794707100000",
+        "entry": "64141.1",
+        "stop": "64577.7",
+        "target": "61986.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.7943",
+        "estimated_risk_usdt": "0.70026569885"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794726900000",
+        "stop_level": "15m:resistance:1794691800000",
+        "target_level": "15m:support:1794707100000",
+        "entry": "64511.9",
+        "stop": "64978.3",
+        "target": "61986.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "3.1800",
+        "estimated_risk_usdt": "0.73163087915"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794700800000",
+        "stop_level": "15m:resistance:1794691800000",
+        "target_level": "15m:support:1794693600000",
+        "entry": "64547.4",
+        "stop": "64978.3",
+        "target": "63301.3",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5033",
+        "estimated_risk_usdt": "0.69622317915"
+      }
+    ],
+    "bytes": 10723
+  },
+  {
+    "snapshot_id_old": "3926c8b1b6181570d39845f96cc9235212af6f3fb56782e8204af3d2466a2dc6",
+    "snapshot_id_new": "f2458fb850aa3fbb3371654a4a88eb5a19d86cefc152cdaca58f613504f96fa2",
+    "asof_ms": 1794744129302,
+    "policy": "entry-stop-nearest-v1",
+    "old": {
+      "LONG": {
+        "count": 4,
+        "entries": 1,
+        "pairs": 1,
+        "target_distance": [
+          "10933.2",
+          "10891.6",
+          "10270.5",
+          "9494.2"
+        ],
+        "rr": [
+          "18.6465",
+          "18.5743",
+          "17.4950",
+          "16.1461"
+        ],
+        "obstacle_counts": [
+          10,
+          9,
+          8,
+          7
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 2,
+        "pairs": 2,
+        "target_distance": [
+          "3574",
+          "2259.3",
+          "1791.4",
+          "3651"
+        ],
+        "rr": [
+          "4.0506",
+          "2.4708",
+          "1.9085",
+          "4.5639"
+        ],
+        "obstacle_counts": [
+          8,
+          7,
+          6,
+          8
+        ]
+      }
+    },
+    "new": {
+      "LONG": {
+        "count": 4,
+        "entries": 3,
+        "pairs": 4,
+        "target_distance": [
+          "2221.8",
+          "2249.9",
+          "2249.9",
+          "922.1"
+        ],
+        "rr": [
+          "3.5091",
+          "3.7413",
+          "2.5331",
+          "1.5352"
+        ],
+        "obstacle_counts": [
+          4,
+          4,
+          4,
+          2
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 3,
+        "pairs": 4,
+        "target_distance": [
+          "1791.4",
+          "1466.2",
+          "1466.2",
+          "2787.5"
+        ],
+        "rr": [
+          "1.9085",
+          "1.6717",
+          "1.5290",
+          "1.5079"
+        ],
+        "obstacle_counts": [
+          6,
+          5,
+          5,
+          7
+        ]
+      }
+    },
+    "candidates_new": [
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794735900000",
+        "stop_level": "1h:support:1794672000000",
+        "target_level": "1h:resistance:1794646800000",
+        "entry": "65242.5",
+        "stop": "64934.3",
+        "target": "67464.3",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "3.5091",
+        "estimated_risk_usdt": "0.57519948285"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794740400000",
+        "stop_level": "1h:support:1794672000000",
+        "target_level": "1h:resistance:1794646800000",
+        "entry": "65214.4",
+        "stop": "64934.3",
+        "target": "67464.3",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "3.7413",
+        "estimated_risk_usdt": "0.54702642285"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794740400000",
+        "stop_level": "15m:support:1794718800000",
+        "target_level": "1h:resistance:1794646800000",
+        "entry": "65214.4",
+        "stop": "64673",
+        "target": "67464.3",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.5331",
+        "estimated_risk_usdt": "0.8079346035"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:resistance:1794717900000",
+        "stop_level": "1h:support:1794672000000",
+        "target_level": "15m:resistance:1794733200000",
+        "entry": "65136.4",
+        "stop": "64934.3",
+        "target": "66058.5",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5352",
+        "estimated_risk_usdt": "0.46882362285"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794711600000",
+        "stop_level": "15m:resistance:1794733200000",
+        "target_level": "15m:support:1794728700000",
+        "entry": "65565",
+        "stop": "66127.9",
+        "target": "63773.6",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.9085",
+        "estimated_risk_usdt": "0.83259391395"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794737700000",
+        "stop_level": "15m:resistance:1794733200000",
+        "target_level": "15m:support:1794722400000",
+        "entry": "65642",
+        "stop": "66127.9",
+        "target": "64175.8",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.6717",
+        "estimated_risk_usdt": "0.75579411395"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794737700000",
+        "stop_level": "1h:resistance:1794675600000",
+        "target_level": "15m:support:1794722400000",
+        "entry": "65642",
+        "stop": "66198.3",
+        "target": "64175.8",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5290",
+        "estimated_risk_usdt": "0.82629974915"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:resistance:1794733200000",
+        "stop_level": "1h:resistance:1794646800000",
+        "target_level": "1h:support:1794693600000",
+        "entry": "66093.2",
+        "stop": "67533.7",
+        "target": "63305.7",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5079",
+        "estimated_risk_usdt": "1.71367663685"
+      }
+    ],
+    "bytes": 10730
+  },
+  {
+    "snapshot_id_old": "e25787bc713c2a067ce7eca1a2ab4440a5b2359e69700f8c4778d993a9c30ac1",
+    "snapshot_id_new": "79fd0fb04b55b65c9d2cd3b9c9117774ebb18e48ec03db989360e122c09950f5",
+    "asof_ms": 1794758528243,
+    "policy": "entry-stop-nearest-v1",
+    "old": {
+      "LONG": {
+        "count": 4,
+        "entries": 1,
+        "pairs": 1,
+        "target_distance": [
+          "11669.4",
+          "11627.8",
+          "11006.7",
+          "10230.4"
+        ],
+        "rr": [
+          "17.2705",
+          "17.2078",
+          "16.2726",
+          "15.1036"
+        ],
+        "obstacle_counts": [
+          11,
+          10,
+          9,
+          8
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 2,
+        "pairs": 4,
+        "target_distance": [
+          "2722.3",
+          "2722.3",
+          "2983.6",
+          "2983.6"
+        ],
+        "rr": [
+          "2.1929",
+          "2.1881",
+          "3.1280",
+          "3.1192"
+        ],
+        "obstacle_counts": [
+          4,
+          4,
+          5,
+          5
+        ]
+      }
+    },
+    "new": {
+      "LONG": {
+        "count": 4,
+        "entries": 3,
+        "pairs": 4,
+        "target_distance": [
+          "1235.5",
+          "1100.1",
+          "1701.2",
+          "1392.3"
+        ],
+        "rr": [
+          "1.5591",
+          "1.5382",
+          "1.5210",
+          "1.7197"
+        ],
+        "obstacle_counts": [
+          3,
+          1,
+          6,
+          1
+        ]
+      },
+      "SHORT": {
+        "count": 4,
+        "entries": 2,
+        "pairs": 4,
+        "target_distance": [
+          "2722.3",
+          "2722.3",
+          "1668.9",
+          "1668.9"
+        ],
+        "rr": [
+          "2.1929",
+          "2.1881",
+          "1.6499",
+          "1.6453"
+        ],
+        "obstacle_counts": [
+          4,
+          4,
+          4,
+          4
+        ]
+      }
+    },
+    "candidates_new": [
+      {
+        "direction": "LONG",
+        "entry_level": "15m:resistance:1794726900000",
+        "stop_level": "15m:support:1794722400000",
+        "target_level": "15m:resistance:1794748500000",
+        "entry": "64511.9",
+        "stop": "64112",
+        "target": "65747.4",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5591",
+        "estimated_risk_usdt": "0.663766884"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794753000000",
+        "stop_level": "15m:support:1794722400000",
+        "target_level": "15m:resistance:1794742200000",
+        "entry": "64433.3",
+        "stop": "64112",
+        "target": "65533.4",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5382",
+        "estimated_risk_usdt": "0.584962524"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794753000000",
+        "stop_level": "15m:support:1794728700000",
+        "target_level": "1h:resistance:1794675600000",
+        "entry": "64433.3",
+        "stop": "63709.8",
+        "target": "66134.5",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.5210",
+        "estimated_risk_usdt": "0.9865594251"
+      },
+      {
+        "direction": "LONG",
+        "entry_level": "15m:support:1794722400000",
+        "stop_level": "15m:support:1794728700000",
+        "target_level": "15m:resistance:1794742200000",
+        "entry": "64141.1",
+        "stop": "63709.8",
+        "target": "65533.4",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.7197",
+        "estimated_risk_usdt": "0.6935997051"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:support:1794718800000",
+        "stop_level": "15m:resistance:1794742200000",
+        "target_level": "1h:support:1794704400000",
+        "entry": "64707.7",
+        "stop": "65591.6",
+        "target": "61985.4",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.1929",
+        "estimated_risk_usdt": "1.1505602158"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "15m:support:1794718800000",
+        "stop_level": "1h:resistance:1794711600000",
+        "target_level": "1h:support:1794704400000",
+        "entry": "64707.7",
+        "stop": "65594.1",
+        "target": "61985.4",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "2.1881",
+        "estimated_risk_usdt": "1.15306396705"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "1h:support:1794672000000",
+        "stop_level": "15m:resistance:1794742200000",
+        "target_level": "1h:support:1794693600000",
+        "entry": "64969",
+        "stop": "65591.6",
+        "target": "63300.1",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.6499",
+        "estimated_risk_usdt": "0.8899395958"
+      },
+      {
+        "direction": "SHORT",
+        "entry_level": "1h:support:1794672000000",
+        "stop_level": "1h:resistance:1794711600000",
+        "target_level": "1h:support:1794693600000",
+        "entry": "64969",
+        "stop": "65594.1",
+        "target": "63300.1",
+        "quantity_cap": "0.001",
+        "net_reward_risk": "1.6453",
+        "estimated_risk_usdt": "0.89244334705"
+      }
+    ],
+    "bytes": 10715
+  }
+]

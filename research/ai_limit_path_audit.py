@@ -33,7 +33,7 @@ def audit(paper_path,budget_path,start,end,journal):
                 try:value=original(s,d,now)
                 except ValueError as e:stats[direction][str(e)]+=1;raise
                 stats[direction]['passed']+=1;rank[direction+'_passed']=max(rank[direction+'_passed'],r);return value
-            with patch.object(p,'validate',side_effect=check):recomputed=p.context(cap,snap['quote'],snap['filters'],snap['news'],snap['as_of_ms'])
+            with patch.object(p,'validate',side_effect=check):recomputed=p.context(cap,snap['quote'],snap['filters'],snap['news'],snap['as_of_ms'],candidate_policy=snap.get('candidate_policy','distance-rr-v1'))
             checks=[]
             for candidate in snap.get('candidate_plans',[]):
                 d={'snapshot_id':snap['snapshot_id'],'decision':candidate['direction'],'entry_level':candidate['entry_level'],'stop_level':candidate['stop_level'],'target_level':candidate['target_level'],'valid_until_ms':snap['expires_ms']-1,'max_hold_minutes':240,'thesis':'causal audit','news_ids':[],'risks':[]}

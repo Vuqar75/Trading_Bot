@@ -68,7 +68,35 @@ def filters(value,now):
     return value
 
 
-def context(capture,book,exchange_filters,news,now):
+LEGACY_CANDIDATE_POLICY='distance-rr-v1'
+CANDIDATE_POLICY='entry-stop-nearest-v1'
+
+def select_candidates(candidates,reference,policy=CANDIDATE_POLICY):
+    if policy==LEGACY_CANDIDATE_POLICY:
+        ordered=sorted(candidates,key=lambda x:(abs(dec(x['entry'])-reference),-dec(x['net_reward_risk']),x['direction'],x['entry_level'],x['stop_level'],x['target_level']))
+        return [c for direction in ('LONG','SHORT') for c in [x for x in ordered if x['direction']==direction][:4]]
+    if policy!=CANDIDATE_POLICY:raise ValueError('candidate_policy_unknown')
+    result=[]
+    ids=lambda c:(c['entry_level'],c['stop_level'],c['target_level'])
+    pair=lambda c:(dec(c['entry']),dec(c['stop']))
+    def pair_rank(c):return (abs(dec(c['entry'])-reference),abs(dec(c['entry'])-dec(c['stop'])),*pair(c),*ids(c))
+    target_rank=lambda c:(abs(dec(c['target'])-dec(c['entry'])),*ids(c))
+    for direction in ('LONG','SHORT'):
+        unique={}
+        for c in sorted([c for c in candidates if c['direction']==direction],key=ids):
+            unique.setdefault((*pair(c),dec(c['target'])),c)
+        groups={}
+        for c in unique.values():groups.setdefault(pair(c),[]).append(c)
+        reps=[min(group,key=target_rank) for group in groups.values()]
+        chosen=sorted(reps,key=pair_rank)[:4]
+        selected={(*pair(c),dec(c['target'])) for c in chosen}
+        if len(chosen)<4:
+            remaining=[c for c in unique.values() if (*pair(c),dec(c['target'])) not in selected]
+            chosen+=sorted(remaining,key=lambda c:(*pair_rank(c)[:4],*target_rank(c)))[:4-len(chosen)]
+        result.extend(chosen)
+    return result
+
+def context(capture,book,exchange_filters,news,now,*,candidate_policy=CANDIDATE_POLICY):
     symbol=capture.get('symbol')
     if symbol not in SYMBOLS or capture.get('venue')!='binance-usdm':raise ValueError('context_market')
     quote(book,symbol,now);filters(exchange_filters,now)
@@ -120,6 +148,7 @@ def context(capture,book,exchange_filters,news,now):
     if capture.get('derivatives') is not None:
         from .derivatives_context import validate as validate_derivatives
         result['derivatives']=validate_derivatives(capture['derivatives'],symbol=symbol,signal_ms=signal,as_of_ms=now)
+    if candidate_policy!=LEGACY_CANDIDATE_POLICY:result['candidate_policy']=candidate_policy
     result['snapshot_id']=digest(result)
     # Show the analyst mechanically admissible alternatives instead of asking
     # it to invent prices or perform fee/risk arithmetic approximately.
@@ -148,8 +177,7 @@ def context(capture,book,exchange_filters,news,now):
                     candidates.append({'direction':direction,'entry_level':e['id'],'stop_level':stop_level['id'],'target_level':target_level['id'],
                         'entry':checked['entry'],'stop':checked['stop'],'target':checked['target'],'quantity_cap':checked['quantity'],
                         'net_reward_risk':format(dec(checked['net_reward_risk']),'.4f'),'estimated_risk_usdt':checked['risk_usdt']})
-    candidates.sort(key=lambda x:(abs(dec(x['entry'])-reference),-dec(x['net_reward_risk']),x['direction'],x['entry_level'],x['stop_level'],x['target_level']))
-    result['candidate_plans']=[c for direction in ('LONG','SHORT') for c in [x for x in candidates if x['direction']==direction][:4]]
+    result['candidate_plans']=select_candidates(candidates,reference,candidate_policy)
     result['snapshot_id']=digest({k:v for k,v in result.items() if k!='snapshot_id'})
     if len(canonical(result).encode())>16000:raise ValueError('context_size')
     return result
@@ -180,6 +208,7 @@ def request(snapshot):
 
 def verify_context(snapshot,now):
     if not isinstance(snapshot,dict) or snapshot.get('version')!=VERSION or snapshot.get('symbol') not in SYMBOLS or snapshot.get('venue')!='binance-usdm':raise ValueError('snapshot_schema')
+    if snapshot.get('candidate_policy',LEGACY_CANDIDATE_POLICY) not in (LEGACY_CANDIDATE_POLICY,CANDIDATE_POLICY):raise ValueError('candidate_policy_unknown')
     if digest({k:v for k,v in snapshot.items() if k!='snapshot_id'})!=snapshot.get('snapshot_id'):raise ValueError('snapshot_hash')
     if not integer(snapshot['as_of_ms'])<=now<integer(snapshot['expires_ms']) or snapshot['expires_ms']-snapshot['as_of_ms']>BAR:raise ValueError('snapshot_expired')
     if not isinstance(snapshot['levels'],list) or len(snapshot['levels'])>36 or len({x['id'] for x in snapshot['levels']})!=len(snapshot['levels']):raise ValueError('level_identity')

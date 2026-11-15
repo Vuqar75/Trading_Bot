@@ -117,7 +117,7 @@ class Book:
                 p,s=active;self.cancel_entry(p,s,'PAUSE',self.clock());self.finalize(p,s,self.clock());self.save(p,s)
 
     def register_source(self,snapshot,capture):
-        expected=context(capture,snapshot['quote'],snapshot['filters'],snapshot['news'],snapshot['as_of_ms'])
+        expected=context(capture,snapshot['quote'],snapshot['filters'],snapshot['news'],snapshot['as_of_ms'],candidate_policy=snapshot.get('candidate_policy','distance-rr-v1'))
         if expected!=snapshot:raise ValueError('source_context_recomputation_failed')
         with self.transaction():
             prior=self.db.execute('SELECT capture FROM bracket_sources WHERE id=?',(snapshot['snapshot_id'],)).fetchone()
