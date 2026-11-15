@@ -150,7 +150,7 @@ class Poller:
         b=self.book;self.full_page_pending=False;active=b.active();priority=[active[0]['symbol']] if active else []
         symbols=priority if priority else list(self.symbols)
         for symbol in symbols:
-            tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol);phases={}
+            tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol);phases={};stage='quote_request'
             try:
                 initial=b.active();quote_job=self.quote_jobs.get(symbol)
                 exposed=initial is not None and initial[0]['symbol']==symbol and dec(initial[1]['open_qty'])>0
@@ -173,7 +173,7 @@ class Poller:
                         if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                         raise
                 else:q,due=self.feed.book(symbol)
-                quote_done=time.monotonic_ns()
+                quote_done=time.monotonic_ns();stage='quote_apply'
                 try:b.market('quote',q)
                 except (ValueError,KeyError,OSError,TypeError):
                     if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
@@ -182,14 +182,15 @@ class Poller:
                 if active_after_quote is not None and active_after_quote[0]['symbol']==symbol and dec(active_after_quote[1]['open_qty'])>0 and symbol not in self.quote_jobs:
                     self.quote_jobs[symbol]=(self.quote_pool.submit(self.feed.book,symbol),time.monotonic_ns())
                 mark=time.monotonic_ns();phases['quote_finance_ms']=(mark-quote_done)//1000000
+                stage='funding_due_sql'
                 with b.transaction():
                     old=b.get('next_due:'+symbol)
                     if old is None or old>b.clock() or old<=b.get('funding_through'):b.set('next_due:'+symbol,due)
                 next_mark=time.monotonic_ns();phases['funding_due_sql_ms']=(next_mark-mark)//1000000;mark=next_mark
-                filters_ready=self.filters_ready(symbol)
+                stage='filters';filters_ready=self.filters_ready(symbol)
                 next_mark=time.monotonic_ns();phases['filters_refresh_ms']=(next_mark-mark)//1000000;mark=next_mark
                 phases['filters_ready']=filters_ready
-                active_before=b.active();job=self.trade_jobs.get(symbol)
+                stage='trade_request';active_before=b.active();job=self.trade_jobs.get(symbol)
                 # A slow public trade request must not hold quote protection
                 # while a position exists. The network thread never writes DB.
                 exposed=active_before is not None and active_before[0]['symbol']==symbol and dec(active_before[1]['open_qty'])>0
@@ -233,7 +234,7 @@ class Poller:
                 else:
                     events,cursor,gap=self.feed.trades(symbol,b.get('trade_cursor:'+symbol))
                     report=dict(getattr(self.feed,'trade_report',{}).get(symbol,{}))
-                next_mark=time.monotonic_ns();phases['trades_total_ms']=(next_mark-mark)//1000000
+                stage='trade_validation';next_mark=time.monotonic_ns();phases['trades_total_ms']=(next_mark-mark)//1000000
                 full_page=report.get('rows')==1000
                 self.full_page_streak[symbol]=self.full_page_streak.get(symbol,0)+1 if full_page else 0
                 if full_page:
@@ -267,6 +268,7 @@ class Poller:
                 if prearm:gap=False;report['ignored_prearm_stale_rows']=report['stale_rows']
                 report['history_contiguous']=type(report.get('requested_after_id')) is int and not bool(report.get('discontinuities'))
                 report['execution_gap']=bool(gap)
+                stage='gap_handling'
                 if gap:
                     gap_evidence={k:v for k,v in report.items() if k!='phase_diagnostics'}
                     b.trade_gap(symbol,'noncontiguous_or_stale_public_trades_no_backfills',evidence=gap_evidence,
@@ -280,7 +282,7 @@ class Poller:
                         cursor=reset_cursor
                         report={**report,'idle_resync':getattr(self.feed,'trade_report',{}).get(symbol,{})}
                         events=[]
-                waiting=time.monotonic_ns()
+                stage='batch_commit';waiting=time.monotonic_ns()
                 with b.transaction():
                     locked=time.monotonic_ns();active=b.active();skipped=0
                     if prearm and (active is None or active_before[0]['plan_id']!=active[0]['plan_id']
@@ -313,10 +315,24 @@ class Poller:
                 self.previous_timing[symbol]={'poll_started_ms':wall,'total_ms':(time.monotonic_ns()-tick)//1000000,
                     'batch_finalize_ms':(time.monotonic_ns()-processed)//1000000,'batch_processing_ms':report['batch_processing_ms'],
                     'batch_lock_wait_ms':report['batch_lock_wait_ms'],'event_count':len(events),'idle_events_skipped':skipped}
-            except (ValueError,KeyError,OSError,TypeError):
+            except (ValueError,KeyError,OSError,TypeError) as error:
+                # Preserve only an allowlisted category, never arbitrary
+                # exception text, response bodies or credentials. Updating a
+                # bounded metadata ring shares the existing failure transaction.
+                allowed={'public_market_unavailable','public_market_http_failure',
+                         'public_access_denied_http401','public_access_denied_http403',
+                         'public_access_denied_http451','public_response_size','public_response_json',
+                         'stale_or_future_market_data','quote_symbol','trade_list','trade_symbol_or_side',
+                         'market_out_of_order','market_event_revision','trade_cursor_changed_while_pending',
+                         'trade_resync_cursor_regression','active_plan_changed_during_batch','page_history_changed'}
+                reason=str(error);reason=reason if reason in allowed else 'other'
+                event={'at_ms':b.clock(),'stage':stage,'class':type(error).__name__,'reason':reason,
+                       'elapsed_ms':(time.monotonic_ns()-tick)//1000000}
                 with b.transaction():
                     b.set('market_error:'+symbol,'public_market_unconfirmed')
                     b.set('trade_confirmed_ms:'+symbol,None)
+                    history=b.get('poll_error_history:'+symbol,[])
+                    b.set('poll_error_history:'+symbol,(history+[event])[-8:])
         phase_start=time.monotonic_ns();b.pulse();phase_end=time.monotonic_ns()
         self.loop_phase['pulse_finance_ms']=(phase_end-phase_start)//1000000;phase_start=phase_end
         self.funding_ready();phase_end=time.monotonic_ns();self.loop_phase['funding_check_ms']=(phase_end-phase_start)//1000000

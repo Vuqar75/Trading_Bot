@@ -258,6 +258,28 @@ class TradeRecoveryTests(unittest.TestCase):
             self.assertTrue(self.book.verify()['balanced'])
         finally:gate.set()
 
+    def test_poll_error_diagnostics_are_bounded_and_redact_unknown_text(self):
+        def failing(symbol):raise ValueError('sensitive arbitrary text')
+        self.feed.book=failing
+        for _ in range(10):self.poller.cycle();self.now+=1
+        history=self.book.get('poll_error_history:BTCUSDT')
+        self.assertEqual(len(history),8)
+        self.assertTrue(all(x['stage']=='quote_request' and x['reason']=='other' and x['class']=='ValueError' for x in history))
+        self.assertNotIn('sensitive',str(history))
+        self.assertEqual(self.book.get('market_error:BTCUSDT'),'public_market_unconfirmed')
+        self.assertTrue(self.book.verify()['balanced'])
+
+    def test_poll_error_diagnostics_record_trade_failure_and_preserve_cursor(self):
+        self.book.set('trade_cursor:BTCUSDT',9)
+        def failing(path,params):raise ValueError('public_market_unavailable')
+        self.feed.fetch=failing;result=self.poller.cycle()
+        event=self.book.get('poll_error_history:BTCUSDT')[-1]
+        self.assertEqual((event['stage'],event['reason']),('trade_request','public_market_unavailable'))
+        self.assertEqual(self.book.get('trade_cursor:BTCUSDT'),9)
+        self.assertEqual(result['fills'],0)
+        self.assertEqual(result['market_errors']['BTCUSDT'],'public_market_unconfirmed')
+        self.assertTrue(self.book.verify()['balanced'])
+
     def test_http_timing_records_latency_and_parse_without_payload(self):
         import time
         class Response:
