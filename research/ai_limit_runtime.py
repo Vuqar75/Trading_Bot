@@ -163,7 +163,30 @@ class Poller:
             try:
                 initial=b.active();quote_job=self.quote_jobs.get(symbol)
                 exposed=initial is not None and initial[0]['symbol']==symbol and dec(initial[1]['open_qty'])>0
-                if quote_job is not None or exposed or getattr(self.feed,"streaming",False):
+                if getattr(self.feed,'websocket_quotes',False):
+                    # Network threads only update bounded memory. No REST job
+                    # or wait on a future is part of this protective path.
+                    with b.transaction():b.set('quote_execution_unconfirmed:'+symbol,'quote_snapshot_pending')
+                    packet=self.feed.quote_packet(symbol);report=packet['report']
+                    with b.transaction():
+                        b.set('quote_execution_unconfirmed:'+symbol,packet['error'])
+                        b.set('quote_stream:'+symbol,report)
+                    b.protection_phase_context['quote_components']=report
+                    b.observe_protection_components(symbol,packet['updates'])
+                    if packet['error']:
+                        failure={'at_ms':b.clock(),'kind':'websocket_components_unconfirmed',
+                                 'category':packet['error'],'quote_components':report}
+                        signature=digest([report['time_rejections'],report['components'],report['channels']])
+                        with b.transaction():
+                            b.set('last_quote_unconfirmed:'+symbol,failure)
+                            if signature!=b.get('last_quote_fault_signature:'+symbol):
+                                b.set('last_quote_fault_signature:'+symbol,signature)
+                                b.set('quote_failure_history:'+symbol,(b.get('quote_failure_history:'+symbol,[])+[failure])[-8:])
+                            b.set('market_error:'+symbol,packet['error'])
+                        if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_stream_unconfirmed')
+                        continue
+                    q,due=packet['quote'],packet['due']
+                elif quote_job is not None or exposed or getattr(self.feed,"streaming",False):
                     if quote_job is None:
                         quote_job=(self.quote_pool.submit(self.feed.book,symbol),time.monotonic_ns())
                         self.quote_jobs[symbol]=quote_job
@@ -207,6 +230,15 @@ class Poller:
                 if getattr(self.feed,'streaming',False):
                     accepted=b.get('quote:'+symbol)
                     if accepted is not None and q['event_ms']<accepted['event_ms']:
+                        if getattr(self.feed,'websocket_quotes',False):
+                            # After restart a new subscription can begin behind
+                            # the durable quote. Do not substitute the old BBO.
+                            with b.transaction():
+                                b.set('quote_execution_unconfirmed:'+symbol,'quote_source_regression')
+                                b.set('last_quote_unconfirmed:'+symbol,{'at_ms':b.clock(),
+                                    'kind':'websocket_quote_regression','quote_components':self.feed.quote_report[symbol]})
+                            if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_stream_unconfirmed')
+                            raise ValueError('market_out_of_order')
                         # REST quote components can publish an older timestamp.
                         # Never overwrite a newer accepted quote or refresh its age.
                         validate_quote(accepted,symbol,b.clock())
@@ -220,8 +252,9 @@ class Poller:
                 except (ValueError,KeyError,OSError,TypeError):
                     if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                     raise
+                if getattr(self.feed,'websocket_quotes',False):b.pulse()
                 active_after_quote=b.active()
-                if active_after_quote is not None and active_after_quote[0]['symbol']==symbol and dec(active_after_quote[1]['open_qty'])>0 and symbol not in self.quote_jobs:
+                if not getattr(self.feed,'websocket_quotes',False) and active_after_quote is not None and active_after_quote[0]['symbol']==symbol and dec(active_after_quote[1]['open_qty'])>0 and symbol not in self.quote_jobs:
                     self.quote_jobs[symbol]=(self.quote_pool.submit(self.feed.book,symbol),time.monotonic_ns())
                 mark=time.monotonic_ns();phases['quote_finance_ms']=(mark-quote_done)//1000000
                 stage='funding_due_sql'
@@ -400,6 +433,7 @@ class Poller:
         phase_start=time.monotonic_ns();result=b.snapshot();self.loop_phase['poller_snapshot_ms']=(time.monotonic_ns()-phase_start)//1000000
         result['market_errors']={s:b.get('market_error:'+s) for s in SYMBOLS};result['funding_error']=b.get('funding_error')
         result['last_trade_gap']=b.get('last_trade_gap')
+        result['quote_feeds']={s:b.get('quote_stream:'+s) for s in symbols if b.get('quote_stream:'+s) is not None}
         result['trade_feeds']={s:b.get('trade_feed:'+s) for s in symbols}
         return result
 
@@ -498,7 +532,7 @@ def main():
                 import sys
                 sys.path.insert(0,str(Path(__file__).resolve().parent.parent/"vendor"))
                 from .ai_limit_stream import StreamFeed
-                worker=Poller(book,StreamFeed(symbols=args.symbols).start(),symbols=args.symbols);next_backup=0;reader=ResponseReader();publisher=Publisher()
+                worker=Poller(book,StreamFeed(symbols=args.symbols,quotes=True).start(),symbols=args.symbols);next_backup=0;reader=ResponseReader();publisher=Publisher()
                 try:
                     while running[0]:
                         loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
@@ -508,7 +542,7 @@ def main():
                             except (ValueError,OSError,KeyError,TypeError):
                                 with book.transaction():book.set('analyst_ingest_error','response_unavailable_or_invalid')
                         now=time.monotonic_ns();phase['ingest_ms']=(now-mark)//1000000;mark=now
-                        result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds')}
+                        result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds','quote_feeds')}
                         now=time.monotonic_ns();phase['snapshot_ms']=(now-mark)//1000000;mark=now
                         publisher.publish(args.public,result,force=args.once)
                         now=time.monotonic_ns();phase['publish_ms']=(now-mark)//1000000;mark=now

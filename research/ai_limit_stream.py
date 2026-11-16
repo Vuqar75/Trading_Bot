@@ -6,15 +6,20 @@ import threading
 import time
 from collections import deque
 from .ai_limit_feed import Feed
-from .ai_limit_plan import integer,positive,SYMBOLS
+from .ai_limit_plan import integer,positive,SYMBOLS,dec,digest,quote
 
 class StreamFeed(Feed):
     streaming=True
-    def __init__(self,*,symbols,connect=None,capacity=32768,batch=256,**kwargs):
+    def __init__(self,*,symbols,connect=None,capacity=32768,batch=256,quotes=False,quote_capacity=512,**kwargs):
         super().__init__(**kwargs)
+        if type(quote_capacity) is not int or not 1<=quote_capacity<=4096:raise ValueError('quote_capacity')
         self.lock=threading.Lock();self.stop=threading.Event();self.capacity=capacity;self.batch=batch
         self.states={s:dict(queue=deque(),last=None,fault=True,reason='bootstrap',connected=False,highwater=0,duplicates=0,reconnects=0,received=0) for s in symbols}
         self.connect=connect;self.threads=[];self.timeout_errors=(TimeoutError,)
+        self.websocket_quotes=quotes;self.quote_capacity=quote_capacity
+        self.quote_states={s:dict(book=None,mark=None,book_last=None,mark_last=None,queue=deque(),
+            channels={c:{'connected':False,'connections':0} for c in ('book','market')},
+            fault=None,pending_fault=None,overflows=0,duplicates=0,highwater=0) for s in symbols}
     def start(self):
         if self.connect is None:
             import websocket
@@ -22,6 +27,8 @@ class StreamFeed(Feed):
             self.connect=lambda url:websocket.create_connection(url,timeout=2,enable_multithread=True)
         for symbol in self.states:
             t=threading.Thread(target=self.run,args=(symbol,),daemon=True);t.start();self.threads.append(t)
+            if self.websocket_quotes:
+                t=threading.Thread(target=self.run,args=(symbol,'book'),daemon=True);t.start();self.threads.append(t)
         return self
     def fail(self,symbol,reason,category=None):
         with self.lock:
@@ -45,25 +52,119 @@ class StreamFeed(Feed):
             if len(st['queue'])>=self.capacity:
                 st['fault']=True;st['reason']='overflow';st['queue'].clear()
             st['queue'].append(item);st['highwater']=max(st['highwater'],len(st['queue']))
-    def run(self,symbol):
+    def quote_connection(self,symbol,channel,connected,reason=None):
+        with self.lock:
+            q=self.quote_states[symbol];q['channels'][channel]['connected']=connected
+            if connected:q['channels'][channel]['connections']+=1
+            # Each routed connection must provide a new absolute component.
+            # Stable book identity survives reconnect: it cannot refill liquidity.
+            q['book' if channel=='book' else 'mark']=None
+            if reason:
+                q['pending_fault']=reason;q['last_fault']={'at_ms':self.clock(),'channel':channel,'category':reason}
+
+    def receive_quote(self,symbol,raw,channel):
+        kind='book' if raw.get('e')=='bookTicker' else 'mark' if raw.get('e')=='markPriceUpdate' else None
+        if (kind is None or raw.get('s')!=symbol or type(raw.get('st',1)) is not int or raw.get('st',1)!=1
+                or (kind=='book')!=(channel=='book')):raise ValueError('quote_stream_identity')
+        event=integer(raw['E']);now=self.clock()
+        if kind=='book':
+            stamp=integer(raw['T']);ident=integer(raw['u'])
+            for k in ('b','a'):positive(raw[k])
+            if dec(raw['b'])>dec(raw['a']) or any(dec(raw[k])<0 for k in ('B','A')):raise ValueError('quote_stream_book')
+            item={k:raw[k] for k in ('e','s','u','E','T','b','B','a','A')}
+        else:
+            stamp=event;ident=event;positive(raw['p']);integer(raw['T'])
+            item={k:raw[k] for k in ('e','s','E','p','T')}
+        with self.lock:
+            if not all(0<=now-t<=5000 for t in (stamp,event)):
+                # Invalid time must not poison the high-water identity and
+                # suppress subsequent genuine frames until a reconnect.
+                q=self.quote_states[symbol];q[kind]=None;q['pending_fault']=kind+'_source_time_unconfirmed'
+                q['last_fault']={'at_ms':now,'kind':kind,'source_ms':stamp,'event_ms':event,
+                                 'category':q['pending_fault']}
+                return
+            q=self.quote_states[symbol];old=q[kind+'_last'];old_id=old['u' if kind=='book' else 'E'] if old else None
+            if ident<=q.get(kind+'_revision_id',-1):return
+            if old is not None and ident<old_id:q['duplicates']+=1;return
+            if old is not None and ident==old_id:
+                if old!=item:
+                    q[kind]=None;q[kind+'_revision_id']=ident;q['pending_fault']=kind+'_revision';return
+                q['duplicates']+=1
+                if q[kind] is not None:return  # no receipt-time rejuvenation
+            if old is not None and (event<old['E'] or stamp<old.get('T',stamp) and kind=='book'):
+                q[kind]=None;q['pending_fault']=kind+'_time_regression';return
+            q[kind+'_last']=item
+            value={'kind':kind,'source':item,'source_ms':stamp,'event_ms':event,'received_ms':now,
+                   'received_mono_ns':time.monotonic_ns()}
+            if len(q['queue'])>=self.quote_capacity:
+                q['queue'].clear();q['book']=None;q['mark']=None
+                q['pending_fault']='quote_queue_overflow';q['overflows']+=1
+            q[kind]=value;q['queue'].append(value);q['highwater']=max(q['highwater'],len(q['queue']))
+
+    def quote_packet(self,symbol):
+        """No I/O: latest absolute BBO + mark, plus bounded protective events."""
+        now=self.clock()
+        with self.lock:
+            st=self.quote_states[symbol];book=st['book'];mark=st['mark'];updates=list(st['queue']);st['queue'].clear()
+            channels={k:dict(v) for k,v in st['channels'].items()};fault=st['pending_fault'];st['pending_fault']=None
+            diag={'transport':'websocket','channels':channels,'overflows':st['overflows'],
+                  'duplicates':st['duplicates'],'highwater':st['highwater'],'last_fault':st.get('last_fault'),
+                  'received_ms':now,'components':{k:v for k,v in [('book',book),('mark',mark)] if v is not None}}
+        reasons=[]
+        for name,value in [('book',book),('mark',mark)]:
+            if not channels['book' if name=='book' else 'market']['connected']:reasons.append(name+'_disconnected')
+            if value is None:reasons.append(name+'_missing');continue
+            for field in ('source_ms','event_ms'):
+                age=now-value[field]
+                if age<0:reasons.append(name+'_'+field+'_future')
+                elif age>5000:reasons.append(name+'_'+field+'_stale')
+            if not max(value['source_ms'],value['event_ms'])<=value['received_ms']<=now:reasons.append(name+'_receipt_time')
+        if fault:reasons.append(fault)
+        diag['time_rejections']=reasons;self.quote_report[symbol]=diag
+        packet={'quote':None,'due':None,'report':diag,'updates':updates,'error':'public_quote_stream_unconfirmed' if reasons else None}
+        if reasons:return packet
+        b=book['source'];m=mark['source']
+        value={'id':digest(['usdm-ws',b,m]),'liquidity_id':digest(['usdm-ws-book',b['s'],b['u'],b['T'],b['b'],b['B'],b['a'],b['A']]),
+               'symbol':symbol,'event_ms':min(book['source_ms'],book['event_ms'],mark['source_ms']),
+               'received_ms':max(book['received_ms'],mark['received_ms']),
+               'bid':b['b'],'ask':b['a'],'bid_qty':b['B'],'ask_qty':b['A'],'mark':m['p']}
+        quote(value,symbol,now);packet.update(quote=value,due=m['T']);return packet
+
+    def run(self,symbol,channel='market'):
         while not self.stop.is_set():
             ws=None
             try:
-                ws=self.connect('wss://fstream.binance.com/market/ws/'+symbol.lower()+'@aggTrade')
-                with self.lock:
-                    st=self.states[symbol];st['connected']=True;st['reconnects']+=1
+                suffix=symbol.lower()
+                url=('wss://fstream.binance.com/public/ws/'+suffix+'@bookTicker' if channel=='book' else
+                     'wss://fstream.binance.com/market/stream?streams='+suffix+'@aggTrade/'+suffix+'@markPrice@1s' if self.websocket_quotes else
+                     'wss://fstream.binance.com/market/ws/'+suffix+'@aggTrade')
+                ws=self.connect(url)
+                if self.websocket_quotes:self.quote_connection(symbol,channel,True)
+                if channel=='market':
+                    with self.lock:
+                        st=self.states[symbol];st['connected']=True;st['reconnects']+=1
                 while not self.stop.is_set():
                     try:raw=ws.recv()
                     except self.timeout_errors:
                         # A quiet socket/read deadline is not a disconnect or
                         # evidence of missing IDs. Freshness is checked separately.
                         with self.lock:
-                            st=self.states[symbol];st['read_timeouts']=st.get('read_timeouts',0)+1
+                            st=self.states[symbol] if channel=='market' else self.quote_states[symbol]['channels']['book']
+                            st['read_timeouts']=st.get('read_timeouts',0)+1
                         continue
                     if not raw:raise OSError('closed')
                     if len(raw)>65536:raise ValueError('stream_size')
-                    self.receive(symbol,json.loads(raw))
-            except Exception as error:self.fail(symbol,'disconnect_or_invalid',type(error).__name__)
+                    data=json.loads(raw)
+                    if self.websocket_quotes:
+                        if channel=='market':
+                            expected={symbol.lower()+'@aggTrade',symbol.lower()+'@markPrice@1s'}
+                            if data.get('stream') not in expected:raise ValueError('quote_stream_envelope')
+                            data=data['data']
+                        if data.get('e')!='aggTrade':self.receive_quote(symbol,data,channel);continue
+                    self.receive(symbol,data)
+            except Exception as error:
+                if channel=='market':self.fail(symbol,'disconnect_or_invalid',type(error).__name__)
+                if self.websocket_quotes:self.quote_connection(symbol,channel,False,type(error).__name__)
             finally:
                 if ws is not None:
                     try:ws.close()
@@ -90,7 +191,7 @@ class StreamFeed(Feed):
         self.trade_report[symbol]={**parser.trade_report[symbol],'transport':'websocket','stream':diag,'gap':bool(gap or fault)}
         return ([] if gap or fault else events),cursor,bool(gap or fault)
     def pending(self):
-        with self.lock:return any(st["queue"] for st in self.states.values())
+        with self.lock:return any(st["queue"] for st in self.states.values()) or (self.websocket_quotes and any(st['queue'] for st in self.quote_states.values()))
     def close(self):
         self.stop.set()
         for t in self.threads:t.join(timeout=3)

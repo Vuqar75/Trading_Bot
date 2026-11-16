@@ -172,7 +172,7 @@ class Book:
             if reason=='EXPIRED_OR_PAUSED':record['guards']={'expires_ms':p['expires_ms'],'paused':self.get('paused'),'blocked':self.get('blocked')}
             if detail is None and 'BLOCKED' in causes:detail=self.get('blocked')
             if detail is not None:record['detail']=detail
-            if detail=='quote_http_unconfirmed':
+            if detail in ('quote_http_unconfirmed','quote_stream_unconfirmed'):
                 diagnostic=self.get('last_quote_unconfirmed:'+p['symbol'])
                 if diagnostic is not None and 0<=now-diagnostic.get('at_ms',0)<=2000:
                     record['quote_diagnostic']=diagnostic
@@ -228,10 +228,40 @@ class Book:
                      'reason':s.get('close_reason'),**value,'phase_context':phase}])[-8:])
         return value
 
+    def observe_protection_components(self,symbol,updates):
+        """Latch fresh SL evidence even when the other component is missing.
+
+        Only the existing writer calls this. No fill uses an incomplete pair.
+        Event/source time is evidence, never a retrospective execution time.
+        """
+        if not updates:return
+        with self.transaction():
+            active=self.active()
+            if not active or active[0]['symbol']!=symbol or not dec(active[1]['open_qty']):return
+            p,s=active;now=self.clock();side=1 if p['direction']=='LONG' else -1
+            for component in updates:
+                stamps=[component['source_ms'],component['event_ms']]
+                if (not all(0<=now-t<=5000 for t in stamps)
+                        or not max(stamps)<=component['received_ms']<=now
+                        or min(stamps)<s['opened_ms']):continue
+                raw=component['source']
+                value=raw['p'] if component['kind']=='mark' else raw['b' if side==1 else 'a']
+                if side*(dec(value)-dec(p['stop']))>0:continue
+                s['close_reason']='SL';s['status']='EXIT_PENDING';self.cancel_entry(p,s,'SL',now)
+                if not s.get('sl_observation'):
+                    s['sl_observation']={'observed_ms':now,'component':component}
+                if not s.get('protection_trigger'):
+                    s['protection_trigger']={'reason':'SL','component':component,
+                        **self.protection_evidence(p,s,now,self.get('quote:'+symbol),False,'trigger')}
+                self.save(p,s)
+                break
+
     def protect(self,p,s,now):
         if not dec(s['open_qty']):return
         book=self.get('quote:'+p['symbol'])
-        try:quote(book,p['symbol'],now)
+        try:
+            if self.get('quote_execution_unconfirmed:'+p['symbol']):raise ValueError('public_quote_stream_unconfirmed')
+            quote(book,p['symbol'],now)
         except (ValueError,TypeError,KeyError):
             # Diagnose an unavailable protective quote, never execute it.
             if not s.get('protection_wait'):
@@ -365,6 +395,7 @@ class Book:
                     if qty>0:self.fill(p,s,'EXIT',qty,dec(p['target']),event['event_ms'],key+':target','TP')
                 elif dec(s['remaining']) and entry_cross and event['buyer_maker']==(side==1) and event['event_ms']<p['expires_ms']:
                     try:
+                        if self.get('quote_execution_unconfirmed:'+symbol):raise ValueError('public_quote_stream_unconfirmed')
                         quote(self.get('quote:'+symbol),symbol,now,entry=True);filters(self.get('filters:'+symbol),now)
                         due=self.get('next_due:'+symbol)
                         if now-self.get('funding_through')>120000 or (due is not None and due<=now and due>self.get('funding_through')):raise ValueError('funding_coverage_stale')
