@@ -161,7 +161,7 @@ class QuoteStreamTests(unittest.TestCase):
         seen=[];now=self.now
         for channel in ('book','market'):
             self.f.stop.clear()
-            raw=({'e':'bookTicker','s':'BTCUSDT','u':100,'E':now,'T':now,'b':'100','a':'100','B':'1','A':'1'} if channel=='book' else
+            raw=({'e':'depthUpdate','s':'BTCUSDT','U':100,'u':100,'pu':99,'E':now,'T':now,'b':[['100','1']],'a':[['100','1']]} if channel=='book' else
                  {'stream':'btcusdt@markPrice@1s','data':{'e':'markPriceUpdate','s':'BTCUSDT','E':now,'p':'100','T':now+10000}})
             feed=self.f
             class Socket:
@@ -169,9 +169,56 @@ class QuoteStreamTests(unittest.TestCase):
                 def close(self):pass
             def connect(url):seen.append(url);return Socket()
             self.f.connect=connect;self.f.run('BTCUSDT',channel)
-        self.assertTrue(any('/public/ws/btcusdt@bookTicker' in s for s in seen))
+        self.assertTrue(any('/public/ws/btcusdt@depth5@100ms' in s for s in seen))
         self.assertTrue(any('/market/stream?streams=btcusdt@aggTrade/btcusdt@markPrice@1s' in s for s in seen))
         self.assertIsNone(self.f.quote_packet('BTCUSDT')['error'])
+    def depth(self,u=100,pu=99,price='100',qty='2'):
+        raw={'e':'depthUpdate','s':'BTCUSDT','U':u,'u':u,'pu':pu,'E':self.now,'T':self.now,
+             'b':[[price,qty]],'a':[[price,qty]]}
+        self.f.receive_quote('BTCUSDT',raw,'book');return raw
+    def test_partial_snapshot_u_and_opposite_side_cannot_refill_exit_liquidity(self):
+        self.opened();self.now+=1;self.depth(100,99,'104','.1');self.mark('104');self.poller.cycle()
+        self.assertEqual(self.b.active()[1]['open_qty'],'0.1');fills=self.b.snapshot()['fills']
+        self.now+=1;raw={'e':'depthUpdate','s':'BTCUSDT','U':101,'u':101,'pu':100,'E':self.now,'T':self.now,
+                         'b':[['103','.2']],'a':[['104','.1']]}
+        self.f.receive_quote('BTCUSDT',raw,'book');self.poller.cycle()
+        self.assertEqual(self.b.snapshot()['fills'],fills)
+        self.b.close();self.b=Book(self.root,clock=lambda:self.now);self.poller.book=self.b
+        self.now+=1;raw.update(U=102,u=102,pu=101,E=self.now,T=self.now)
+        self.f.receive_quote('BTCUSDT',raw,'book');self.poller.cycle()
+        self.assertEqual(self.b.snapshot()['fills'],fills);self.assertTrue(self.b.verify()['balanced'])
+    def test_partial_depth_preserves_source_and_liquidity_identity(self):
+        raw=self.depth();self.mark();packet=self.f.quote_packet('BTCUSDT')
+        self.assertIsNone(packet['error']);component=packet['report']['components']['book']
+        self.assertEqual(component['raw'],raw);self.assertEqual(component['source_kind'],'partial_depth5_100ms')
+        ident=packet['quote']['liquidity_id'];self.now+=1;self.mark('101')
+        self.assertEqual(self.f.quote_packet('BTCUSDT')['quote']['liquidity_id'],ident)
+        self.f.quote_connection('BTCUSDT','book',False,'reconnect')
+        self.assertTrue(self.f.quote_packet('BTCUSDT')['error'])
+        self.f.quote_connection('BTCUSDT','book',True);self.depth(101,100)
+        self.assertIsNone(self.f.quote_packet('BTCUSDT')['error'])
+    def test_partial_depth_gap_latches_fault_then_absolute_snapshot_can_recover(self):
+        self.depth();self.mark();self.f.quote_packet('BTCUSDT');self.now+=1;self.depth(103,102)
+        packet=self.f.quote_packet('BTCUSDT')
+        self.assertIn('partial_depth_sequence_gap',packet['report']['time_rejections'])
+        self.assertIsNone(self.f.quote_packet('BTCUSDT')['error'])
+        self.depth(104,103);self.assertIsNone(self.f.quote_packet('BTCUSDT')['error'])
+    def test_partial_depth_rejects_missing_quantity_bad_order_and_wrong_type(self):
+        for levels in [[['100']],[],[['99','1'],['100','1']],[['100','0']]]:
+            raw={'e':'depthUpdate','s':'BTCUSDT','U':100,'u':100,'pu':99,'E':self.now,'T':self.now,'b':levels,'a':[['101','1']]}
+            with self.assertRaises((ValueError,KeyError)):self.f.receive_quote('BTCUSDT',raw,'book')
+        raw=self.depth();raw['st']=2
+        with self.assertRaises(ValueError):self.f.receive_quote('BTCUSDT',raw,'book')
+    def test_partial_depth_stop_ignores_never_completed_rest_and_records_first_detection(self):
+        from concurrent.futures import Future
+        self.opened();self.poller.quote_jobs['BTCUSDT']=(Future(),time.monotonic_ns())
+        self.depth(price='104',qty='.1');self.mark('104');self.poller.cycle()
+        state=self.b.active()[1];trigger=state['protection_trigger']
+        self.assertEqual(float(state['open_qty']),.1)
+        self.now+=1;self.mark('105');self.poller.cycle();self.assertEqual(self.b.snapshot()['fills'],2)
+        self.depth(101,100,'105','.1');self.poller.cycle()
+        self.assertEqual(self.b.plans()[0][1]['open_qty'],'0');self.assertEqual(self.b.plans()[0][1]['protection_trigger'],trigger)
+        self.assertTrue(self.b.verify()['balanced'])
     def test_binary_payload_still_requires_strict_utf8(self):
         f=self.f
         class Socket:

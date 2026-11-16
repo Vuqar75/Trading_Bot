@@ -66,6 +66,20 @@ class StreamFeed(Feed):
                 q['pending_fault']=reason;q['last_fault']={'at_ms':self.clock(),'channel':channel,'category':reason}
 
     def receive_quote(self,symbol,raw,channel):
+        original=raw;partial=raw.get('e')=='depthUpdate'
+        if partial:
+            if channel!='book':raise ValueError('partial_depth_channel')
+            for side,descending in [('b',True),('a',False)]:
+                levels=raw[side]
+                if not isinstance(levels,list) or not 1<=len(levels)<=5:raise ValueError('partial_depth_levels')
+                for level in levels:
+                    if not isinstance(level,list) or len(level)!=2:raise ValueError('partial_depth_level')
+                    positive(level[0]);positive(level[1])
+                prices=[dec(v[0]) for v in levels]
+                if any((x<=y if descending else x>=y) for x,y in zip(prices,prices[1:])):raise ValueError('partial_depth_order')
+            first=integer(raw['U']);last=integer(raw['u']);integer(raw['pu'])
+            if first>last:raise ValueError('partial_depth_ids')
+            raw={**raw,'e':'bookTicker','b':raw['b'][0][0],'B':raw['b'][0][1],'a':raw['a'][0][0],'A':raw['a'][0][1]}
         kind='book' if raw.get('e')=='bookTicker' else 'mark' if raw.get('e')=='markPriceUpdate' else None
         if (kind is None or raw.get('s')!=symbol or type(raw.get('st',1)) is not int or raw.get('st',1)!=1
                 or (kind=='book')!=(channel=='book')):raise ValueError('quote_stream_identity')
@@ -97,9 +111,13 @@ class StreamFeed(Feed):
                 if q[kind] is not None:return  # no receipt-time rejuvenation
             if old is not None and (event<old['E'] or stamp<old.get('T',stamp) and kind=='book'):
                 q[kind]=None;q['pending_fault']=kind+'_time_regression';return
+            if partial and old is not None and ident>old_id and original['pu']!=old_id:
+                q['pending_fault']='partial_depth_sequence_gap'
+                q['last_fault']={'at_ms':now,'category':'partial_depth_sequence_gap','expected_pu':old_id,'observed_pu':original['pu']}
             q[kind+'_last']=item
             value={'kind':kind,'source':item,'source_ms':stamp,'event_ms':event,'received_ms':now,
                    'received_mono_ns':time.monotonic_ns()}
+            if partial:value.update(source_kind='partial_depth5_100ms',raw=original)
             if len(q['queue'])>=self.quote_capacity:
                 # The event history is incomplete, but latest absolute BBO
                 # and mark snapshots remain independent evidence. Latch one
@@ -116,7 +134,7 @@ class StreamFeed(Feed):
             channels={k:dict(v) for k,v in st['channels'].items()};fault=st['pending_fault'];st['pending_fault']=None
             diag={'transport':'websocket','channels':channels,'overflows':st['overflows'],
                   'duplicates':st['duplicates'],'highwater':st['highwater'],'last_fault':st.get('last_fault'),
-                    'received':dict(st['received']),
+                    'received':dict(st['received']),'book_stream':'depth5@100ms',
                   'received_ms':now,'components':{k:v for k,v in [('book',book),('mark',mark)] if v is not None}}
         reasons=[]
         for name,value in [('book',book),('mark',mark)]:
@@ -136,6 +154,9 @@ class StreamFeed(Feed):
                'symbol':symbol,'event_ms':min(book['source_ms'],book['event_ms'],mark['source_ms']),
                'received_ms':max(book['received_ms'],mark['received_ms']),
                'bid':b['b'],'ask':b['a'],'bid_qty':b['B'],'ask_qty':b['A'],'mark':m['p']}
+        if book.get('source_kind')=='partial_depth5_100ms':
+            # A partial snapshot u can advance due to deeper levels alone.
+            value['liquidity_id']='ws-partial-depth:'+digest([symbol,b['b'],b['B'],b['a'],b['A']])
         quote(value,symbol,now);packet.update(quote=value,due=m['T']);return packet
 
     def run(self,symbol,channel='market'):
@@ -143,7 +164,7 @@ class StreamFeed(Feed):
             ws=None
             try:
                 suffix=symbol.lower()
-                url=('wss://fstream.binance.com/public/ws/'+suffix+'@bookTicker' if channel=='book' else
+                url=('wss://fstream.binance.com/public/ws/'+suffix+'@depth5@100ms' if channel=='book' else
                      'wss://fstream.binance.com/market/stream?streams='+suffix+'@aggTrade/'+suffix+'@markPrice@1s' if self.websocket_quotes else
                      'wss://fstream.binance.com/market/ws/'+suffix+'@aggTrade')
                 ws=self.connect(url)

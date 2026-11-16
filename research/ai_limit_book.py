@@ -284,7 +284,12 @@ class Book:
         if not s.get('protection_trigger'):
             s['protection_trigger']={'reason':s['close_reason'],**self.protection_evidence(p,s,now,book,True,'trigger')}
         s['status']='EXIT_PENDING';self.cancel_entry(p,s,s['close_reason'],now)
-        sidekey='bid' if side==1 else 'ask';consumed=self.get('used-quote:'+p['symbol']+':'+book.get('liquidity_id',book['id'])+':'+sidekey,'0')
+        sidekey='bid' if side==1 else 'ask';liquidity=book.get('liquidity_id',book['id'])
+        if liquidity.startswith('ws-partial-depth:'):
+            # Exact visible exit-side price/quantity is not replenished by
+            # deeper/opposite-side updates, mark-only updates or restart.
+            liquidity=digest(['ws-partial-side',p['symbol'],sidekey,book[sidekey],book[sidekey+'_qty']])
+        consumed=self.get('used-quote:'+p['symbol']+':'+liquidity+':'+sidekey,'0')
         available=max(Decimal(0),dec(book[sidekey+'_qty'])-dec(consumed));step=dec(p['snapshot']['filters']['step_size'])
         qty=(min(dec(s['open_qty']),available)/step).to_integral_value(rounding=ROUND_DOWN)*step
         if qty<=0:return
@@ -293,7 +298,7 @@ class Book:
         s['last_protective_execution']={'reason':s['close_reason'],'quantity':text(qty),'price':text(price),
                                         **self.protection_evidence(p,s,now,book,True,'execution')}
         self.fill(p,s,'EXIT',qty,price,now,key,s['close_reason'])
-        self.set('used-quote:'+p['symbol']+':'+book.get('liquidity_id',book['id'])+':'+sidekey,text(dec(consumed)+qty))
+        self.set('used-quote:'+p['symbol']+':'+liquidity+':'+sidekey,text(dec(consumed)+qty))
 
     def trade_gap(self,symbol,detail,*,evidence=None,phase_evidence=None):
         with self.transaction():
