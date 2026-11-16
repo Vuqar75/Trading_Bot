@@ -1,0 +1,2859 @@
+{
+  "checked_ms": 1794817891820,
+  "release": "4eedcf05eee37716b79d9a456e149deee81d154c",
+  "be74bf6": {
+    "installed": {
+      "commit": "be74bf66e51dc73cc60c5e65036cc5debf925aa1",
+      "switched_ms": 1794814912109,
+      "pid": "496597",
+      "path": "/opt/tradingbot-ai-brackets-be74bf6-paper",
+      "analyst_unchanged": "/opt/tradingbot-ai-brackets-74f77d0-analyst",
+      "history": {
+        "events": 22,
+        "fills": 4,
+        "plan_history_sha256": "61afbd19137d0745949e616bbc4ecf9d9db4c4582bc571aa05da8f157417ae7e"
+      },
+      "balances": {
+        "free": "1000.309096007865389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "files": {
+        "ai_limit_book.py": "68e3252c805f03de714d82256c457c2739ae8944c240b5e42a140dd9245a5e74",
+        "ai_limit_runtime.py": "c6c937c9175b6445d0c6a33c20050bd3419a234ab031058387d6c717f0e1f63d",
+        "ai_limit_stream.py": "8e036ebcacffe96e95ff0c4ac6d893cf5f6f9532ba0da93c4100e785eab7790c"
+      },
+      "cpu_max": "50000 100000\n",
+      "resource_file": "/etc/systemd/system/ai-bracket-paper.service.d/95-ws-quote-cpu.conf",
+      "pre_backup": "8f635b3fbe1e5443eb652009b695ae72b62e34e1a5e476e96c9dfbd41ce94165",
+      "quote_feed": {
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "components": {
+          "book": {
+            "event_ms": 1794814910103,
+            "kind": "book",
+            "received_mono_ns": 1091888525731074,
+            "received_ms": 1794814910383,
+            "source": {
+              "A": "0.002",
+              "B": "2.424",
+              "E": 1794814910103,
+              "T": 1794814910103,
+              "a": "65023.70",
+              "b": "65023.60",
+              "e": "bookTicker",
+              "s": "BTCUSDT",
+              "u": 12129885419727
+            },
+            "source_ms": 1794814910103
+          },
+          "mark": {
+            "event_ms": 1794814910006,
+            "kind": "mark",
+            "received_mono_ns": 1091888325063526,
+            "received_ms": 1794814910182,
+            "source": {
+              "E": 1794814910006,
+              "T": 1794816000000,
+              "e": "markPriceUpdate",
+              "p": "65022.20000000",
+              "s": "BTCUSDT"
+            },
+            "source_ms": 1794814910006
+          }
+        },
+        "duplicates": 0,
+        "highwater": 512,
+        "last_fault": null,
+        "overflows": 2,
+        "received": {
+          "book": 2268,
+          "mark": 6
+        },
+        "received_ms": 1794814910383,
+        "time_rejections": [],
+        "transport": "websocket"
+      },
+      "trade_feed": {
+        "active_armed_ms": null,
+        "batch_hash": "cbf82423211f426d98ead7605b3e271bc5880dcf472078137fd67d15d1f69538",
+        "batch_lock_wait_ms": 0,
+        "batch_processing_ms": 1,
+        "discontinuities": [],
+        "execution_gap": false,
+        "fetch_monotonic_ms": 0,
+        "fetch_ms": 0,
+        "first_event_ms": 1794814906064,
+        "first_id": 3527221709,
+        "future_rows": 0,
+        "gap": false,
+        "history_contiguous": true,
+        "idle_events_skipped": 172,
+        "last_event_age_ms": 363,
+        "last_event_ms": 1794814910121,
+        "last_id": 3527221880,
+        "newest_age_ms": 363,
+        "oldest_age_ms": 4420,
+        "phase_diagnostics": {
+          "clock": "monotonic_ns",
+          "cycle_started_ns": 1091888368468663,
+          "http_recent": [
+            {
+              "ended_ns": 1091886508846623,
+              "http_ms": 2620,
+              "outcome": "ok",
+              "parse_ms": 251,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1091886257277766,
+              "started_ns": 1091883636696626
+            }
+          ],
+          "phases_ms": {
+            "filters_ready": true,
+            "filters_refresh_ms": 93,
+            "funding_due_sql_ms": 0,
+            "quote_finance_ms": 3,
+            "trades_total_ms": 3
+          },
+          "prior_cycles": [
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_total_ms": 14,
+              "publish_ms": 0,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 100,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 14,
+              "started_ns": 1091883217532588,
+              "total_ms": 129
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 11,
+              "poller_symbol_ms": 499,
+              "poller_total_ms": 801,
+              "publish_ms": 7,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 100,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 101,
+              "started_ns": 1091883346774852,
+              "total_ms": 1011
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_symbol_ms": 2,
+              "poller_total_ms": 407,
+              "publish_ms": 506,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 101,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 1756,
+              "started_ns": 1091884358104497,
+              "total_ms": 2772
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 987,
+              "poller_total_ms": 1020,
+              "publish_ms": 8,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 100,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 105,
+              "started_ns": 1091887130122690,
+              "total_ms": 1235
+            }
+          ]
+        },
+        "poll_interval_mono_ms": 4009,
+        "poll_interval_ms": 4010,
+        "poll_started_ms": 1794814910226,
+        "previous_cycle": {
+          "batch_finalize_ms": 0,
+          "batch_lock_wait_ms": 0,
+          "batch_processing_ms": 0,
+          "event_count": 3,
+          "idle_events_skipped": 3,
+          "poll_started_ms": 1794814906216,
+          "total_ms": 2
+        },
+        "quote_fetch_ms": 159,
+        "received_ms": 1794814910484,
+        "requested_after_id": 3527221708,
+        "rows": 172,
+        "stale_first_ms": null,
+        "stale_last_ms": null,
+        "stale_rows": 0,
+        "started_ms": 1794814910484,
+        "stream": {
+          "connected": true,
+          "duplicates": 0,
+          "highwater": 172,
+          "last_fault": null,
+          "oldest_dequeued_wait_ms": 3878,
+          "queued": 0,
+          "read_timeouts": 0,
+          "reason": null,
+          "received": 237,
+          "reconnects": 1
+        },
+        "symbol": "BTCUSDT",
+        "trade_validation_ms": 2,
+        "transport": "websocket"
+      }
+    },
+    "observation": {
+      "elapsed_s": 300.09974888782017,
+      "samples": 301,
+      "start": {
+        "asof": 1794814997217,
+        "errors": "public_quote_stream_unconfirmed",
+        "quote_rejections": [
+          "book_missing",
+          "book_source_time_unconfirmed"
+        ],
+        "component_age_ms": {
+          "mark": 2217
+        },
+        "component_event_age_ms": {
+          "mark": 2217
+        },
+        "quote_received": {
+          "book": 41143,
+          "mark": 91
+        },
+        "quote_overflows": 44,
+        "quote_highwater": 512,
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "trade_received": 2167,
+        "trade_queue": 0,
+        "trade_connections": 1,
+        "trade_fault": null,
+        "interval_ms": 250,
+        "trade_age_ms": 152,
+        "gap_ms": 1794814985454,
+        "balanced": true
+      },
+      "end": {
+        "asof": 1794815300828,
+        "errors": null,
+        "quote_rejections": [],
+        "component_age_ms": {
+          "book": 141,
+          "mark": 828
+        },
+        "component_event_age_ms": {
+          "book": 140,
+          "mark": 828
+        },
+        "quote_received": {
+          "book": 169604,
+          "mark": 396
+        },
+        "quote_overflows": 187,
+        "quote_highwater": 512,
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "trade_received": 6688,
+        "trade_queue": 0,
+        "trade_connections": 1,
+        "trade_fault": null,
+        "interval_ms": 121,
+        "trade_age_ms": null,
+        "gap_ms": 1794815283887,
+        "balanced": true
+      },
+      "healthy_samples": 209,
+      "problems": [
+        {
+          "at_ms": 1794815147388,
+          "error": "public_trade_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815144316,
+                "kind": "book",
+                "received_mono_ns": 1092123528392033,
+                "received_ms": 1794815145385,
+                "source": {
+                  "A": "0.005",
+                  "B": "16.560",
+                  "E": 1794815144316,
+                  "T": 1794815144316,
+                  "a": "64865.50",
+                  "b": "64865.40",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129908795400
+                },
+                "source_ms": 1794815144316
+              },
+              "mark": {
+                "event_ms": 1794815145000,
+                "kind": "mark",
+                "received_mono_ns": 1092123525060173,
+                "received_ms": 1794815145382,
+                "source": {
+                  "E": 1794815145000,
+                  "T": 1794816000000,
+                  "e": "markPriceUpdate",
+                  "p": "64867.43815592",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794815145000
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 112,
+            "received": {
+              "book": 110017,
+              "mark": 241
+            },
+            "received_ms": 1794815145386,
+            "time_rejections": [],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815149603,
+          "error": "public_quote_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815149429,
+                "kind": "book",
+                "received_mono_ns": 1092127693462382,
+                "received_ms": 1794815149551,
+                "source": {
+                  "A": "4.193",
+                  "B": "5.583",
+                  "E": 1794815149429,
+                  "T": 1794815149428,
+                  "a": "64862.90",
+                  "b": "64862.80",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129909256321
+                },
+                "source_ms": 1794815149428
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 117,
+            "received": {
+              "book": 112967,
+              "mark": 245
+            },
+            "received_ms": 1794815149589,
+            "time_rejections": [
+              "mark_missing",
+              "quote_queue_overflow"
+            ],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815179818,
+          "error": "public_trade_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815179594,
+                "kind": "book",
+                "received_mono_ns": 1092157859352774,
+                "received_ms": 1794815179716,
+                "source": {
+                  "A": "5.751",
+                  "B": "5.431",
+                  "E": 1794815179594,
+                  "T": 1794815179594,
+                  "a": "64899.70",
+                  "b": "64899.60",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129912402313
+                },
+                "source_ms": 1794815179594
+              },
+              "mark": {
+                "event_ms": 1794815179000,
+                "kind": "mark",
+                "received_mono_ns": 1092157319746036,
+                "received_ms": 1794815179177,
+                "source": {
+                  "E": 1794815179000,
+                  "T": 1794816000000,
+                  "e": "markPriceUpdate",
+                  "p": "64899.70000000",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794815179000
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 135,
+            "received": {
+              "book": 127026,
+              "mark": 275
+            },
+            "received_ms": 1794815179792,
+            "time_rejections": [],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815192751,
+          "error": "public_quote_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815190478,
+                "kind": "book",
+                "received_mono_ns": 1092169870670449,
+                "received_ms": 1794815191728,
+                "source": {
+                  "A": "1.303",
+                  "B": "24.007",
+                  "E": 1794815190478,
+                  "T": 1794815190477,
+                  "a": "64902.60",
+                  "b": "64902.50",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129913292722
+                },
+                "source_ms": 1794815190477
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 136,
+            "received": {
+              "book": 129068,
+              "mark": 286
+            },
+            "received_ms": 1794815191728,
+            "time_rejections": [
+              "mark_missing",
+              "quote_queue_overflow"
+            ],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815203734,
+          "error": "public_trade_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815203272,
+                "kind": "book",
+                "received_mono_ns": 1092181624177860,
+                "received_ms": 1794815203481,
+                "source": {
+                  "A": "4.891",
+                  "B": "5.813",
+                  "E": 1794815203272,
+                  "T": 1794815203272,
+                  "a": "64925.20",
+                  "b": "64925.10",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129914558793
+                },
+                "source_ms": 1794815203272
+              },
+              "mark": {
+                "event_ms": 1794815203000,
+                "kind": "mark",
+                "received_mono_ns": 1092181374438438,
+                "received_ms": 1794815203231,
+                "source": {
+                  "E": 1794815203000,
+                  "T": 1794816000000,
+                  "e": "markPriceUpdate",
+                  "p": "64925.20000000",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794815203000
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 145,
+            "received": {
+              "book": 134739,
+              "mark": 299
+            },
+            "received_ms": 1794815203483,
+            "time_rejections": [],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815208252,
+          "error": "public_quote_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815207825,
+                "kind": "book",
+                "received_mono_ns": 1092186374892044,
+                "received_ms": 1794815208232,
+                "source": {
+                  "A": "5.069",
+                  "B": "5.067",
+                  "E": 1794815207825,
+                  "T": 1794815207825,
+                  "a": "64921.80",
+                  "b": "64921.70",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129914854436
+                },
+                "source_ms": 1794815207825
+              },
+              "mark": {
+                "event_ms": 1794815207000,
+                "kind": "mark",
+                "received_mono_ns": 1092185373490356,
+                "received_ms": 1794815207231,
+                "source": {
+                  "E": 1794815207000,
+                  "T": 1794816000000,
+                  "e": "markPriceUpdate",
+                  "p": "64921.75470765",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794815207000
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 146,
+            "received": {
+              "book": 135920,
+              "mark": 303
+            },
+            "received_ms": 1794815208231,
+            "time_rejections": [
+              "book_receipt_time"
+            ],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815240696,
+          "error": "public_trade_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815236041,
+                "kind": "book",
+                "received_mono_ns": 1092216129068001,
+                "received_ms": 1794815237986,
+                "source": {
+                  "A": "3.858",
+                  "B": "4.368",
+                  "E": 1794815236041,
+                  "T": 1794815236041,
+                  "a": "64915.00",
+                  "b": "64914.90",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129917381358
+                },
+                "source_ms": 1794815236041
+              },
+              "mark": {
+                "event_ms": 1794815237002,
+                "kind": "mark",
+                "received_mono_ns": 1092215879306636,
+                "received_ms": 1794815237736,
+                "source": {
+                  "E": 1794815237002,
+                  "T": 1794816000000,
+                  "e": "markPriceUpdate",
+                  "p": "64918.30480435",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794815237002
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 159,
+            "received": {
+              "book": 146148,
+              "mark": 333
+            },
+            "received_ms": 1794815237987,
+            "time_rejections": [],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815241010,
+          "error": "public_quote_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815240850,
+                "kind": "book",
+                "received_mono_ns": 1092219137073361,
+                "received_ms": 1794815240994,
+                "source": {
+                  "A": "4.445",
+                  "B": "3.846",
+                  "E": 1794815240850,
+                  "T": 1794815240850,
+                  "a": "64915.00",
+                  "b": "64914.90",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129917822608
+                },
+                "source_ms": 1794815240850
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815022092,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815017071,
+              "kind": "book",
+              "source_ms": 1794815017071
+            },
+            "overflows": 161,
+            "received": {
+              "book": 147534,
+              "mark": 336
+            },
+            "received_ms": 1794815240994,
+            "time_rejections": [
+              "mark_missing"
+            ],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815284018,
+          "error": "public_trade_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815283760,
+                "kind": "book",
+                "received_mono_ns": 1092262026191315,
+                "received_ms": 1794815283883,
+                "source": {
+                  "A": "8.722",
+                  "B": "2.558",
+                  "E": 1794815283760,
+                  "T": 1794815283760,
+                  "a": "64951.10",
+                  "b": "64951.00",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129922002625
+                },
+                "source_ms": 1794815283760
+              },
+              "mark": {
+                "event_ms": 1794815283003,
+                "kind": "mark",
+                "received_mono_ns": 1092261623184089,
+                "received_ms": 1794815283480,
+                "source": {
+                  "E": 1794815283003,
+                  "T": 1794816000000,
+                  "e": "markPriceUpdate",
+                  "p": "64955.03809420",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794815283003
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815283090,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815278087,
+              "kind": "book",
+              "source_ms": 1794815278087
+            },
+            "overflows": 183,
+            "received": {
+              "book": 165345,
+              "mark": 379
+            },
+            "received_ms": 1794815283883,
+            "time_rejections": [],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794815289104,
+          "error": "public_quote_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794815287681,
+                "kind": "book",
+                "received_mono_ns": 1092265945520646,
+                "received_ms": 1794815287803,
+                "source": {
+                  "A": "1.682",
+                  "B": "6.144",
+                  "E": 1794815287681,
+                  "T": 1794815287681,
+                  "a": "64951.10",
+                  "b": "64951.00",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12129922328175
+                },
+                "source_ms": 1794815287681
+              }
+            },
+            "duplicates": 0,
+            "highwater": 512,
+            "last_fault": {
+              "at_ms": 1794815283090,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794815278087,
+              "kind": "book",
+              "source_ms": 1794815278087
+            },
+            "overflows": 184,
+            "received": {
+              "book": 166044,
+              "mark": 383
+            },
+            "received_ms": 1794815288022,
+            "time_rejections": [
+              "mark_missing"
+            ],
+            "transport": "websocket"
+          }
+        }
+      ],
+      "max_interval_ms": 34308,
+      "max_trade_age_ms": 34436,
+      "max_healthy_component_age_ms": {
+        "book": 3871,
+        "mark": 3789
+      },
+      "quote_overflow_delta": 143,
+      "gap_times": [
+        1794814985454,
+        1794815022259,
+        1794815039008,
+        1794815078081,
+        1794815107512,
+        1794815145480,
+        1794815179800,
+        1794815203490,
+        1794815228486,
+        1794815237998,
+        1794815270272,
+        1794815283887
+      ],
+      "cpu_delta": {
+        "usage_usec": 97795842,
+        "user_usec": 82152680,
+        "system_usec": 15643162,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 3001,
+        "nr_throttled": 1660,
+        "throttled_usec": 208283604,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cpu_max": "50000 100000",
+      "backup_exit": 0
+    },
+    "pre-backup": {
+      "captured_ms": 1794814885682,
+      "chunks": 3,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1794814868043-8f635b3fbe1e5443eb652009b695ae72b62e34e1a5e476e96c9dfbd41ce94165.cred",
+      "sha256": "8f635b3fbe1e5443eb652009b695ae72b62e34e1a5e476e96c9dfbd41ce94165",
+      "sqlite_sha256": "c2d4c5dad620ad985e008c34d6108459c5de34c32c08942ab54db2b96a124b31",
+      "summary": {
+        "balances": {
+          "free": "1000.3090960078653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 22,
+        "fills": 4,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ]
+        ]
+      }
+    },
+    "utf8-benchmark": {
+      "frames": 30000,
+      "bytes_per_frame": 148,
+      "validator_module": "websocket._utils",
+      "results": {
+        "duplicate_python_validation": {
+          "wall_s": 11.003926461096853,
+          "cpu_s": 10.529593097000001
+        },
+        "strict_native_decode": {
+          "wall_s": 0.7643292781431228,
+          "cpu_s": 0.76411534
+        }
+      },
+      "same_json": true,
+      "invalid_utf8_rejected": true
+    },
+    "target-tests.txt": "......................\n----------------------------------------------------------------------\nRan 22 tests in 13.885s\n\nOK\n",
+    "resource-tests.txt": "...\n----------------------------------------------------------------------\nRan 3 tests in 2.098s\n\nOK\n",
+    "previous-target-tests.txt": ".........................................................................................................................................................................\n----------------------------------------------------------------------\nRan 169 tests in 122.237s\n\nOK\nBURST {'events': 10000, 'elapsed_s': 3.741688179085031, 'highwater': 7696, 'remaining': 0}\n"
+  },
+  "9937dd1": {
+    "installed": {
+      "commit": "9937dd177d5f71d8b3386e7412a3d4fd5df84a13",
+      "switched_ms": 1794816516948,
+      "pid": "498196",
+      "path": "/opt/tradingbot-ai-brackets-9937dd1-paper",
+      "analyst_unchanged": "/opt/tradingbot-ai-brackets-74f77d0-analyst",
+      "history": {
+        "events": 22,
+        "fills": 4,
+        "plan_history_sha256": "61afbd19137d0745949e616bbc4ecf9d9db4c4582bc571aa05da8f157417ae7e"
+      },
+      "balances": {
+        "free": "1000.309096007865389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "files": {
+        "ai_limit_book.py": "68e3252c805f03de714d82256c457c2739ae8944c240b5e42a140dd9245a5e74",
+        "ai_limit_runtime.py": "c6c937c9175b6445d0c6a33c20050bd3419a234ab031058387d6c717f0e1f63d",
+        "ai_limit_stream.py": "82f6abf2e7ec96f42e33d8878b7f0103b9b5dc96bb8975d5ed2eea91e814dc63"
+      },
+      "cpu_max": "50000 100000\n",
+      "pre_backup": "80085ef3db29b05bd80bcf7a25924059c72b373f8ca79da4471a355e0f02eb58",
+      "quote_feed": {
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "components": {
+          "book": {
+            "event_ms": 1794816513863,
+            "kind": "book",
+            "received_mono_ns": 1093493098959528,
+            "received_ms": 1794816514956,
+            "source": {
+              "A": "14.391",
+              "B": "5.148",
+              "E": 1794816513863,
+              "T": 1794816513863,
+              "a": "64626.20",
+              "b": "64626.10",
+              "e": "bookTicker",
+              "s": "BTCUSDT",
+              "u": 12130037955187
+            },
+            "source_ms": 1794816513863
+          },
+          "mark": {
+            "event_ms": 1794816514000,
+            "kind": "mark",
+            "received_mono_ns": 1093492492380140,
+            "received_ms": 1794816514349,
+            "source": {
+              "E": 1794816514000,
+              "T": 1794844800000,
+              "e": "markPriceUpdate",
+              "p": "64626.20000000",
+              "s": "BTCUSDT"
+            },
+            "source_ms": 1794816514000
+          }
+        },
+        "duplicates": 0,
+        "highwater": 1044,
+        "last_fault": null,
+        "overflows": 0,
+        "received": {
+          "book": 1919,
+          "mark": 4
+        },
+        "received_ms": 1794816514956,
+        "time_rejections": [],
+        "transport": "websocket"
+      },
+      "trade_feed": {
+        "active_armed_ms": null,
+        "batch_hash": "0259feeb847aa3ba450679f9883becbd7753d5e144b2b80c069d8fb91302385f",
+        "batch_lock_wait_ms": 0,
+        "batch_processing_ms": 2,
+        "discontinuities": [],
+        "execution_gap": false,
+        "fetch_monotonic_ms": 0,
+        "fetch_ms": 0,
+        "first_event_ms": 1794816512542,
+        "first_id": 3527246920,
+        "future_rows": 0,
+        "gap": false,
+        "history_contiguous": true,
+        "idle_events_skipped": 111,
+        "last_event_age_ms": 226,
+        "last_event_ms": 1794816514738,
+        "last_id": 3527247030,
+        "newest_age_ms": 226,
+        "oldest_age_ms": 2422,
+        "phase_diagnostics": {
+          "clock": "monotonic_ns",
+          "cycle_started_ns": 1093493096468198,
+          "http_recent": [
+            {
+              "ended_ns": 1093492097158492,
+              "http_ms": 2082,
+              "outcome": "ok",
+              "parse_ms": 499,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1093491597510209,
+              "started_ns": 1093489514784139
+            }
+          ],
+          "phases_ms": {
+            "filters_ready": true,
+            "filters_refresh_ms": 0,
+            "funding_due_sql_ms": 0,
+            "quote_finance_ms": 3,
+            "trades_total_ms": 2
+          },
+          "prior_cycles": [
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_total_ms": 31,
+              "publish_ms": 0,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 100,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 4,
+              "started_ns": 1093489063495649,
+              "total_ms": 136
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_total_ms": 14,
+              "publish_ms": 7,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 100,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 189,
+              "started_ns": 1093489199805541,
+              "total_ms": 312
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 149,
+              "poller_symbol_ms": 180,
+              "poller_total_ms": 344,
+              "publish_ms": 10,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 478,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 490,
+              "started_ns": 1093489511846579,
+              "total_ms": 1324
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 698,
+              "poller_symbol_ms": 57,
+              "poller_total_ms": 1496,
+              "publish_ms": 107,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 382,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 259,
+              "started_ns": 1093490836188290,
+              "total_ms": 2246
+            }
+          ]
+        },
+        "poll_interval_mono_ms": 2259,
+        "poll_interval_ms": 2260,
+        "poll_started_ms": 1794816514954,
+        "previous_cycle": {
+          "batch_finalize_ms": 0,
+          "batch_lock_wait_ms": 0,
+          "batch_processing_ms": 0,
+          "event_count": 7,
+          "idle_events_skipped": 7,
+          "poll_started_ms": 1794816512694,
+          "total_ms": 57
+        },
+        "quote_fetch_ms": 5,
+        "received_ms": 1794816514964,
+        "requested_after_id": 3527246919,
+        "rows": 111,
+        "stale_first_ms": null,
+        "stale_last_ms": null,
+        "stale_rows": 0,
+        "started_ms": 1794816514964,
+        "stream": {
+          "connected": true,
+          "duplicates": 0,
+          "highwater": 111,
+          "last_fault": null,
+          "oldest_dequeued_wait_ms": 1913,
+          "queued": 0,
+          "read_timeouts": 0,
+          "reason": null,
+          "received": 123,
+          "reconnects": 1
+        },
+        "symbol": "BTCUSDT",
+        "trade_validation_ms": 1,
+        "transport": "websocket"
+      }
+    },
+    "observation": {
+      "elapsed_s": 300.3565818690695,
+      "samples": 163,
+      "start": {
+        "asof": 1794816540230,
+        "errors": "public_quote_stream_unconfirmed",
+        "quote_rejections": [
+          "book_missing",
+          "book_source_time_unconfirmed"
+        ],
+        "component_age_ms": {
+          "mark": 2229
+        },
+        "component_event_age_ms": {
+          "mark": 2229
+        },
+        "quote_received": {
+          "book": 16514,
+          "mark": 28
+        },
+        "quote_overflows": 0,
+        "quote_highwater": 1244,
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "trade_received": 229,
+        "trade_queue": 0,
+        "trade_connections": 1,
+        "trade_fault": null,
+        "interval_ms": 2500,
+        "trade_age_ms": 2728,
+        "gap_ms": 1794816511374,
+        "balanced": true
+      },
+      "end": {
+        "asof": 1794816839845,
+        "errors": "public_quote_stream_unconfirmed",
+        "quote_rejections": [
+          "book_missing",
+          "book_source_time_unconfirmed"
+        ],
+        "component_age_ms": {
+          "mark": 1845
+        },
+        "component_event_age_ms": {
+          "mark": 1845
+        },
+        "quote_received": {
+          "book": 258800,
+          "mark": 328
+        },
+        "quote_overflows": 0,
+        "quote_highwater": 2512,
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 2
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "trade_received": 2577,
+        "trade_queue": 0,
+        "trade_connections": 1,
+        "trade_fault": null,
+        "interval_ms": 1395,
+        "trade_age_ms": 1380,
+        "gap_ms": 1794816605255,
+        "balanced": true
+      },
+      "healthy_samples": 15,
+      "problems": [
+        {
+          "at_ms": 1794816540230,
+          "error": "public_quote_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 1
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "mark": {
+                "event_ms": 1794816538001,
+                "kind": "mark",
+                "received_mono_ns": 1093516865538810,
+                "received_ms": 1794816538723,
+                "source": {
+                  "E": 1794816538001,
+                  "T": 1794844800000,
+                  "e": "markPriceUpdate",
+                  "p": "64665.40823188",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794816538001
+              }
+            },
+            "duplicates": 0,
+            "highwater": 1244,
+            "last_fault": {
+              "at_ms": 1794816538747,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794816522270,
+              "kind": "book",
+              "source_ms": 1794816522270
+            },
+            "overflows": 0,
+            "received": {
+              "book": 16514,
+              "mark": 28
+            },
+            "received_ms": 1794816538748,
+            "time_rejections": [
+              "book_missing",
+              "book_source_time_unconfirmed"
+            ],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794816605665,
+          "error": "public_filters_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 2
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794816604907,
+                "kind": "book",
+                "received_mono_ns": 1093583391273798,
+                "received_ms": 1794816605248,
+                "source": {
+                  "A": "5.145",
+                  "B": "4.174",
+                  "E": 1794816604907,
+                  "T": 1794816604907,
+                  "a": "64694.90",
+                  "b": "64694.80",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12130048194619
+                },
+                "source_ms": 1794816604907
+              },
+              "mark": {
+                "event_ms": 1794816604002,
+                "kind": "mark",
+                "received_mono_ns": 1093582791811544,
+                "received_ms": 1794816604649,
+                "source": {
+                  "E": 1794816604002,
+                  "T": 1794844800000,
+                  "e": "markPriceUpdate",
+                  "p": "64690.00000000",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794816604002
+              }
+            },
+            "duplicates": 0,
+            "highwater": 1244,
+            "last_fault": {
+              "at_ms": 1794816601475,
+              "category": "WebSocketConnectionClosedException",
+              "channel": "book"
+            },
+            "overflows": 0,
+            "received": {
+              "book": 87812,
+              "mark": 94
+            },
+            "received_ms": 1794816605249,
+            "time_rejections": [],
+            "transport": "websocket"
+          }
+        },
+        {
+          "at_ms": 1794816632287,
+          "error": "public_quote_stream_unconfirmed",
+          "quote_report": {
+            "channels": {
+              "book": {
+                "connected": true,
+                "connections": 2
+              },
+              "market": {
+                "connected": true,
+                "connections": 1
+              }
+            },
+            "components": {
+              "book": {
+                "event_ms": 1794816625827,
+                "kind": "book",
+                "received_mono_ns": 1093608825517004,
+                "received_ms": 1794816630683,
+                "source": {
+                  "A": "1.999",
+                  "B": "7.747",
+                  "E": 1794816625827,
+                  "T": 1794816625827,
+                  "a": "64680.50",
+                  "b": "64680.40",
+                  "e": "bookTicker",
+                  "s": "BTCUSDT",
+                  "u": 12130050327866
+                },
+                "source_ms": 1794816625827
+              },
+              "mark": {
+                "event_ms": 1794816630001,
+                "kind": "mark",
+                "received_mono_ns": 1093608591383828,
+                "received_ms": 1794816630448,
+                "source": {
+                  "E": 1794816630001,
+                  "T": 1794844800000,
+                  "e": "markPriceUpdate",
+                  "p": "64680.41329835",
+                  "s": "BTCUSDT"
+                },
+                "source_ms": 1794816630001
+              }
+            },
+            "duplicates": 0,
+            "highwater": 2512,
+            "last_fault": {
+              "at_ms": 1794816630673,
+              "category": "book_source_time_unconfirmed",
+              "event_ms": 1794816625672,
+              "kind": "book",
+              "source_ms": 1794816625672
+            },
+            "overflows": 0,
+            "received": {
+              "book": 108099,
+              "mark": 120
+            },
+            "received_ms": 1794816631454,
+            "time_rejections": [
+              "book_source_ms_stale",
+              "book_event_ms_stale",
+              "book_source_time_unconfirmed"
+            ],
+            "transport": "websocket"
+          }
+        }
+      ],
+      "max_interval_ms": 87493,
+      "max_trade_age_ms": 87991,
+      "max_healthy_component_age_ms": {
+        "book": 5758,
+        "mark": 3661
+      },
+      "quote_overflow_delta": 0,
+      "gap_times": [
+        1794816511374,
+        1794816605255
+      ],
+      "cpu_delta": {
+        "usage_usec": 117220024,
+        "user_usec": 96102813,
+        "system_usec": 21117212,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 3003,
+        "nr_throttled": 2219,
+        "throttled_usec": 290811245,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cpu_max": "50000 100000",
+      "backup_exit": 0
+    },
+    "pre-backup": {
+      "captured_ms": 1794816483738,
+      "chunks": 3,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1794816462387-80085ef3db29b05bd80bcf7a25924059c72b373f8ca79da4471a355e0f02eb58.cred",
+      "sha256": "80085ef3db29b05bd80bcf7a25924059c72b373f8ca79da4471a355e0f02eb58",
+      "sqlite_sha256": "5f9e8036b5807eca0c68a890364b84ce4e062d5610b1761028d94b2496db4e82",
+      "summary": {
+        "balances": {
+          "free": "1000.3090960078653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 22,
+        "fills": 4,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ]
+        ]
+      }
+    },
+    "utf8-benchmark": {
+      "frames": 30000,
+      "bytes_per_frame": 148,
+      "validator_module": "websocket._utils",
+      "results": {
+        "duplicate_python_validation": {
+          "wall_s": 11.003926461096853,
+          "cpu_s": 10.529593097000001
+        },
+        "strict_native_decode": {
+          "wall_s": 0.7643292781431228,
+          "cpu_s": 0.76411534
+        }
+      },
+      "same_json": true,
+      "invalid_utf8_rejected": true
+    },
+    "target-tests.txt": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 13.779s\n\nOK\n",
+    "resource-tests.txt": "...\n----------------------------------------------------------------------\nRan 3 tests in 2.098s\n\nOK\n",
+    "previous-target-tests.txt": ".........................................................................................................................................................................\n----------------------------------------------------------------------\nRan 169 tests in 122.237s\n\nOK\nBURST {'events': 10000, 'elapsed_s': 3.741688179085031, 'highwater': 7696, 'remaining': 0}\n"
+  },
+  "4eedcf0": {
+    "installed": {
+      "commit": "4eedcf05eee37716b79d9a456e149deee81d154c",
+      "switched_ms": 1794817410841,
+      "pid": "499598",
+      "path": "/opt/tradingbot-ai-brackets-4eedcf0-paper",
+      "analyst_unchanged": "/opt/tradingbot-ai-brackets-74f77d0-analyst",
+      "history": {
+        "events": 22,
+        "fills": 4,
+        "plan_history_sha256": "61afbd19137d0745949e616bbc4ecf9d9db4c4582bc571aa05da8f157417ae7e"
+      },
+      "balances": {
+        "free": "1000.309096007865389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "files": {
+        "ai_limit_book.py": "cc1727096378f35eef87e6f9f75c503f08e74bf77f203d1152a41d155af60188",
+        "ai_limit_runtime.py": "c6c937c9175b6445d0c6a33c20050bd3419a234ab031058387d6c717f0e1f63d",
+        "ai_limit_stream.py": "cf13a0ccfc126a8f65b9ccfd1578fd580f6e8d0712cf364adfa8b97e47c7447a"
+      },
+      "cpu_max": "50000 100000\n",
+      "pre_backup": "ac71cd1d9f2f94bf91c39a7cd0ebc8bc9d18e882eb430894f626dc1aeac1f904",
+      "quote_feed": {
+        "book_stream": "depth5@100ms",
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "components": {
+          "book": {
+            "event_ms": 1794817409168,
+            "kind": "book",
+            "raw": {
+              "E": 1794817409168,
+              "T": 1794817409167,
+              "U": 12130136433103,
+              "a": [
+                [
+                  "64659.40",
+                  "3.309"
+                ],
+                [
+                  "64659.50",
+                  "0.004"
+                ],
+                [
+                  "64659.80",
+                  "0.001"
+                ],
+                [
+                  "64659.90",
+                  "0.032"
+                ],
+                [
+                  "64660.00",
+                  "0.078"
+                ]
+              ],
+              "b": [
+                [
+                  "64659.30",
+                  "3.882"
+                ],
+                [
+                  "64659.20",
+                  "0.007"
+                ],
+                [
+                  "64659.10",
+                  "0.002"
+                ],
+                [
+                  "64659.00",
+                  "0.044"
+                ],
+                [
+                  "64658.90",
+                  "0.002"
+                ]
+              ],
+              "e": "depthUpdate",
+              "ps": "BTCUSDT",
+              "pu": 12130136433072,
+              "s": "BTCUSDT",
+              "st": 1,
+              "u": 12130136438290
+            },
+            "received_mono_ns": 1094387467960733,
+            "received_ms": 1794817409325,
+            "source": {
+              "A": "3.309",
+              "B": "3.882",
+              "E": 1794817409168,
+              "T": 1794817409167,
+              "a": "64659.40",
+              "b": "64659.30",
+              "e": "bookTicker",
+              "s": "BTCUSDT",
+              "u": 12130136438290
+            },
+            "source_kind": "partial_depth5_100ms",
+            "source_ms": 1794817409167
+          },
+          "mark": {
+            "event_ms": 1794817409001,
+            "kind": "mark",
+            "received_mono_ns": 1094387465163183,
+            "received_ms": 1794817409322,
+            "source": {
+              "E": 1794817409001,
+              "T": 1794844800000,
+              "e": "markPriceUpdate",
+              "p": "64664.59086232",
+              "s": "BTCUSDT"
+            },
+            "source_ms": 1794817409001
+          }
+        },
+        "duplicates": 0,
+        "highwater": 13,
+        "last_fault": null,
+        "overflows": 0,
+        "received": {
+          "book": 29,
+          "mark": 3
+        },
+        "received_ms": 1794817409567,
+        "time_rejections": [],
+        "transport": "websocket"
+      },
+      "trade_feed": {
+        "active_armed_ms": null,
+        "batch_hash": "abc3f573b8abf3624c544c43feef06498f671514a948cf89052d5612bb3682d4",
+        "batch_lock_wait_ms": 0,
+        "batch_processing_ms": 0,
+        "discontinuities": [],
+        "execution_gap": false,
+        "fetch_monotonic_ms": 0,
+        "fetch_ms": 0,
+        "first_event_ms": 1794817408694,
+        "first_id": 3527267719,
+        "future_rows": 0,
+        "gap": false,
+        "history_contiguous": true,
+        "idle_events_skipped": 3,
+        "last_event_age_ms": 411,
+        "last_event_ms": 1794817409160,
+        "last_id": 3527267721,
+        "newest_age_ms": 411,
+        "oldest_age_ms": 877,
+        "phase_diagnostics": {
+          "clock": "monotonic_ns",
+          "cycle_started_ns": 1094387709533659,
+          "http_recent": [
+            {
+              "ended_ns": 1094387231702666,
+              "http_ms": 1067,
+              "outcome": "ok",
+              "parse_ms": 443,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094386788536941,
+              "started_ns": 1094385720620230
+            }
+          ],
+          "phases_ms": {
+            "filters_ready": true,
+            "filters_refresh_ms": 0,
+            "funding_due_sql_ms": 0,
+            "quote_finance_ms": 2,
+            "trades_total_ms": 0
+          },
+          "prior_cycles": [
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 5,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 9,
+              "poller_symbol_ms": 6,
+              "poller_total_ms": 32,
+              "publish_ms": 8,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 100,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 38,
+              "started_ns": 1094385716453571,
+              "total_ms": 179
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_symbol_ms": 87,
+              "poller_total_ms": 101,
+              "publish_ms": 0,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 207,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 4,
+              "started_ns": 1094385896161000,
+              "total_ms": 313
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_symbol_ms": 6,
+              "poller_total_ms": 19,
+              "publish_ms": 8,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 440,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 3,
+              "started_ns": 1094386209365762,
+              "total_ms": 472
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 73,
+              "poller_symbol_ms": 29,
+              "poller_total_ms": 796,
+              "publish_ms": 6,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 220,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 3,
+              "started_ns": 1094386681926847,
+              "total_ms": 1027
+            }
+          ]
+        },
+        "poll_interval_mono_ms": 1026,
+        "poll_interval_ms": 1026,
+        "poll_started_ms": 1794817409567,
+        "previous_cycle": {
+          "batch_finalize_ms": 0,
+          "batch_lock_wait_ms": 0,
+          "batch_processing_ms": 1,
+          "event_count": 2,
+          "idle_events_skipped": 2,
+          "poll_started_ms": 1794817408541,
+          "total_ms": 29
+        },
+        "quote_fetch_ms": 1,
+        "received_ms": 1794817409571,
+        "requested_after_id": 3527267718,
+        "rows": 3,
+        "stale_first_ms": null,
+        "stale_last_ms": null,
+        "stale_rows": 0,
+        "started_ms": 1794817409571,
+        "stream": {
+          "connected": true,
+          "duplicates": 0,
+          "highwater": 22,
+          "last_fault": null,
+          "oldest_dequeued_wait_ms": 481,
+          "queued": 0,
+          "read_timeouts": 0,
+          "reason": null,
+          "received": 29,
+          "reconnects": 1
+        },
+        "symbol": "BTCUSDT",
+        "trade_validation_ms": 0,
+        "transport": "websocket"
+      }
+    },
+    "observation": {
+      "elapsed_s": 300.0860650301911,
+      "samples": 536,
+      "start": {
+        "asof": 1794817448870,
+        "errors": null,
+        "quote_rejections": [],
+        "component_age_ms": {
+          "book": 160,
+          "mark": 870
+        },
+        "component_event_age_ms": {
+          "book": 158,
+          "mark": 870
+        },
+        "quote_received": {
+          "book": 414,
+          "mark": 42
+        },
+        "quote_overflows": 0,
+        "quote_highwater": 20,
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "trade_received": 631,
+        "trade_queue": 0,
+        "trade_connections": 1,
+        "trade_fault": null,
+        "interval_ms": 500,
+        "trade_age_ms": 530,
+        "gap_ms": 1794817407580,
+        "balanced": true
+      },
+      "end": {
+        "asof": 1794817749155,
+        "errors": null,
+        "quote_rejections": [],
+        "component_age_ms": {
+          "book": 186,
+          "mark": 1155
+        },
+        "component_event_age_ms": {
+          "book": 185,
+          "mark": 1155
+        },
+        "quote_received": {
+          "book": 3337,
+          "mark": 342
+        },
+        "quote_overflows": 0,
+        "quote_highwater": 28,
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "trade_received": 9514,
+        "trade_queue": 0,
+        "trade_connections": 1,
+        "trade_fault": null,
+        "interval_ms": 117,
+        "trade_age_ms": 357,
+        "gap_ms": 1794817407580,
+        "balanced": true
+      },
+      "healthy_samples": 536,
+      "problems": [],
+      "max_interval_ms": 2501,
+      "max_trade_age_ms": 2764,
+      "max_healthy_component_age_ms": {
+        "book": 1672,
+        "mark": 2161
+      },
+      "quote_overflow_delta": 0,
+      "gap_times": [
+        1794817407580
+      ],
+      "cpu_delta": {
+        "usage_usec": 57334237,
+        "user_usec": 51347583,
+        "system_usec": 5986654,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 2998,
+        "nr_throttled": 500,
+        "throttled_usec": 52955078,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "cpu_max": "50000 100000",
+      "backup_exit": 0
+    },
+    "pre-backup": {
+      "captured_ms": 1794817375320,
+      "chunks": 3,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1794817359621-ac71cd1d9f2f94bf91c39a7cd0ebc8bc9d18e882eb430894f626dc1aeac1f904.cred",
+      "sha256": "ac71cd1d9f2f94bf91c39a7cd0ebc8bc9d18e882eb430894f626dc1aeac1f904",
+      "sqlite_sha256": "804f3080b566766412790c23f905b7e44325e339e0e467121670e1f66aeef9aa",
+      "summary": {
+        "balances": {
+          "free": "1000.3090960078653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 22,
+        "fills": 4,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ]
+        ]
+      }
+    },
+    "utf8-benchmark": {
+      "frames": 30000,
+      "bytes_per_frame": 148,
+      "validator_module": "websocket._utils",
+      "results": {
+        "duplicate_python_validation": {
+          "wall_s": 11.003926461096853,
+          "cpu_s": 10.529593097000001
+        },
+        "strict_native_decode": {
+          "wall_s": 0.7643292781431228,
+          "cpu_s": 0.76411534
+        }
+      },
+      "same_json": true,
+      "invalid_utf8_rejected": true
+    },
+    "target-tests.txt": "............................\n----------------------------------------------------------------------\nRan 28 tests in 13.057s\n\nOK\n",
+    "resource-tests.txt": "...\n----------------------------------------------------------------------\nRan 3 tests in 2.098s\n\nOK\n",
+    "previous-target-tests.txt": ".........................................................................................................................................................................\n----------------------------------------------------------------------\nRan 169 tests in 122.237s\n\nOK\nBURST {'events': 10000, 'elapsed_s': 3.741688179085031, 'highwater': 7696, 'remaining': 0}\n"
+  },
+  "public": {
+    "as_of_ms": 1794817889828,
+    "balances": {
+      "free": "1000.309096007865389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "ledger_balanced": true,
+    "paused": false,
+    "blocked": null,
+    "market_errors": {
+      "BTCUSDT": null,
+      "ETHUSDT": null,
+      "SOLUSDT": null
+    },
+    "quote_feeds": {
+      "BTCUSDT": {
+        "book_stream": "depth5@100ms",
+        "channels": {
+          "book": {
+            "connected": true,
+            "connections": 1
+          },
+          "market": {
+            "connected": true,
+            "connections": 1
+          }
+        },
+        "components": {
+          "book": {
+            "event_ms": 1794817889408,
+            "kind": "book",
+            "raw": {
+              "E": 1794817889408,
+              "T": 1794817889407,
+              "U": 12130191817013,
+              "a": [
+                [
+                  "64548.90",
+                  "1.542"
+                ],
+                [
+                  "64549.00",
+                  "0.001"
+                ],
+                [
+                  "64549.10",
+                  "0.001"
+                ],
+                [
+                  "64549.20",
+                  "0.002"
+                ],
+                [
+                  "64549.60",
+                  "0.001"
+                ]
+              ],
+              "b": [
+                [
+                  "64548.80",
+                  "4.416"
+                ],
+                [
+                  "64548.70",
+                  "0.006"
+                ],
+                [
+                  "64548.60",
+                  "0.002"
+                ],
+                [
+                  "64548.50",
+                  "0.001"
+                ],
+                [
+                  "64548.20",
+                  "0.001"
+                ]
+              ],
+              "e": "depthUpdate",
+              "ps": "BTCUSDT",
+              "pu": 12130191816953,
+              "s": "BTCUSDT",
+              "st": 1,
+              "u": 12130191825949
+            },
+            "received_mono_ns": 1094867698688027,
+            "received_ms": 1794817889556,
+            "source": {
+              "A": "1.542",
+              "B": "4.416",
+              "E": 1794817889408,
+              "T": 1794817889407,
+              "a": "64548.90",
+              "b": "64548.80",
+              "e": "bookTicker",
+              "s": "BTCUSDT",
+              "u": 12130191825949
+            },
+            "source_kind": "partial_depth5_100ms",
+            "source_ms": 1794817889407
+          },
+          "mark": {
+            "event_ms": 1794817889001,
+            "kind": "mark",
+            "received_mono_ns": 1094867447796531,
+            "received_ms": 1794817889305,
+            "source": {
+              "E": 1794817889001,
+              "T": 1794844800000,
+              "e": "markPriceUpdate",
+              "p": "64548.90000000",
+              "s": "BTCUSDT"
+            },
+            "source_ms": 1794817889001
+          }
+        },
+        "duplicates": 0,
+        "highwater": 28,
+        "last_fault": null,
+        "overflows": 0,
+        "received": {
+          "book": 4696,
+          "mark": 483
+        },
+        "received_ms": 1794817889805,
+        "time_rejections": [],
+        "transport": "websocket"
+      }
+    },
+    "trade_feeds": {
+      "BTCUSDT": {
+        "active_armed_ms": null,
+        "batch_hash": "7ce68802e14ce47948fbbaff9267f21142260e1b18ed70fb280c433e64825853",
+        "batch_lock_wait_ms": 0,
+        "batch_processing_ms": 0,
+        "discontinuities": [],
+        "execution_gap": false,
+        "fetch_monotonic_ms": 0,
+        "fetch_ms": 0,
+        "first_event_ms": 1794817889053,
+        "first_id": 3527279743,
+        "future_rows": 0,
+        "gap": false,
+        "history_contiguous": true,
+        "idle_events_skipped": 8,
+        "last_event_age_ms": 133,
+        "last_event_ms": 1794817889677,
+        "last_id": 3527279750,
+        "newest_age_ms": 133,
+        "oldest_age_ms": 757,
+        "phase_diagnostics": {
+          "clock": "monotonic_ns",
+          "cycle_started_ns": 1094867947662634,
+          "http_recent": [
+            {
+              "ended_ns": 1094387231702666,
+              "http_ms": 1067,
+              "outcome": "ok",
+              "parse_ms": 443,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094386788536941,
+              "started_ns": 1094385720620230
+            },
+            {
+              "ended_ns": 1094436274464180,
+              "http_ms": 495,
+              "outcome": "ok",
+              "parse_ms": 16,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094436257808621,
+              "started_ns": 1094435762805738
+            },
+            {
+              "ended_ns": 1094486868194487,
+              "http_ms": 1037,
+              "outcome": "ok",
+              "parse_ms": 17,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094486850764059,
+              "started_ns": 1094485813112523
+            },
+            {
+              "ended_ns": 1094536523063352,
+              "http_ms": 677,
+              "outcome": "ok",
+              "parse_ms": 20,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094536502348723,
+              "started_ns": 1094535824526410
+            },
+            {
+              "ended_ns": 1094588131832598,
+              "http_ms": 1564,
+              "outcome": "ok",
+              "parse_ms": 456,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094587675730524,
+              "started_ns": 1094586111527208
+            },
+            {
+              "ended_ns": 1094636763974691,
+              "http_ms": 630,
+              "outcome": "ok",
+              "parse_ms": 15,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094636748401812,
+              "started_ns": 1094636118380938
+            },
+            {
+              "ended_ns": 1094688791763333,
+              "http_ms": 1248,
+              "outcome": "ok",
+              "parse_ms": 1038,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094687753284848,
+              "started_ns": 1094686504853057
+            },
+            {
+              "ended_ns": 1094737271852272,
+              "http_ms": 691,
+              "outcome": "ok",
+              "parse_ms": 12,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094737259492003,
+              "started_ns": 1094736568294848
+            },
+            {
+              "ended_ns": 1094786934649574,
+              "http_ms": 285,
+              "outcome": "ok",
+              "parse_ms": 14,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094786920572935,
+              "started_ns": 1094786635410180
+            },
+            {
+              "ended_ns": 1094838285111525,
+              "http_ms": 1232,
+              "outcome": "ok",
+              "parse_ms": 302,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1094837983066052,
+              "started_ns": 1094836750763578
+            }
+          ],
+          "phases_ms": {
+            "filters_ready": true,
+            "filters_refresh_ms": 0,
+            "funding_due_sql_ms": 0,
+            "quote_finance_ms": 3,
+            "trades_total_ms": 0
+          },
+          "prior_cycles": [
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 6,
+              "poller_symbol_ms": 3,
+              "poller_total_ms": 20,
+              "publish_ms": 0,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 223,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 5,
+              "started_ns": 1094865196805083,
+              "total_ms": 250
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_symbol_ms": 2,
+              "poller_total_ms": 17,
+              "publish_ms": 6,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 100,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 4,
+              "started_ns": 1094865446971329,
+              "total_ms": 129
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 3,
+              "poller_symbol_ms": 2,
+              "poller_total_ms": 506,
+              "publish_ms": 9,
+              "pulse_finance_ms": 0,
+              "sleep_ms": 233,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 1122,
+              "started_ns": 1094865575992216,
+              "total_ms": 1871
+            },
+            {
+              "backup_ms": 0,
+              "funding_check_ms": 0,
+              "ingest_ms": 0,
+              "poller_snapshot_ms": 14,
+              "poller_symbol_ms": 8,
+              "poller_total_ms": 257,
+              "publish_ms": 6,
+              "pulse_finance_ms": 1,
+              "sleep_ms": 230,
+              "sleep_requested_ms": 100,
+              "snapshot_ms": 5,
+              "started_ns": 1094867447945221,
+              "total_ms": 499
+            }
+          ]
+        },
+        "poll_interval_mono_ms": 499,
+        "poll_interval_ms": 499,
+        "poll_started_ms": 1794817889805,
+        "previous_cycle": {
+          "batch_finalize_ms": 0,
+          "batch_lock_wait_ms": 0,
+          "batch_processing_ms": 0,
+          "event_count": 11,
+          "idle_events_skipped": 11,
+          "poll_started_ms": 1794817889306,
+          "total_ms": 8
+        },
+        "quote_fetch_ms": 1,
+        "received_ms": 1794817889810,
+        "requested_after_id": 3527279742,
+        "rows": 8,
+        "stale_first_ms": null,
+        "stale_last_ms": null,
+        "stale_rows": 0,
+        "started_ms": 1794817889810,
+        "stream": {
+          "connected": true,
+          "duplicates": 0,
+          "highwater": 605,
+          "last_fault": null,
+          "oldest_dequeued_wait_ms": 491,
+          "queued": 0,
+          "read_timeouts": 0,
+          "reason": null,
+          "received": 12058,
+          "reconnects": 1
+        },
+        "symbol": "BTCUSDT",
+        "trade_validation_ms": 0,
+        "transport": "websocket"
+      }
+    },
+    "last_trade_gap": {
+      "at_ms": 1794817407580,
+      "detail": "noncontiguous_or_stale_public_trades_no_backfills",
+      "kind": "DATA_GAP",
+      "source": {
+        "active_armed_ms": null,
+        "batch_hash": "3ef8b292b01a2fe4c39c6456b50c28970219eeca847920229ea9b7214fa86dc2",
+        "discontinuities": [
+          {
+            "expected": 3527263990,
+            "received": 3527267693
+          }
+        ],
+        "execution_gap": true,
+        "fetch_monotonic_ms": 0,
+        "fetch_ms": 0,
+        "first_event_ms": 1794817406396,
+        "first_id": 3527267693,
+        "future_rows": 0,
+        "gap": true,
+        "history_contiguous": false,
+        "last_event_age_ms": 274,
+        "last_event_ms": 1794817407305,
+        "last_id": 3527267714,
+        "newest_age_ms": 274,
+        "oldest_age_ms": 1183,
+        "poll_started_ms": 1794817407575,
+        "quote_fetch_ms": 1,
+        "received_ms": 1794817407579,
+        "requested_after_id": 3527263989,
+        "rows": 22,
+        "stale_first_ms": null,
+        "stale_last_ms": null,
+        "stale_rows": 0,
+        "started_ms": 1794817407579,
+        "stream": {
+          "connected": true,
+          "duplicates": 0,
+          "highwater": 22,
+          "last_fault": null,
+          "oldest_dequeued_wait_ms": 1009,
+          "queued": 0,
+          "read_timeouts": 0,
+          "reason": "bootstrap",
+          "received": 22,
+          "reconnects": 1
+        },
+        "symbol": "BTCUSDT",
+        "trade_validation_ms": 0,
+        "transport": "websocket"
+      },
+      "symbol": "BTCUSDT"
+    }
+  },
+  "active_plans": [],
+  "reconcile": {
+    "balanced": true,
+    "invalid_events": [],
+    "negative_accounts": [],
+    "foreign_key_error": false,
+    "totals": {
+      "USDT": "0.0000000000000000000",
+      "BTC": "0"
+    }
+  },
+  "counts": {
+    "ledger_events": 22,
+    "bracket_fills": 4,
+    "bracket_funding": 1,
+    "bracket_plans": 8
+  },
+  "history_sha256": "61afbd19137d0745949e616bbc4ecf9d9db4c4582bc571aa05da8f157417ae7e",
+  "working_pauses": {
+    "reserve": 1,
+    "spot": 1,
+    "futures_isolated": 1,
+    "futures_cross": 1,
+    "margin_cross": 1
+  },
+  "services": {
+    "ai-bracket-paper.service": "MainPID=499598\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-4eedcf0-paper\nActiveState=active\n",
+    "ai-bracket-analyst.service": "MainPID=0\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-74f77d0-analyst\nActiveState=inactive\n",
+    "ai-bracket-analyst.timer": "NextElapseUSecRealtime=Mon 2026-11-16 12:02:00 UTC\nActiveState=active\n"
+  },
+  "telegram_pollers": 1,
+  "paper_processes": 1,
+  "render_check": {
+    "size": 18771,
+    "length": 1024,
+    "valid": true,
+    "stale": false
+  },
+  "backup": {
+    "captured_ms": 1794817665622,
+    "chunks": 3,
+    "host_bound": true,
+    "object": "paper-backups/daily/ai-bracket-study/1794817649097-a85448cb15f886cb523e64cc3e15b263c8c2a4386308bc5d1d77c476c9370a20.cred",
+    "sha256": "a85448cb15f886cb523e64cc3e15b263c8c2a4386308bc5d1d77c476c9370a20",
+    "sqlite_sha256": "436aa0c26ee244839f008d0628974bdd87b07ccdc8d1e65b11008d47e7f0bbd9",
+    "summary": {
+      "balances": {
+        "free": "1000.3090960078653898110",
+        "funding_buffer": "0E-8",
+        "margin": "0.0000",
+        "reserved": "0E-8"
+      },
+      "events": 22,
+      "fills": 4,
+      "funding_events": 1,
+      "plans": [
+        [
+          "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "CLOSED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "68845.8",
+          "69159.3",
+          "67490.4"
+        ],
+        [
+          "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "65208.4",
+          "65364.8",
+          "64271"
+        ],
+        [
+          "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "69466.2",
+          "69571.2",
+          "68651.6"
+        ],
+        [
+          "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "69466.2",
+          "69572",
+          "68652.4"
+        ],
+        [
+          "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "CLOSED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "65340",
+          "65499.5",
+          "64378.4"
+        ],
+        [
+          "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "64916.1",
+          "65232.4",
+          "63762.9"
+        ],
+        [
+          "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "65565",
+          "66127.9",
+          "63773.6"
+        ],
+        [
+          "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "64141.1",
+          "64542.2",
+          "61986.6"
+        ]
+      ]
+    }
+  },
+  "disk": {
+    "db_bytes": 21499904,
+    "free": 12245004288
+  },
+  "analyst_journal": "2026-11-16T08:02:00+00:00 tradingbot-paper-test systemd[1]: Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential...\n2026-11-16T08:02:23+00:00 tradingbot-paper-test python3[497587]: {\"blocking_reasons\":[\"market_unconfirmed\"],\"funding_through_ms\":1794816132085,\"paper_as_of_ms\":1794816142983,\"status\":\"not_requested_market_or_funding_unconfirmed\"}\n2026-11-16T08:02:24+00:00 tradingbot-paper-test systemd[1]: ai-bracket-analyst.service: Deactivated successfully.\n2026-11-16T08:02:24+00:00 tradingbot-paper-test systemd[1]: Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential.\n2026-11-16T08:02:24+00:00 tradingbot-paper-test systemd[1]: ai-bracket-analyst.service: Consumed 3.004s CPU time, 11.8M memory peak, 0B memory swap peak.\n",
+  "collection_started_ms": 1794817891568,
+  "paper_process_count_filter": "research.ai_limit_runtime + serve",
+  "followup": {
+    "automation_id": "trading-bot-ws-protection-16-02",
+    "status": "ACTIVE",
+    "scheduled_baku": "2026-11-16T16:47:00+04:00",
+    "scheduled_utc": "2026-11-16T12:47:00Z",
+    "kind": "one-shot heartbeat after normal16:02 opportunity",
+    "registration_confirmed": true
+  },
+  "limitations": [
+    "Flat account during live observation; live risk SL/TIME pending/fill not yet observed on this release.",
+    "Publication component ages include time since actual validation; execution revalidates at financial use.",
+    "Before/after windows are different ordinary market periods, not a controlled performance benchmark.",
+    "Partial top5 snapshots are sampled prices/quantities, not full order-book reconstruction or guaranteed fill evidence.",
+    "Identical exit-side price/quantity states are conservatively not replenished merely by a new partial-depth u or mark.",
+    "External encrypted backup is host-bound; independent recovery on a lost/new host is not demonstrated."
+  ],
+  "additional_selected_live_evidence": {
+    "origin": "read-only ps thread/quote report captured from existing orders.json during9937dd1; no new market collector",
+    "checked_ms": 1794816697219,
+    "publication_ms": 1794816695453,
+    "report_ms": 1794816694049,
+    "book_last_rejection": {
+      "at_ms": 1794816694048,
+      "source_ms": 1794816672119,
+      "event_ms": 1794816672119,
+      "category": "book_source_time_unconfirmed",
+      "age_at_rejection_ms": 21929
+    },
+    "mark_source_ms": 1794816693000,
+    "mark_received_ms": 1794816693350,
+    "received": {
+      "book": 153619,
+      "mark": 183
+    },
+    "note": "CPU thread percentages were cumulative lifetime values, not an instantaneous causal attribution."
+  }
+}

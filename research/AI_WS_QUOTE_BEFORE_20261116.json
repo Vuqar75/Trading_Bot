@@ -1,0 +1,76 @@
+{
+  "scope": "actual first WS candidate f44f0fd at unchanged CPUQuota20%; empty study account, no artificial delay",
+  "as_of_ms": 1794812250296,
+  "market_errors": {
+    "BTCUSDT": "public_quote_stream_unconfirmed",
+    "ETHUSDT": null,
+    "SOLUSDT": null
+  },
+  "quote": {
+    "channels": {
+      "book": {
+        "connected": true,
+        "connections": 1
+      },
+      "market": {
+        "connected": true,
+        "connections": 1
+      }
+    },
+    "components": {
+      "book": {
+        "event_ms": 1794812249529,
+        "kind": "book",
+        "received_mono_ns": 1089228325890770,
+        "received_ms": 1794812250102,
+        "source": {
+          "A": "3.405",
+          "B": "8.223",
+          "E": 1794812249529,
+          "T": 1794812249529,
+          "a": "64678.30",
+          "b": "64678.20",
+          "e": "bookTicker",
+          "s": "BTCUSDT",
+          "u": 12129601213796
+        },
+        "source_ms": 1794812249529
+      }
+    },
+    "duplicates": 0,
+    "highwater": 512,
+    "last_fault": {
+      "at_ms": 1794812196697,
+      "category": "book_source_time_unconfirmed",
+      "event_ms": 1794812191696,
+      "kind": "book",
+      "source_ms": 1794812191695
+    },
+    "overflows": 78,
+    "received_ms": 1794812250184,
+    "time_rejections": [
+      "mark_missing",
+      "quote_queue_overflow"
+    ],
+    "transport": "websocket"
+  },
+  "trade": {
+    "poll_interval_mono_ms": 2536,
+    "oldest_age_ms": 2113,
+    "stream": {
+      "connected": true,
+      "duplicates": 0,
+      "highwater": 669,
+      "last_fault": null,
+      "oldest_dequeued_wait_ms": 1338,
+      "queued": 0,
+      "read_timeouts": 0,
+      "reason": null,
+      "received": 2287,
+      "reconnects": 1
+    }
+  },
+  "last_gap_ms": 1794812246089,
+  "cgroup_cpu_stat": "usage_usec 24233028\nuser_usec 21144501\nsystem_usec 3088527\nnice_usec 0\ncore_sched.force_idle_usec 0\nnr_periods 1326\nnr_throttled 1219\nthrottled_usec 150126882\nnr_bursts 0\nburst_usec 0\n",
+  "interpretation": "Resource throttling and quote overflow observed; quote-only pending→20ms request reproduced separately. Event-ID spacing is not a network delivery rate. No position/protective execution observed in this sample."
+}
