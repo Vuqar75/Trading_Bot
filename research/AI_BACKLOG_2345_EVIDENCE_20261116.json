@@ -1,0 +1,1511 @@
+{
+  "source": {
+    "checked_ms": 1794858357749,
+    "phase_sha256": "a0d658b459c0866b3706105e02ac23e42e70db4f180085965dc8310074c8ec24",
+    "phase_bytes": 470904,
+    "public": {
+      "as_of_ms": 1794858355487,
+      "balances": {
+        "free": "1000.309096007865389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "ledger_balanced": true,
+      "market_errors": {
+        "BTCUSDT": null,
+        "ETHUSDT": null,
+        "SOLUSDT": null
+      },
+      "quote_feeds": {
+        "BTCUSDT": {
+          "book_stream": "depth5@100ms",
+          "channels": {
+            "book": {
+              "connected": true,
+              "connections": 1
+            },
+            "market": {
+              "connected": true,
+              "connections": 1
+            }
+          },
+          "components": {
+            "book": {
+              "event_ms": 1794858354048,
+              "kind": "book",
+              "raw": {
+                "E": 1794858354048,
+                "T": 1794858354045,
+                "U": 12136086126700,
+                "a": [
+                  [
+                    "64768.20",
+                    "3.580"
+                  ],
+                  [
+                    "64768.30",
+                    "0.005"
+                  ],
+                  [
+                    "64768.40",
+                    "0.005"
+                  ],
+                  [
+                    "64768.50",
+                    "0.001"
+                  ],
+                  [
+                    "64768.80",
+                    "0.001"
+                  ]
+                ],
+                "b": [
+                  [
+                    "64768.10",
+                    "3.567"
+                  ],
+                  [
+                    "64768.00",
+                    "0.019"
+                  ],
+                  [
+                    "64767.90",
+                    "0.081"
+                  ],
+                  [
+                    "64767.40",
+                    "0.001"
+                  ],
+                  [
+                    "64767.10",
+                    "0.001"
+                  ]
+                ],
+                "e": "depthUpdate",
+                "ps": "BTCUSDT",
+                "pu": 12136086126653,
+                "s": "BTCUSDT",
+                "st": 1,
+                "u": 12136086131921
+              },
+              "received_mono_ns": 1135332369746407,
+              "received_ms": 1794858354227,
+              "source": {
+                "A": "3.580",
+                "B": "3.567",
+                "E": 1794858354048,
+                "T": 1794858354045,
+                "a": "64768.20",
+                "b": "64768.10",
+                "e": "bookTicker",
+                "s": "BTCUSDT",
+                "u": 12136086131921
+              },
+              "source_kind": "partial_depth5_100ms",
+              "source_ms": 1794858354045
+            },
+            "mark": {
+              "event_ms": 1794858354003,
+              "kind": "mark",
+              "received_mono_ns": 1135332364109277,
+              "received_ms": 1794858354221,
+              "source": {
+                "E": 1794858354003,
+                "T": 1794873600000,
+                "e": "markPriceUpdate",
+                "p": "64768.10000000",
+                "s": "BTCUSDT"
+              },
+              "source_ms": 1794858354003
+            }
+          },
+          "duplicates": 0,
+          "highwater": 57,
+          "last_fault": null,
+          "overflows": 0,
+          "received": {
+            "book": 16917,
+            "mark": 1790
+          },
+          "received_ms": 1794858354232,
+          "time_rejections": [],
+          "transport": "websocket"
+        }
+      },
+      "trade_feeds": {
+        "BTCUSDT": {
+          "active_armed_ms": null,
+          "batch_hash": "75f661c8012afab20055aef395106014da095ed3e6523c1be798e5306287fa62",
+          "batch_lock_wait_ms": 0,
+          "batch_processing_ms": 0,
+          "discontinuities": [],
+          "execution_gap": false,
+          "fetch_monotonic_ms": 0,
+          "fetch_ms": 0,
+          "first_event_ms": 1794858352095,
+          "first_id": 3528380800,
+          "future_rows": 0,
+          "gap": false,
+          "history_contiguous": true,
+          "idle_events_skipped": 5,
+          "last_event_age_ms": 618,
+          "last_event_ms": 1794858353619,
+          "last_id": 3528380804,
+          "newest_age_ms": 618,
+          "oldest_age_ms": 2142,
+          "phase_diagnostics": {
+            "clock": "monotonic_ns",
+            "cycle_started_ns": 1135332374650587,
+            "http_recent": [
+              {
+                "ended_ns": 1133747864778569,
+                "http_ms": 1736,
+                "outcome": "ok",
+                "parse_ms": 749,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1133747114819675,
+                "started_ns": 1133745378383752
+              },
+              {
+                "ended_ns": 1133798420098083,
+                "http_ms": 2249,
+                "outcome": "ok",
+                "parse_ms": 749,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1133797670947668,
+                "started_ns": 1133795421149756
+              },
+              {
+                "ended_ns": 1133848215669363,
+                "http_ms": 2493,
+                "outcome": "ok",
+                "parse_ms": 18,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1133848197613524,
+                "started_ns": 1133845703858650
+              },
+              {
+                "ended_ns": 1133897782878919,
+                "http_ms": 1968,
+                "outcome": "ok",
+                "parse_ms": 16,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1133897766542720,
+                "started_ns": 1133895798087128
+              },
+              {
+                "ended_ns": 1133947565880366,
+                "http_ms": 1479,
+                "outcome": "ok",
+                "parse_ms": 22,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1133947543299348,
+                "started_ns": 1133946063439576
+              },
+              {
+                "ended_ns": 1133999115471006,
+                "http_ms": 1991,
+                "outcome": "ok",
+                "parse_ms": 1011,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1133998103580256,
+                "started_ns": 1133996112343775
+              },
+              {
+                "ended_ns": 1134049057019648,
+                "http_ms": 2750,
+                "outcome": "ok",
+                "parse_ms": 14,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134049042184859,
+                "started_ns": 1134046291747213
+              },
+              {
+                "ended_ns": 1134097351072270,
+                "http_ms": 918,
+                "outcome": "ok",
+                "parse_ms": 17,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134097334057061,
+                "started_ns": 1134096415566426
+              },
+              {
+                "ended_ns": 1134147784822248,
+                "http_ms": 1088,
+                "outcome": "ok",
+                "parse_ms": 28,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134147756222279,
+                "started_ns": 1134146667718802
+              },
+              {
+                "ended_ns": 1134198781182300,
+                "http_ms": 1697,
+                "outcome": "ok",
+                "parse_ms": 15,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134198765764251,
+                "started_ns": 1134197067841191
+              },
+              {
+                "ended_ns": 1134248243229005,
+                "http_ms": 907,
+                "outcome": "ok",
+                "parse_ms": 17,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134248226108566,
+                "started_ns": 1134247318894161
+              },
+              {
+                "ended_ns": 1134299763722696,
+                "http_ms": 629,
+                "outcome": "ok",
+                "parse_ms": 1350,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134298413125068,
+                "started_ns": 1134297783293795
+              },
+              {
+                "ended_ns": 1134349873031015,
+                "http_ms": 1894,
+                "outcome": "ok",
+                "parse_ms": 104,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134349768812231,
+                "started_ns": 1134347874736291
+              },
+              {
+                "ended_ns": 1134401078606437,
+                "http_ms": 2268,
+                "outcome": "ok",
+                "parse_ms": 563,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134400515195940,
+                "started_ns": 1134398246212733
+              },
+              {
+                "ended_ns": 1134450605767112,
+                "http_ms": 2090,
+                "outcome": "ok",
+                "parse_ms": 18,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134450587316293,
+                "started_ns": 1134448496626807
+              },
+              {
+                "ended_ns": 1134501901640793,
+                "http_ms": 1809,
+                "outcome": "ok",
+                "parse_ms": 13,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134501888142794,
+                "started_ns": 1134500078384032
+              },
+              {
+                "ended_ns": 1134551089092732,
+                "http_ms": 967,
+                "outcome": "ok",
+                "parse_ms": 15,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134551073671623,
+                "started_ns": 1134550105686791
+              },
+              {
+                "ended_ns": 1134601815804924,
+                "http_ms": 1449,
+                "outcome": "ok",
+                "parse_ms": 55,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134601759854548,
+                "started_ns": 1134600309913240
+              },
+              {
+                "ended_ns": 1134651677801296,
+                "http_ms": 1110,
+                "outcome": "ok",
+                "parse_ms": 15,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134651661975307,
+                "started_ns": 1134650551207182
+              },
+              {
+                "ended_ns": 1134703570252168,
+                "http_ms": 2797,
+                "outcome": "ok",
+                "parse_ms": 202,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134703367626250,
+                "started_ns": 1134700570079337
+              },
+              {
+                "ended_ns": 1134751972173320,
+                "http_ms": 1092,
+                "outcome": "ok",
+                "parse_ms": 249,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134751722661295,
+                "started_ns": 1134750630365860
+              },
+              {
+                "ended_ns": 1134802281750533,
+                "http_ms": 1453,
+                "outcome": "ok",
+                "parse_ms": 15,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134802266089304,
+                "started_ns": 1134800812898828
+              },
+              {
+                "ended_ns": 1134853374631227,
+                "http_ms": 1631,
+                "outcome": "ok",
+                "parse_ms": 209,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134853165438449,
+                "started_ns": 1134851534423804
+              },
+              {
+                "ended_ns": 1134904673886816,
+                "http_ms": 2238,
+                "outcome": "ok",
+                "parse_ms": 269,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134904404676481,
+                "started_ns": 1134902166658640
+              },
+              {
+                "ended_ns": 1134955471188638,
+                "http_ms": 2978,
+                "outcome": "ok",
+                "parse_ms": 97,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1134955373480504,
+                "started_ns": 1134952394847720
+              },
+              {
+                "ended_ns": 1135008907246735,
+                "http_ms": 1769,
+                "outcome": "ok",
+                "parse_ms": 744,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1135008162247379,
+                "started_ns": 1135006392633153
+              },
+              {
+                "ended_ns": 1135057984241154,
+                "http_ms": 1135,
+                "outcome": "ok",
+                "parse_ms": 268,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1135057716053809,
+                "started_ns": 1135056580113655
+              },
+              {
+                "ended_ns": 1135111689090115,
+                "http_ms": 3981,
+                "outcome": "ok",
+                "parse_ms": 24,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1135111664901307,
+                "started_ns": 1135107683566069
+              },
+              {
+                "ended_ns": 1135158065263720,
+                "http_ms": 288,
+                "outcome": "ok",
+                "parse_ms": 73,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1135157992213244,
+                "started_ns": 1135157704112679
+              },
+              {
+                "ended_ns": 1135209496528200,
+                "http_ms": 1090,
+                "outcome": "ok",
+                "parse_ms": 16,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1135209480244581,
+                "started_ns": 1135208390177810
+              },
+              {
+                "ended_ns": 1135259990384490,
+                "http_ms": 1391,
+                "outcome": "ok",
+                "parse_ms": 17,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1135259972864331,
+                "started_ns": 1135258581363730
+              },
+              {
+                "ended_ns": 1135312355621318,
+                "http_ms": 1632,
+                "outcome": "ok",
+                "parse_ms": 726,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1135311629488189,
+                "started_ns": 1135309996618250
+              }
+            ],
+            "phases_ms": {
+              "filters_ready": true,
+              "filters_refresh_ms": 0,
+              "funding_due_sql_ms": 0,
+              "quote_finance_ms": 1,
+              "trades_total_ms": 1
+            },
+            "prior_cycles": [
+              {
+                "backup_ms": 0,
+                "funding_check_ms": 0,
+                "ingest_ms": 0,
+                "poller_snapshot_ms": 10,
+                "poller_symbol_ms": 12,
+                "poller_total_ms": 1010,
+                "publish_ms": 7,
+                "pulse_finance_ms": 1,
+                "sleep_ms": 224,
+                "sleep_requested_ms": 100,
+                "snapshot_ms": 6,
+                "started_ns": 1135326365863593,
+                "total_ms": 1248
+              },
+              {
+                "backup_ms": 0,
+                "funding_check_ms": 0,
+                "ingest_ms": 0,
+                "poller_snapshot_ms": 10,
+                "poller_symbol_ms": 6,
+                "poller_total_ms": 1252,
+                "publish_ms": 7,
+                "pulse_finance_ms": 0,
+                "sleep_ms": 225,
+                "sleep_requested_ms": 100,
+                "snapshot_ms": 12,
+                "started_ns": 1135327615039383,
+                "total_ms": 1497
+              },
+              {
+                "backup_ms": 0,
+                "funding_check_ms": 0,
+                "ingest_ms": 0,
+                "poller_snapshot_ms": 9,
+                "poller_symbol_ms": 5,
+                "poller_total_ms": 24,
+                "publish_ms": 7,
+                "pulse_finance_ms": 0,
+                "sleep_ms": 228,
+                "sleep_requested_ms": 100,
+                "snapshot_ms": 987,
+                "started_ns": 1135329114604559,
+                "total_ms": 1247
+              },
+              {
+                "backup_ms": 0,
+                "funding_check_ms": 0,
+                "ingest_ms": 0,
+                "poller_snapshot_ms": 8,
+                "poller_symbol_ms": 4,
+                "poller_total_ms": 21,
+                "publish_ms": 10,
+                "pulse_finance_ms": 0,
+                "sleep_ms": 225,
+                "sleep_requested_ms": 100,
+                "snapshot_ms": 1740,
+                "started_ns": 1135330364754299,
+                "total_ms": 1997
+              }
+            ]
+          },
+          "poll_interval_mono_ms": 2008,
+          "poll_interval_ms": 2009,
+          "poll_started_ms": 1794858354232,
+          "previous_cycle": {
+            "batch_finalize_ms": 0,
+            "batch_lock_wait_ms": 0,
+            "batch_processing_ms": 0,
+            "event_count": 20,
+            "idle_events_skipped": 20,
+            "poll_started_ms": 1794858352223,
+            "total_ms": 4
+          },
+          "quote_fetch_ms": 1,
+          "received_ms": 1794858354237,
+          "requested_after_id": 3528380799,
+          "rows": 5,
+          "stale_first_ms": null,
+          "stale_last_ms": null,
+          "stale_rows": 0,
+          "started_ms": 1794858354237,
+          "stream": {
+            "connected": true,
+            "duplicates": 0,
+            "highwater": 292,
+            "last_fault": null,
+            "oldest_dequeued_wait_ms": 264,
+            "queued": 0,
+            "read_timeouts": 0,
+            "reason": null,
+            "received": 24023,
+            "reconnects": 1
+          },
+          "symbol": "BTCUSDT",
+          "trade_validation_ms": 0,
+          "transport": "websocket"
+        }
+      },
+      "last_trade_gap": {
+        "at_ms": 1794856565340,
+        "detail": "noncontiguous_or_stale_public_trades_no_backfills",
+        "kind": "DATA_GAP",
+        "source": {
+          "active_armed_ms": null,
+          "batch_hash": "23101bffcf1b9526385c458ada2f89592930176b7e93e1e23e2dd690fa9d0f88",
+          "discontinuities": [
+            {
+              "expected": 3528356521,
+              "received": 3528356782
+            }
+          ],
+          "execution_gap": true,
+          "fetch_monotonic_ms": 0,
+          "fetch_ms": 0,
+          "first_event_ms": 1794856564072,
+          "first_id": 3528356782,
+          "future_rows": 0,
+          "gap": true,
+          "history_contiguous": false,
+          "last_event_age_ms": 1268,
+          "last_event_ms": 1794856564072,
+          "last_id": 3528356782,
+          "newest_age_ms": 1268,
+          "oldest_age_ms": 1268,
+          "poll_started_ms": 1794856565334,
+          "quote_fetch_ms": 1,
+          "received_ms": 1794856565340,
+          "requested_after_id": 3528356520,
+          "rows": 1,
+          "stale_first_ms": null,
+          "stale_last_ms": null,
+          "stale_rows": 0,
+          "started_ms": 1794856565340,
+          "stream": {
+            "connected": true,
+            "duplicates": 0,
+            "highwater": 1,
+            "last_fault": null,
+            "oldest_dequeued_wait_ms": 316,
+            "queued": 0,
+            "read_timeouts": 0,
+            "reason": "bootstrap",
+            "received": 1,
+            "reconnects": 1
+          },
+          "symbol": "BTCUSDT",
+          "trade_validation_ms": 0,
+          "transport": "websocket"
+        },
+        "symbol": "BTCUSDT"
+      }
+    },
+    "active": [],
+    "reconcile": {
+      "balanced": true,
+      "invalid_events": [],
+      "negative_accounts": [],
+      "foreign_key_error": false,
+      "totals": {
+        "USDT": "0.0000000000000000000",
+        "BTC": "0"
+      }
+    },
+    "counts": {
+      "ledger_events": 24,
+      "bracket_plans": 9,
+      "bracket_fills": 4,
+      "bracket_funding": 1
+    },
+    "journal": "wal",
+    "history_sha256": "3507d3cbeb12cde1c3c4207ba5229b65712d736c79863151bcbd7d4a20d3e8c6",
+    "post_install_gaps": [],
+    "backup": {
+      "captured_ms": 1794857346026,
+      "chunks": 4,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1794857325528-f560da050caa819de3df671b6a4b105d9db78015da2221547daf6b58d1f3d45d.cred",
+      "sha256": "f560da050caa819de3df671b6a4b105d9db78015da2221547daf6b58d1f3d45d",
+      "sqlite_sha256": "cc8ca12b03f961bb4de1795cbe69bfd21ec8e93fffc6f1a15ce7505db2fbc918",
+      "summary": {
+        "balances": {
+          "free": "1000.3090960078653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 24,
+        "fills": 4,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64518.6",
+            "64692.7",
+            "63291.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ]
+        ]
+      }
+    },
+    "services": {
+      "ai-bracket-paper.service": "MainPID=521280\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-e1e6132-paper\nActiveState=active\n",
+      "ai-bracket-analyst.service": "MainPID=0\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-74f77d0-analyst\nActiveState=inactive\n",
+      "ai-bracket-analyst.timer": "NextElapseUSecRealtime=Mon 2026-11-16 20:02:00 UTC\nActiveState=active\n"
+    },
+    "paper_processes": 1,
+    "telegram_pollers": 1,
+    "cpu_max": "50000 100000\n"
+  },
+  "private_probe_summary": {
+    "captured_ms": 1794858355976,
+    "version": "bounded-phase-cpu-sql-v2",
+    "evicted_episodes": 0,
+    "coalesced_publications": 0,
+    "episodes": [
+      {
+        "at_ms": 1794856565340,
+        "cycles": 14,
+        "post_remaining": 0
+      }
+    ],
+    "recent_cycles": 64,
+    "recent_duration_mono_ns": 38338351791,
+    "max_cycle_wall_ns": 2500375880,
+    "slow_spans": {
+      "main_poller": {
+        "retained_slow_count": 22,
+        "longest": {
+          "wall_ms": 2256.449784,
+          "calling_thread_cpu_ms": 251.483343,
+          "schedstat_runtime_ms": 251.483343,
+          "ready_wait_ms": 1984.363683,
+          "cgroup_wide_throttle_ms": 2954.892,
+          "raw_span": {
+            "name": "main_poller",
+            "started_ns": 1135323864798943,
+            "ended_ns": 1135326121248727,
+            "wall_ns": 2256449784,
+            "thread_cpu_ns": 251483343,
+            "before": {
+              "sample_ns": 1135323864803273,
+              "thread_id": 521280,
+              "thread_switches": [
+                70676,
+                19401,
+                21880,
+                472696
+              ],
+              "schedstat": [
+                485415305558,
+                645192092363,
+                90076
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 539776303,
+                "user_usec": 453145078,
+                "system_usec": 86631224,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17855,
+                "nr_throttled": 7547,
+                "throttled_usec": 851308670,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            },
+            "after": {
+              "sample_ns": 1135326121257617,
+              "thread_id": 521280,
+              "thread_switches": [
+                70728,
+                19461,
+                21880,
+                472776
+              ],
+              "schedstat": [
+                485666788901,
+                647176456046,
+                90188
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 540282188,
+                "user_usec": 453573090,
+                "system_usec": 86709098,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17877,
+                "nr_throttled": 7564,
+                "throttled_usec": 854263562,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            }
+          }
+        }
+      },
+      "book_verify": {
+        "retained_slow_count": 15,
+        "longest": {
+          "wall_ms": 1525.473428,
+          "calling_thread_cpu_ms": 228.815719,
+          "schedstat_runtime_ms": 229.079414,
+          "ready_wait_ms": 1090.730409,
+          "cgroup_wide_throttle_ms": 2169.87,
+          "raw_span": {
+            "name": "book_verify",
+            "started_ns": 1135308338256979,
+            "ended_ns": 1135309863730407,
+            "wall_ns": 1525473428,
+            "thread_cpu_ns": 228815719,
+            "before": {
+              "sample_ns": 1135308338262499,
+              "thread_id": 521280,
+              "thread_switches": [
+                70169,
+                19201,
+                21880,
+                469272
+              ],
+              "schedstat": [
+                481590900730,
+                638127133552,
+                89369
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 535178404,
+                "user_usec": 449314793,
+                "system_usec": 85863611,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17699,
+                "nr_throttled": 7475,
+                "throttled_usec": 841538651,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            },
+            "after": {
+              "sample_ns": 1135309863733258,
+              "thread_id": 521280,
+              "thread_switches": [
+                70259,
+                19208,
+                21880,
+                469272
+              ],
+              "schedstat": [
+                481819980144,
+                639217863961,
+                89472
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 535606770,
+                "user_usec": 449670859,
+                "system_usec": 85935910,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17715,
+                "nr_throttled": 7486,
+                "throttled_usec": 843708521,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            }
+          }
+        }
+      },
+      "main_snapshot": {
+        "retained_slow_count": 18,
+        "longest": {
+          "wall_ms": 1737.668943,
+          "calling_thread_cpu_ms": 228.450681,
+          "schedstat_runtime_ms": 228.450681,
+          "ready_wait_ms": 1298.719281,
+          "cgroup_wide_throttle_ms": 1298.56,
+          "raw_span": {
+            "name": "main_snapshot",
+            "started_ns": 1135330386600278,
+            "ended_ns": 1135332124269221,
+            "wall_ns": 1737668943,
+            "thread_cpu_ns": 228450681,
+            "before": {
+              "sample_ns": 1135330386606898,
+              "thread_id": 521280,
+              "thread_switches": [
+                70835,
+                19515,
+                21880,
+                473320
+              ],
+              "schedstat": [
+                486478730835,
+                649438882075,
+                90349
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 541128836,
+                "user_usec": 454296013,
+                "system_usec": 86832822,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17920,
+                "nr_throttled": 7589,
+                "throttled_usec": 857718745,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            },
+            "after": {
+              "sample_ns": 1135332124274391,
+              "thread_id": 521280,
+              "thread_switches": [
+                70849,
+                19531,
+                21880,
+                473320
+              ],
+              "schedstat": [
+                486707181516,
+                650737601356,
+                90379
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 541563871,
+                "user_usec": 454658933,
+                "system_usec": 86904937,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17937,
+                "nr_throttled": 7602,
+                "throttled_usec": 859017305,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            }
+          }
+        }
+      },
+      "main_publish": {
+        "retained_slow_count": 5,
+        "longest": {
+          "wall_ms": 241.850406,
+          "calling_thread_cpu_ms": 2.061965,
+          "schedstat_runtime_ms": 2.061965,
+          "ready_wait_ms": 233.063,
+          "cgroup_wide_throttle_ms": 231.962,
+          "raw_span": {
+            "name": "main_publish",
+            "started_ns": 1135320870721802,
+            "ended_ns": 1135321112572208,
+            "wall_ns": 241850406,
+            "thread_cpu_ns": 2061965,
+            "before": {
+              "sample_ns": 1135320870728191,
+              "thread_id": 521280,
+              "thread_switches": [
+                70643,
+                19316,
+                21880,
+                472392
+              ],
+              "schedstat": [
+                485106640294,
+                643480493841,
+                89958
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 539451836,
+                "user_usec": 452879451,
+                "system_usec": 86572384,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17825,
+                "nr_throttled": 7535,
+                "throttled_usec": 849600990,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            },
+            "after": {
+              "sample_ns": 1135321112594218,
+              "thread_id": 521280,
+              "thread_switches": [
+                70646,
+                19318,
+                21880,
+                472440
+              ],
+              "schedstat": [
+                485108702259,
+                643713556841,
+                89963
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 539454367,
+                "user_usec": 452879451,
+                "system_usec": 86574915,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17827,
+                "nr_throttled": 7537,
+                "throttled_usec": 849832952,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            }
+          }
+        }
+      },
+      "sql_commit": {
+        "retained_slow_count": 2,
+        "longest": {
+          "wall_ms": 1222.581841,
+          "calling_thread_cpu_ms": 220.940748,
+          "schedstat_runtime_ms": 1.255549,
+          "ready_wait_ms": 238.787849,
+          "cgroup_wide_throttle_ms": 247.967,
+          "raw_span": {
+            "name": "sql_commit",
+            "started_ns": 1135327642344802,
+            "ended_ns": 1135328864926643,
+            "wall_ns": 1222581841,
+            "thread_cpu_ns": 220940748,
+            "before": {
+              "sample_ns": 1135327642349892,
+              "thread_id": 521280,
+              "thread_switches": [
+                70763,
+                19503,
+                21880,
+                472952
+              ],
+              "schedstat": [
+                486183241475,
+                648694109490,
+                90269
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 540819099,
+                "user_usec": 454025202,
+                "system_usec": 86793897,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17902,
+                "nr_throttled": 7579,
+                "throttled_usec": 856508878,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            },
+            "after": {
+              "sample_ns": 1135328864933083,
+              "thread_id": 521280,
+              "thread_switches": [
+                70773,
+                19508,
+                21880,
+                473064
+              ],
+              "schedstat": [
+                486184497024,
+                648932897339,
+                90282
+              ],
+              "cgroup_cpu": {
+                "usage_usec": 540823256,
+                "user_usec": 454029358,
+                "system_usec": 86793897,
+                "nice_usec": 0,
+                "core_sched.force_idle_usec": 0,
+                "nr_periods": 17905,
+                "nr_throttled": 7582,
+                "throttled_usec": 856756845,
+                "nr_bursts": 0,
+                "burst_usec": 0
+              }
+            }
+          }
+        }
+      }
+    },
+    "unique_writer_samples": [
+      {
+        "status": "ok",
+        "wall_ns": 191261759,
+        "thread_cpu_ns": 94095991,
+        "at_ms": 1794858314725,
+        "serialization_wall_ns": 95275604,
+        "serialization_thread_cpu_ns": 92515181,
+        "disk_wall_ns": 95994095
+      },
+      {
+        "status": "ok",
+        "wall_ns": 22513340,
+        "thread_cpu_ns": 10110704,
+        "at_ms": 1794858324693,
+        "serialization_wall_ns": 10648500,
+        "serialization_thread_cpu_ns": 9171414,
+        "disk_wall_ns": 11871240
+      },
+      {
+        "status": "ok",
+        "wall_ns": 91538335,
+        "thread_cpu_ns": 9524235,
+        "at_ms": 1794858335226,
+        "serialization_wall_ns": 7737580,
+        "serialization_thread_cpu_ns": 7539023,
+        "disk_wall_ns": 83808105
+      },
+      {
+        "status": "ok",
+        "wall_ns": 1261486590,
+        "thread_cpu_ns": 230337593,
+        "at_ms": 1794858346986,
+        "serialization_wall_ns": 24644209,
+        "serialization_thread_cpu_ns": 9111601,
+        "disk_wall_ns": 1236848421
+      }
+    ],
+    "local_backup": {
+      "state": "complete",
+      "requested_ms": 1794856562431,
+      "completed_ms": 1794856565264,
+      "wall_ns": 2832802942,
+      "file": "1794856562431.sqlite",
+      "events": 24,
+      "bytes": 25530368,
+      "source_readonly": true,
+      "restored_balanced": true,
+      "progress": {
+        "source_journal": "wal",
+        "steps": 195,
+        "restarts": 0,
+        "remaining": 0,
+        "total": 6233
+      }
+    }
+  },
+  "post_read_health": {
+    "checked_ms": 1794858485301,
+    "probe_sha256": "208267a88330a3b313313ec2d4be7e02c2af606a2921fe4266735b59f018bb04",
+    "working_pauses": {
+      "reserve": 1,
+      "spot": 1,
+      "futures_isolated": 1,
+      "futures_cross": 1,
+      "margin_cross": 1
+    },
+    "local_archive": {
+      "file": "1794856562431.sqlite",
+      "sha256": "5a5bb9cdeef7d5bede10d9587bb2634e1fbd487ef4b1f85a6fa5b35e3afd0178",
+      "integrity": "ok",
+      "reconcile": {
+        "balanced": true,
+        "invalid_events": [],
+        "negative_accounts": [],
+        "foreign_key_error": false,
+        "totals": {
+          "USDT": "0.0000000000000000000",
+          "BTC": "0"
+        }
+      },
+      "events": 24
+    },
+    "backup_service": "Result=success\nExecMainExitTimestamp=Mon 2026-11-16 19:27:17 UTC\nExecMainStatus=0\nActiveState=inactive\n",
+    "backup": {
+      "captured_ms": 1794857346026,
+      "chunks": 4,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1794857325528-f560da050caa819de3df671b6a4b105d9db78015da2221547daf6b58d1f3d45d.cred",
+      "sha256": "f560da050caa819de3df671b6a4b105d9db78015da2221547daf6b58d1f3d45d",
+      "sqlite_sha256": "cc8ca12b03f961bb4de1795cbe69bfd21ec8e93fffc6f1a15ce7505db2fbc918",
+      "summary": {
+        "balances": {
+          "free": "1000.3090960078653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 24,
+        "fills": 4,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64518.6",
+            "64692.7",
+            "63291.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ]
+        ]
+      }
+    },
+    "public": {
+      "as_of_ms": 1794858487332,
+      "balances": {
+        "free": "1000.309096007865389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "ledger_balanced": true,
+      "market_errors": {
+        "BTCUSDT": null,
+        "ETHUSDT": null,
+        "SOLUSDT": null
+      }
+    },
+    "active": [],
+    "source_times": {
+      "book": {
+        "event_ms": 1794858486108,
+        "kind": "book",
+        "raw": {
+          "E": 1794858486108,
+          "T": 1794858486106,
+          "U": 12136101174869,
+          "a": [
+            [
+              "64739.80",
+              "2.470"
+            ],
+            [
+              "64739.90",
+              "0.004"
+            ],
+            [
+              "64740.00",
+              "0.003"
+            ],
+            [
+              "64740.10",
+              "0.001"
+            ],
+            [
+              "64740.40",
+              "0.044"
+            ]
+          ],
+          "b": [
+            [
+              "64739.70",
+              "3.598"
+            ],
+            [
+              "64739.60",
+              "0.011"
+            ],
+            [
+              "64739.50",
+              "0.033"
+            ],
+            [
+              "64739.30",
+              "0.001"
+            ],
+            [
+              "64739.20",
+              "0.008"
+            ]
+          ],
+          "e": "depthUpdate",
+          "ps": "BTCUSDT",
+          "pu": 12136101174760,
+          "s": "BTCUSDT",
+          "st": 1,
+          "u": 12136101181802
+        },
+        "received_mono_ns": 1135464427885504,
+        "received_ms": 1794858486285,
+        "source": {
+          "A": "2.470",
+          "B": "3.598",
+          "E": 1794858486108,
+          "T": 1794858486106,
+          "a": "64739.80",
+          "b": "64739.70",
+          "e": "bookTicker",
+          "s": "BTCUSDT",
+          "u": 12136101181802
+        },
+        "source_kind": "partial_depth5_100ms",
+        "source_ms": 1794858486106
+      },
+      "mark": {
+        "event_ms": 1794858486000,
+        "kind": "mark",
+        "received_mono_ns": 1135464429799394,
+        "received_ms": 1794858486287,
+        "source": {
+          "E": 1794858486000,
+          "T": 1794873600000,
+          "e": "markPriceUpdate",
+          "p": "64742.91502899",
+          "s": "BTCUSDT"
+        },
+        "source_ms": 1794858486000
+      }
+    },
+    "time_rejections": []
+  },
+  "independent_nice15_small_sampler_check": [
+    {
+      "i": 0,
+      "name": "rusage",
+      "wall_ns": 8560,
+      "cpu_ns": 7810
+    },
+    {
+      "i": 0,
+      "name": "schedstat",
+      "wall_ns": 214950,
+      "cpu_ns": 215770
+    },
+    {
+      "i": 0,
+      "name": "cpu.stat",
+      "wall_ns": 136700,
+      "cpu_ns": 137210
+    },
+    {
+      "i": 1,
+      "name": "rusage",
+      "wall_ns": 4810,
+      "cpu_ns": 4810
+    },
+    {
+      "i": 1,
+      "name": "schedstat",
+      "wall_ns": 72520,
+      "cpu_ns": 72940
+    },
+    {
+      "i": 1,
+      "name": "cpu.stat",
+      "wall_ns": 70890,
+      "cpu_ns": 71500
+    },
+    {
+      "i": 2,
+      "name": "rusage",
+      "wall_ns": 3730,
+      "cpu_ns": 3770
+    },
+    {
+      "i": 2,
+      "name": "schedstat",
+      "wall_ns": 50820,
+      "cpu_ns": 51280
+    },
+    {
+      "i": 2,
+      "name": "cpu.stat",
+      "wall_ns": 50740,
+      "cpu_ns": 51090
+    }
+  ],
+  "raw_path": "D:\\Documents\\Codex\\stream-work\\phase2345-raw.json",
+  "automation": {
+    "id": "trading-bot-attribution-of-slow-main-spans",
+    "result": "deleted",
+    "deleted_before_baku": "2026-11-16T23:53:03.929+04:00",
+    "no_new_automation": "no new gap and no distinct hypothesis; no identical follow-up chain"
+  },
+  "runtime_changed": false,
+  "tests_run": false,
+  "ai_requests_sent": 0,
+  "trades_created": 0
+}
