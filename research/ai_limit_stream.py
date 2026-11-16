@@ -24,7 +24,10 @@ class StreamFeed(Feed):
         if self.connect is None:
             import websocket
             self.timeout_errors=(websocket.WebSocketTimeoutException,TimeoutError)
-            self.connect=lambda url:websocket.create_connection(url,timeout=2,enable_multithread=True)
+            # recv() strictly decodes TEXT as UTF-8 in C; avoid the redundant
+            # pure-Python validation pass in websocket-client 1.8.0.
+            # TLS verification and all protocol/source checks remain enabled.
+            self.connect=lambda url:websocket.create_connection(url,timeout=2,enable_multithread=True,skip_utf8_validation=True)
         for symbol in self.states:
             t=threading.Thread(target=self.run,args=(symbol,),daemon=True);t.start();self.threads.append(t)
             if self.websocket_quotes:
@@ -156,6 +159,7 @@ class StreamFeed(Feed):
                         continue
                     if not raw:raise OSError('closed')
                     if len(raw)>65536:raise ValueError('stream_size')
+                    if isinstance(raw,bytes):raw=raw.decode('utf-8')
                     data=json.loads(raw)
                     if self.websocket_quotes:
                         if channel=='market':
@@ -196,7 +200,9 @@ class StreamFeed(Feed):
         # BBO updates are frequent even without actionable trade backlog.
         # They must not force financial/snapshot/fsync work at 50 Hz. Quotes
         # retain priority in every ordinary (<=100ms requested sleep) cycle.
-        with self.lock:return any(st["queue"] for st in self.states.values())
+        with self.lock:
+            if self.websocket_quotes:return any(len(st['queue'])>=self.batch for st in self.states.values())
+            return any(st["queue"] for st in self.states.values())
     def close(self):
         self.stop.set()
         for t in self.threads:t.join(timeout=3)

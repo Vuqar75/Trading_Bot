@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import time
 import unittest
+from unittest.mock import patch
 
 from research.ai_limit_book import Book
 from research.ai_limit_runtime import Poller
@@ -55,6 +56,9 @@ class QuoteStreamTests(unittest.TestCase):
         self.assertEqual(self.poller.sleep_after_cycle(),.1)
         self.assertEqual(self.f.quote_packet('BTCUSDT')['report']['received']['book'],100)
         self.f.receive('BTCUSDT',{'e':'aggTrade','s':'BTCUSDT','a':2,'T':self.now,'p':'100','q':'1','m':True})
+        self.assertEqual(self.poller.sleep_after_cycle(),.1)
+        for ident in range(3,258):
+            self.f.receive('BTCUSDT',{'e':'aggTrade','s':'BTCUSDT','a':ident,'T':self.now,'p':'100','q':'1','m':True})
         self.assertEqual(self.poller.sleep_after_cycle(),.02)
     def test_a_never_completed_rest_future_cannot_delay_the_ws_stop(self):
         from concurrent.futures import Future
@@ -162,6 +166,29 @@ class QuoteStreamTests(unittest.TestCase):
         self.assertTrue(any('/public/ws/btcusdt@bookTicker' in s for s in seen))
         self.assertTrue(any('/market/stream?streams=btcusdt@aggTrade/btcusdt@markPrice@1s' in s for s in seen))
         self.assertIsNone(self.f.quote_packet('BTCUSDT')['error'])
+    def test_binary_payload_still_requires_strict_utf8(self):
+        f=self.f
+        class Socket:
+            def recv(self):f.stop.set();return b'\xff'
+            def close(self):pass
+        f.connect=lambda _:Socket();f.run('BTCUSDT','book')
+        self.assertEqual(f.quote_states['BTCUSDT']['last_fault']['category'],'UnicodeDecodeError')
+        self.assertFalse(f.quote_states['BTCUSDT']['channels']['book']['connected'])
+    def test_installed_client_native_text_decode_rejects_invalid_utf8(self):
+        import sys
+        sys.path.insert(0,str(Path(__file__).resolve().parent.parent/'vendor'))
+        import websocket
+        ws=websocket.WebSocket(skip_utf8_validation=True)
+        ws.recv_data=lambda:(websocket.ABNF.OPCODE_TEXT,b'\xff')
+        with self.assertRaises(UnicodeDecodeError):ws.recv()
+    def test_client_removes_only_duplicate_utf8_pass_and_keeps_tls_defaults(self):
+        import types
+        calls=[];fake=types.SimpleNamespace(WebSocketTimeoutException=TimeoutError,
+            create_connection=lambda url,**kw:calls.append(kw))
+        self.f.connect=None
+        with patch.dict('sys.modules',{'websocket':fake}),patch('research.ai_limit_stream.threading.Thread'):
+            self.f.start();self.f.connect('wss://fstream.binance.com/public/ws/btcusdt@bookTicker')
+        self.assertEqual(calls,[{'timeout':2,'enable_multithread':True,'skip_utf8_validation':True}])
 
 
 if __name__=='__main__':unittest.main()
