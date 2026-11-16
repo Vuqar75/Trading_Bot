@@ -8,6 +8,8 @@
 
 ## 2026-11-16 — six-gap phase attribution, inline backup fixed, bounded data continuation registered
 
+Final read-only health22:41:14.352Baku: same installed PID518561, fresh publication/probe, no post-startup gap, no active risk/reserve/market error, ledger balanced, background backup complete/0restarts. Final-health evidence saved with the report; no tests/install repeated after app update.
+
 Continuedb5a1b0f; [report](AI_BACKLOG_PHASE_REPORT_20261116.md), [protocol](AI_BACKLOG_PHASE_PROTOCOL_20261116.md), [evidence](research/AI_BACKLOG_PHASE_EVIDENCE_20261116.json). **Installed d3eb8841895155059ac7aaed7e18f8addb0c5e48 at22:20:23.145Baku**, `/opt/tradingbot-ai-brackets-d3eb884-paper`, PID518561; analyst74f77d0 unchanged. App restarted during final documentation; VM install/tests were not repeated.
 
 All six18:33–19:05 gaps had continuous IDs and3.604–7.541s dequeue wait; overlapping adaptive-ai-regular6/6 and external hourly backup1/6 are associations, not proof. Old per-event CPU/commit counters missing; detailed global last-gap key overwrote earlier contexts. New private bounded-phase-cpu-sql-v1 captures64pre/8post cycles per new gap, max8episodes/2MB, wall/threadCPU, SQL execute/fetch/step/commit, WS/dequeue/financial/publication/sleep and cgroup/scheduler/I/O. One asynchronous diagnostic file writer, queue1; `/var/lib/ai-bracket-study/phase-diagnostics.json`, evictions/drops explicit. No secret/SQL payload/extra financial writer. Old six causes are not retrospectively invented.

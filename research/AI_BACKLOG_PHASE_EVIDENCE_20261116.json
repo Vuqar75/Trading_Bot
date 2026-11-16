@@ -3467,5 +3467,30 @@
     "scheduled_baku": "2026-11-16T23:00:00+04:00",
     "scheduled_utc": "2026-11-16T19:00:00Z",
     "purpose": "New per-phase CPU/SQL/queue and backup evidence; not an identical empty-account check."
+  },
+  "final_health": {
+    "checked_ms": 1794854474352,
+    "public_ms": 1794854473843,
+    "probe_ms": 1794854471586,
+    "pid": "518561",
+    "ledger_balanced": true,
+    "active_plans": [],
+    "market_errors": {
+      "BTCUSDT": null,
+      "ETHUSDT": null,
+      "SOLUSDT": null
+    },
+    "balances": {
+      "free": "1000.309096007865389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "episode_times": [
+      1794853221462
+    ],
+    "diagnostic_writer_status": "ok",
+    "local_backup_status": "complete",
+    "local_backup_restarts": 0
   }
 }
