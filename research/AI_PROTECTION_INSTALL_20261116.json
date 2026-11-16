@@ -1,0 +1,917 @@
+{
+  "as_of_ms": 1794797354953,
+  "install": {
+    "commit": "74f77d0a4636809e04b2437e0ba7ef7e66dd74d1",
+    "paper": "/opt/tradingbot-ai-brackets-74f77d0-paper",
+    "analyst": "/opt/tradingbot-ai-brackets-74f77d0-analyst",
+    "switched_ms": 1794797013703,
+    "balances": {
+      "free": "1000.309096007865389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "files": {
+      "/opt/tradingbot-ai-brackets-74f77d0-paper/ai_limit_feed.py": "5af27ecc774be6dfcc1134c966488d30cd1c2da3c9814fe2c2d8d78acb8df101",
+      "/opt/tradingbot-ai-brackets-74f77d0-paper/ai_limit_book.py": "263f87726f3d630e0540b98d3edb3f12c3bc2db5780f7343a3f3260fe23a74f5",
+      "/opt/tradingbot-ai-brackets-74f77d0-paper/ai_limit_runtime.py": "cc83ec20926c57bebcc2cc85806c89c4a4dda755bb763329dd7d554ad29bc868",
+      "/opt/tradingbot-ai-brackets-74f77d0-analyst/ai_limit_feed.py": "5af27ecc774be6dfcc1134c966488d30cd1c2da3c9814fe2c2d8d78acb8df101"
+    }
+  },
+  "runtime_hash_matches_tested_candidate": true,
+  "counts": {
+    "ledger_events": 20,
+    "bracket_fills": 4,
+    "bracket_funding": 1,
+    "bracket_plans": 7
+  },
+  "reconcile": {
+    "balanced": true,
+    "invalid_events": [],
+    "negative_accounts": [],
+    "foreign_key_error": false,
+    "totals": {
+      "USDT": "0.0000000000000000000",
+      "BTC": "0"
+    }
+  },
+  "balances": {
+    "free": "1000.309096007865389811",
+    "funding_buffer": "0",
+    "margin": "0",
+    "reserved": "0"
+  },
+  "plans": [
+    {
+      "plan_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+      "status": "CLOSED",
+      "open_qty": "0",
+      "remaining": "0"
+    },
+    {
+      "plan_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+      "status": "CANCELED",
+      "open_qty": "0",
+      "remaining": "0"
+    },
+    {
+      "plan_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+      "status": "CANCELED",
+      "open_qty": "0",
+      "remaining": "0"
+    },
+    {
+      "plan_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+      "status": "CANCELED",
+      "open_qty": "0",
+      "remaining": "0"
+    },
+    {
+      "plan_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+      "status": "CANCELED",
+      "open_qty": "0",
+      "remaining": "0"
+    },
+    {
+      "plan_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+      "status": "CANCELED",
+      "open_qty": "0",
+      "remaining": "0"
+    },
+    {
+      "plan_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+      "status": "CLOSED",
+      "open_qty": "0",
+      "remaining": "0"
+    }
+  ],
+  "quote_diagnostics": {
+    "quote_failure_history:BTCUSDT": [
+      {
+        "at_ms": 1794796884750,
+        "category": "stale_or_future_market_data",
+        "http_recent": [
+          {
+            "ended_ns": 1073851704659993,
+            "http_ms": 330,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073851704597723,
+            "started_ns": 1073851374196781
+          },
+          {
+            "ended_ns": 1073851949382979,
+            "http_ms": 244,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073851949282999,
+            "started_ns": 1073851704714493
+          },
+          {
+            "ended_ns": 1073852422321133,
+            "http_ms": 251,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073852422278993,
+            "started_ns": 1073852170347937
+          },
+          {
+            "ended_ns": 1073852705427498,
+            "http_ms": 283,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073852705370918,
+            "started_ns": 1073852422363793
+          },
+          {
+            "ended_ns": 1073853122182085,
+            "http_ms": 245,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073853122107985,
+            "started_ns": 1073852876439788
+          },
+          {
+            "ended_ns": 1073853406891859,
+            "http_ms": 284,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073853406831629,
+            "started_ns": 1073853122233385
+          },
+          {
+            "ended_ns": 1073860644000240,
+            "http_ms": 4469,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073860643917989,
+            "started_ns": 1073856174902076
+          },
+          {
+            "ended_ns": 1073862641752879,
+            "http_ms": 1997,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073862641713229,
+            "started_ns": 1073860644096600
+          }
+        ],
+        "kind": "failed_http_or_validation",
+        "pending_mono_ms": 6718,
+        "quote_age_ms": 10581,
+        "quote_components": {
+          "book_age_ms": 5547,
+          "book_http_ms": 4469,
+          "book_source_ms": 1794796878952,
+          "mark_age_ms": 2499,
+          "mark_http_ms": 1997,
+          "mark_source_ms": 1794796882000,
+          "phase": "validation",
+          "received_ms": 1794796884499,
+          "started_ms": 1794796878032,
+          "symbol": "BTCUSDT",
+          "time_rejections": [
+            "book_stale"
+          ]
+        },
+        "quote_source_ms": 1794796874169
+      },
+      {
+        "at_ms": 1794796905750,
+        "category": "stale_or_future_market_data",
+        "http_recent": [
+          {
+            "ended_ns": 1073862641752879,
+            "http_ms": 1997,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073862641713229,
+            "started_ns": 1073860644096600
+          },
+          {
+            "ended_ns": 1073863889516960,
+            "http_ms": 496,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073863889426300,
+            "started_ns": 1073863393142698
+          },
+          {
+            "ended_ns": 1073864141464006,
+            "http_ms": 251,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073864141392356,
+            "started_ns": 1073863889578470
+          },
+          {
+            "ended_ns": 1073868390848492,
+            "http_ms": 3721,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073868390777992,
+            "started_ns": 1073864669420868
+          },
+          {
+            "ended_ns": 1073869390826966,
+            "http_ms": 999,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073869390778646,
+            "started_ns": 1073868390930672
+          },
+          {
+            "ended_ns": 1073873905159630,
+            "http_ms": 273,
+            "outcome": "ok",
+            "parse_ms": 4236,
+            "path": "/fapi/v1/exchangeInfo",
+            "received_ns": 1073869668565422,
+            "started_ns": 1073869394712117
+          },
+          {
+            "ended_ns": 1073876401842601,
+            "http_ms": 2496,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073876401793391,
+            "started_ns": 1073873904887481
+          },
+          {
+            "ended_ns": 1073883891578750,
+            "http_ms": 7489,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073883891517020,
+            "started_ns": 1073876401914301
+          }
+        ],
+        "kind": "failed_http_or_validation",
+        "pending_mono_ms": 9988,
+        "quote_age_ms": 17256,
+        "quote_components": {
+          "book_age_ms": 7887,
+          "book_http_ms": 2497,
+          "book_source_ms": 1794796897862,
+          "mark_age_ms": 746,
+          "mark_http_ms": 7489,
+          "mark_source_ms": 1794796905003,
+          "phase": "validation",
+          "received_ms": 1794796905749,
+          "started_ms": 1794796895762,
+          "symbol": "BTCUSDT",
+          "time_rejections": [
+            "book_stale"
+          ]
+        },
+        "quote_source_ms": 1794796888494
+      }
+    ],
+    "protection_phase_history": null,
+    "last_gap_phase_diagnostics": {
+      "at_ms": 1794797017447,
+      "diagnostics": {
+        "clock": "monotonic_ns",
+        "cycle_started_ns": 1073995587433794,
+        "http_recent": [
+          {
+            "ended_ns": 1073994002658219,
+            "http_ms": 3093,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/ticker/bookTicker",
+            "received_ns": 1073994002570109,
+            "started_ns": 1073990909372020
+          },
+          {
+            "ended_ns": 1073994341330369,
+            "http_ms": 338,
+            "outcome": "ok",
+            "parse_ms": 0,
+            "path": "/fapi/v1/premiumIndex",
+            "received_ns": 1073994341278139,
+            "started_ns": 1073994002723359
+          }
+        ],
+        "phases_ms": {
+          "filters_ready": false,
+          "filters_refresh_ms": 0,
+          "funding_due_sql_ms": 0,
+          "quote_finance_ms": 0,
+          "trades_total_ms": 0
+        },
+        "prior_cycles": [
+          {
+            "backup_ms": 3481,
+            "funding_check_ms": 1,
+            "ingest_ms": 23,
+            "poller_snapshot_ms": 5,
+            "poller_total_ms": 172,
+            "publish_ms": 977,
+            "pulse_finance_ms": 0,
+            "quote_http_pending_ms": 0,
+            "sleep_ms": 20,
+            "sleep_requested_ms": 20,
+            "snapshot_ms": 4,
+            "started_ns": 1073990906912620,
+            "total_ms": 4679
+          }
+        ],
+        "quote_failures": [
+          {
+            "at_ms": 1794796884750,
+            "category": "stale_or_future_market_data",
+            "http_recent": [
+              {
+                "ended_ns": 1073851704659993,
+                "http_ms": 330,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/ticker/bookTicker",
+                "received_ns": 1073851704597723,
+                "started_ns": 1073851374196781
+              },
+              {
+                "ended_ns": 1073851949382979,
+                "http_ms": 244,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073851949282999,
+                "started_ns": 1073851704714493
+              },
+              {
+                "ended_ns": 1073852422321133,
+                "http_ms": 251,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/ticker/bookTicker",
+                "received_ns": 1073852422278993,
+                "started_ns": 1073852170347937
+              },
+              {
+                "ended_ns": 1073852705427498,
+                "http_ms": 283,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073852705370918,
+                "started_ns": 1073852422363793
+              },
+              {
+                "ended_ns": 1073853122182085,
+                "http_ms": 245,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/ticker/bookTicker",
+                "received_ns": 1073853122107985,
+                "started_ns": 1073852876439788
+              },
+              {
+                "ended_ns": 1073853406891859,
+                "http_ms": 284,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073853406831629,
+                "started_ns": 1073853122233385
+              },
+              {
+                "ended_ns": 1073860644000240,
+                "http_ms": 4469,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/ticker/bookTicker",
+                "received_ns": 1073860643917989,
+                "started_ns": 1073856174902076
+              },
+              {
+                "ended_ns": 1073862641752879,
+                "http_ms": 1997,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073862641713229,
+                "started_ns": 1073860644096600
+              }
+            ],
+            "kind": "failed_http_or_validation",
+            "pending_mono_ms": 6718,
+            "quote_age_ms": 10581,
+            "quote_components": {
+              "book_age_ms": 5547,
+              "book_http_ms": 4469,
+              "book_source_ms": 1794796878952,
+              "mark_age_ms": 2499,
+              "mark_http_ms": 1997,
+              "mark_source_ms": 1794796882000,
+              "phase": "validation",
+              "received_ms": 1794796884499,
+              "started_ms": 1794796878032,
+              "symbol": "BTCUSDT",
+              "time_rejections": [
+                "book_stale"
+              ]
+            },
+            "quote_source_ms": 1794796874169
+          },
+          {
+            "at_ms": 1794796905750,
+            "category": "stale_or_future_market_data",
+            "http_recent": [
+              {
+                "ended_ns": 1073862641752879,
+                "http_ms": 1997,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073862641713229,
+                "started_ns": 1073860644096600
+              },
+              {
+                "ended_ns": 1073863889516960,
+                "http_ms": 496,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/ticker/bookTicker",
+                "received_ns": 1073863889426300,
+                "started_ns": 1073863393142698
+              },
+              {
+                "ended_ns": 1073864141464006,
+                "http_ms": 251,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073864141392356,
+                "started_ns": 1073863889578470
+              },
+              {
+                "ended_ns": 1073868390848492,
+                "http_ms": 3721,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/ticker/bookTicker",
+                "received_ns": 1073868390777992,
+                "started_ns": 1073864669420868
+              },
+              {
+                "ended_ns": 1073869390826966,
+                "http_ms": 999,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073869390778646,
+                "started_ns": 1073868390930672
+              },
+              {
+                "ended_ns": 1073873905159630,
+                "http_ms": 273,
+                "outcome": "ok",
+                "parse_ms": 4236,
+                "path": "/fapi/v1/exchangeInfo",
+                "received_ns": 1073869668565422,
+                "started_ns": 1073869394712117
+              },
+              {
+                "ended_ns": 1073876401842601,
+                "http_ms": 2496,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/ticker/bookTicker",
+                "received_ns": 1073876401793391,
+                "started_ns": 1073873904887481
+              },
+              {
+                "ended_ns": 1073883891578750,
+                "http_ms": 7489,
+                "outcome": "ok",
+                "parse_ms": 0,
+                "path": "/fapi/v1/premiumIndex",
+                "received_ns": 1073883891517020,
+                "started_ns": 1073876401914301
+              }
+            ],
+            "kind": "failed_http_or_validation",
+            "pending_mono_ms": 9988,
+            "quote_age_ms": 17256,
+            "quote_components": {
+              "book_age_ms": 7887,
+              "book_http_ms": 2497,
+              "book_source_ms": 1794796897862,
+              "mark_age_ms": 746,
+              "mark_http_ms": 7489,
+              "mark_source_ms": 1794796905003,
+              "phase": "validation",
+              "received_ms": 1794796905749,
+              "started_ms": 1794796895762,
+              "symbol": "BTCUSDT",
+              "time_rejections": [
+                "book_stale"
+              ]
+            },
+            "quote_source_ms": 1794796888494
+          }
+        ],
+        "quote_unconfirmed": {
+          "at_ms": 1794796905750,
+          "category": "stale_or_future_market_data",
+          "http_recent": [
+            {
+              "ended_ns": 1073862641752879,
+              "http_ms": 1997,
+              "outcome": "ok",
+              "parse_ms": 0,
+              "path": "/fapi/v1/premiumIndex",
+              "received_ns": 1073862641713229,
+              "started_ns": 1073860644096600
+            },
+            {
+              "ended_ns": 1073863889516960,
+              "http_ms": 496,
+              "outcome": "ok",
+              "parse_ms": 0,
+              "path": "/fapi/v1/ticker/bookTicker",
+              "received_ns": 1073863889426300,
+              "started_ns": 1073863393142698
+            },
+            {
+              "ended_ns": 1073864141464006,
+              "http_ms": 251,
+              "outcome": "ok",
+              "parse_ms": 0,
+              "path": "/fapi/v1/premiumIndex",
+              "received_ns": 1073864141392356,
+              "started_ns": 1073863889578470
+            },
+            {
+              "ended_ns": 1073868390848492,
+              "http_ms": 3721,
+              "outcome": "ok",
+              "parse_ms": 0,
+              "path": "/fapi/v1/ticker/bookTicker",
+              "received_ns": 1073868390777992,
+              "started_ns": 1073864669420868
+            },
+            {
+              "ended_ns": 1073869390826966,
+              "http_ms": 999,
+              "outcome": "ok",
+              "parse_ms": 0,
+              "path": "/fapi/v1/premiumIndex",
+              "received_ns": 1073869390778646,
+              "started_ns": 1073868390930672
+            },
+            {
+              "ended_ns": 1073873905159630,
+              "http_ms": 273,
+              "outcome": "ok",
+              "parse_ms": 4236,
+              "path": "/fapi/v1/exchangeInfo",
+              "received_ns": 1073869668565422,
+              "started_ns": 1073869394712117
+            },
+            {
+              "ended_ns": 1073876401842601,
+              "http_ms": 2496,
+              "outcome": "ok",
+              "parse_ms": 0,
+              "path": "/fapi/v1/ticker/bookTicker",
+              "received_ns": 1073876401793391,
+              "started_ns": 1073873904887481
+            },
+            {
+              "ended_ns": 1073883891578750,
+              "http_ms": 7489,
+              "outcome": "ok",
+              "parse_ms": 0,
+              "path": "/fapi/v1/premiumIndex",
+              "received_ns": 1073883891517020,
+              "started_ns": 1073876401914301
+            }
+          ],
+          "kind": "failed_http_or_validation",
+          "pending_mono_ms": 9988,
+          "quote_age_ms": 17256,
+          "quote_components": {
+            "book_age_ms": 7887,
+            "book_http_ms": 2497,
+            "book_source_ms": 1794796897862,
+            "mark_age_ms": 746,
+            "mark_http_ms": 7489,
+            "mark_source_ms": 1794796905003,
+            "phase": "validation",
+            "received_ms": 1794796905749,
+            "started_ms": 1794796895762,
+            "symbol": "BTCUSDT",
+            "time_rejections": [
+              "book_stale"
+            ]
+          },
+          "quote_source_ms": 1794796888494
+        }
+      },
+      "symbol": "BTCUSDT"
+    }
+  },
+  "backup": {
+    "captured_ms": 1794797247734,
+    "chunks": 3,
+    "host_bound": true,
+    "object": "paper-backups/daily/ai-bracket-study/1794797245537-47717b3fc8f973960c21cce001b0d986f464ed29cd325df117b12a2a270ee7b5.cred",
+    "sha256": "47717b3fc8f973960c21cce001b0d986f464ed29cd325df117b12a2a270ee7b5",
+    "sqlite_sha256": "9c02498ba5e0fc1c18bb653f83dc4e39fdcdf031193b3ba39bc757c17abefded",
+    "summary": {
+      "balances": {
+        "free": "1000.3090960078653898110",
+        "funding_buffer": "0E-8",
+        "margin": "0.0000",
+        "reserved": "0E-8"
+      },
+      "events": 20,
+      "fills": 4,
+      "funding_events": 1,
+      "plans": [
+        [
+          "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "CLOSED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "68845.8",
+          "69159.3",
+          "67490.4"
+        ],
+        [
+          "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "69466.2",
+          "69571.2",
+          "68651.6"
+        ],
+        [
+          "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "69466.2",
+          "69572",
+          "68652.4"
+        ],
+        [
+          "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "CLOSED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "65340",
+          "65499.5",
+          "64378.4"
+        ],
+        [
+          "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "64916.1",
+          "65232.4",
+          "63762.9"
+        ],
+        [
+          "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "65565",
+          "66127.9",
+          "63773.6"
+        ],
+        [
+          "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "64141.1",
+          "64542.2",
+          "61986.6"
+        ]
+      ]
+    }
+  },
+  "pre_backup": {
+    "captured_ms": 1794796997260,
+    "chunks": 3,
+    "host_bound": true,
+    "object": "paper-backups/daily/ai-bracket-study/1794796993963-a12fd442daac13cb9e2aeb2caa92a68c0b96a8da12e855da93f0a7af23d1c1a3.cred",
+    "sha256": "a12fd442daac13cb9e2aeb2caa92a68c0b96a8da12e855da93f0a7af23d1c1a3",
+    "sqlite_sha256": "28c4688b4bc1df2c55111db936dd63eba13d49a49cd7eb3da3d114b7deb25c91",
+    "summary": {
+      "balances": {
+        "free": "1000.3090960078653898110",
+        "funding_buffer": "0E-8",
+        "margin": "0.0000",
+        "reserved": "0E-8"
+      },
+      "events": 20,
+      "fills": 4,
+      "funding_events": 1,
+      "plans": [
+        [
+          "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "CLOSED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "68845.8",
+          "69159.3",
+          "67490.4"
+        ],
+        [
+          "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "69466.2",
+          "69571.2",
+          "68651.6"
+        ],
+        [
+          "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "69466.2",
+          "69572",
+          "68652.4"
+        ],
+        [
+          "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "CLOSED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "65340",
+          "65499.5",
+          "64378.4"
+        ],
+        [
+          "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "64916.1",
+          "65232.4",
+          "63762.9"
+        ],
+        [
+          "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "65565",
+          "66127.9",
+          "63773.6"
+        ],
+        [
+          "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+          "CANCELED",
+          "0",
+          "0",
+          "BTCUSDT",
+          "SHORT",
+          "64141.1",
+          "64542.2",
+          "61986.6"
+        ]
+      ]
+    }
+  },
+  "observation": {
+    "elapsed_s": 180.2634506779723,
+    "samples": 359,
+    "start": {
+      "asof": 1794797144696,
+      "cursor": 3526913440,
+      "gap": 1794797017447,
+      "error": null,
+      "stream": {
+        "connected": true,
+        "duplicates": 0,
+        "highwater": 67,
+        "last_fault": null,
+        "oldest_dequeued_wait_ms": null,
+        "queued": 0,
+        "read_timeouts": 0,
+        "reason": null,
+        "received": 2940,
+        "reconnects": 1
+      },
+      "interval": 115,
+      "age": null,
+      "quote_age": 848,
+      "balanced": true
+    },
+    "end": {
+      "asof": 1794797324353,
+      "cursor": 3526917055,
+      "gap": 1794797017447,
+      "error": null,
+      "stream": {
+        "connected": true,
+        "duplicates": 0,
+        "highwater": 103,
+        "last_fault": null,
+        "oldest_dequeued_wait_ms": null,
+        "queued": 0,
+        "read_timeouts": 0,
+        "reason": null,
+        "received": 6555,
+        "reconnects": 1
+      },
+      "interval": 116,
+      "age": null,
+      "quote_age": 1634,
+      "balanced": true
+    },
+    "max_interval_ms": 204,
+    "max_event_age_ms": 373,
+    "max_quote_age_ms": 2643,
+    "max_queue": 0,
+    "gap_times": [
+      1794797017447
+    ],
+    "errors": [
+      "None"
+    ],
+    "cpu_delta": {
+      "usage_usec": 20400248,
+      "user_usec": 18217443,
+      "system_usec": 2182806,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 1802,
+      "nr_throttled": 88,
+      "throttled_usec": 2714343,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "backup_exit": 0
+  },
+  "tests": "............................................................................................................................................................\n----------------------------------------------------------------------\nRan 156 tests in 52.043s\n\nOK\nBURST {'events': 10000, 'elapsed_s': 0.49068220308981836, 'highwater': 7696, 'remaining': 0}\n",
+  "telegram_pollers": 1,
+  "paper_processes": 1,
+  "render_checks": {
+    "under_size": true,
+    "paper": true,
+    "last_closed_entry_visible": true
+  },
+  "service": "MainPID=485378\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-74f77d0-paper\nActiveState=active\n",
+  "next_analysis": "NextElapseUSecRealtime=Mon 2026-11-16 04:02:00 UTC\nActiveState=active\n",
+  "historical_plan_unchanged": true,
+  "automation": {
+    "id": "trading-bot-08-02",
+    "status": "ACTIVE",
+    "run_baku": "2026-11-16T08:47:00+04:00",
+    "run_utc": "2026-11-16T04:47:00Z",
+    "purpose": "first natural protective timing evidence and immutable quote failure history after scheduled08:02; no repeated empty-account chain"
+  }
+}
