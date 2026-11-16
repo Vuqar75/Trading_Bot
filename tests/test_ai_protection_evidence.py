@@ -63,10 +63,16 @@ class ProtectionEvidenceTests(unittest.TestCase):
         self.assertEqual(s['last_protective_execution']['reason'],'SL');self.assertTrue(self.b.verify()['balanced'])
     def test_unconfirmed_intervals_are_bounded(self):
         self.opened()
+        self.b.protection_phase_context={'cycle_started_ns':123,'prior_cycles':[{'phase_'+str(i):1000 for i in range(25)}]*2}
         for i in range(7):
             self.now+=6000;self.b.pulse();self.now+=1;self.b.market('quote',self.quote(str(i)))
         s=self.b.active()[1];self.assertEqual(len(s['protection_wait_history']),4)
-        self.assertLess(len(json.dumps(s)),20000);self.assertTrue(self.b.verify()['balanced'])
+        self.assertNotIn('phase_context',s['protection_wait_history'][0])
+        self.assertEqual(len(self.b.get('protection_phase_history')),8)
+        self.now=s['opened_ms']+self.b.active()[0]['hold_ms'];self.b.pulse()
+        self.now+=1;self.b.market('quote',self.quote('exit'))
+        public=self.b.snapshot();public['plans']=public['plans']*30
+        self.assertLess(len(json.dumps(public)),200000);self.assertTrue(self.b.verify()['balanced'])
     def test_completed_failure_survives_next_pending_and_is_frozen_at_gap(self):
         self.opened();feed=Feed(clock=lambda:self.now);feed.streaming=True
         feed.quote_report={'BTCUSDT':{'phase':'validation','book_source_ms':self.now-6000,
