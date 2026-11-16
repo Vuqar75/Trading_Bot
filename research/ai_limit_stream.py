@@ -10,7 +10,7 @@ from .ai_limit_plan import integer,positive,SYMBOLS,dec,digest,quote
 
 class StreamFeed(Feed):
     streaming=True
-    def __init__(self,*,symbols,connect=None,capacity=32768,batch=256,quotes=False,quote_capacity=512,**kwargs):
+    def __init__(self,*,symbols,connect=None,capacity=32768,batch=256,quotes=False,quote_capacity=4096,**kwargs):
         super().__init__(**kwargs)
         if type(quote_capacity) is not int or not 1<=quote_capacity<=4096:raise ValueError('quote_capacity')
         self.lock=threading.Lock();self.stop=threading.Event();self.capacity=capacity;self.batch=batch
@@ -101,7 +101,10 @@ class StreamFeed(Feed):
             value={'kind':kind,'source':item,'source_ms':stamp,'event_ms':event,'received_ms':now,
                    'received_mono_ns':time.monotonic_ns()}
             if len(q['queue'])>=self.quote_capacity:
-                q['queue'].clear();q['book']=None;q['mark']=None
+                # The event history is incomplete, but latest absolute BBO
+                # and mark snapshots remain independent evidence. Latch one
+                # unconfirmed cycle; never manufacture historical fills.
+                q['queue'].clear()
                 q['pending_fault']='quote_queue_overflow';q['overflows']+=1
             q[kind]=value;q['queue'].append(value);q['highwater']=max(q['highwater'],len(q['queue']))
 

@@ -136,6 +136,12 @@ class QuoteStreamTests(unittest.TestCase):
         self.poller.cycle();self.assertEqual(self.b.snapshot()['fills'],1)
         self.assertEqual(self.b.active()[1]['remaining'],'0');self.assertGreater(self.f.quote_states['BTCUSDT']['overflows'],0)
         self.assertLessEqual(len(self.f.quote_states['BTCUSDT']['queue']),2);self.assertTrue(self.b.verify()['balanced'])
+    def test_overflow_does_not_erase_uninterrupted_absolute_mark_snapshot(self):
+        self.f.quote_capacity=2;self.mark();self.book(100);self.book(101)
+        bad=self.f.quote_packet('BTCUSDT');self.assertTrue(bad['error'])
+        self.assertEqual(set(bad['report']['components']),{'book','mark'})
+        recovered=self.f.quote_packet('BTCUSDT');self.assertIsNone(recovered['error'])
+        self.assertEqual(self.b.snapshot()['fills'],0)
     def test_restart_regression_cannot_substitute_an_old_cached_execution_quote(self):
         self.opened();self.now+=100
         cached={**snapshot()[0]['quote'],'id':'durable-newer','event_ms':self.now,'received_ms':self.now}
