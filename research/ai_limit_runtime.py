@@ -19,7 +19,7 @@ import time
 
 from .ai_limit_book import Book
 from .ai_limit_phase_probe import Probe,TimedConnection
-from .ai_limit_backup_job import BackupJob
+from .ai_limit_backup_job import BackupJob,prepare_journal
 from .ai_limit_feed import Feed
 from .ai_limit_plan import VERSION,SYMBOLS,canonical,digest,validate,context,integer,dec,quote as validate_quote
 from .ai_limit_executor import once,recover
@@ -536,6 +536,7 @@ def main():
                 import sys
                 sys.path.insert(0,str(Path(__file__).resolve().parent.parent/"vendor"))
                 from .ai_limit_stream import StreamFeed
+                prepare_journal(book)
                 probe=Probe(book.root/'phase-diagnostics.json');probe.seen_gap=(book.get('last_trade_gap') or {}).get('at_ms')
                 if isinstance(book.db,TimedConnection):book.db.probe=probe
                 feed=StreamFeed(symbols=args.symbols,quotes=True);feed.probe=probe
