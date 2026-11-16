@@ -92,7 +92,7 @@ class Probe:
         if self.started is None:return
         capture_start=self.mono();capture_cpu=self.cpu()
         start,cpu,resources=self.started;new_gap=gap and gap.get('at_ms')!=self.seen_gap
-        row={'started_ns':start,'ended_ns':self.mono(),'main_thread_cpu_ns':max(0,self.cpu()-cpu),'resource_before':resources,'resource_after':self.resources(force=bool(new_gap)),'writer_previous':self.last_write,'transport':{}}
+        row={'started_ns':start,'ended_ns':self.mono(),'main_thread_cpu_ns':max(0,self.cpu()-cpu),'resource_before':resources,'resource_after':self.resources(force=bool(new_gap)),'writer_previous':self.last_write,'local_backup':getattr(self,'backup_status',None),'transport':{}}
         with self.lock:row['phases']={k:dict(v) for k,v in self.phases.items()}
         if hasattr(feed,'lock'):
             with feed.lock:

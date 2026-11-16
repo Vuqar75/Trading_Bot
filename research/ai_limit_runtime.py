@@ -19,6 +19,7 @@ import time
 
 from .ai_limit_book import Book
 from .ai_limit_phase_probe import Probe,TimedConnection
+from .ai_limit_backup_job import BackupJob
 from .ai_limit_feed import Feed
 from .ai_limit_plan import VERSION,SYMBOLS,canonical,digest,validate,context,integer,dec,quote as validate_quote
 from .ai_limit_executor import once,recover
@@ -538,7 +539,7 @@ def main():
                 probe=Probe(book.root/'phase-diagnostics.json');probe.seen_gap=(book.get('last_trade_gap') or {}).get('at_ms')
                 if isinstance(book.db,TimedConnection):book.db.probe=probe
                 feed=StreamFeed(symbols=args.symbols,quotes=True);feed.probe=probe
-                worker=Poller(book,feed.start(),symbols=args.symbols);next_backup=0;reader=ResponseReader();publisher=Publisher()
+                worker=Poller(book,feed.start(),symbols=args.symbols);backup=BackupJob(book.root);next_backup=0;reader=ResponseReader();publisher=Publisher()
                 try:
                     while running[0]:
                         probe.begin();loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
@@ -557,11 +558,9 @@ def main():
                         with probe.phase('main_publish'):publisher.publish(args.public,result,force=args.once)
                         now=time.monotonic_ns();phase['publish_ms']=(now-mark)//1000000;mark=now
                         if book.clock()>=next_backup:
-                            folder=book.root/'backups';folder.mkdir(mode=0o700,exist_ok=True)
-                            with probe.phase('main_backup'):book.backup(folder/(str(book.clock())+'.sqlite'))
-                            for old in sorted(folder.glob('[0-9]*.sqlite'))[:-24]:
-                                if not old.is_symlink() and old.stat().st_uid==os.geteuid():old.unlink()
+                            with probe.phase('main_backup_submit'):backup.submit(book.clock())
                             next_backup=book.clock()+3600000
+                        probe.backup_status=dict(backup.status)
                         now=time.monotonic_ns();phase['backup_ms']=(now-mark)//1000000;mark=now
                         if args.once:
                             worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'));break
@@ -569,7 +568,7 @@ def main():
                         with probe.phase('main_sleep'):time.sleep(pause)
                         phase['sleep_ms']=(time.monotonic_ns()-mark)//1000000;phase['total_ms']=(time.monotonic_ns()-loop_start)//1000000
                         worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'))
-                finally:probe.close();worker.close()
+                finally:backup.close();probe.close();worker.close()
             elif args.action=='pause':book.pause(True);result=book.snapshot()
             elif args.action=='resume':book.pause(False);result=book.snapshot()
             elif args.action=='close':book.request_close(args.plan_id);result=book.snapshot()
