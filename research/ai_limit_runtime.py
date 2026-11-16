@@ -149,6 +149,8 @@ class Poller:
         return ready
 
     def cycle(self):
+        self.book.protection_phase_context={'cycle_started_ns':time.monotonic_ns(),
+                                            'prior_cycles':list(self.phase_history)[-2:]}
         if getattr(self.feed,'streaming',False):
             with self.book.grouped_transaction():return self._cycle()
         return self._cycle()
@@ -187,13 +189,17 @@ class Poller:
                         try:q,due=future.result()
                         except (ValueError,KeyError,OSError,TypeError) as error:
                             prior_quote=b.get('quote:'+symbol)
-                            with b.transaction():b.set('last_quote_unconfirmed:'+symbol,{
+                            failure={
                                 'at_ms':b.clock(),'kind':'failed_http_or_validation','category':str(error) if str(error) in ('stale_or_future_market_data','quote_symbol','public_market_unavailable','public_market_http_failure') else type(error).__name__,
                                 'pending_mono_ms':(time.monotonic_ns()-quote_started)//1000000,
                                 'quote_source_ms':prior_quote.get('event_ms') if prior_quote else None,
                                 'quote_age_ms':b.clock()-prior_quote['event_ms'] if prior_quote else None,
                                 'quote_components':dict(getattr(self.feed,'quote_report',{}).get(symbol,{})),
-                                'http_recent':list(getattr(self.feed,'http_timings',[]))[-8:]})
+                                'http_recent':list(getattr(self.feed,'http_timings',[]))[-8:]}
+                            with b.transaction():
+                                b.set('last_quote_unconfirmed:'+symbol,failure)
+                                history=b.get('quote_failure_history:'+symbol,[])
+                                b.set('quote_failure_history:'+symbol,(history+[failure])[-8:])
                             if b.active() is not None:b.hold_unconfirmed_backlog(symbol,detail='quote_http_unconfirmed')
                             raise
                 else:q,due=self.feed.book(symbol)
@@ -294,6 +300,12 @@ class Poller:
                 report['phase_diagnostics']={'clock':'monotonic_ns','cycle_started_ns':tick,'phases_ms':phases,
                     'http_recent':list(getattr(self.feed,'http_timings',deque()).copy())[-32:],
                     'prior_cycles':list(self.phase_history)[-4:]}
+                if gap:
+                    # An exposed plan may have no entry remainder to cancel.
+                    # Preserve the failed quote before the next pending refresh
+                    # overwrites the latest-status key; never infer a cause.
+                    report['phase_diagnostics']['quote_unconfirmed']=b.get('last_quote_unconfirmed:'+symbol)
+                    report['phase_diagnostics']['quote_failures']=b.get('quote_failure_history:'+symbol,[])
                 # A stale, contiguous prefix ending before the current plan was
                 # armed cannot have filled or protected that plan. ID gaps,
                 # future rows and stale events after arming remain fail-closed.

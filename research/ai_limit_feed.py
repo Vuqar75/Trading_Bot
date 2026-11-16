@@ -23,7 +23,7 @@ class Feed:
         if path not in PATHS or set(params)-{'symbol','limit','fromId','startTime','endTime','interval','period'}:raise ValueError('public_endpoint_denied')
         if 'symbol' in params and params['symbol'] not in SYMBOLS:raise ValueError('symbol_denied')
         url=HOST+path+('?' +urllib.parse.urlencode(params) if params else '')
-        started=time.monotonic_ns();received=None;parsed=None;outcome='error'
+        started=time.monotonic_ns();received=None;parsed=None;outcome='error';failure={}
         try:
             request=urllib.request.Request(url,headers={'User-Agent':'TradingBot-AI-Paper-Brackets/1.0'})
             with urllib.request.urlopen(request,timeout=8) as response:
@@ -34,11 +34,21 @@ class Feed:
             received=time.monotonic_ns()
         except urllib.error.HTTPError as error:
             status=error.code;error.close()
+            failure={'category':'http_status','exception_class':'HTTPError','status':status}
             if status in (401,403,451):self.denied='public_access_denied_http'+str(status)
             raise ValueError(self.denied or 'public_market_http_failure') from None
-        except (OSError,TimeoutError):raise ValueError('public_market_unavailable') from None
+        except (OSError,TimeoutError) as error:
+            underlying=getattr(error,'reason',error)
+            failure={'category':'transport','exception_class':type(error).__name__,
+                     'reason_class':type(underlying).__name__}
+            number=getattr(underlying,'errno',None)
+            if type(number) is int:failure['errno']=number
+            raise ValueError('public_market_unavailable') from None
         finally:
-            if received is None:self.http_timings.append({'path':path,'started_ns':started,'ended_ns':time.monotonic_ns(),'outcome':'error'})
+            if received is None:
+                ended=time.monotonic_ns()
+                self.http_timings.append({'path':path,'started_ns':started,'ended_ns':ended,
+                                          'http_ms':(ended-started)//1000000,'outcome':'error',**failure})
         try:
             if len(raw)>3000000:raise ValueError('public_response_size')
             try:result=json.loads(raw)

@@ -213,15 +213,36 @@ class Book:
         self.message(key,{'kind':kind,'reason':reason,'symbol':p['symbol'],'qty':text(qty),'price':text(price),'paper_only':True})
         if kind!='ENTRY':self.finalize(p,s,stamp)
 
+    def protection_evidence(self,p,s,now,book,confirmed):
+        value={'observed_ms':now,'observed_mono_ns':time.monotonic_ns(),'quote_confirmed':confirmed,
+               'time_due_ms':s['opened_ms']+p['hold_ms'] if s['opened_ms'] is not None else None,
+               'quote':{k:book.get(k) for k in ('id','event_ms','received_ms','bid','ask','mark','bid_qty','ask_qty')} if isinstance(book,dict) else None}
+        if isinstance(book,dict) and type(book.get('event_ms')) is int:value['quote_age_ms']=now-book['event_ms']
+        phase=getattr(self,'protection_phase_context',None)
+        if phase is not None:value['phase_context']=phase
+        return value
+
     def protect(self,p,s,now):
         if not dec(s['open_qty']):return
         book=self.get('quote:'+p['symbol'])
         try:quote(book,p['symbol'],now)
-        except (ValueError,TypeError,KeyError):return
+        except (ValueError,TypeError,KeyError):
+            # Diagnose an unavailable protective quote, never execute it.
+            if not s.get('protection_wait'):
+                s['protection_wait']=self.protection_evidence(p,s,now,book,False)
+            if s.get('close_reason') and not s.get('protection_trigger'):
+                s['protection_trigger']={'reason':s['close_reason'],**self.protection_evidence(p,s,now,book,False)}
+            return
+        wait=s.pop('protection_wait',None)
+        if wait is not None:
+            recovered=self.protection_evidence(p,s,now,book,True)
+            s['protection_wait_history']=(s.get('protection_wait_history',[])+[{'unconfirmed':wait,'recovered':recovered}])[-4:]
         side=1 if p['direction']=='LONG' else -1;mark=dec(book['mark'])
         if side*(mark-dec(p['stop']))<=0 or side*(dec(book['bid' if side==1 else 'ask'])-dec(p['stop']))<=0:s['close_reason']='SL'
         if s['opened_ms'] is not None and now>=s['opened_ms']+p['hold_ms'] and not s['close_reason']:s['close_reason']='TIME'
         if not s['close_reason']:return
+        if not s.get('protection_trigger'):
+            s['protection_trigger']={'reason':s['close_reason'],**self.protection_evidence(p,s,now,book,True)}
         s['status']='EXIT_PENDING';self.cancel_entry(p,s,s['close_reason'],now)
         sidekey='bid' if side==1 else 'ask';consumed=self.get('used-quote:'+p['symbol']+':'+book.get('liquidity_id',book['id'])+':'+sidekey,'0')
         available=max(Decimal(0),dec(book[sidekey+'_qty'])-dec(consumed));step=dec(p['snapshot']['filters']['step_size'])
@@ -229,6 +250,8 @@ class Book:
         if qty<=0:return
         price=dec(book[sidekey])*(1-side*dec(p['stop_slippage']))
         key='market:'+p['plan_id']+':'+book['id']+':'+s['open_qty']
+        s['last_protective_execution']={'reason':s['close_reason'],'quantity':text(qty),'price':text(price),
+                                        **self.protection_evidence(p,s,now,book,True)}
         self.fill(p,s,'EXIT',qty,price,now,key,s['close_reason'])
         self.set('used-quote:'+p['symbol']+':'+book.get('liquidity_id',book['id'])+':'+sidekey,text(dec(consumed)+qty))
 
