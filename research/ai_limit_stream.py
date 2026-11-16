@@ -19,7 +19,7 @@ class StreamFeed(Feed):
         self.websocket_quotes=quotes;self.quote_capacity=quote_capacity
         self.quote_states={s:dict(book=None,mark=None,book_last=None,mark_last=None,queue=deque(),
             channels={c:{'connected':False,'connections':0} for c in ('book','market')},
-            fault=None,pending_fault=None,overflows=0,duplicates=0,highwater=0) for s in symbols}
+            fault=None,pending_fault=None,overflows=0,duplicates=0,highwater=0,received={'book':0,'mark':0}) for s in symbols}
     def start(self):
         if self.connect is None:
             import websocket
@@ -76,6 +76,7 @@ class StreamFeed(Feed):
             stamp=event;ident=event;positive(raw['p']);integer(raw['T'])
             item={k:raw[k] for k in ('e','s','E','p','T')}
         with self.lock:
+            self.quote_states[symbol]['received'][kind]+=1
             if not all(0<=now-t<=5000 for t in (stamp,event)):
                 # Invalid time must not poison the high-water identity and
                 # suppress subsequent genuine frames until a reconnect.
@@ -109,6 +110,7 @@ class StreamFeed(Feed):
             channels={k:dict(v) for k,v in st['channels'].items()};fault=st['pending_fault'];st['pending_fault']=None
             diag={'transport':'websocket','channels':channels,'overflows':st['overflows'],
                   'duplicates':st['duplicates'],'highwater':st['highwater'],'last_fault':st.get('last_fault'),
+                    'received':dict(st['received']),
                   'received_ms':now,'components':{k:v for k,v in [('book',book),('mark',mark)] if v is not None}}
         reasons=[]
         for name,value in [('book',book),('mark',mark)]:
@@ -191,7 +193,10 @@ class StreamFeed(Feed):
         self.trade_report[symbol]={**parser.trade_report[symbol],'transport':'websocket','stream':diag,'gap':bool(gap or fault)}
         return ([] if gap or fault else events),cursor,bool(gap or fault)
     def pending(self):
-        with self.lock:return any(st["queue"] for st in self.states.values()) or (self.websocket_quotes and any(st['queue'] for st in self.quote_states.values()))
+        # BBO updates are frequent even without actionable trade backlog.
+        # They must not force financial/snapshot/fsync work at 50 Hz. Quotes
+        # retain priority in every ordinary (<=100ms requested sleep) cycle.
+        with self.lock:return any(st["queue"] for st in self.states.values())
     def close(self):
         self.stop.set()
         for t in self.threads:t.join(timeout=3)

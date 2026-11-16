@@ -50,6 +50,12 @@ class QuoteStreamTests(unittest.TestCase):
         self.now+=6000;self.mark();self.poller.cycle()
         self.assertEqual(self.b.get('quote_execution_unconfirmed:BTCUSDT'),'public_quote_stream_unconfirmed')
         report=self.b.get('quote_stream:BTCUSDT');self.assertIn('book_source_ms_stale',report['time_rejections'])
+    def test_quote_only_backlog_does_not_force_fifty_financial_cycles_per_second(self):
+        for u in range(100,200):self.book(u)
+        self.assertEqual(self.poller.sleep_after_cycle(),.1)
+        self.assertEqual(self.f.quote_packet('BTCUSDT')['report']['received']['book'],100)
+        self.f.receive('BTCUSDT',{'e':'aggTrade','s':'BTCUSDT','a':2,'T':self.now,'p':'100','q':'1','m':True})
+        self.assertEqual(self.poller.sleep_after_cycle(),.02)
     def test_a_never_completed_rest_future_cannot_delay_the_ws_stop(self):
         from concurrent.futures import Future
         self.opened();self.poller.quote_jobs['BTCUSDT']=(Future(),time.monotonic_ns())
