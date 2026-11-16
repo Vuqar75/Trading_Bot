@@ -17,6 +17,7 @@ import tempfile
 import time
 
 from .ai_limit_book import Book
+from .ai_limit_phase_probe import Probe,TimedConnection
 from .ai_limit_feed import Feed
 from .ai_limit_plan import VERSION,SYMBOLS,canonical,digest,validate,context,integer,dec,quote as validate_quote
 from .ai_limit_executor import once,recover
@@ -532,33 +533,41 @@ def main():
                 import sys
                 sys.path.insert(0,str(Path(__file__).resolve().parent.parent/"vendor"))
                 from .ai_limit_stream import StreamFeed
-                worker=Poller(book,StreamFeed(symbols=args.symbols,quotes=True).start(),symbols=args.symbols);next_backup=0;reader=ResponseReader();publisher=Publisher()
+                probe=Probe(book.root/'phase-diagnostics.json');probe.seen_gap=(book.get('last_trade_gap') or {}).get('at_ms')
+                if isinstance(book.db,TimedConnection):book.db.probe=probe
+                feed=StreamFeed(symbols=args.symbols,quotes=True);feed.probe=probe
+                worker=Poller(book,feed.start(),symbols=args.symbols);next_backup=0;reader=ResponseReader();publisher=Publisher()
                 try:
                     while running[0]:
-                        loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
-                        mark=time.monotonic_ns();result=worker.cycle();now=time.monotonic_ns();phase['poller_total_ms']=(now-mark)//1000000;mark=now
+                        probe.begin();loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
+                        mark=time.monotonic_ns()
+                        with probe.phase('main_poller'):result=worker.cycle()
+                        now=time.monotonic_ns();phase['poller_total_ms']=(now-mark)//1000000;mark=now
                         if Path(args.response).exists():
-                            try:reader.apply(book,args.response,args.analyst_uid)
+                            try:
+                                with probe.phase('main_ingest'):reader.apply(book,args.response,args.analyst_uid)
                             except (ValueError,OSError,KeyError,TypeError):
                                 with book.transaction():book.set('analyst_ingest_error','response_unavailable_or_invalid')
                         now=time.monotonic_ns();phase['ingest_ms']=(now-mark)//1000000;mark=now
-                        result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds','quote_feeds')}
+                        with probe.phase('main_snapshot'):
+                            result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds','quote_feeds')}
                         now=time.monotonic_ns();phase['snapshot_ms']=(now-mark)//1000000;mark=now
-                        publisher.publish(args.public,result,force=args.once)
+                        with probe.phase('main_publish'):publisher.publish(args.public,result,force=args.once)
                         now=time.monotonic_ns();phase['publish_ms']=(now-mark)//1000000;mark=now
                         if book.clock()>=next_backup:
                             folder=book.root/'backups';folder.mkdir(mode=0o700,exist_ok=True)
-                            book.backup(folder/(str(book.clock())+'.sqlite'))
+                            with probe.phase('main_backup'):book.backup(folder/(str(book.clock())+'.sqlite'))
                             for old in sorted(folder.glob('[0-9]*.sqlite'))[:-24]:
                                 if not old.is_symlink() and old.stat().st_uid==os.geteuid():old.unlink()
                             next_backup=book.clock()+3600000
                         now=time.monotonic_ns();phase['backup_ms']=(now-mark)//1000000;mark=now
                         if args.once:
-                            worker.phase_history.append(phase);break
-                        pause=worker.sleep_after_cycle();phase['sleep_requested_ms']=int(pause*1000);time.sleep(pause)
+                            worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'));break
+                        pause=worker.sleep_after_cycle();phase['sleep_requested_ms']=int(pause*1000)
+                        with probe.phase('main_sleep'):time.sleep(pause)
                         phase['sleep_ms']=(time.monotonic_ns()-mark)//1000000;phase['total_ms']=(time.monotonic_ns()-loop_start)//1000000
-                        worker.phase_history.append(phase)
-                finally:worker.close()
+                        worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'))
+                finally:probe.close();worker.close()
             elif args.action=='pause':book.pause(True);result=book.snapshot()
             elif args.action=='resume':book.pause(False);result=book.snapshot()
             elif args.action=='close':book.request_close(args.plan_id);result=book.snapshot()

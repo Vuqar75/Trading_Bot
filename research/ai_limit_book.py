@@ -1,5 +1,5 @@
 """Isolated, transactional paper limit/bracket lifecycle. No network or API keys."""
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import json
 import os
 from pathlib import Path
@@ -8,6 +8,7 @@ import time
 from decimal import Decimal, ROUND_DOWN
 
 from trading_bot.paper_wallet_ledger import PaperWalletLedger
+from .ai_limit_phase_probe import TimedConnection
 from trading_bot.ai_bracket_cancellation import describe as describe_cancellation
 from .ai_limit_plan import canonical,digest,dec,positive,text,integer,quote,fresh,filters,validate,context,VERSION
 
@@ -26,7 +27,7 @@ class Book:
         path=self.root/'paper.sqlite'
         if path.is_symlink():raise ValueError('private_database_required')
         if path.exists():
-            self.db=sqlite3.connect(path.resolve().as_uri()+'?mode=rw',uri=True,isolation_level=None,timeout=15)
+            self.db=sqlite3.connect(path.resolve().as_uri()+'?mode=rw',uri=True,isolation_level=None,timeout=15,factory=TimedConnection)
             try:
                 if self.db.execute('PRAGMA application_id').fetchone()[0]!=APP_ID:raise ValueError('wrong_paper_database')
                 names={r[0] for r in self.db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
@@ -98,6 +99,10 @@ class Book:
         if entries:self.ledger._post(id,kind,details,entries,created=now/1000)
 
     def verify(self):
+        probe=getattr(self.db,'probe',None)
+        with probe.phase('book_verify') if probe else nullcontext():return self._verify()
+
+    def _verify(self):
         if not self.ledger.reconcile()['balanced']:raise ValueError('ledger_reconciliation_failed')
         expected=Decimal(1000)
         for row in self.db.execute('SELECT state FROM bracket_plans ORDER BY rowid'):
@@ -453,6 +458,10 @@ class Book:
             return {'status':'covered','through_ms':self.get('funding_through')}
 
     def snapshot(self):
+        probe=getattr(self.db,'probe',None)
+        with probe.phase('book_snapshot') if probe else nullcontext():return self._snapshot()
+
+    def _snapshot(self):
         with self.ledger.transaction():
             self.verify();now=self.clock();items=[]
             for p,s in self.plans():

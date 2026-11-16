@@ -1,6 +1,7 @@
 """Bounded public USD-M websocket transport. Network thread never touches ledger.
 Reconnect/gap requires an idle bootstrap; missing execution is never backfilled.
 """
+from contextlib import nullcontext
 import json
 import threading
 import time
@@ -20,6 +21,11 @@ class StreamFeed(Feed):
         self.quote_states={s:dict(book=None,mark=None,book_last=None,mark_last=None,queue=deque(),
             channels={c:{'connected':False,'connections':0} for c in ('book','market')},
             fault=None,pending_fault=None,overflows=0,duplicates=0,highwater=0,received={'book':0,'mark':0}) for s in symbols}
+    def span(self,name):
+        probe=getattr(self,'probe',None)
+        return probe.phase(name) if probe else nullcontext()
+    def get(self,path,params):
+        with self.span('http_total'):return super().get(path,params)
     def start(self):
         if self.connect is None:
             import websocket
@@ -173,7 +179,8 @@ class StreamFeed(Feed):
                     with self.lock:
                         st=self.states[symbol];st['connected']=True;st['reconnects']+=1
                 while not self.stop.is_set():
-                    try:raw=ws.recv()
+                    try:
+                        with self.span('ws_recv_'+channel):raw=ws.recv()
                     except self.timeout_errors:
                         # A quiet socket/read deadline is not a disconnect or
                         # evidence of missing IDs. Freshness is checked separately.
@@ -183,15 +190,18 @@ class StreamFeed(Feed):
                         continue
                     if not raw:raise OSError('closed')
                     if len(raw)>65536:raise ValueError('stream_size')
-                    if isinstance(raw,bytes):raw=raw.decode('utf-8')
-                    data=json.loads(raw)
+                    with self.span('ws_parse_'+channel):
+                        if isinstance(raw,bytes):raw=raw.decode('utf-8')
+                        data=json.loads(raw)
                     if self.websocket_quotes:
                         if channel=='market':
                             expected={symbol.lower()+'@aggTrade',symbol.lower()+'@markPrice@1s'}
                             if data.get('stream') not in expected:raise ValueError('quote_stream_envelope')
                             data=data['data']
-                        if data.get('e')!='aggTrade':self.receive_quote(symbol,data,channel);continue
-                    self.receive(symbol,data)
+                        if data.get('e')!='aggTrade':
+                            with self.span('ws_dispatch_'+channel):self.receive_quote(symbol,data,channel)
+                            continue
+                    with self.span('ws_dispatch_'+channel):self.receive(symbol,data)
             except Exception as error:
                 if channel=='market':self.fail(symbol,'disconnect_or_invalid',type(error).__name__)
                 if self.websocket_quotes:self.quote_connection(symbol,channel,False,type(error).__name__)
