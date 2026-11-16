@@ -211,6 +211,8 @@ class StreamFeed(Feed):
                     except Exception:pass
             self.stop.wait(1)
     def trades(self,symbol,last_id=None):
+        with self.span('trade_dequeue_parse'):return self._trades(symbol,last_id)
+    def _trades(self,symbol,last_id=None):
         with self.lock:
             st=self.states[symbol];fault=st['fault'] or not st['connected']
             if last_id is None:

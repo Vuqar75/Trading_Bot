@@ -6,6 +6,18 @@ from tests.test_ai_quote_stream import QuoteStreamTests
 
 class ProbeTests(unittest.TestCase):
  def make(self,root,**kw):return Probe(Path(root)/'phase.json',resource=lambda:{'sample_ns':time.monotonic_ns(),'test':True},**kw)
+ def test_dequeued_source_wait_processing_and_http_are_pinned_per_gap(self):
+  class Feed:
+   http_timings=[{'path':'/fapi/v1/exchangeInfo','http_ms':500}]
+  with tempfile.TemporaryDirectory() as root:
+   p=self.make(root)
+   try:
+    report={'rows':256,'first_id':10,'last_id':265,'oldest_age_ms':5400,'batch_processing_ms':30,'stream':{'oldest_dequeued_wait_ms':5200}}
+    p.begin();p.finish(Feed(),{'at_ms':1,'source':{'rows':256}},{'BTCUSDT':report})
+    batch=p.ring[-1]['transport']['BTCUSDT']['dequeued_batch']
+    self.assertEqual(batch['oldest_dequeued_wait_ms'],5200);self.assertEqual(batch['batch_processing_ms'],30)
+    self.assertEqual(p.episodes[0]['http_recent'],Feed.http_timings)
+   finally:p.close()
  def test_phase_separates_sleep_from_thread_cpu_and_preserves_exception(self):
   with tempfile.TemporaryDirectory() as root:
    p=self.make(root)

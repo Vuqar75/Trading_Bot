@@ -88,7 +88,7 @@ class Probe:
     def begin(self):
         with self.lock:self.phases={}
         self.started=(self.mono(),self.cpu(),self.resources())
-    def finish(self,feed,gap=None):
+    def finish(self,feed,gap=None,reports=None):
         if self.started is None:return
         capture_start=self.mono();capture_cpu=self.cpu()
         start,cpu,resources=self.started;new_gap=gap and gap.get('at_ms')!=self.seen_gap
@@ -100,13 +100,17 @@ class Probe:
                     first=st['queue'][0] if st['queue'] else None
                     row['transport'][symbol]={'queued':len(st['queue']),'received':st['received'],'last_id':st['last'],'fault':st['fault'],'reason':st['reason'],
                         'oldest_queue_wait_ns':max(0,self.mono()-first['_received_ns']) if first else None}
+        for symbol,report in (reports or {}).items():
+            if not isinstance(report,dict):continue
+            row['transport'].setdefault(symbol,{})['dequeued_batch']={k:report.get(k) for k in ('requested_after_id','first_id','last_id','rows','first_event_ms','last_event_ms','oldest_age_ms','newest_age_ms','batch_processing_ms','batch_lock_wait_ms','stale_rows')}
+            row['transport'][symbol]['dequeued_batch']['oldest_dequeued_wait_ms']=report.get('stream',{}).get('oldest_dequeued_wait_ms')
         row['wall_ns']=row['ended_ns']-start
         for episode in self.episodes:
             if episode['post_remaining']:
                 episode['cycles'].append(row);episode['post_remaining']-=1
         if new_gap:
             if len(self.episodes)==self.episodes.maxlen:self.evicted+=1
-            self.seen_gap=gap['at_ms'];self.episodes.append({'at_ms':gap['at_ms'],'source':gap.get('source'),'cycles':list(self.ring)+[row],'post_remaining':8})
+            self.seen_gap=gap['at_ms'];self.episodes.append({'at_ms':gap['at_ms'],'source':gap.get('source'),'http_recent':list(getattr(feed,'http_timings',[]))[-8:],'cycles':list(self.ring)+[row],'post_remaining':8})
         row['capture_wall_ns']=self.mono()-capture_start;row['capture_thread_cpu_ns']=self.cpu()-capture_cpu
         self.ring.append(row)
         now=self.mono()

@@ -3,6 +3,7 @@
 No Telegram poller or real exchange order transport. The paper loop never calls
 an LLM; model downtime cannot stop its persisted protective exits.
 """
+from contextlib import nullcontext
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from collections import deque
@@ -365,7 +366,8 @@ class Poller:
                         report={**report,'idle_resync':getattr(self.feed,'trade_report',{}).get(symbol,{})}
                         events=[]
                 stage='batch_commit';waiting=time.monotonic_ns()
-                with b.transaction():
+                probe=getattr(b.db,'probe',None)
+                with b.transaction(), (probe.phase('trade_batch_finance') if probe else nullcontext()):
                     locked=time.monotonic_ns();active=b.active();skipped=0
                     if prearm and (active is None or active_before[0]['plan_id']!=active[0]['plan_id']
                                    or active[1]['armed_ms']!=armed):raise ValueError('active_plan_changed_during_batch')
@@ -562,11 +564,11 @@ def main():
                             next_backup=book.clock()+3600000
                         now=time.monotonic_ns();phase['backup_ms']=(now-mark)//1000000;mark=now
                         if args.once:
-                            worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'));break
+                            worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'));break
                         pause=worker.sleep_after_cycle();phase['sleep_requested_ms']=int(pause*1000)
                         with probe.phase('main_sleep'):time.sleep(pause)
                         phase['sleep_ms']=(time.monotonic_ns()-mark)//1000000;phase['total_ms']=(time.monotonic_ns()-loop_start)//1000000
-                        worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'))
+                        worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'))
                 finally:probe.close();worker.close()
             elif args.action=='pause':book.pause(True);result=book.snapshot()
             elif args.action=='resume':book.pause(False);result=book.snapshot()
