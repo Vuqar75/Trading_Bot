@@ -82,6 +82,52 @@ class ProbeTests(unittest.TestCase):
     self.assertIsNone(b.get('temporary'));self.assertTrue(b.verify()['balanced']);self.assertIn('sql_commit',p.phases)
    finally:b.close();p.close()
 
+class SlowSpanTests(unittest.TestCase):
+ def test_slow_main_phase_has_scheduler_boundary_and_bounded_history(self):
+  with tempfile.TemporaryDirectory() as root:
+   tick=[1000000000];p=Probe(Path(root)/'p.json',mono=lambda:tick[0],resource=lambda:{})
+   p.scheduler_sample=lambda:{'sample_ns':tick[0],'schedstat':[0,tick[0],0]}
+   try:
+    p.begin()
+    for _ in range(30):
+     with p.phase('main_snapshot'):tick[0]+=200000000
+    self.assertEqual(len(p.slow_phases),24)
+    row=p.slow_phases[-1];self.assertEqual(row['after']['sample_ns']-row['before']['sample_ns'],200000000)
+    p.finish(object());self.assertEqual(len(p.ring[-1]['slow_main_phases']),24)
+    p.begin();self.assertFalse(p.slow_phases)
+   finally:p.close()
+ def test_fast_or_other_thread_phase_does_not_read_main_scheduler(self):
+  with tempfile.TemporaryDirectory() as root:
+   tick=[1000000000];p=Probe(Path(root)/'p.json',mono=lambda:tick[0],resource=lambda:{})
+   samples=[];p.scheduler_sample=lambda:samples.append(threading.get_ident()) or {}
+   try:
+    with p.phase('main_publish'):pass
+    def task():
+     with p.phase('main_publish'):tick[0]+=200000000
+    t=threading.Thread(target=task);t.start();t.join()
+    self.assertEqual(samples,[threading.get_ident()]);self.assertFalse(p.slow_phases)
+   finally:p.close()
+ def test_scheduler_unavailable_is_explicit_and_not_a_fresh_quote(self):
+  from unittest.mock import patch
+  with tempfile.TemporaryDirectory() as root:
+   p=Probe(Path(root)/'p.json',resource=lambda:{})
+   try:
+    with patch.object(Path,'read_text',side_effect=OSError('fixture')):value=p.scheduler_sample()
+    self.assertIsNone(value['schedstat']);self.assertIsNone(value['cgroup_cpu'])
+    self.assertNotIn('event_ms',value)
+   finally:p.close()
+ def test_background_writer_separates_serialization_and_disk_wait(self):
+  done=threading.Event()
+  def write(raw):time.sleep(.02);done.set()
+  with tempfile.TemporaryDirectory() as root:
+   p=Probe(Path(root)/'p.json',resource=lambda:{},write=write)
+   try:
+    p.begin();p.finish(object());self.assertTrue(done.wait(2))
+   finally:p.close()
+   self.assertEqual(p.last_write['status'],'ok');self.assertGreaterEqual(p.last_write['disk_wall_ns'],15000000)
+   self.assertGreaterEqual(p.last_write['serialization_wall_ns'],0)
+   self.assertGreaterEqual(p.last_write['serialization_thread_cpu_ns'],0)
+
 class InstrumentedProtectionTests(QuoteStreamTests):
  def setUp(self):
   super().setUp();self.b.close();self.b=Book(self.root,clock=lambda:self.now);self.poller.book=self.b

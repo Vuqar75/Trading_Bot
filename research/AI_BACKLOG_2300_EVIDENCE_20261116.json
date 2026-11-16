@@ -1,0 +1,1020 @@
+{
+  "capture_ms": 1794855681193,
+  "raw_sha256": "ad1d41d183e54c1535088ae25d88c63337b052f7299b753cf6188a59cbc55158",
+  "raw_bytes": 757646,
+  "gap": {
+    "at_ms": 1794855610698,
+    "detail": "noncontiguous_or_stale_public_trades_no_backfills",
+    "kind": "DATA_GAP",
+    "source": {
+      "active_armed_ms": null,
+      "batch_hash": "77cbd3162d8b0143665b5360f54793948617eead2561b4d5d4f2aedba256e51c",
+      "discontinuities": [],
+      "execution_gap": true,
+      "fetch_monotonic_ms": 0,
+      "fetch_ms": 0,
+      "first_event_ms": 1794855604750,
+      "first_id": 3528342459,
+      "future_rows": 0,
+      "gap": true,
+      "history_contiguous": true,
+      "last_event_age_ms": 220,
+      "last_event_ms": 1794855610474,
+      "last_id": 3528342618,
+      "newest_age_ms": 220,
+      "oldest_age_ms": 5944,
+      "poll_interval_mono_ms": 5514,
+      "poll_interval_ms": 5515,
+      "poll_started_ms": 1794855610449,
+      "previous_cycle": {
+        "batch_finalize_ms": 8,
+        "batch_lock_wait_ms": 0,
+        "batch_processing_ms": 0,
+        "event_count": 4,
+        "idle_events_skipped": 4,
+        "poll_started_ms": 1794855604934,
+        "total_ms": 18
+      },
+      "quote_fetch_ms": 4,
+      "received_ms": 1794855610694,
+      "requested_after_id": 3528342458,
+      "rows": 160,
+      "stale_first_ms": 1794855604750,
+      "stale_last_ms": 1794855605518,
+      "stale_rows": 25,
+      "started_ms": 1794855610694,
+      "stream": {
+        "connected": true,
+        "duplicates": 0,
+        "highwater": 458,
+        "last_fault": null,
+        "oldest_dequeued_wait_ms": 4261,
+        "queued": 0,
+        "read_timeouts": 0,
+        "reason": null,
+        "received": 47762,
+        "reconnects": 1
+      },
+      "symbol": "BTCUSDT",
+      "trade_validation_ms": 2,
+      "transport": "websocket"
+    },
+    "symbol": "BTCUSDT"
+  },
+  "cycle_before_gap": {
+    "started_ns": 1132583075200394,
+    "ended_ns": 1132588575479650,
+    "main_thread_cpu_ns": 701842711,
+    "resource_before": {
+      "sample_ns": 1132583074436994,
+      "wall_ms": 1794855604932,
+      "process_cpu_ns": 689832970456,
+      "main_rusage": {
+        "ru_inblock": 11392,
+        "ru_oublock": 867304,
+        "ru_nvcsw": 105940,
+        "ru_nivcsw": 24132,
+        "ru_minflt": 6271,
+        "ru_majflt": 4
+      },
+      "cgroup_cpu": {
+        "usage_usec": 689830128,
+        "user_usec": 594005276,
+        "system_usec": 95824851,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 23888,
+        "nr_throttled": 8254,
+        "throttled_usec": 872348783,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "process_io": {
+        "rchar": 3538034948,
+        "wchar": 511764287,
+        "syscr": 1018516,
+        "syscw": 152282,
+        "read_bytes": 26939392,
+        "write_bytes": 556503040,
+        "cancelled_write_bytes": 0
+      },
+      "main_schedstat": [
+        621544326495,
+        678995753859,
+        130072
+      ],
+      "psi_cpu": "some avg10=84.33 avg60=58.42 avg300=49.92 total=62868120309\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+      "psi_io": "some avg10=19.65 avg60=7.58 avg300=4.09 total=15870135481\nfull avg10=0.94 avg60=1.04 avg300=1.03 total=12616016961",
+      "host_cpu_ticks": [
+        4776767,
+        705153,
+        1408751,
+        214543605,
+        2594406,
+        0,
+        431669,
+        37055,
+        0,
+        0
+      ]
+    },
+    "resource_after": {
+      "sample_ns": 1132588575485330,
+      "wall_ms": 1794855610433,
+      "process_cpu_ns": 691264696326,
+      "main_rusage": {
+        "ru_inblock": 11464,
+        "ru_oublock": 867432,
+        "ru_nvcsw": 106011,
+        "ru_nivcsw": 24206,
+        "ru_minflt": 6271,
+        "ru_majflt": 4
+      },
+      "cgroup_cpu": {
+        "usage_usec": 691261854,
+        "user_usec": 595222327,
+        "system_usec": 96039526,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 23943,
+        "nr_throttled": 8292,
+        "throttled_usec": 876803850,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "process_io": {
+        "rchar": 3539665478,
+        "wchar": 511825313,
+        "syscr": 1019041,
+        "syscw": 152301,
+        "read_bytes": 26976256,
+        "write_bytes": 556568576,
+        "cancelled_write_bytes": 0
+      },
+      "main_schedstat": [
+        622246938458,
+        682542878392,
+        130217
+      ],
+      "psi_cpu": "some avg10=75.32 avg60=59.01 avg300=50.22 total=62871779330\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+      "psi_io": "some avg10=28.52 avg60=10.57 avg300=4.80 total=15872139794\nfull avg10=2.15 avg60=1.29 avg300=1.08 total=12616254487",
+      "host_cpu_ticks": [
+        4776858,
+        705165,
+        1408764,
+        214543607,
+        2594573,
+        0,
+        431675,
+        37056,
+        0,
+        0
+      ]
+    },
+    "writer_previous": {
+      "status": "ok",
+      "wall_ns": 641561371,
+      "thread_cpu_ns": 123349095,
+      "at_ms": 1794855600689
+    },
+    "local_backup": {
+      "state": "complete",
+      "requested_ms": 1794853219710,
+      "completed_ms": 1794853224953,
+      "wall_ns": 5242116970,
+      "file": "1794853219710.sqlite",
+      "events": 24,
+      "bytes": 25522176,
+      "source_readonly": true,
+      "restored_balanced": true,
+      "progress": {
+        "source_journal": "wal",
+        "steps": 195,
+        "restarts": 0,
+        "remaining": 0,
+        "total": 6231
+      }
+    },
+    "transport": {
+      "BTCUSDT": {
+        "queued": 141,
+        "received": 47743,
+        "last_id": 3528342599,
+        "fault": false,
+        "reason": null,
+        "oldest_queue_wait_ns": 4001156139,
+        "dequeued_batch": {
+          "requested_after_id": 3528342454,
+          "first_id": 3528342455,
+          "last_id": 3528342458,
+          "rows": 4,
+          "first_event_ms": 1794855603570,
+          "last_event_ms": 1794855604583,
+          "oldest_age_ms": 1373,
+          "newest_age_ms": 360,
+          "batch_processing_ms": 0,
+          "batch_lock_wait_ms": 0,
+          "stale_rows": 0,
+          "oldest_dequeued_wait_ms": 509
+        }
+      }
+    },
+    "phases": {
+      "sql_begin": {
+        "calls": 2,
+        "wall_ns": 76430,
+        "thread_cpu_ns": 78139,
+        "max_wall_ns": 45950
+      },
+      "sql_select": {
+        "calls": 165,
+        "wall_ns": 3284137,
+        "thread_cpu_ns": 2259715,
+        "max_wall_ns": 1181820
+      },
+      "sql_step": {
+        "calls": 617,
+        "wall_ns": 528345950,
+        "thread_cpu_ns": 7112534,
+        "max_wall_ns": 250939756
+      },
+      "ws_recv_market": {
+        "calls": 148,
+        "wall_ns": 5758059542,
+        "thread_cpu_ns": 7614606,
+        "max_wall_ns": 1755161323
+      },
+      "ws_parse_market": {
+        "calls": 148,
+        "wall_ns": 2534221,
+        "thread_cpu_ns": 2366701,
+        "max_wall_ns": 230340
+      },
+      "ws_dispatch_market": {
+        "calls": 148,
+        "wall_ns": 2751442,
+        "thread_cpu_ns": 2772687,
+        "max_wall_ns": 129020
+      },
+      "sql_savepoint": {
+        "calls": 8,
+        "wall_ns": 52331,
+        "thread_cpu_ns": 55197,
+        "max_wall_ns": 9220
+      },
+      "sql_insert": {
+        "calls": 9,
+        "wall_ns": 243529,
+        "thread_cpu_ns": 246873,
+        "max_wall_ns": 80650
+      },
+      "sql_release": {
+        "calls": 8,
+        "wall_ns": 81280,
+        "thread_cpu_ns": 85380,
+        "max_wall_ns": 33869
+      },
+      "sql_fetch": {
+        "calls": 116,
+        "wall_ns": 2829189,
+        "thread_cpu_ns": 907221,
+        "max_wall_ns": 2044080
+      },
+      "trade_dequeue_parse": {
+        "calls": 1,
+        "wall_ns": 223350,
+        "thread_cpu_ns": 224660,
+        "max_wall_ns": 223350
+      },
+      "trade_batch_finance": {
+        "calls": 1,
+        "wall_ns": 9040630,
+        "thread_cpu_ns": 1044711,
+        "max_wall_ns": 9040630
+      },
+      "ws_recv_book": {
+        "calls": 52,
+        "wall_ns": 5479891757,
+        "thread_cpu_ns": 6189594,
+        "max_wall_ns": 2253371585
+      },
+      "ws_parse_book": {
+        "calls": 52,
+        "wall_ns": 1338360,
+        "thread_cpu_ns": 1366684,
+        "max_wall_ns": 68020
+      },
+      "ws_dispatch_book": {
+        "calls": 52,
+        "wall_ns": 7198572,
+        "thread_cpu_ns": 7123309,
+        "max_wall_ns": 344840
+      },
+      "sql_pragma": {
+        "calls": 3,
+        "wall_ns": 267370,
+        "thread_cpu_ns": 270330,
+        "max_wall_ns": 92230
+      },
+      "book_verify": {
+        "calls": 3,
+        "wall_ns": 1527973685,
+        "thread_cpu_ns": 238151958,
+        "max_wall_ns": 1501828817
+      },
+      "http_total": {
+        "calls": 1,
+        "wall_ns": 7507284295,
+        "thread_cpu_ns": 862061724,
+        "max_wall_ns": 7507284295
+      },
+      "book_snapshot": {
+        "calls": 2,
+        "wall_ns": 4738008527,
+        "thread_cpu_ns": 683688541,
+        "max_wall_ns": 3990829139
+      },
+      "sql_commit": {
+        "calls": 2,
+        "wall_ns": 235967657,
+        "thread_cpu_ns": 1801251,
+        "max_wall_ns": 235941997
+      },
+      "main_poller": {
+        "calls": 1,
+        "wall_ns": 4504935772,
+        "thread_cpu_ns": 468455526,
+        "max_wall_ns": 4504935772
+      },
+      "main_ingest": {
+        "calls": 1,
+        "wall_ns": 17850,
+        "thread_cpu_ns": 18331,
+        "max_wall_ns": 17850
+      },
+      "main_snapshot": {
+        "calls": 1,
+        "wall_ns": 747281378,
+        "thread_cpu_ns": 231473873,
+        "max_wall_ns": 747281378
+      },
+      "main_publish": {
+        "calls": 1,
+        "wall_ns": 10000210,
+        "thread_cpu_ns": 1625072,
+        "max_wall_ns": 10000210
+      },
+      "main_sleep": {
+        "calls": 1,
+        "wall_ns": 237788106,
+        "thread_cpu_ns": 24091,
+        "max_wall_ns": 237788106
+      }
+    },
+    "wall_ns": 5500279256,
+    "capture_wall_ns": 951500,
+    "capture_thread_cpu_ns": 894301
+  },
+  "trigger_cycle": {
+    "started_ns": 1132588576495410,
+    "ended_ns": 1132590073561983,
+    "main_thread_cpu_ns": 263513918,
+    "resource_before": {
+      "sample_ns": 1132588575485330,
+      "wall_ms": 1794855610433,
+      "process_cpu_ns": 691264696326,
+      "main_rusage": {
+        "ru_inblock": 11464,
+        "ru_oublock": 867432,
+        "ru_nvcsw": 106011,
+        "ru_nivcsw": 24206,
+        "ru_minflt": 6271,
+        "ru_majflt": 4
+      },
+      "cgroup_cpu": {
+        "usage_usec": 691261854,
+        "user_usec": 595222327,
+        "system_usec": 96039526,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 23943,
+        "nr_throttled": 8292,
+        "throttled_usec": 876803850,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "process_io": {
+        "rchar": 3539665478,
+        "wchar": 511825313,
+        "syscr": 1019041,
+        "syscw": 152301,
+        "read_bytes": 26976256,
+        "write_bytes": 556568576,
+        "cancelled_write_bytes": 0
+      },
+      "main_schedstat": [
+        622246938458,
+        682542878392,
+        130217
+      ],
+      "psi_cpu": "some avg10=75.32 avg60=59.01 avg300=50.22 total=62871779330\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+      "psi_io": "some avg10=28.52 avg60=10.57 avg300=4.80 total=15872139794\nfull avg10=2.15 avg60=1.29 avg300=1.08 total=12616254487",
+      "host_cpu_ticks": [
+        4776858,
+        705165,
+        1408764,
+        214543607,
+        2594573,
+        0,
+        431675,
+        37056,
+        0,
+        0
+      ]
+    },
+    "resource_after": {
+      "sample_ns": 1132590073566903,
+      "wall_ms": 1794855611931,
+      "process_cpu_ns": 691547579717,
+      "main_rusage": {
+        "ru_inblock": 11592,
+        "ru_oublock": 867640,
+        "ru_nvcsw": 106043,
+        "ru_nivcsw": 24258,
+        "ru_minflt": 6271,
+        "ru_majflt": 4
+      },
+      "cgroup_cpu": {
+        "usage_usec": 691545205,
+        "user_usec": 595462511,
+        "system_usec": 96082694,
+        "nice_usec": 0,
+        "core_sched.force_idle_usec": 0,
+        "nr_periods": 23958,
+        "nr_throttled": 8297,
+        "throttled_usec": 877800226,
+        "nr_bursts": 0,
+        "burst_usec": 0
+      },
+      "process_io": {
+        "rchar": 3540074403,
+        "wchar": 512305462,
+        "syscr": 1019215,
+        "syscw": 152335,
+        "read_bytes": 27041792,
+        "write_bytes": 557056000,
+        "cancelled_write_bytes": 0
+      },
+      "main_schedstat": [
+        622511556056,
+        683515043256,
+        130302
+      ],
+      "psi_cpu": "some avg10=77.43 avg60=59.92 avg300=50.47 total=62873126659\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0",
+      "psi_io": "some avg10=26.07 avg60=10.72 avg300=4.87 total=15872439529\nfull avg10=1.76 avg60=1.25 avg300=1.08 total=12616260388",
+      "host_cpu_ticks": [
+        4776876,
+        705165,
+        1408772,
+        214543673,
+        2594607,
+        0,
+        431677,
+        37056,
+        0,
+        0
+      ]
+    },
+    "writer_previous": {
+      "status": "ok",
+      "wall_ns": 245362026,
+      "thread_cpu_ns": 8588509,
+      "at_ms": 1794855610680
+    },
+    "local_backup": {
+      "state": "complete",
+      "requested_ms": 1794853219710,
+      "completed_ms": 1794853224953,
+      "wall_ns": 5242116970,
+      "file": "1794853219710.sqlite",
+      "events": 24,
+      "bytes": 25522176,
+      "source_readonly": true,
+      "restored_balanced": true,
+      "progress": {
+        "source_journal": "wal",
+        "steps": 195,
+        "restarts": 0,
+        "remaining": 0,
+        "total": 6231
+      }
+    },
+    "transport": {
+      "BTCUSDT": {
+        "queued": 3,
+        "received": 47765,
+        "last_id": 3528342621,
+        "fault": false,
+        "reason": null,
+        "oldest_queue_wait_ns": 998481511,
+        "dequeued_batch": {
+          "requested_after_id": 3528342458,
+          "first_id": 3528342459,
+          "last_id": 3528342618,
+          "rows": 160,
+          "first_event_ms": 1794855604750,
+          "last_event_ms": 1794855610474,
+          "oldest_age_ms": 5944,
+          "newest_age_ms": 220,
+          "batch_processing_ms": 0,
+          "batch_lock_wait_ms": 0,
+          "stale_rows": 25,
+          "oldest_dequeued_wait_ms": 4261
+        }
+      }
+    },
+    "phases": {
+      "ws_recv_book": {
+        "calls": 15,
+        "wall_ns": 997847744,
+        "thread_cpu_ns": 1981571,
+        "max_wall_ns": 252687936
+      },
+      "ws_parse_book": {
+        "calls": 15,
+        "wall_ns": 600680,
+        "thread_cpu_ns": 606775,
+        "max_wall_ns": 82850
+      },
+      "ws_dispatch_book": {
+        "calls": 15,
+        "wall_ns": 2193731,
+        "thread_cpu_ns": 2209269,
+        "max_wall_ns": 224950
+      },
+      "sql_begin": {
+        "calls": 2,
+        "wall_ns": 13067390,
+        "thread_cpu_ns": 134619,
+        "max_wall_ns": 13033430
+      },
+      "sql_select": {
+        "calls": 172,
+        "wall_ns": 2081222,
+        "thread_cpu_ns": 2157827,
+        "max_wall_ns": 43460
+      },
+      "sql_step": {
+        "calls": 647,
+        "wall_ns": 966609356,
+        "thread_cpu_ns": 226125253,
+        "max_wall_ns": 722140857
+      },
+      "sql_savepoint": {
+        "calls": 10,
+        "wall_ns": 96822,
+        "thread_cpu_ns": 100739,
+        "max_wall_ns": 26311
+      },
+      "sql_insert": {
+        "calls": 13,
+        "wall_ns": 431959,
+        "thread_cpu_ns": 440873,
+        "max_wall_ns": 66550
+      },
+      "sql_release": {
+        "calls": 10,
+        "wall_ns": 151588,
+        "thread_cpu_ns": 108821,
+        "max_wall_ns": 67800
+      },
+      "sql_fetch": {
+        "calls": 120,
+        "wall_ns": 920988,
+        "thread_cpu_ns": 909512,
+        "max_wall_ns": 113780
+      },
+      "ws_recv_market": {
+        "calls": 23,
+        "wall_ns": 1495432103,
+        "thread_cpu_ns": 1886567,
+        "max_wall_ns": 749881535
+      },
+      "ws_parse_market": {
+        "calls": 23,
+        "wall_ns": 597560,
+        "thread_cpu_ns": 503304,
+        "max_wall_ns": 143830
+      },
+      "ws_dispatch_market": {
+        "calls": 23,
+        "wall_ns": 617330,
+        "thread_cpu_ns": 621377,
+        "max_wall_ns": 85520
+      },
+      "trade_dequeue_parse": {
+        "calls": 2,
+        "wall_ns": 3077030,
+        "thread_cpu_ns": 3033601,
+        "max_wall_ns": 2980950
+      },
+      "trade_batch_finance": {
+        "calls": 1,
+        "wall_ns": 1205850,
+        "thread_cpu_ns": 1205991,
+        "max_wall_ns": 1205850
+      },
+      "sql_pragma": {
+        "calls": 3,
+        "wall_ns": 306069,
+        "thread_cpu_ns": 227239,
+        "max_wall_ns": 178940
+      },
+      "book_verify": {
+        "calls": 3,
+        "wall_ns": 740844826,
+        "thread_cpu_ns": 234541853,
+        "max_wall_ns": 727789776
+      },
+      "book_snapshot": {
+        "calls": 2,
+        "wall_ns": 961309423,
+        "thread_cpu_ns": 237912197,
+        "max_wall_ns": 731999517
+      },
+      "sql_commit": {
+        "calls": 2,
+        "wall_ns": 13494181,
+        "thread_cpu_ns": 1200610,
+        "max_wall_ns": 13453410
+      },
+      "main_poller": {
+        "calls": 1,
+        "wall_ns": 520974971,
+        "thread_cpu_ns": 32416096,
+        "max_wall_ns": 520974971
+      },
+      "main_ingest": {
+        "calls": 1,
+        "wall_ns": 21029,
+        "thread_cpu_ns": 21450,
+        "max_wall_ns": 21029
+      },
+      "main_snapshot": {
+        "calls": 1,
+        "wall_ns": 732091066,
+        "thread_cpu_ns": 228779850,
+        "max_wall_ns": 732091066
+      },
+      "main_publish": {
+        "calls": 1,
+        "wall_ns": 7897950,
+        "thread_cpu_ns": 1970481,
+        "max_wall_ns": 7897950
+      },
+      "main_sleep": {
+        "calls": 1,
+        "wall_ns": 235774076,
+        "thread_cpu_ns": 31760,
+        "max_wall_ns": 235774076
+      }
+    },
+    "wall_ns": 1497066573,
+    "capture_wall_ns": 1004400,
+    "capture_thread_cpu_ns": 713421
+  },
+  "deltas": {
+    "sample_ms": 5501.048336,
+    "main_schedstat": [
+      702611963,
+      3547124533,
+      145
+    ],
+    "cgroup_cpu": {
+      "usage_usec": 1431726,
+      "user_usec": 1217051,
+      "system_usec": 214675,
+      "nice_usec": 0,
+      "core_sched.force_idle_usec": 0,
+      "nr_periods": 55,
+      "nr_throttled": 38,
+      "throttled_usec": 4455067,
+      "nr_bursts": 0,
+      "burst_usec": 0
+    },
+    "process_io": {
+      "rchar": 1630530,
+      "wchar": 61026,
+      "syscr": 525,
+      "syscw": 19,
+      "read_bytes": 36864,
+      "write_bytes": 65536,
+      "cancelled_write_bytes": 0
+    },
+    "main_rusage": {
+      "ru_inblock": 72,
+      "ru_oublock": 128,
+      "ru_nvcsw": 71,
+      "ru_nivcsw": 74,
+      "ru_minflt": 0,
+      "ru_majflt": 0
+    }
+  },
+  "journal": {
+    "journal": {
+      "ai-bracket-paper.service": [],
+      "adaptive-ai-regular.service": [
+        {
+          "time_us": "1794855603946662",
+          "message": "{\"extra_local\": {\"ETHUSDT\": {\"gpt_called\": false, \"status\": \"waiting_for_mature_closed_bar\"}, \"SOLUSDT\": {\"gpt_called\": false, \"status\": \"waiting_for_mature_closed_bar\"}}, \"status\": \"waiting_for_mature_closed_bar\"}"
+        },
+        {
+          "time_us": "1794855608952982",
+          "message": "adaptive-ai-regular.service: Deactivated successfully."
+        },
+        {
+          "time_us": "1794855608953457",
+          "message": "Finished adaptive-ai-regular.service - Budget-limited adaptive AI shadow."
+        },
+        {
+          "time_us": "1794855608953557",
+          "message": "adaptive-ai-regular.service: Consumed 5.221s CPU time."
+        },
+        {
+          "time_us": "1794855620452680",
+          "message": "Starting adaptive-ai-regular.service - Budget-limited adaptive AI shadow..."
+        }
+      ],
+      "adaptive-ai-regular-backup.service": [],
+      "tradingbot-watchdog.service": [
+        {
+          "time_us": "1794855581951380",
+          "message": "Starting tradingbot-watchdog.service - TradingBot paper health and backup watchdog..."
+        },
+        {
+          "time_us": "1794855586465886",
+          "message": "Watchdog pass complete: {'problems': 0, 'new_messages': 0}"
+        },
+        {
+          "time_us": "1794855586704399",
+          "message": "tradingbot-watchdog.service: Deactivated successfully."
+        },
+        {
+          "time_us": "1794855586705821",
+          "message": "Finished tradingbot-watchdog.service - TradingBot paper health and backup watchdog."
+        },
+        {
+          "time_us": "1794855586929453",
+          "message": "tradingbot-watchdog.service: Consumed 2.470s CPU time."
+        }
+      ],
+      "tradingbot.service": []
+    },
+    "resources": "MemoryCurrent=57733120\nMemoryPeak=93913088\nCPUUsageNSec=777055944000\nCPUQuotaPerSecUSec=500ms\n",
+    "backupfiles": [
+      "/var/lib/ai-bracket-study/backups/1794853219710.sqlite"
+    ]
+  },
+  "financial": {
+    "counts": {
+      "ledger_events": 24,
+      "bracket_plans": 9,
+      "bracket_fills": 4,
+      "bracket_funding": 1
+    },
+    "active": [],
+    "reconcile": {
+      "balanced": true,
+      "invalid_events": [],
+      "negative_accounts": [],
+      "foreign_key_error": false,
+      "totals": {
+        "USDT": "0.0000000000000000000",
+        "BTC": "0"
+      }
+    },
+    "history_sha256": "3507d3cbeb12cde1c3c4207ba5229b65712d736c79863151bcbd7d4a20d3e8c6",
+    "backup": {
+      "captured_ms": 1794853728710,
+      "chunks": 4,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1794853707445-0020b27fda4e87468c3c0495079ca750e738bc96740dd32b36cfe2c29602426f.cred",
+      "sha256": "0020b27fda4e87468c3c0495079ca750e738bc96740dd32b36cfe2c29602426f",
+      "sqlite_sha256": "accbd6a83b5f4b4a7580f41cbd9a8149034cab36a876ed6a45c9c0e85006fcf6",
+      "summary": {
+        "balances": {
+          "free": "1000.3090960078653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 24,
+        "fills": 4,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64518.6",
+            "64692.7",
+            "63291.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ]
+        ]
+      }
+    },
+    "services": {
+      "ai-bracket-paper.service": "MainPID=518561\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-d3eb884-paper\nActiveState=active\n",
+      "ai-bracket-analyst.service": "MainPID=0\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-74f77d0-analyst\nActiveState=inactive\n",
+      "ai-bracket-analyst.timer": "NextElapseUSecRealtime=Mon 2026-11-16 20:02:00 UTC\nActiveState=active\n"
+    },
+    "paper_processes": 1,
+    "telegram_pollers": 1
+  },
+  "raw_location": "D:\\Documents\\Codex\\stream-work\\phase2300-raw.json",
+  "tests": {
+    "primary": {
+      "root": "/tmp/ai-slow-span-5jukm2_3",
+      "returncode": 1,
+      "output": "======================================================================\nERROR: test_installed_client_native_text_decode_rejects_invalid_utf8 (tests.test_ai_phase_probe.InstrumentedProtectionTests.test_installed_client_native_text_decode_rejects_invalid_utf8)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/ai-slow-span-5jukm2_3/tests/test_ai_quote_stream.py\", line 233, in test_installed_client_native_text_decode_rejects_invalid_utf8\n    import websocket\nModuleNotFoundError: No module named 'websocket'\n\n======================================================================\nERROR: test_installed_client_native_text_decode_rejects_invalid_utf8 (tests.test_ai_quote_stream.QuoteStreamTests.test_installed_client_native_text_decode_rejects_invalid_utf8)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/ai-slow-span-5jukm2_3/tests/test_ai_quote_stream.py\", line 233, in test_installed_client_native_text_decode_rejects_invalid_utf8\n    import websocket\nModuleNotFoundError: No module named 'websocket'\n\n----------------------------------------------------------------------\nRan 57 tests in 43.687s\n\nFAILED (errors=2)\n"
+    },
+    "dependency_retry_only": {
+      "root": "/tmp/ai-slow-span-5jukm2_3",
+      "returncode": 0,
+      "output": "----------------------------------------------------------------------\nRan 2 tests in 0.502s\n\nOK\n",
+      "sampler_cost_20": [
+        {
+          "wall_ns": 510360,
+          "cpu_ns": 509580
+        },
+        {
+          "wall_ns": 140440,
+          "cpu_ns": 141781
+        },
+        {
+          "wall_ns": 115090,
+          "cpu_ns": 115749
+        },
+        {
+          "wall_ns": 79130,
+          "cpu_ns": 79621
+        },
+        {
+          "wall_ns": 159800,
+          "cpu_ns": 160349
+        },
+        {
+          "wall_ns": 81160,
+          "cpu_ns": 81669
+        },
+        {
+          "wall_ns": 75540,
+          "cpu_ns": 76000
+        },
+        {
+          "wall_ns": 77360,
+          "cpu_ns": 77810
+        },
+        {
+          "wall_ns": 70990,
+          "cpu_ns": 71500
+        },
+        {
+          "wall_ns": 70440,
+          "cpu_ns": 70860
+        },
+        {
+          "wall_ns": 70430,
+          "cpu_ns": 70791
+        },
+        {
+          "wall_ns": 69160,
+          "cpu_ns": 69610
+        },
+        {
+          "wall_ns": 109220,
+          "cpu_ns": 110070
+        },
+        {
+          "wall_ns": 108700,
+          "cpu_ns": 109330
+        },
+        {
+          "wall_ns": 74170,
+          "cpu_ns": 74600
+        },
+        {
+          "wall_ns": 71880,
+          "cpu_ns": 72300
+        },
+        {
+          "wall_ns": 68870,
+          "cpu_ns": 69190
+        },
+        {
+          "wall_ns": 79210,
+          "cpu_ns": 79780
+        },
+        {
+          "wall_ns": 69010,
+          "cpu_ns": 69400
+        },
+        {
+          "wall_ns": 73590,
+          "cpu_ns": 74090
+        }
+      ]
+    }
+  }
+}
