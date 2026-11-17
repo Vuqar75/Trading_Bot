@@ -1,5 +1,13 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-17 — exact balance change explained, no accounting correction
+
+[Report with four exact event IDs/postings](PAPER_BALANCE_RECONCILIATION_20261117.md), [saved evidence](research/PAPER_BALANCE_RECONCILIATION_20261117.json). Read-only ledger+completed23:16 previous-day archive comparison: all24old events/4fills/9plans and funding unchanged, both ledgers balanced. The28-event ledger includes one NEW pre-install SHORT plan48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48,0.001BTC. Reserve17Nov00:02:45.164Baku; entry00:03:19.301 at65048.2, IDtrade:BTCUSDT:3528394331:entry; SL exit00:27:29.875 at65259.9948; unused funding buffer0.13660122 returned00:27:45.975. Both financial times precede installation14:44. No install debit/reset.
+
+Exact:1000.3090960078653898110 - gross loss0.2117948 - entry fee0.0325241 - exit fee0.0326299974 + actual funding0 = **1000.0321471104653898110USDT**. Delta **-0.2769488974000000000**. Fees total0.0651540974. Exitask65194.80*1.001=65259.9948; modeled impact0.0651948 is already in gross, not charged twice. Saved fee5bps each side. FUNDING_FINALIZED is an unused-reserve return, not paid funding.
+
+Cash postings: -65.21732532 reserve,0additional free at entry,+64.803775202600 exit,+0.13660122 buffer release. Reserved/margin/buffer deltas0; old history exactly preserved, no duplicates/unexplained amount/accounting error. Runtime/services/budget/risk untouched; no model call, trade, automation or reinstall. No fix warranted. Full literal IDs, counteraccounts and running exact balances are in the linked report/evidence.
+
 ## 2026-11-17 — b36103c normal paper runtime installed; finite release complete
 
 [Installation report](PAPER_EXECUTION_INSTALL_20261117.md), [VM evidence](research/PAPER_EXECUTION_INSTALL_20261117.json). Fetched/fast-forwarded cleanD: checkout to **b36103c9e582caa4813d2d0b9c69d1f4c7019743**, preserving history/newer server events. **Installed14:44:44.868Baku**, first confirmed-ready14:44:59.390, PID548045, `/opt/tradingbot-ai-brackets-b36103c-paper`. Only research/ai_limit_runtime.py changed, exact manifestSHAbe52d3ccbd291295bd7beaa104a0dda9d3d8e3f38b2939b2276ee5fed16f06e2. Other files/modes preserved; analyst74f77d0 and Telegram UIc96ad52 not replaced/restarted.

@@ -1,0 +1,1943 @@
+{
+  "checked_ms": 1794915185968,
+  "source_raw_sha256": "c59d8b33042ed358538fc70be60e3e676d0d8cbdbf6c4f118ef8e40e9e8e275b",
+  "source_raw_path": "D:\\Documents\\Codex\\stream-work\\paper-balance-ledger-audit.json",
+  "baseline_archive": {
+    "path": "/var/lib/ai-bracket-study/backups/1794856562431.sqlite",
+    "sqlite_sha256": "5a5bb9cdeef7d5bede10d9587bb2634e1fbd487ef4b1f85a6fa5b35e3afd0178",
+    "balances": {
+      "free": "1000.3090960078653898110",
+      "reserved": "0E-8",
+      "margin": "0.0000",
+      "funding_buffer": "0E-8",
+      "fees": "0.133964705000"
+    },
+    "event_count": 24,
+    "events": [
+      {
+        "rowid": 1,
+        "id": "bracket:opening",
+        "kind": "RESEARCH_OPENING",
+        "created": 1794555078.119,
+        "fingerprint": "0d218656ec3a1460d550bd61bf20ded1d503bd059de92ce68fe080fd5e94de0c",
+        "details": {
+          "version": "ai-limit-brackets-v1",
+          "virtual_only": true
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "bracket:opening",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "1000"
+          },
+          {
+            "event_id": "bracket:opening",
+            "ordinal": 1,
+            "account": "external:research_capital",
+            "asset": "USDT",
+            "amount": "-1000"
+          }
+        ]
+      },
+      {
+        "rowid": 2,
+        "id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794555783.099,
+        "fingerprint": "c6730dd8ed7ea92f72f8d32a777d1dfcd06f52a480180dd7769de5d32b448d29",
+        "details": {
+          "plan_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-69.02479908"
+          },
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "69.02479908"
+          }
+        ]
+      },
+      {
+        "rowid": 3,
+        "id": "trade:BTCUSDT:3519679304:entry",
+        "kind": "PAPER_ENTRY",
+        "created": 1794555840.37,
+        "fingerprint": "cd21f65b653a6d1168e711bc0b4ba37049afa76787a36e238bc53ebd9336aa0e",
+        "details": {
+          "plan_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "price": "68845.8",
+          "qty": "0.001",
+          "reason": "LIMIT_TRADE_THROUGH",
+          "stamp": 1794555840370
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-69.02479908"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 1,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "68.8458"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.03442290"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 3,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "0.14457618"
+          }
+        ]
+      },
+      {
+        "rowid": 4,
+        "id": "funding:BTCUSDT:1794556800000:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+        "kind": "FUNDING",
+        "created": 1794556827.886,
+        "fingerprint": "d55f92ccade1f11c31b3ff62b52213567b1b8a575099369c3434b6a4e6fa89fc",
+        "details": {
+          "event_ms": 1794556800000,
+          "mark": "68560.06814093",
+          "rate": "0.00001270",
+          "symbol": "BTCUSDT"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "funding:BTCUSDT:1794556800000:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "0.0008707128653898110"
+          },
+          {
+            "event_id": "funding:BTCUSDT:1794556800000:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "ordinal": 1,
+            "account": "external:funding",
+            "asset": "USDT",
+            "amount": "-0.0008707128653898110"
+          }
+        ]
+      },
+      {
+        "rowid": 5,
+        "id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+        "kind": "PAPER_EXIT",
+        "created": 1794557642.288,
+        "fingerprint": "267a6adf38e57c8b469355c1fef0c71544d39220eb31aac93b82726228f697f9",
+        "details": {
+          "plan_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "price": "68768.8001",
+          "qty": "0.001",
+          "reason": "TIME",
+          "stamp": 1794557642288
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 0,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "-68.8458"
+          },
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "68.888415499950"
+          },
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.034384400050"
+          },
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 3,
+            "account": "external:price_pnl",
+            "asset": "USDT",
+            "amount": "-0.07699990"
+          }
+        ]
+      },
+      {
+        "rowid": 6,
+        "id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:release-buffer",
+        "kind": "FUNDING_FINALIZED",
+        "created": 1794557658.319,
+        "fingerprint": "ce3f29be48cae85a22f648f2eb1c58938ed89b5b19bdac63e52c8b96a2595198",
+        "details": {
+          "through_ms": 1794557655172
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:release-buffer",
+            "ordinal": 0,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "-0.14457618"
+          },
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:release-buffer",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "0.14457618"
+          }
+        ]
+      },
+      {
+        "rowid": 7,
+        "id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794571357.418,
+        "fingerprint": "45ecc0d63b2dcaa74f60f7507ee1ca6edf82cef44e5a1cb3ce46090fdb45ff78",
+        "details": {
+          "plan_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 8,
+        "id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794571360.266,
+        "fingerprint": "9bd223d605dedffb291d86e2fbaf06f1c03939c805ac97ec6ef4336f35a5f7b2",
+        "details": {
+          "reason": "TRADE_GAP"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 9,
+        "id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794600150.604,
+        "fingerprint": "498b18620ff42a39b65b0bd42fa36206363ef1a88c89a0fb77e85d1be818aac1",
+        "details": {
+          "plan_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 10,
+        "id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794600255.442,
+        "fingerprint": "9bd223d605dedffb291d86e2fbaf06f1c03939c805ac97ec6ef4336f35a5f7b2",
+        "details": {
+          "reason": "TRADE_GAP"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 11,
+        "id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794729759.981,
+        "fingerprint": "6cf69f6523217f6f13c54a7c3bb94e4b011d0e9c2502547471a58ea302ddf6e9",
+        "details": {
+          "plan_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-64.30786686"
+          },
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "64.30786686"
+          }
+        ]
+      },
+      {
+        "rowid": 12,
+        "id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794729761.448,
+        "fingerprint": "641da28de9c843da2faeda096f7f0adb8f4a9c4ac6d20098e6c4558769804c21",
+        "details": {
+          "reason": "ENTRY_EVIDENCE_STALE"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-64.30786686"
+          },
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "64.30786686"
+          }
+        ]
+      },
+      {
+        "rowid": 13,
+        "id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794744150.924,
+        "fingerprint": "92ee65794baef8e217260cc0c05ea3a57f67602b37967fc2c79284a9b969cd42",
+        "details": {
+          "plan_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.735469"
+          },
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.735469"
+          }
+        ]
+      },
+      {
+        "rowid": 14,
+        "id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794744232.258,
+        "fingerprint": "1ed1cf6787f6eb17fc2df4f126560138a1a74f316b7219e75f3304036b9c66e0",
+        "details": {
+          "reason": "TRADE_GAP"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.735469"
+          },
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.735469"
+          }
+        ]
+      },
+      {
+        "rowid": 15,
+        "id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794772947.168,
+        "fingerprint": "6643f187ea2d5921b3a5ae73abfa42d2bd636c855610b3712051d01ccc8c035e",
+        "details": {
+          "plan_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.08488186"
+          },
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.08488186"
+          }
+        ]
+      },
+      {
+        "rowid": 16,
+        "id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794772987.227,
+        "fingerprint": "a65f6fca3fcea1b7f84630653d06129a697625f9c29bef76c4cf54be80048160",
+        "details": {
+          "reason": "ENTRY_EVIDENCE_STALE"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.08488186"
+          },
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.08488186"
+          }
+        ]
+      },
+      {
+        "rowid": 17,
+        "id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794787346.318,
+        "fingerprint": "c80c75af92a868d41f797fcbb3e20f11b17f473ff8df2ea5907571c4e6fdb8df",
+        "details": {
+          "plan_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.509884"
+          },
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.509884"
+          }
+        ]
+      },
+      {
+        "rowid": 18,
+        "id": "trade:BTCUSDT:3526676535:entry",
+        "kind": "PAPER_ENTRY",
+        "created": 1794787464.934,
+        "fingerprint": "a37ba61b538133888a2404a6b9699ffab96ae420f4087b4696b21eb6e8c8a7f4",
+        "details": {
+          "plan_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "price": "65340",
+          "qty": "0.001",
+          "reason": "LIMIT_TRADE_THROUGH",
+          "stamp": 1794787464934
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.5098840"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 1,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "65.340"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.0326700"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 3,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "0.1372140"
+          }
+        ]
+      },
+      {
+        "rowid": 19,
+        "id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+        "kind": "PAPER_EXIT",
+        "created": 1794790165.661,
+        "fingerprint": "5137a1c4ec83c14c0a886adea71e2200c57e85ac09939bf1a5f0d4f9f92136a4",
+        "details": {
+          "plan_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "price": "64974.8099",
+          "qty": "0.001",
+          "reason": "TIME",
+          "stamp": 1794790165661
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 0,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "-65.340"
+          },
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.672702695050"
+          },
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.032487404950"
+          },
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 3,
+            "account": "external:price_pnl",
+            "asset": "USDT",
+            "amount": "-0.36519010"
+          }
+        ]
+      },
+      {
+        "rowid": 20,
+        "id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:release-buffer",
+        "kind": "FUNDING_FINALIZED",
+        "created": 1794790166.278,
+        "fingerprint": "37134a3506841591a7e1bbc2d139146a12ffb52f1a4096fd32c86b0ec0c42a2f",
+        "details": {
+          "through_ms": 1794790165839
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:release-buffer",
+            "ordinal": 0,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "-0.137214"
+          },
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:release-buffer",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "0.137214"
+          }
+        ]
+      },
+      {
+        "rowid": 21,
+        "id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794801744.783,
+        "fingerprint": "cb506827801c56d00db2cb817151a8e5c57e94c5f114c4e3a3a03bf5efbac97b",
+        "details": {
+          "plan_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.37794184"
+          },
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.37794184"
+          }
+        ]
+      },
+      {
+        "rowid": 22,
+        "id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794802500.0,
+        "fingerprint": "0fba1461224afabf156eec4d600dd38149ca973113d9f6f8b78608f13b67ca78",
+        "details": {
+          "reason": "EXPIRED_OR_PAUSED"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.37794184"
+          },
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.37794184"
+          }
+        ]
+      },
+      {
+        "rowid": 23,
+        "id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794830547.309,
+        "fingerprint": "fb9108f439a6561a9150f605924e84155c510d432f48f2a5187d956f8074ecba",
+        "details": {
+          "plan_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-64.68634836"
+          },
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "64.68634836"
+          }
+        ]
+      },
+      {
+        "rowid": 24,
+        "id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794831300.021,
+        "fingerprint": "fec75c45a2a2e7cc6072982ff4b2f7af407470c8ecfc42e23b410e920e0a7ff3",
+        "details": {
+          "reason": "EXPIRED_OR_PAUSED"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-64.68634836"
+          },
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "64.68634836"
+          }
+        ]
+      }
+    ]
+  },
+  "live": {
+    "path": "/var/lib/ai-bracket-study/paper.sqlite",
+    "balances": {
+      "free": "1000.0321471104653898110",
+      "reserved": "0E-8",
+      "margin": "0.0000",
+      "funding_buffer": "0E-8",
+      "fees": "0.199118802400"
+    },
+    "events": [
+      {
+        "rowid": 1,
+        "id": "bracket:opening",
+        "kind": "RESEARCH_OPENING",
+        "created": 1794555078.119,
+        "fingerprint": "0d218656ec3a1460d550bd61bf20ded1d503bd059de92ce68fe080fd5e94de0c",
+        "details": {
+          "version": "ai-limit-brackets-v1",
+          "virtual_only": true
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "bracket:opening",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "1000"
+          },
+          {
+            "event_id": "bracket:opening",
+            "ordinal": 1,
+            "account": "external:research_capital",
+            "asset": "USDT",
+            "amount": "-1000"
+          }
+        ]
+      },
+      {
+        "rowid": 2,
+        "id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794555783.099,
+        "fingerprint": "c6730dd8ed7ea92f72f8d32a777d1dfcd06f52a480180dd7769de5d32b448d29",
+        "details": {
+          "plan_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-69.02479908"
+          },
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "69.02479908"
+          }
+        ]
+      },
+      {
+        "rowid": 3,
+        "id": "trade:BTCUSDT:3519679304:entry",
+        "kind": "PAPER_ENTRY",
+        "created": 1794555840.37,
+        "fingerprint": "cd21f65b653a6d1168e711bc0b4ba37049afa76787a36e238bc53ebd9336aa0e",
+        "details": {
+          "plan_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "price": "68845.8",
+          "qty": "0.001",
+          "reason": "LIMIT_TRADE_THROUGH",
+          "stamp": 1794555840370
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-69.02479908"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 1,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "68.8458"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.03442290"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3519679304:entry",
+            "ordinal": 3,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "0.14457618"
+          }
+        ]
+      },
+      {
+        "rowid": 4,
+        "id": "funding:BTCUSDT:1794556800000:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+        "kind": "FUNDING",
+        "created": 1794556827.886,
+        "fingerprint": "d55f92ccade1f11c31b3ff62b52213567b1b8a575099369c3434b6a4e6fa89fc",
+        "details": {
+          "event_ms": 1794556800000,
+          "mark": "68560.06814093",
+          "rate": "0.00001270",
+          "symbol": "BTCUSDT"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "funding:BTCUSDT:1794556800000:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "0.0008707128653898110"
+          },
+          {
+            "event_id": "funding:BTCUSDT:1794556800000:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "ordinal": 1,
+            "account": "external:funding",
+            "asset": "USDT",
+            "amount": "-0.0008707128653898110"
+          }
+        ]
+      },
+      {
+        "rowid": 5,
+        "id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+        "kind": "PAPER_EXIT",
+        "created": 1794557642.288,
+        "fingerprint": "267a6adf38e57c8b469355c1fef0c71544d39220eb31aac93b82726228f697f9",
+        "details": {
+          "plan_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "price": "68768.8001",
+          "qty": "0.001",
+          "reason": "TIME",
+          "stamp": 1794557642288
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 0,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "-68.8458"
+          },
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "68.888415499950"
+          },
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.034384400050"
+          },
+          {
+            "event_id": "market:06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:4bc4628b84a3d2ace2e3ab77a18923c18b64b7bc3e261fc2638d72b0199a34e8:0.001",
+            "ordinal": 3,
+            "account": "external:price_pnl",
+            "asset": "USDT",
+            "amount": "-0.07699990"
+          }
+        ]
+      },
+      {
+        "rowid": 6,
+        "id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:release-buffer",
+        "kind": "FUNDING_FINALIZED",
+        "created": 1794557658.319,
+        "fingerprint": "ce3f29be48cae85a22f648f2eb1c58938ed89b5b19bdac63e52c8b96a2595198",
+        "details": {
+          "through_ms": 1794557655172
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:release-buffer",
+            "ordinal": 0,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "-0.14457618"
+          },
+          {
+            "event_id": "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db:release-buffer",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "0.14457618"
+          }
+        ]
+      },
+      {
+        "rowid": 7,
+        "id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794571357.418,
+        "fingerprint": "45ecc0d63b2dcaa74f60f7507ee1ca6edf82cef44e5a1cb3ce46090fdb45ff78",
+        "details": {
+          "plan_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 8,
+        "id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794571360.266,
+        "fingerprint": "9bd223d605dedffb291d86e2fbaf06f1c03939c805ac97ec6ef4336f35a5f7b2",
+        "details": {
+          "reason": "TRADE_GAP"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 9,
+        "id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794600150.604,
+        "fingerprint": "498b18620ff42a39b65b0bd42fa36206363ef1a88c89a0fb77e85d1be818aac1",
+        "details": {
+          "plan_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 10,
+        "id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794600255.442,
+        "fingerprint": "9bd223d605dedffb291d86e2fbaf06f1c03939c805ac97ec6ef4336f35a5f7b2",
+        "details": {
+          "reason": "TRADE_GAP"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-69.64681212"
+          },
+          {
+            "event_id": "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "69.64681212"
+          }
+        ]
+      },
+      {
+        "rowid": 11,
+        "id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794729759.981,
+        "fingerprint": "6cf69f6523217f6f13c54a7c3bb94e4b011d0e9c2502547471a58ea302ddf6e9",
+        "details": {
+          "plan_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-64.30786686"
+          },
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "64.30786686"
+          }
+        ]
+      },
+      {
+        "rowid": 12,
+        "id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794729761.448,
+        "fingerprint": "641da28de9c843da2faeda096f7f0adb8f4a9c4ac6d20098e6c4558769804c21",
+        "details": {
+          "reason": "ENTRY_EVIDENCE_STALE"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-64.30786686"
+          },
+          {
+            "event_id": "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "64.30786686"
+          }
+        ]
+      },
+      {
+        "rowid": 13,
+        "id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794744150.924,
+        "fingerprint": "92ee65794baef8e217260cc0c05ea3a57f67602b37967fc2c79284a9b969cd42",
+        "details": {
+          "plan_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.735469"
+          },
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.735469"
+          }
+        ]
+      },
+      {
+        "rowid": 14,
+        "id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794744232.258,
+        "fingerprint": "1ed1cf6787f6eb17fc2df4f126560138a1a74f316b7219e75f3304036b9c66e0",
+        "details": {
+          "reason": "TRADE_GAP"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.735469"
+          },
+          {
+            "event_id": "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.735469"
+          }
+        ]
+      },
+      {
+        "rowid": 15,
+        "id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794772947.168,
+        "fingerprint": "6643f187ea2d5921b3a5ae73abfa42d2bd636c855610b3712051d01ccc8c035e",
+        "details": {
+          "plan_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.08488186"
+          },
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.08488186"
+          }
+        ]
+      },
+      {
+        "rowid": 16,
+        "id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794772987.227,
+        "fingerprint": "a65f6fca3fcea1b7f84630653d06129a697625f9c29bef76c4cf54be80048160",
+        "details": {
+          "reason": "ENTRY_EVIDENCE_STALE"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.08488186"
+          },
+          {
+            "event_id": "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.08488186"
+          }
+        ]
+      },
+      {
+        "rowid": 17,
+        "id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794787346.318,
+        "fingerprint": "c80c75af92a868d41f797fcbb3e20f11b17f473ff8df2ea5907571c4e6fdb8df",
+        "details": {
+          "plan_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.509884"
+          },
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.509884"
+          }
+        ]
+      },
+      {
+        "rowid": 18,
+        "id": "trade:BTCUSDT:3526676535:entry",
+        "kind": "PAPER_ENTRY",
+        "created": 1794787464.934,
+        "fingerprint": "a37ba61b538133888a2404a6b9699ffab96ae420f4087b4696b21eb6e8c8a7f4",
+        "details": {
+          "plan_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "price": "65340",
+          "qty": "0.001",
+          "reason": "LIMIT_TRADE_THROUGH",
+          "stamp": 1794787464934
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.5098840"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 1,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "65.340"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.0326700"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3526676535:entry",
+            "ordinal": 3,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "0.1372140"
+          }
+        ]
+      },
+      {
+        "rowid": 19,
+        "id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+        "kind": "PAPER_EXIT",
+        "created": 1794790165.661,
+        "fingerprint": "5137a1c4ec83c14c0a886adea71e2200c57e85ac09939bf1a5f0d4f9f92136a4",
+        "details": {
+          "plan_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "price": "64974.8099",
+          "qty": "0.001",
+          "reason": "TIME",
+          "stamp": 1794790165661
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 0,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "-65.340"
+          },
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.672702695050"
+          },
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.032487404950"
+          },
+          {
+            "event_id": "market:54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:7e2e3e6f3262f6a3af586a2bb8d2d3dc123286dca38ddc0e6ea96d4a73e1f2d1:0.001",
+            "ordinal": 3,
+            "account": "external:price_pnl",
+            "asset": "USDT",
+            "amount": "-0.36519010"
+          }
+        ]
+      },
+      {
+        "rowid": 20,
+        "id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:release-buffer",
+        "kind": "FUNDING_FINALIZED",
+        "created": 1794790166.278,
+        "fingerprint": "37134a3506841591a7e1bbc2d139146a12ffb52f1a4096fd32c86b0ec0c42a2f",
+        "details": {
+          "through_ms": 1794790165839
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:release-buffer",
+            "ordinal": 0,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "-0.137214"
+          },
+          {
+            "event_id": "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87:release-buffer",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "0.137214"
+          }
+        ]
+      },
+      {
+        "rowid": 21,
+        "id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794801744.783,
+        "fingerprint": "cb506827801c56d00db2cb817151a8e5c57e94c5f114c4e3a3a03bf5efbac97b",
+        "details": {
+          "plan_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.37794184"
+          },
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.37794184"
+          }
+        ]
+      },
+      {
+        "rowid": 22,
+        "id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794802500.0,
+        "fingerprint": "0fba1461224afabf156eec4d600dd38149ca973113d9f6f8b78608f13b67ca78",
+        "details": {
+          "reason": "EXPIRED_OR_PAUSED"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.37794184"
+          },
+          {
+            "event_id": "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "65.37794184"
+          }
+        ]
+      },
+      {
+        "rowid": 23,
+        "id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794830547.309,
+        "fingerprint": "fb9108f439a6561a9150f605924e84155c510d432f48f2a5187d956f8074ecba",
+        "details": {
+          "plan_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-64.68634836"
+          },
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "64.68634836"
+          }
+        ]
+      },
+      {
+        "rowid": 24,
+        "id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:cancel-entry",
+        "kind": "CANCEL_REMAINDER",
+        "created": 1794831300.021,
+        "fingerprint": "fec75c45a2a2e7cc6072982ff4b2f7af407470c8ecfc42e23b410e920e0a7ff3",
+        "details": {
+          "reason": "EXPIRED_OR_PAUSED"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:cancel-entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-64.68634836"
+          },
+          {
+            "event_id": "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f:cancel-entry",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "64.68634836"
+          }
+        ]
+      },
+      {
+        "rowid": 25,
+        "id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:reserve",
+        "kind": "LIMIT_RESERVE",
+        "created": 1794859365.164,
+        "fingerprint": "78879a9e26aa724c0d75126852e4f7e9dfb9732d9dce67a409538e09eaa31f92",
+        "details": {
+          "plan_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48"
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:reserve",
+            "ordinal": 0,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "-65.21732532"
+          },
+          {
+            "event_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:reserve",
+            "ordinal": 1,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "65.21732532"
+          }
+        ]
+      },
+      {
+        "rowid": 26,
+        "id": "trade:BTCUSDT:3528394331:entry",
+        "kind": "PAPER_ENTRY",
+        "created": 1794859399.301,
+        "fingerprint": "4cd8ea47936779d2df0cebdad71cfbd0b67a7f3188b10dfe2cd1d1c3fe703c53",
+        "details": {
+          "plan_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+          "price": "65048.2",
+          "qty": "0.001",
+          "reason": "LIMIT_TRADE_THROUGH",
+          "stamp": 1794859399301
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "trade:BTCUSDT:3528394331:entry",
+            "ordinal": 0,
+            "account": "ai_bracket:reserved",
+            "asset": "USDT",
+            "amount": "-65.21732532"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3528394331:entry",
+            "ordinal": 1,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "65.0482"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3528394331:entry",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.03252410"
+          },
+          {
+            "event_id": "trade:BTCUSDT:3528394331:entry",
+            "ordinal": 3,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "0.13660122"
+          }
+        ]
+      },
+      {
+        "rowid": 27,
+        "id": "market:48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8:0.001",
+        "kind": "PAPER_EXIT",
+        "created": 1794860849.875,
+        "fingerprint": "77573679e513505189791a8b3415852a0494eb19a091535c446ca5bc736465b2",
+        "details": {
+          "plan_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+          "price": "65259.9948",
+          "qty": "0.001",
+          "reason": "SL",
+          "stamp": 1794860849875
+        },
+        "posting_count": 4,
+        "postings": [
+          {
+            "event_id": "market:48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8:0.001",
+            "ordinal": 0,
+            "account": "ai_bracket:margin",
+            "asset": "USDT",
+            "amount": "-65.0482"
+          },
+          {
+            "event_id": "market:48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8:0.001",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "64.803775202600"
+          },
+          {
+            "event_id": "market:48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8:0.001",
+            "ordinal": 2,
+            "account": "ai_bracket:fees",
+            "asset": "USDT",
+            "amount": "0.032629997400"
+          },
+          {
+            "event_id": "market:48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8:0.001",
+            "ordinal": 3,
+            "account": "external:price_pnl",
+            "asset": "USDT",
+            "amount": "0.21179480"
+          }
+        ]
+      },
+      {
+        "rowid": 28,
+        "id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:release-buffer",
+        "kind": "FUNDING_FINALIZED",
+        "created": 1794860865.975,
+        "fingerprint": "ee754464fd8c63b292566b7de2f60f75a4e42ff4528b5e4d6037000701f900ca",
+        "details": {
+          "through_ms": 1794860865633
+        },
+        "posting_count": 2,
+        "postings": [
+          {
+            "event_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:release-buffer",
+            "ordinal": 0,
+            "account": "ai_bracket:funding_buffer",
+            "asset": "USDT",
+            "amount": "-0.13660122"
+          },
+          {
+            "event_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:release-buffer",
+            "ordinal": 1,
+            "account": "ai_bracket:free",
+            "asset": "USDT",
+            "amount": "0.13660122"
+          }
+        ]
+      }
+    ],
+    "fills": [
+      {
+        "id": "trade:BTCUSDT:3528394331:entry",
+        "plan_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+        "kind": "ENTRY",
+        "stamp": 1794859399301,
+        "qty": "0.001",
+        "price": "65048.2",
+        "fee": "0.0325241",
+        "reason": "LIMIT_TRADE_THROUGH"
+      },
+      {
+        "id": "market:48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8:0.001",
+        "plan_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+        "kind": "EXIT",
+        "stamp": 1794860849875,
+        "qty": "0.001",
+        "price": "65259.9948",
+        "fee": "0.0326299974",
+        "reason": "SL"
+      }
+    ],
+    "new_plan": {
+      "id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+      "parameters": {
+        "plan_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+        "symbol": "BTCUSDT",
+        "direction": "SHORT",
+        "quantity": "0.001",
+        "entry": "65048.2",
+        "stop": "65187.5",
+        "target": "64098.4",
+        "fee": "0.0005",
+        "funding_buffer_rate": "0.0021",
+        "stop_slippage": "0.001",
+        "hold_ms": 2700000,
+        "provenance": {
+          "kind": "budget_response",
+          "model": "gpt-6-luna",
+          "response_id": "bracket:01b68959db80304691dfa01960112374d8d7320399952ff68fd9ca7dd5b47e05"
+        }
+      },
+      "state": {
+        "armed_ms": 1794859365164,
+        "buffer": "0",
+        "close_reason": "SL",
+        "closed_ms": 1794860865975,
+        "fees": "0.0651540974",
+        "funding": "0",
+        "gross": "-0.2117948",
+        "last_fill_ms": 1794860849875,
+        "last_protective_execution": {
+          "observed_mono_ns": 1137828018354802,
+          "observed_ms": 1794860849875,
+          "price": "65259.9948",
+          "quantity": "0.001",
+          "quote": {
+            "ask": "65194.80",
+            "ask_qty": "2.896",
+            "bid": "65194.70",
+            "bid_qty": "4.586",
+            "event_ms": 1794860849002,
+            "id": "3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8",
+            "mark": "65185.70000000",
+            "received_ms": 1794860849830
+          },
+          "quote_age_ms": 873,
+          "quote_confirmed": true,
+          "reason": "SL",
+          "time_due_ms": 1794862099301
+        },
+        "open_qty": "0",
+        "opened_ms": 1794859399301,
+        "protection_trigger": {
+          "component": {
+            "event_ms": 1794860849200,
+            "kind": "book",
+            "raw": {
+              "E": 1794860849200,
+              "T": 1794860849199,
+              "U": 12136390181816,
+              "a": [
+                [
+                  "65194.80",
+                  "0.860"
+                ],
+                [
+                  "65194.90",
+                  "0.967"
+                ],
+                [
+                  "65195.00",
+                  "0.337"
+                ],
+                [
+                  "65195.10",
+                  "0.078"
+                ],
+                [
+                  "65195.20",
+                  "0.002"
+                ]
+              ],
+              "b": [
+                [
+                  "65194.70",
+                  "9.326"
+                ],
+                [
+                  "65194.60",
+                  "0.030"
+                ],
+                [
+                  "65194.50",
+                  "0.080"
+                ],
+                [
+                  "65194.30",
+                  "0.893"
+                ],
+                [
+                  "65194.10",
+                  "0.070"
+                ]
+              ],
+              "e": "depthUpdate",
+              "ps": "BTCUSDT",
+              "pu": 12136390181773,
+              "s": "BTCUSDT",
+              "st": 1,
+              "u": 12136390220724
+            },
+            "received_mono_ns": 1137827764085187,
+            "received_ms": 1794860849621,
+            "source": {
+              "A": "0.860",
+              "B": "9.326",
+              "E": 1794860849200,
+              "T": 1794860849199,
+              "a": "65194.80",
+              "b": "65194.70",
+              "e": "bookTicker",
+              "s": "BTCUSDT",
+              "u": 12136390220724
+            },
+            "source_kind": "partial_depth5_100ms",
+            "source_ms": 1794860849199
+          },
+          "observed_mono_ns": 1137828014958202,
+          "observed_ms": 1794860849872,
+          "quote": {
+            "ask": "65180.10",
+            "ask_qty": "2.315",
+            "bid": "65180.00",
+            "bid_qty": "2.184",
+            "event_ms": 1794860847000,
+            "id": "bc0965f70d56f920dc6f571f6b5eca1c601325db263d9e24a3d76ce91e1952da",
+            "mark": "65174.07941807",
+            "received_ms": 1794860847232
+          },
+          "quote_age_ms": 2872,
+          "quote_confirmed": false,
+          "reason": "SL",
+          "time_due_ms": 1794862099301
+        },
+        "protection_wait_history": [
+          {
+            "from_mono_ns": 1136690772874350,
+            "from_ms": 1794859712630,
+            "previous_quote_id": "e2b1e3e2319486635972971321beb721b9c15ac7d5b555084d9fa9ae01c7bdad",
+            "recovered_quote_id": "609eeac1ea4e6bf01575ae147fb851bbb478781287768b6d0914bbbb86036b2e",
+            "through_mono_ns": 1136691777353030,
+            "through_ms": 1794859713633
+          }
+        ],
+        "remaining": "0",
+        "reserved": "0",
+        "sl_observation": {
+          "component": {
+            "event_ms": 1794860849200,
+            "kind": "book",
+            "raw": {
+              "E": 1794860849200,
+              "T": 1794860849199,
+              "U": 12136390181816,
+              "a": [
+                [
+                  "65194.80",
+                  "0.860"
+                ],
+                [
+                  "65194.90",
+                  "0.967"
+                ],
+                [
+                  "65195.00",
+                  "0.337"
+                ],
+                [
+                  "65195.10",
+                  "0.078"
+                ],
+                [
+                  "65195.20",
+                  "0.002"
+                ]
+              ],
+              "b": [
+                [
+                  "65194.70",
+                  "9.326"
+                ],
+                [
+                  "65194.60",
+                  "0.030"
+                ],
+                [
+                  "65194.50",
+                  "0.080"
+                ],
+                [
+                  "65194.30",
+                  "0.893"
+                ],
+                [
+                  "65194.10",
+                  "0.070"
+                ]
+              ],
+              "e": "depthUpdate",
+              "ps": "BTCUSDT",
+              "pu": 12136390181773,
+              "s": "BTCUSDT",
+              "st": 1,
+              "u": 12136390220724
+            },
+            "received_mono_ns": 1137827764085187,
+            "received_ms": 1794860849621,
+            "source": {
+              "A": "0.860",
+              "B": "9.326",
+              "E": 1794860849200,
+              "T": 1794860849199,
+              "a": "65194.80",
+              "b": "65194.70",
+              "e": "bookTicker",
+              "s": "BTCUSDT",
+              "u": 12136390220724
+            },
+            "source_kind": "partial_depth5_100ms",
+            "source_ms": 1794860849199
+          },
+          "observed_ms": 1794860849872
+        },
+        "status": "CLOSED"
+      }
+    },
+    "reconcile": {
+      "balanced": true,
+      "invalid_events": [],
+      "negative_accounts": [],
+      "foreign_key_error": false,
+      "totals": {
+        "USDT": "0.0000000000000000000",
+        "BTC": "0"
+      }
+    }
+  },
+  "checks": {
+    "baseline_24_events_exactly_unchanged": true,
+    "previous_four_fills_unchanged": true,
+    "previous_nine_plans_unchanged": true,
+    "funding_history_unchanged": true,
+    "new_events_balanced": true,
+    "cash_delta_matches_net": true,
+    "fee_rates_match_saved_plan": true,
+    "SL_price_matches_saved_ask_and_slippage": true
+  },
+  "result": {
+    "old_free": "1000.3090960078653898110",
+    "new_free": "1000.0321471104653898110",
+    "cash_delta": "-0.2769488974000000000",
+    "gross": "-0.2117948",
+    "entry_fee": "0.0325241",
+    "exit_fee": "0.0326299974",
+    "fees_total": "0.0651540974",
+    "funding": "0",
+    "net": "-0.2769488974",
+    "account_deltas": {
+      "ai_bracket:free": "-0.276948897400",
+      "ai_bracket:reserved": "0E-8",
+      "ai_bracket:margin": "0.0000",
+      "ai_bracket:fees": "0.065154097400",
+      "ai_bracket:funding_buffer": "0E-8",
+      "external:price_pnl": "0.21179480"
+    },
+    "cash_path": [
+      {
+        "event_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:reserve",
+        "free_movement": "-65.21732532",
+        "free_after": "935.0917706878653898110"
+      },
+      {
+        "event_id": "trade:BTCUSDT:3528394331:entry",
+        "free_movement": "0",
+        "free_after": "935.0917706878653898110"
+      },
+      {
+        "event_id": "market:48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:3293ac0edca6b39bcf8009963365bf22db35caa6141b3e8d2bb745f21f88a1c8:0.001",
+        "free_movement": "64.803775202600",
+        "free_after": "999.8955458904653898110"
+      },
+      {
+        "event_id": "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48:release-buffer",
+        "free_movement": "0.13660122",
+        "free_after": "1000.0321471104653898110"
+      }
+    ],
+    "exit_ask": "65194.80",
+    "modeled_exit_impact_already_in_gross": "0.0651948"
+  }
+}
