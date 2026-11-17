@@ -503,10 +503,24 @@ def activate_initial(book,enabled):
             book.set('paused',False);book.set('activation_recorded',book.clock())
 
 
+def configure_diagnostics(book,feed,enabled=False):
+    """Normal execution keeps market/error evidence without tracing every SQL.
+
+    Detailed profiling is an explicit maintenance option, not part of price
+    confirmation or financial admission. Preserve previous diagnostic files.
+    """
+    probe=Probe(book.root/'phase-diagnostics.json') if enabled else None
+    if probe is not None:probe.seen_gap=(book.get('last_trade_gap') or {}).get('at_ms')
+    if isinstance(book.db,TimedConnection):book.db.probe=probe
+    feed.probe=probe
+    return probe
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='action',required=True)
     p=sub.add_parser('serve');p.add_argument('--state',required=True);p.add_argument('--public',required=True);p.add_argument('--response',required=True)
     p.add_argument('--analyst-uid',required=True,type=uid);p.add_argument('--symbols',nargs='+',choices=SYMBOLS,default=['BTCUSDT']);p.add_argument('--enable-paper',action='store_true');p.add_argument('--once',action='store_true')
+    p.add_argument('--phase-diagnostics',action='store_true',help='Enable detailed CPU/SQL profiling; normal paper execution retains bounded market/error evidence without it')
     p=sub.add_parser('analyst-once');p.add_argument('--budget-state',required=True);p.add_argument('--paper-public',required=True);p.add_argument('--output',required=True)
     p.add_argument('--paper-uid',required=True,type=uid);p.add_argument('--symbol',choices=SYMBOLS,default='BTCUSDT');p.add_argument('--authorized-once',action='store_true')
     p=sub.add_parser('recover-answer');p.add_argument('--budget-state',required=True);p.add_argument('--response-id',required=True);p.add_argument('--capture',required=True);p.add_argument('--output',required=True)
@@ -537,39 +551,45 @@ def main():
                 sys.path.insert(0,str(Path(__file__).resolve().parent.parent/"vendor"))
                 from .ai_limit_stream import StreamFeed
                 prepare_journal(book)
-                probe=Probe(book.root/'phase-diagnostics.json');probe.seen_gap=(book.get('last_trade_gap') or {}).get('at_ms')
-                if isinstance(book.db,TimedConnection):book.db.probe=probe
-                feed=StreamFeed(symbols=args.symbols,quotes=True);feed.probe=probe
+                feed=StreamFeed(symbols=args.symbols,quotes=True)
+                probe=configure_diagnostics(book,feed,args.phase_diagnostics)
                 worker=Poller(book,feed.start(),symbols=args.symbols);backup=BackupJob(book.root);next_backup=0;reader=ResponseReader();publisher=Publisher()
                 try:
                     while running[0]:
-                        probe.begin();loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
+                        if probe is not None:probe.begin()
+                        loop_start=time.monotonic_ns();phase={'started_ns':loop_start};worker.loop_phase=phase
                         mark=time.monotonic_ns()
-                        with probe.phase('main_poller'):result=worker.cycle()
+                        with probe.phase('main_poller') if probe else nullcontext():result=worker.cycle()
                         now=time.monotonic_ns();phase['poller_total_ms']=(now-mark)//1000000;mark=now
                         if Path(args.response).exists():
                             try:
-                                with probe.phase('main_ingest'):reader.apply(book,args.response,args.analyst_uid)
+                                with probe.phase('main_ingest') if probe else nullcontext():reader.apply(book,args.response,args.analyst_uid)
                             except (ValueError,OSError,KeyError,TypeError):
                                 with book.transaction():book.set('analyst_ingest_error','response_unavailable_or_invalid')
                         now=time.monotonic_ns();phase['ingest_ms']=(now-mark)//1000000;mark=now
-                        with probe.phase('main_snapshot'):
+                        with probe.phase('main_snapshot') if probe else nullcontext():
                             result=book.snapshot()|{k:v for k,v in result.items() if k in ('market_errors','funding_error','last_trade_gap','trade_feeds','quote_feeds')}
                         now=time.monotonic_ns();phase['snapshot_ms']=(now-mark)//1000000;mark=now
-                        with probe.phase('main_publish'):publisher.publish(args.public,result,force=args.once)
+                        with probe.phase('main_publish') if probe else nullcontext():publisher.publish(args.public,result,force=args.once)
                         now=time.monotonic_ns();phase['publish_ms']=(now-mark)//1000000;mark=now
                         if book.clock()>=next_backup:
-                            with probe.phase('main_backup_submit'):backup.submit(book.clock())
+                            with probe.phase('main_backup_submit') if probe else nullcontext():backup.submit(book.clock())
                             next_backup=book.clock()+3600000
-                        probe.backup_status=dict(backup.status)
+                        if probe is not None:probe.backup_status=dict(backup.status)
                         now=time.monotonic_ns();phase['backup_ms']=(now-mark)//1000000;mark=now
                         if args.once:
-                            worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'));break
+                            worker.phase_history.append(phase)
+                            if probe is not None:probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'))
+                            break
                         pause=worker.sleep_after_cycle();phase['sleep_requested_ms']=int(pause*1000)
-                        with probe.phase('main_sleep'):time.sleep(pause)
+                        with probe.phase('main_sleep') if probe else nullcontext():time.sleep(pause)
                         phase['sleep_ms']=(time.monotonic_ns()-mark)//1000000;phase['total_ms']=(time.monotonic_ns()-loop_start)//1000000
-                        worker.phase_history.append(phase);probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'))
-                finally:backup.close();probe.close();worker.close()
+                        worker.phase_history.append(phase)
+                        if probe is not None:probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'))
+                finally:
+                    backup.close()
+                    if probe is not None:probe.close()
+                    worker.close()
             elif args.action=='pause':book.pause(True);result=book.snapshot()
             elif args.action=='resume':book.pause(False);result=book.snapshot()
             elif args.action=='close':book.request_close(args.plan_id);result=book.snapshot()

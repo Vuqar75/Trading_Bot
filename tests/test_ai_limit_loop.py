@@ -63,3 +63,69 @@ class LoopTests(unittest.TestCase):
   f.connect=lambda url:Socket();f.run('BTCUSDT')
   self.assertTrue(f.states['BTCUSDT']['fault']);self.assertFalse(f.states['BTCUSDT']['connected'])
   self.assertEqual(f.states['BTCUSDT']['last_fault']['category'],'OSError')
+
+
+class ReleaseProfileTests(unittest.TestCase):
+ def test_release_profile_keeps_stop_and_money_identical_without_sql_tracing(self):
+  from tests import test_ai_quote_stream as fixtures
+  from research.ai_limit_book import Book
+  from research.ai_limit_runtime import configure_diagnostics
+  outcomes=[]
+  for detailed in (False,True):
+   t=fixtures.QuoteStreamTests();t.setUp();probe=None
+   try:
+    t.b.close();t.b=Book(t.root,clock=lambda:t.now);t.poller.book=t.b
+    probe=configure_diagnostics(t.b,t.f,detailed)
+    self.assertEqual(probe is not None,detailed)
+    self.assertIs(t.b.db.probe,probe);self.assertIs(t.f.probe,probe)
+    if probe:probe.begin()
+    t.opened();t.now+=1;t.book(101,'104');t.mark('104')
+    result=t.poller.cycle();state=t.b.plans()[0][1]
+    self.assertEqual(state['open_qty'],'0');self.assertEqual(state['close_reason'],'SL')
+    self.assertTrue(t.b.verify()['balanced'])
+    outcomes.append((result['balances'],state['gross'],state['fees'],state['status']))
+    if probe:self.assertIn('book_verify',probe.phases)
+    else:self.assertFalse((t.root/'phase-diagnostics.json').exists())
+   finally:
+    if probe:probe.close()
+    t.tearDown()
+  self.assertEqual(outcomes[0],outcomes[1])
+
+ def test_release_profile_does_not_construct_profiler_or_erase_previous_evidence(self):
+  from research.ai_limit_runtime import configure_diagnostics
+  from research.ai_limit_book import Book
+  from research.ai_limit_stream import StreamFeed
+  with tempfile.TemporaryDirectory() as temp:
+   b=Book(Path(temp)/'paper');f=StreamFeed(symbols=['BTCUSDT'])
+   evidence=b.root/'phase-diagnostics.json';evidence.write_text('previous-evidence')
+   try:
+    with patch('research.ai_limit_runtime.Probe',side_effect=AssertionError('detailed profiling must be opt-in')):
+     self.assertIsNone(configure_diagnostics(b,f))
+    self.assertEqual(evidence.read_text(),'previous-evidence')
+    self.assertIsNone(f.probe);self.assertTrue(b.verify()['balanced'])
+   finally:f.close();b.close()
+
+ def test_serve_once_entrypoint_publishes_without_profiler_or_network(self):
+  import contextlib,io,sys,time
+  from research.ai_limit_runtime import main
+  from research.ai_limit_stream import StreamFeed
+  from research.ai_limit_plan import VERSION
+  def start(feed):
+   now=feed.clock()
+   feed.states['BTCUSDT'].update(connected=True)
+   for channel in ('book','market'):feed.quote_connection('BTCUSDT',channel,True)
+   feed.receive('BTCUSDT',{'e':'aggTrade','s':'BTCUSDT','a':1,'T':now,'p':'100','q':'1','m':True})
+   feed.receive_quote('BTCUSDT',{'e':'depthUpdate','s':'BTCUSDT','U':1,'u':1,'pu':0,'E':now,'T':now,'b':[['100','1']],'a':[['100.1','1']]},'book')
+   feed.receive_quote('BTCUSDT',{'e':'markPriceUpdate','s':'BTCUSDT','E':now,'p':'100','T':now+28800000},'market')
+   return feed
+  def filters(feed,symbol,**kwargs):
+   return {'as_of_ms':feed.clock(),'tick_size':'.1','step_size':'.001','min_qty':'.001','min_notional':'50'}
+  with tempfile.TemporaryDirectory() as temp:
+   root=Path(temp);public=root/'orders.json';state=root/'paper'
+   args=['paper','serve','--state',str(state),'--public',str(public),'--response',str(root/'absent.json'),'--analyst-uid',str(os.geteuid()),'--enable-paper','--once']
+   with patch.object(sys,'argv',args),patch.object(StreamFeed,'start',start),patch.object(StreamFeed,'filters',filters),patch.object(StreamFeed,'get',side_effect=AssertionError('network forbidden')),patch('research.ai_limit_runtime.Probe',side_effect=AssertionError('profiler forbidden')),patch('research.ai_limit_runtime.signal.signal'),contextlib.redirect_stdout(io.StringIO()):
+    main()
+   result=json.loads(public.read_text())
+   self.assertEqual(result['version'],VERSION);self.assertTrue(result['ledger_balanced'])
+   self.assertEqual(result['balances']['free'],'1000');self.assertFalse(result['paused'])
+   self.assertEqual(result['plans'],[]);self.assertFalse((state/'phase-diagnostics.json').exists())

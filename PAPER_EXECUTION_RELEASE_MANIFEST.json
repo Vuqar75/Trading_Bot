@@ -1,0 +1,17 @@
+{
+  "kind": "paper_execution_release_candidate",
+  "base": "e3b487831a177e39d2ee3550c36cca0f22df12c4",
+  "runtime_sha256": {
+    "research/ai_limit_runtime.py": "be52d3ccbd291295bd7beaa104a0dda9d3d8e3f38b2939b2276ee5fed16f06e2",
+    "research/ai_limit_demo.py": "d4d22a7287940cc2f0bc31ffc3a1113b5959e6312d43821727736debb0bfd2d9"
+  },
+  "installed_on_vm_by_cloud_author": false,
+  "unique_targeted_test_ids_passed": 299,
+  "test_invocations_passed": 417,
+  "live_model_calls": 0,
+  "live_financial_operations": 0,
+  "database_migration": false,
+  "risk_and_candidate_policy_changed": false,
+  "normal_profile": "detailed CPU/SQL tracing opt-in via --phase-diagnostics; source freshness/financial guards remain enabled",
+  "acceptance_artifact": "research/ai_limit_bracket_results/synthetic_e2e.json"
+}

@@ -1,5 +1,44 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-17 — owner STOP: finite paper release, no new diagnostic task chain
+
+Owner explicitly rejected endless checks/automations and requested a working
+TEST version. Do not register a new diagnostic one-shot/recurring task as a
+substitute for delivery. Existing permitted paper/AI/protection/backup timers
+must stay unchanged; do not stop protection while risk exists.
+
+Continued latest remote e3b4878 in the cloud checkout. Delivered a normal paper
+execution profile: detailed CPU/SQL/cgroup profiling is opt-in via new
+--phase-diagnostics. No profiler/writer starts by default. Ordinary market/error,
+freshness, reconnect/gap/overflow and financial guards/evidence remain enabled;
+old diagnostic files preserved. No candidate/risk policy, schedule, resource quota,
+DB schema or financial history changes. Measured 100 identical local fixture
+cycles: CPU normal0.0686s versus traced0.1510s, balanced both; not VM attribution
+or a guarantee of all historical latency fixes.
+
+Existing ai_limit_demo upgraded to current production StreamFeed+Poller+Book,
+including fake strict API/budget response, partial LONG→TP, SHORT→restart→SL,
+SHORT→TIME during quote outage→restart→fresh-price exit, WAIT, idempotency,
+funding finalization, backup restore and Telegram rendering. CLI PASS,9fills,
+zero outstanding reserves/margin/buffer; fixture outcomes NOT strategy PnL.
+No live HTTP/model/key/VM ledger access. Manifest and finite local rollout:
+PAPER_EXECUTION_RELEASE_MANIFEST.json, PAPER_EXECUTION_RELEASE.md.
+
+299 unique targeted test IDs passed (417 invocations incl118 duplicate existing
+fixture imports), plus actual standalone demo command; do not claim417 distinct
+methods. Production serve--once path tested offline with no profiler or network.
+Pinned websocket-client1.8.0 installed in cloud workspace only for existing native
+text-validation test. All financial fixture accounts are temporary test-only.
+
+NOT installed on VM from this cloud session: no authorized VM transport here.
+This is a concrete external deployment boundary, not a claim of server release.
+Authorized local operator must inspect real risk/newer commits, backup/restore,
+switch only flat, install the one changed production runtime file, preserve
+analyst/UI and all settings, restore the prior timer state, verify ordinary
+publication/ledger and external backup, publish actual installed hashes.
+No extra paid request/artificial trade or new diagnostic automation for handover.
+
+
 ## Порядок продолжения работы по решению владельца
 
 Самостоятельно выполняйте следующий необходимый шаг текущей задачи: диагностика → воспроизведение → исправление → целевые проверки → разрешённая paper-установка → проверка фактического результата. Отчёт, коммит или отдельная проверка сами по себе не завершают работу. Если нужны будущие данные, оставьте ограниченную диагностику и зарегистрируйте одну конкретную отложенную проверку; не создавайте бесконечную цепочку без новых данных или проверяемой гипотезы.
