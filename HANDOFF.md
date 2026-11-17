@@ -1,5 +1,19 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-17 — b36103c normal paper runtime installed; finite release complete
+
+[Installation report](PAPER_EXECUTION_INSTALL_20261117.md), [VM evidence](research/PAPER_EXECUTION_INSTALL_20261117.json). Fetched/fast-forwarded cleanD: checkout to **b36103c9e582caa4813d2d0b9c69d1f4c7019743**, preserving history/newer server events. **Installed14:44:44.868Baku**, first confirmed-ready14:44:59.390, PID548045, `/opt/tradingbot-ai-brackets-b36103c-paper`. Only research/ai_limit_runtime.py changed, exact manifestSHAbe52d3ccbd291295bd7beaa104a0dda9d3d8e3f38b2939b2276ee5fed16f06e2. Other files/modes preserved; analyst74f77d0 and Telegram UIc96ad52 not replaced/restarted.
+
+Ordinary serve WITHOUT --phase-diagnostics. Existing1,806,583B phase file preserved/frozen SHA b1a0955bd2a9ddbf5b3f14e0445c2abc4cc744da1d6ff0ddd1e469e1b38010a4, no detailed writer; ordinary source/protection/error/ledger guards remain. CPU50%/128MiB unchanged. Preflight/rechecks flat: no open risk/remainder/reserve/margin/buffer/unfinished financial action, latest model response already ingested, analyst inactive. Fresh SQLite API local copy reopened/matched all financial IDs/rows/hash and balance; fresh external pre/post restore passed. Timer paused28.572s only for guarded switch, restored prior ACTIVE/enabled/next17Nov16:02Baku (12:02UTC), no skipped/additional request.
+
+28events/68postings/10plans/6oldfills/1funding preserved (newer than yesterday), free1000.032147110465389811, balanced. Financial hash4fe900de02e9ba5e941dca74e4fd18652a2405b2f6f784b0356b625c05aaba46 and plan-history50ba7511aef7cd3ab6a60994a731b9e7b079c856fdaefd4c75f6909e53a318c7 unchanged through copies/install/postchecks. One writer/one poller, four working wallets paused; API summary/latest response unchanged. No capital reset, history deletion, extra AI call/test trade/budget/risk change.
+
+Initial180s flow verified source/phase/finance, then verifier-only standalone UI import failed; fixed verification import, not live Telegram. Saved30s follow-up60publications/max718ms,0market/funding/quote rejection; valid1534B /ai orders rendered through actual Telegram package. Only post-start DATA_GAP14:44:57.332 is idle bootstrap with saved-cursor/new-stream discontinuity,24freshrows, before ready, retained/no backfill. No later gap in queried durable messages. Flat sample is NOT live-risk proof or proof of removal of all old latency. Reused cloud299unique/417invocation evidence; no unchanged full/targeted suite/backtest/demo/training rerun.
+
+POST-install external download/decrypt/restore **14:50:55.946Baku**, manifest6c4ccb5545dada733a6d46b5d73e80e565fbc8009c045f7198eef2b6a6c8fbfd, SQLitef418db0137d0530ecc197177229a25a82057487c5699d32444fc5c83b5e21260,4chunks/28events/6fills/1funding. New normal local copy restored same financial rows SHA199919658de1aa79dfde65f90bb9cf8ecc9e606749b61f1e6a00d5071865e641. Pre-localSHA3fcbb139a25b5a101623f8b2b87a26d3aa23c1f03678f68a51e14c77dae96fcb; pre-external manifestc6c18565054236ce9c60b44c79c10f7c248ee5cf2af3632dd946d787e2e50121. Host-bound restore caveat unchanged. Metadata/code-only rollback under `/var/lib/tradingbot-ai-budget-backup/release-b36103c`; retain current WAL/events, never restore oldDB for code rollback.
+
+**Finite installation completed; no current installation blocker.** Existing paper/protection/authorized analyst/backup schedule continues. No new diagnostic automation or further empty-account task chain. No real/Testnet order or paid resource. Strategy profitability/source guarantees/live open-risk performance are not established by this deployment.
+
 ## 2026-11-17 — owner STOP: finite paper release, no new diagnostic task chain
 
 Owner explicitly rejected endless checks/automations and requested a working

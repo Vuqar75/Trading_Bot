@@ -103,3 +103,12 @@ fresh live risk on this VM. A green fixture run is not live under-risk evidence,
 and a working paper bot is not proof of profitability. Its normal permitted
 schedule may choose WAIT or leave a passive entry unfilled. Those outcomes alone
 are not defects. A proven failure of execution, protection or accounting is.
+
+
+## Local delivery completed17November2026
+
+Authorized local rollout installed b36103c in ordinary mode at14:44:44.868Baku,
+without --phase-diagnostics. See [actual installation report](PAPER_EXECUTION_INSTALL_20261117.md)
+and [VM/restore evidence](research/PAPER_EXECUTION_INSTALL_20261117.json).
+Only the runtime module changed; analyst/UI/history/budget/risk/schedule retained.
+No extra model request, artificial trade or diagnostic automation was created.
