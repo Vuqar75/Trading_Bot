@@ -1,0 +1,1164 @@
+{
+  "reproduction": {
+    "root": "/tmp/quote-packet-race-tiaiun7x",
+    "returncode": 1,
+    "output": "======================================================================\nFAIL: test_new_receipt_during_lock_wait_is_not_in_the_future (tests.test_ai_quote_packet_race.QuotePacketRaceTests.test_new_receipt_during_lock_wait_is_not_in_the_future)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/quote-packet-race-tiaiun7x/tests/test_ai_quote_packet_race.py\", line 21, in test_new_receipt_during_lock_wait_is_not_in_the_future\n    self.assertIsNone(packet['error'])\nAssertionError: 'public_quote_stream_unconfirmed' is not None\n\n----------------------------------------------------------------------\nRan 1 test in 0.252s\n\nFAILED (failures=1)\n"
+  },
+  "target_tests": {
+    "root": "/tmp/quote-packet-race-tiaiun7x",
+    "returncode": 0,
+    "methods": [
+      "test_new_receipt_during_lock_wait_is_not_in_the_future",
+      "test_partial_position_SL_survives_receipt_interleaving",
+      "test_real_clock_regression_still_rejects_future_receipt"
+    ],
+    "output": "----------------------------------------------------------------------\nRan 26 tests in 14.458s\n\nOK\n"
+  },
+  "backup_before": {
+    "checked_ms": 1795006020170,
+    "journal": [
+      {
+        "__REALTIME_TIMESTAMP": "1794986825796979",
+        "MESSAGE": "Starting adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget...",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794986829312184",
+        "MESSAGE": "{\"attempts\": 34, \"captured_ms\": 1794986827897, \"host_bound\": true, \"object\": \"paper-backups/daily/adaptive-ai-budget/regular/1794986827897-fdd0fe5a37885e4e847a412b269a79714c7ad9f470dd420fdbe8dfe0c97af2d1.cred\", \"reserved_micro_usd\": 89118, \"sha256\": \"fdd0fe5a37885e4e847a412b269a79714c7ad9f470dd420fdbe8dfe0c97af2d1\"}",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794986953474727",
+        "MESSAGE": "{\"captured_ms\": 1794986953418, \"chunks\": 6, \"host_bound\": true, \"object\": \"paper-backups/daily/ai-bracket-study/1794986909507-c7144907c2d084d578846c2dedff40f4172564e5f603d12a829750945275bf0d.cred\", \"sha256\": \"c7144907c2d084d578846c2dedff40f4172564e5f603d12a829750945275bf0d\", \"sqlite_sha256\": \"f374a26266da0ded8624a0a184b581e878858b094f6b984f815f0853fad7b373\", \"status\": \"bracket_backup_verified\", \"summary\": {\"balances\": {\"free\": \"1000.0321471104653898110\", \"funding_buffer\": \"0E-8\", \"margin\": \"0.0000\", \"reserved\": \"0E-8\"}, \"events\": 34, \"fills\": 6, \"funding_events\": 1, \"plans\": [[\"06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db\", \"CLOSED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"68845.8\", \"69159.3\", \"67490.4\"], [\"2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"65208.4\", \"65364.8\", \"64271\"], [\"2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"69466.2\", \"69571.2\", \"68651.6\"], [\"32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"69466.2\", \"69572\", \"68652.4\"], [\"48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48\", \"CLOSED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"65048.2\", \"65187.5\", \"64098.4\"], [\"54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87\", \"CLOSED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"65340\", \"65499.5\", \"64378.4\"], [\"85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"64916.1\", \"65232.4\", \"63762.9\"], [\"8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"64518.6\", \"64692.7\", \"63291.9\"], [\"9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"65565\", \"66127.9\", \"63773.6\"], [\"9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"64141.1\", \"64542.2\", \"61986.6\"], [\"a4879e743bc5d93bf6ff48b1d3c4fa5757f3a961d75ec4fede0e89fdc0c13086\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"63871\", \"64099.1\", \"61984.7\"], [\"f7f36ce68b51273417f986d5ed9a079dfd45df37463270de523f3f420d962214\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"64636\", \"64787.5\", \"63658.1\"], [\"fe1ff8688aefc70211f8edf2c436430099c92f0ec37170d33e5084705bb88025\", \"CANCELED\", \"0\", \"0\", \"BTCUSDT\", \"SHORT\", \"65136.4\", \"65272.9\", \"64283.5\"]]}}",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794986954907035",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Deactivated successfully.",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794986954907501",
+        "MESSAGE": "Finished adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget.",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794986954908438",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Consumed 14.866s CPU time.",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794990425734164",
+        "MESSAGE": "Starting adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget...",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794990442819684",
+        "MESSAGE": "{\"attempts\": 35, \"captured_ms\": 1794990433027, \"host_bound\": true, \"object\": \"paper-backups/daily/adaptive-ai-budget/regular/1794990433027-d1778339c7c9fc1af9fe367053f7f399078d8f9064175cddba0bd44d11c18175.cred\", \"reserved_micro_usd\": 91910, \"sha256\": \"d1778339c7c9fc1af9fe367053f7f399078d8f9064175cddba0bd44d11c18175\"}",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794990623541727",
+        "MESSAGE": "adaptive-ai-regular-backup.service: start-post operation timed out. Terminating.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794990624683516",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Control process exited, code=killed, status=15/TERM",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794990624684119",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Failed with result 'timeout'.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794990624684774",
+        "MESSAGE": "Failed to start adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget.",
+        "PRIORITY": "3"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794990624685301",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Consumed 22.117s CPU time.",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794994025736687",
+        "MESSAGE": "Starting adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget...",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794994035774382",
+        "MESSAGE": "{\"attempts\": 35, \"captured_ms\": 1794994032564, \"host_bound\": true, \"object\": \"paper-backups/daily/adaptive-ai-budget/regular/1794994032564-e503c102f220398f88b5deb43a5604cd6fb9e1d5b03041460783e36e900239e9.cred\", \"reserved_micro_usd\": 91910, \"sha256\": \"e503c102f220398f88b5deb43a5604cd6fb9e1d5b03041460783e36e900239e9\"}",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794994216112670",
+        "MESSAGE": "adaptive-ai-regular-backup.service: start-post operation timed out. Terminating.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794994217431987",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Control process exited, code=killed, status=15/TERM",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794994217432742",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Failed with result 'timeout'.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794994217432968",
+        "MESSAGE": "Failed to start adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget.",
+        "PRIORITY": "3"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794994217433535",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Consumed 21.645s CPU time.",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794997625751300",
+        "MESSAGE": "Starting adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget...",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794997632439598",
+        "MESSAGE": "{\"attempts\": 35, \"captured_ms\": 1794997629508, \"host_bound\": true, \"object\": \"paper-backups/daily/adaptive-ai-budget/regular/1794997629508-dc97cb8bd446d94706aeb239f29da71f61221ea0dab97a82ad3fdbcae86b37d5.cred\", \"reserved_micro_usd\": 91910, \"sha256\": \"dc97cb8bd446d94706aeb239f29da71f61221ea0dab97a82ad3fdbcae86b37d5\"}",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794997812541526",
+        "MESSAGE": "adaptive-ai-regular-backup.service: start-post operation timed out. Terminating.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794997812561772",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Control process exited, code=killed, status=15/TERM",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794997812562206",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Failed with result 'timeout'.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794997812562733",
+        "MESSAGE": "Failed to start adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget.",
+        "PRIORITY": "3"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1794997812562941",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Consumed 21.435s CPU time.",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795001225817735",
+        "MESSAGE": "Starting adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget...",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795001237409824",
+        "MESSAGE": "{\"attempts\": 35, \"captured_ms\": 1795001230112, \"host_bound\": true, \"object\": \"paper-backups/daily/adaptive-ai-budget/regular/1795001230112-b27cc2b799c4705f41aa7217d07964aea012089493c5fbf0794b7304c83e47b3.cred\", \"reserved_micro_usd\": 91910, \"sha256\": \"b27cc2b799c4705f41aa7217d07964aea012089493c5fbf0794b7304c83e47b3\"}",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795001419167002",
+        "MESSAGE": "adaptive-ai-regular-backup.service: start-post operation timed out. Terminating.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795001419173223",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Control process exited, code=killed, status=15/TERM",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795001419173594",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Failed with result 'timeout'.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795001419174180",
+        "MESSAGE": "Failed to start adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget.",
+        "PRIORITY": "3"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795001419174893",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Consumed 20.723s CPU time.",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795004825860194",
+        "MESSAGE": "Starting adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget...",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795004834701923",
+        "MESSAGE": "{\"attempts\": 36, \"captured_ms\": 1795004827930, \"host_bound\": true, \"object\": \"paper-backups/daily/adaptive-ai-budget/regular/1795004827930-2f9710de073a1b348694c7ee2a816f7907d1b52e7714d72cc3139964a247df6d.cred\", \"reserved_micro_usd\": 94700, \"sha256\": \"2f9710de073a1b348694c7ee2a816f7907d1b52e7714d72cc3139964a247df6d\"}",
+        "PRIORITY": "6"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795005016041809",
+        "MESSAGE": "adaptive-ai-regular-backup.service: start-post operation timed out. Terminating.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795005016099608",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Control process exited, code=killed, status=15/TERM",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795005016100085",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Failed with result 'timeout'.",
+        "PRIORITY": "4"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795005016100676",
+        "MESSAGE": "Failed to start adaptive-ai-regular-backup.service - Encrypted verified backup of AI research budget.",
+        "PRIORITY": "3"
+      },
+      {
+        "__REALTIME_TIMESTAMP": "1795005016100827",
+        "MESSAGE": "adaptive-ai-regular-backup.service: Consumed 21.818s CPU time.",
+        "PRIORITY": "6"
+      }
+    ],
+    "service": "TimeoutStartUSec=3min\nResult=timeout\nExecMainExitTimestamp=Wed 2026-11-18 12:27:15 UTC\nExecMainStatus=0\nCPUQuotaPerSecUSec=150ms\nMemoryMax=100663296\nActiveState=failed\n",
+    "disk_free": 11005730816,
+    "db_bytes": 73510912
+  },
+  "backup_fixed": {
+    "returncode": 0,
+    "wall_ns": 315210308394,
+    "previous_receipt_ms": 1794986953418,
+    "receipt": {
+      "captured_ms": 1795006759193,
+      "chunks": 10,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1795006664116-04c902760ec9fe0da38e06990692f4382ab13efccf877199a265a937b0113b19.cred",
+      "sha256": "04c902760ec9fe0da38e06990692f4382ab13efccf877199a265a937b0113b19",
+      "sqlite_sha256": "9a10514272a054d7cf8d9b587d47bcb2dca6f68cb3c9cc4f813ef85f40ba35a9",
+      "summary": {
+        "balances": {
+          "free": "999.7796314320653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 40,
+        "fills": 8,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "4694d2cee86b9d88faf3c3c2cd4ad40e740a42c4c6fdf96a3e8cec9e852aee44",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64257.6",
+            "64592.9",
+            "61971.3"
+          ],
+          [
+            "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65048.2",
+            "65187.5",
+            "64098.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64518.6",
+            "64692.7",
+            "63291.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ],
+          [
+            "a4879e743bc5d93bf6ff48b1d3c4fa5757f3a961d75ec4fede0e89fdc0c13086",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "63871",
+            "64099.1",
+            "61984.7"
+          ],
+          [
+            "d8abc95be214f24ad85f24e14b73c9f9f1e6ff3e32764aececa56dcfb3af29cf",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "LONG",
+            "64766.4",
+            "64478.8",
+            "66074.2"
+          ],
+          [
+            "f7f36ce68b51273417f986d5ed9a079dfd45df37463270de523f3f420d962214",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64636",
+            "64787.5",
+            "63658.1"
+          ],
+          [
+            "fe1ff8688aefc70211f8edf2c436430099c92f0ec37170d33e5084705bb88025",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65136.4",
+            "65272.9",
+            "64283.5"
+          ]
+        ]
+      }
+    },
+    "service": "TimeoutStartUSec=6min\nResult=success\nMemoryPeak=[not set]\nCPUUsageNSec=34736901000\nCPUQuotaPerSecUSec=150ms\nMemoryMax=100663296\nActiveState=inactive",
+    "timer_unchanged": true
+  },
+  "backup_stage_after": {
+    "at_ms": 1795006801923,
+    "service": "ControlPID=0\nResult=success\nExecMainPID=591421\nCPUUsageNSec=34736901000\nActiveState=inactive\nSubState=dead\n",
+    "temporary": [
+      {
+        "dir": "/var/lib/tradingbot-ai-budget-backup/bracket-external-3mhg5bp3",
+        "files": [
+          {
+            "name": "snapshot.gz",
+            "bytes": 14112954,
+            "mtime_ns": 1794990606489213717
+          },
+          {
+            "name": "chunk-0",
+            "bytes": 2000028,
+            "mtime_ns": 1794990607293039886
+          },
+          {
+            "name": "chunk-6",
+            "bytes": 2000028,
+            "mtime_ns": 1794990615296312502
+          },
+          {
+            "name": "chunk-1",
+            "bytes": 2000028,
+            "mtime_ns": 1794990609787211951
+          },
+          {
+            "name": "chunk-7",
+            "bytes": 112982,
+            "mtime_ns": 1794990615835903963
+          },
+          {
+            "name": "isolated-restored.sqlite",
+            "bytes": 0,
+            "mtime_ns": 1794990623082198067
+          },
+          {
+            "name": "chunk-2",
+            "bytes": 2000028,
+            "mtime_ns": 1794990612100604996
+          },
+          {
+            "name": "chunk-3",
+            "bytes": 2000028,
+            "mtime_ns": 1794990612791185048
+          },
+          {
+            "name": "snapshot.sqlite",
+            "bytes": 52654080,
+            "mtime_ns": 1794990471429341086
+          },
+          {
+            "name": "chunk-4",
+            "bytes": 2000028,
+            "mtime_ns": 1794990613775206846
+          },
+          {
+            "name": "chunk-5",
+            "bytes": 2000028,
+            "mtime_ns": 1794990614045621321
+          },
+          {
+            "name": "restored.gz",
+            "bytes": 14112954,
+            "mtime_ns": 1794990623081198068
+          }
+        ]
+      },
+      {
+        "dir": "/var/lib/tradingbot-ai-budget-backup/bracket-external-uk0pmkh9",
+        "files": [
+          {
+            "name": "snapshot.gz",
+            "bytes": 16446834,
+            "mtime_ns": 1794997812274419778
+          },
+          {
+            "name": "snapshot.sqlite",
+            "bytes": 71307264,
+            "mtime_ns": 1794997668708555193
+          }
+        ]
+      },
+      {
+        "dir": "/var/lib/tradingbot-ai-budget-backup/bracket-external-8gv1ciq4",
+        "files": [
+          {
+            "name": "snapshot.gz",
+            "bytes": 11187096,
+            "mtime_ns": 1795001419164016318
+          },
+          {
+            "name": "snapshot.sqlite",
+            "bytes": 71307264,
+            "mtime_ns": 1795001273478153784
+          }
+        ]
+      },
+      {
+        "dir": "/var/lib/tradingbot-ai-budget-backup/bracket-external-_4m1qhps",
+        "files": [
+          {
+            "name": "snapshot.gz",
+            "bytes": 18150184,
+            "mtime_ns": 1795005014686623581
+          },
+          {
+            "name": "snapshot.sqlite",
+            "bytes": 73510912,
+            "mtime_ns": 1795004860898768606
+          }
+        ]
+      },
+      {
+        "dir": "/var/lib/tradingbot-ai-budget-backup/bracket-external-zhchbpn2",
+        "files": [
+          {
+            "name": "snapshot.gz",
+            "bytes": 17255641,
+            "mtime_ns": 1794994215370812503
+          },
+          {
+            "name": "snapshot.sqlite",
+            "bytes": 70103040,
+            "mtime_ns": 1794994057545961357
+          }
+        ]
+      }
+    ]
+  },
+  "deployment_log": {
+    "installed": {
+      "commit": "6e7ff408f786bf25f78aaf91e7e6bf54ac372ba6",
+      "started_ms": 1795007016392,
+      "verified_ms": 1795007026186,
+      "path": "/opt/tradingbot-ai-brackets-6e7ff40-paper",
+      "pid": "592049",
+      "changed_files": [
+        "research/ai_limit_stream.py"
+      ],
+      "stream_sha256": "ce108b1f6446b4d6d4dc968d7cbcc360a311963abd2496811fa2569fa503bde3",
+      "runtime_sha256": "be52d3ccbd291295bd7beaa104a0dda9d3d8e3f38b2939b2276ee5fed16f06e2",
+      "normal_profile": true,
+      "phase_file_preserved": {
+        "sha256": "b1a0955bd2a9ddbf5b3f14e0445c2abc4cc744da1d6ff0ddd1e469e1b38010a4",
+        "mtime_ns": 1794912274324134752,
+        "bytes": 1806583
+      },
+      "history": {
+        "balanced": true,
+        "balances": {
+          "free": "999.7796314320653898110",
+          "reserved": "0E-8",
+          "margin": "0.0000",
+          "funding_buffer": "0E-8"
+        },
+        "counts": {
+          "ledger_events": 40,
+          "ledger_postings": 96,
+          "bracket_plans": 15,
+          "bracket_fills": 8,
+          "bracket_funding": 1
+        },
+        "financial_sha256": "8b6d8e334ec49f4717eddfa464e2cb5d47c078ed22a3d14e5f4918bbf47d46ae",
+        "plan_history_sha256": "fba9aa26a94d734901f5eb7e0c4ebc0e3dc974b0af013bd9fd60af116151d25e",
+        "plan_ids": [
+          "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+          "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+          "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+          "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+          "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+          "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+          "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+          "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+          "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f",
+          "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+          "a4879e743bc5d93bf6ff48b1d3c4fa5757f3a961d75ec4fede0e89fdc0c13086",
+          "fe1ff8688aefc70211f8edf2c436430099c92f0ec37170d33e5084705bb88025",
+          "f7f36ce68b51273417f986d5ed9a079dfd45df37463270de523f3f420d962214",
+          "d8abc95be214f24ad85f24e14b73c9f9f1e6ff3e32764aececa56dcfb3af29cf",
+          "4694d2cee86b9d88faf3c3c2cd4ad40e740a42c4c6fdf96a3e8cec9e852aee44"
+        ]
+      },
+      "balances": {
+        "free": "999.779631432065389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "resources": {
+        "CPUQuotaPerSecUSec": "500ms",
+        "MemoryMax": "134217728"
+      },
+      "analyst_path": "/opt/tradingbot-ai-brackets-74f77d0-analyst",
+      "timer_before": "NextElapseUSecRealtime=Wed 2026-11-18 16:02:00 UTC\nActiveState=active\nUnitFileState=enabled",
+      "pre_external_restore": "04c902760ec9fe0da38e06990692f4382ab13efccf877199a265a937b0113b19",
+      "local_restore_sha256": "6b7e666c4b8e1ddcafbdd2113ff9cb0449fc3769d11373a82b27ab7e88ca9b5e"
+    },
+    "timer_restored_line": "TIMER_RESTORED Wed 2026-11-18 16:02:00 UTC"
+  },
+  "post_verification": {
+    "captured_ms": 1795007318442,
+    "duration_ns": 122607038727,
+    "publications": 206,
+    "first_ms": 1795007194597,
+    "last_ms": 1795007315606,
+    "max_publication_interval_ms": 2523,
+    "error_publications": 0,
+    "funding_error_publications": 0,
+    "quote_rejection_publications": 0,
+    "gap_messages_after_start": [
+      {
+        "at_ms": 1795007022898,
+        "detail": "noncontiguous_or_stale_public_trades_no_backfills",
+        "kind": "DATA_GAP",
+        "source": {
+          "active_armed_ms": null,
+          "batch_hash": "eb0e1a769e935bf19e77a1213d458efcf8d0e9975f8d71949383365bd3430a65",
+          "discontinuities": [
+            {
+              "expected": 3530907406,
+              "received": 3530907581
+            }
+          ],
+          "execution_gap": true,
+          "fetch_monotonic_ms": 0,
+          "fetch_ms": 0,
+          "first_event_ms": 1795007021539,
+          "first_id": 3530907581,
+          "future_rows": 0,
+          "gap": true,
+          "history_contiguous": false,
+          "last_event_age_ms": 393,
+          "last_event_ms": 1795007022503,
+          "last_id": 3530907613,
+          "newest_age_ms": 393,
+          "oldest_age_ms": 1357,
+          "poll_started_ms": 1795007022143,
+          "quote_fetch_ms": 521,
+          "received_ms": 1795007022896,
+          "requested_after_id": 3530907405,
+          "rows": 33,
+          "stale_first_ms": null,
+          "stale_last_ms": null,
+          "stale_rows": 0,
+          "started_ms": 1795007022896,
+          "stream": {
+            "connected": true,
+            "duplicates": 0,
+            "highwater": 33,
+            "last_fault": null,
+            "oldest_dequeued_wait_ms": 1077,
+            "queued": 0,
+            "read_timeouts": 0,
+            "reason": "bootstrap",
+            "received": 33,
+            "reconnects": 1
+          },
+          "symbol": "BTCUSDT",
+          "trade_validation_ms": 0,
+          "transport": "websocket"
+        },
+        "symbol": "BTCUSDT"
+      }
+    ],
+    "latest": {
+      "as_of_ms": 1795007315606,
+      "market_errors": {
+        "BTCUSDT": null,
+        "ETHUSDT": null,
+        "SOLUSDT": null
+      },
+      "funding_error": null,
+      "gap_ms": 1795007022898,
+      "quote_rejections": [],
+      "quote_overflows": 0,
+      "quote_connections": {
+        "book": {
+          "connected": true,
+          "connections": 1
+        },
+        "market": {
+          "connected": true,
+          "connections": 1
+        }
+      },
+      "trade_stream": {
+        "connected": true,
+        "duplicates": 0,
+        "highwater": 251,
+        "last_fault": null,
+        "oldest_dequeued_wait_ms": 10,
+        "queued": 0,
+        "read_timeouts": 0,
+        "reason": null,
+        "received": 5749,
+        "reconnects": 1
+      },
+      "oldest_event_age_ms": 282
+    },
+    "source_ages": {
+      "book": {
+        "event_age_ms": 372,
+        "source_age_ms": 373,
+        "received_age_ms": 251
+      },
+      "mark": {
+        "event_age_ms": 695,
+        "source_age_ms": 695,
+        "received_age_ms": 518
+      }
+    },
+    "finance": {
+      "financial_sha256": "8b6d8e334ec49f4717eddfa464e2cb5d47c078ed22a3d14e5f4918bbf47d46ae",
+      "counts": {
+        "ledger_events": 40,
+        "ledger_postings": 96,
+        "bracket_plans": 15,
+        "bracket_fills": 8,
+        "bracket_funding": 1
+      },
+      "balanced": true
+    },
+    "phase_file_preserved": {
+      "sha256": "b1a0955bd2a9ddbf5b3f14e0445c2abc4cc744da1d6ff0ddd1e469e1b38010a4",
+      "mtime_ns": 1794912274324134752,
+      "bytes": 1806583
+    },
+    "paper_pid": "592049",
+    "paper_writers": 1,
+    "telegram_pollers": 1,
+    "telegram_root": "/opt/tradingbot-ai-brackets-ui-c96ad52",
+    "renderer_hash": "2fcdf519655f18b9f0955c9947261a9482fa90f690fbe2116589a9851f55ee39",
+    "render_bytes": 1676,
+    "render_sha256": "8c4ac175ab8b9dc7741d2024756c1744a709ed90fb3de1d4b947f82c0c6e73a1",
+    "balances": {
+      "free": "999.779631432065389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "current_errors": {
+      "BTCUSDT": null,
+      "ETHUSDT": null,
+      "SOLUSDT": null
+    },
+    "external_restore": {
+      "captured_ms": 1795007666437,
+      "chunks": 10,
+      "host_bound": true,
+      "object": "paper-backups/daily/ai-bracket-study/1795007560919-fbab084eb6ce5b8159a9a3ae5c6ca1000e4fdb119eda56765eb4019df28bac20.cred",
+      "sha256": "fbab084eb6ce5b8159a9a3ae5c6ca1000e4fdb119eda56765eb4019df28bac20",
+      "sqlite_sha256": "2a2ae9e65487c26f37b2dfd52694cd5c19c2e94a311f5a43c07dba153e3e6bab",
+      "summary": {
+        "balances": {
+          "free": "999.7796314320653898110",
+          "funding_buffer": "0E-8",
+          "margin": "0.0000",
+          "reserved": "0E-8"
+        },
+        "events": 40,
+        "fills": 8,
+        "funding_events": 1,
+        "plans": [
+          [
+            "06482251c3e676b47bc968953a3a516f0388e3915675617f06bc5544513137db",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "68845.8",
+            "69159.3",
+            "67490.4"
+          ],
+          [
+            "2287bd8ecdf74bb44f1993c247a808cbe6a341c5e1422281b0a11627b9e1dcf5",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65208.4",
+            "65364.8",
+            "64271"
+          ],
+          [
+            "2ebd4de28420d2c0c64df295944c6792759a4b2aed33e9c2beb430564c8fc3af",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69571.2",
+            "68651.6"
+          ],
+          [
+            "32d3341f75baf267d0d0e0f86209aacfdc1302076723b1c86d34cf4dee527fe0",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "69466.2",
+            "69572",
+            "68652.4"
+          ],
+          [
+            "4694d2cee86b9d88faf3c3c2cd4ad40e740a42c4c6fdf96a3e8cec9e852aee44",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64257.6",
+            "64592.9",
+            "61971.3"
+          ],
+          [
+            "48b56f255f17a2e6cb496e3cc3ae786ccbd0d7604a09b47332bd838ea5aeda48",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65048.2",
+            "65187.5",
+            "64098.4"
+          ],
+          [
+            "54ba06dd294dc42a8c3fc69d73f0ae85d1aa702e7ab6a20d9f10de44afb02a87",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65340",
+            "65499.5",
+            "64378.4"
+          ],
+          [
+            "85bad8d6abbc54782ef1d32ee916d285561684f12bc012867f6ecf813c129e65",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64916.1",
+            "65232.4",
+            "63762.9"
+          ],
+          [
+            "8ac14a5442b915f7644877389c2b6ebca5908493d17e02bfd8a89d11cf4ae10f",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64518.6",
+            "64692.7",
+            "63291.9"
+          ],
+          [
+            "9d25c7fd0db4fd66bd2895a76cf2ec9935c6b5cef4575eafe1a9af8b80fbe02a",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65565",
+            "66127.9",
+            "63773.6"
+          ],
+          [
+            "9ee9b57b263b96995415bbb25b837b72cb2a0db4f6240834763c14225a7067ac",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64141.1",
+            "64542.2",
+            "61986.6"
+          ],
+          [
+            "a4879e743bc5d93bf6ff48b1d3c4fa5757f3a961d75ec4fede0e89fdc0c13086",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "63871",
+            "64099.1",
+            "61984.7"
+          ],
+          [
+            "d8abc95be214f24ad85f24e14b73c9f9f1e6ff3e32764aececa56dcfb3af29cf",
+            "CLOSED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "LONG",
+            "64766.4",
+            "64478.8",
+            "66074.2"
+          ],
+          [
+            "f7f36ce68b51273417f986d5ed9a079dfd45df37463270de523f3f420d962214",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "64636",
+            "64787.5",
+            "63658.1"
+          ],
+          [
+            "fe1ff8688aefc70211f8edf2c436430099c92f0ec37170d33e5084705bb88025",
+            "CANCELED",
+            "0",
+            "0",
+            "BTCUSDT",
+            "SHORT",
+            "65136.4",
+            "65272.9",
+            "64283.5"
+          ]
+        ]
+      }
+    },
+    "services": {
+      "ai-bracket-paper.service": "MainPID=592049\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-6e7ff40-paper\nActiveState=active\nUnitFileState=enabled",
+      "ai-bracket-analyst.service": "MainPID=0\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-74f77d0-analyst\nActiveState=inactive\nUnitFileState=static",
+      "ai-bracket-analyst.timer": "NextElapseUSecRealtime=Wed 2026-11-18 16:02:00 UTC\nActiveState=active\nUnitFileState=enabled"
+    },
+    "normal_local_restore": {
+      "path": "/var/lib/ai-bracket-study/backups/1795007020574.sqlite",
+      "sha256": "ab6849d7e35a1ef499f8339ca91ba9bcd14f65b0be665a69d68c80d6a29b2df6",
+      "financial_sha256": "8b6d8e334ec49f4717eddfa464e2cb5d47c078ed22a3d14e5f4918bbf47d46ae",
+      "counts": {
+        "ledger_events": 40,
+        "ledger_postings": 96,
+        "bracket_plans": 15,
+        "bracket_fills": 8,
+        "bracket_funding": 1
+      },
+      "balanced": true
+    },
+    "final_finance": {
+      "financial_sha256": "8b6d8e334ec49f4717eddfa464e2cb5d47c078ed22a3d14e5f4918bbf47d46ae",
+      "counts": {
+        "ledger_events": 40,
+        "ledger_postings": 96,
+        "bracket_plans": 15,
+        "bracket_fills": 8,
+        "bracket_funding": 1
+      },
+      "balanced": true
+    },
+    "post_backup_public": {
+      "as_of_ms": 1795007672712,
+      "balances": {
+        "free": "999.779631432065389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "ledger_balanced": true,
+      "market_errors": {
+        "BTCUSDT": null,
+        "ETHUSDT": null,
+        "SOLUSDT": null
+      }
+    },
+    "checked_end_ms": 1795007673047
+  },
+  "final_read": {
+    "checked_ms": 1795007811125,
+    "budget": {
+      "attempts": 36,
+      "reserved_micro_usd": 94700
+    },
+    "post_ready_gaps": [
+      {
+        "at_ms": 1795007612210,
+        "detail": "noncontiguous_or_stale_public_trades_no_backfills",
+        "kind": "DATA_GAP",
+        "source": {
+          "active_armed_ms": null,
+          "batch_hash": "306e20a5a0a188c6829d47e29c39006fcd6699b036a613a0ac48f6d514046d50",
+          "discontinuities": [],
+          "execution_gap": true,
+          "fetch_monotonic_ms": 0,
+          "fetch_ms": 0,
+          "first_event_ms": 1795007606788,
+          "first_id": 3530918141,
+          "future_rows": 0,
+          "gap": true,
+          "history_contiguous": true,
+          "last_event_age_ms": 335,
+          "last_event_ms": 1795007611872,
+          "last_id": 3530918195,
+          "newest_age_ms": 335,
+          "oldest_age_ms": 5419,
+          "poll_interval_mono_ms": 5532,
+          "poll_interval_ms": 5532,
+          "poll_started_ms": 1795007612168,
+          "previous_cycle": {
+            "batch_finalize_ms": 972,
+            "batch_lock_wait_ms": 0,
+            "batch_processing_ms": 0,
+            "event_count": 8,
+            "idle_events_skipped": 8,
+            "poll_started_ms": 1795007606636,
+            "total_ms": 1246
+          },
+          "quote_fetch_ms": 1,
+          "received_ms": 1795007612207,
+          "requested_after_id": 3530918140,
+          "rows": 55,
+          "stale_first_ms": 1795007606788,
+          "stale_last_ms": 1795007607065,
+          "stale_rows": 3,
+          "started_ms": 1795007612207,
+          "stream": {
+            "connected": true,
+            "duplicates": 0,
+            "highwater": 251,
+            "last_fault": null,
+            "oldest_dequeued_wait_ms": 4322,
+            "queued": 0,
+            "read_timeouts": 0,
+            "reason": null,
+            "received": 10615,
+            "reconnects": 1
+          },
+          "symbol": "BTCUSDT",
+          "trade_validation_ms": 0,
+          "transport": "websocket"
+        },
+        "symbol": "BTCUSDT"
+      }
+    ],
+    "active_states": [],
+    "working_pauses": {
+      "reserve": 1,
+      "spot": 1,
+      "futures_isolated": 1,
+      "futures_cross": 1,
+      "margin_cross": 1
+    },
+    "public": {
+      "as_of_ms": 1795007813981,
+      "balances": {
+        "free": "999.779631432065389811",
+        "funding_buffer": "0",
+        "margin": "0",
+        "reserved": "0"
+      },
+      "ledger_balanced": true,
+      "market_errors": {
+        "BTCUSDT": null,
+        "ETHUSDT": null,
+        "SOLUSDT": null
+      },
+      "api_summary": {
+        "estimated_cost_micro_usd": "1070.6",
+        "remaining_micro_usd": 155300,
+        "reserved_micro_usd": 2790,
+        "symbol": "BTCUSDT",
+        "usage": {
+          "input_tokens": 3881,
+          "output_tokens": 1365,
+          "total_tokens": 5246
+        }
+      }
+    },
+    "backup_timeout": "TimeoutStartUSec=6min\nResult=success\nCPUQuotaPerSecUSec=150ms\nMemoryMax=100663296\nActiveState=inactive\n",
+    "phase_sha256": "b1a0955bd2a9ddbf5b3f14e0445c2abc4cc744da1d6ff0ddd1e469e1b38010a4"
+  },
+  "completed_automation": {
+    "id": "trading-bot-paper-b36103c",
+    "delete_confirmed_by": "automation_update delete; subsequent delete returned not_found",
+    "verified_absent_before_baku": "2026-11-18T17:19:37+04:00",
+    "replacement_created": false
+  },
+  "source_files": [
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-raw.json",
+      "bytes": 1609903,
+      "sha256": "9c2495fbd98a6fd9bff4adaea483be25c8a76cc7ec31322c68dd26d208735f73"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-causal.json",
+      "bytes": 7973,
+      "sha256": "1f65baa33a2f441469ce47b85ed6a65a1d7bf880f31b4d1f99577538d53d18a3"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-rejection.json",
+      "bytes": 2302,
+      "sha256": "4c628dc7b313c051932adb40c33b920def47b96076622b1653334fdc2d0e6e39"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-reproduce.json",
+      "bytes": 797,
+      "sha256": "511e0ece1aee85b00aaadb3ecc6643b0ed9a99038cdd4663e0fc99564480d721"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-testfix.json",
+      "bytes": 510,
+      "sha256": "03d8a944f43670db2e5598d0add0285e18b833e18a408d83186e0b96b29cd963"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-backup.json",
+      "bytes": 10981,
+      "sha256": "0552a9d53a5e3b1af3cfdf7a0606d8e6834c3f1533f2e23b955368c06c7ecfff"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-backup-validation.json",
+      "bytes": 2990,
+      "sha256": "2264bbb0ebc4130b0824792caa4de03176399f6d1932566a0c8c9be379c9abbb"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-install.jsonl",
+      "bytes": 2947,
+      "sha256": "74ee2403813f224a03e441495a3a8e35ff8df2f75705a513b0c9827b8dfdade9"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-postverify.jsonl",
+      "bytes": 7326,
+      "sha256": "8aa0cd33df785156e58c3b1f200f54e809f4a96404df62c63a1f87406c87abce"
+    },
+    {
+      "path": "D:\\Documents\\Codex\\stream-work\\paper-day1-final-read.json",
+      "bytes": 2247,
+      "sha256": "5179c553b899b407a005d0617ebaf574ad086f8d0304ef25a287cf5f446c4ca1"
+    }
+  ]
+}
