@@ -134,8 +134,11 @@ class StreamFeed(Feed):
 
     def quote_packet(self,symbol):
         """No I/O: latest absolute BBO + mark, plus bounded protective events."""
-        now=self.clock()
         with self.lock:
+            # Clock and components must describe the same locked snapshot.
+            # A receiver can publish after an earlier clock read while this
+            # thread waits for the lock; that is not a future receipt.
+            now=self.clock()
             st=self.quote_states[symbol];book=st['book'];mark=st['mark'];updates=list(st['queue']);st['queue'].clear()
             channels={k:dict(v) for k,v in st['channels'].items()};fault=st['pending_fault'];st['pending_fault']=None
             diag={'transport':'websocket','channels':channels,'overflows':st['overflows'],
