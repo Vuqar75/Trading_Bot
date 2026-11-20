@@ -1,0 +1,974 @@
+{
+  "W-BTCUSDT-base": {
+    "all": {
+      "closed": 35,
+      "gross": -0.4835282570000123,
+      "fees": 2.7780705956345644,
+      "impact": 2.778070474752145,
+      "liquidation_fee": 0.0,
+      "funding": 0.0,
+      "net": -6.039669327386721,
+      "mean_net": -0.17256198078247775,
+      "break_even_bps": -1.7406137963535078,
+      "max_drawdown": 0.008775608857012831,
+      "mean_hold_min": 229.0857142857143,
+      "exit_reasons": {
+        "stop": 3,
+        "time": 32
+      },
+      "rejections": {
+        "min_qty_or_cap": 20
+      },
+      "unresolved": {},
+      "ending_cash": 993.9603306726133,
+      "without_best_trade": -7.460047623211741,
+      "funding_ambiguous": 0,
+      "signals": 55,
+      "busy": 0,
+      "net_without_best_day": -7.460047623211741,
+      "sides": {
+        "LONG": {
+          "count": 17,
+          "net": -2.8750474089711613
+        },
+        "SHORT": {
+          "count": 18,
+          "net": -3.1646219184155604
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 12,
+        "gross": -0.6104269999999957,
+        "fees": 1.05774263910675,
+        "impact": 1.0577424864998903,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -2.725912125606636,
+        "mean_net": -0.227159343800553,
+        "break_even_bps": -5.772799872292814,
+        "max_drawdown": null,
+        "mean_hold_min": 223.58333333333334,
+        "exit_reasons": {
+          "stop": 1,
+          "time": 11
+        },
+        "rejections": {
+          "min_qty_or_cap": 20
+        },
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -4.116744320056652,
+        "funding_ambiguous": 0,
+        "signals": 32,
+        "busy": 0,
+        "net_without_best_day": -4.116744320056652,
+        "sides": {
+          "LONG": {
+            "count": 8,
+            "net": -1.382425168506676
+          },
+          "SHORT": {
+            "count": 4,
+            "net": -1.34348695709996
+          }
+        }
+      },
+      "2026": {
+        "closed": 23,
+        "gross": 0.1268987429999834,
+        "fees": 1.7203279565278142,
+        "impact": 1.7203279882522549,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -3.313757201780086,
+        "mean_net": -0.14407640007739503,
+        "break_even_bps": 0.7375694943814166,
+        "max_drawdown": null,
+        "mean_hold_min": 231.95652173913044,
+        "exit_reasons": {
+          "stop": 2,
+          "time": 21
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -4.734135497605106,
+        "funding_ambiguous": 0,
+        "signals": 23,
+        "busy": 0,
+        "net_without_best_day": -4.734135497605106,
+        "sides": {
+          "LONG": {
+            "count": 9,
+            "net": -1.492622240464485
+          },
+          "SHORT": {
+            "count": 14,
+            "net": -1.8211349613156005
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": true,
+      "2025_count": false,
+      "2025_sides": false,
+      "2025_net": false,
+      "2026_count": false,
+      "2026_sides": false,
+      "2026_net": false
+    }
+  },
+  "W-BTCUSDT-stress": {
+    "all": {
+      "closed": 35,
+      "gross": 0.2318460679999692,
+      "fees": 2.777963059310966,
+      "impact": 5.555926350467708,
+      "liquidation_fee": 0.0,
+      "funding": 0.0,
+      "net": -8.102043341778703,
+      "mean_net": -0.23148695262224867,
+      "break_even_bps": 0.834872576154631,
+      "max_drawdown": 0.009070700782737497,
+      "mean_hold_min": 232.2,
+      "exit_reasons": {
+        "stop": 3,
+        "time": 32
+      },
+      "rejections": {
+        "min_qty_or_cap": 20
+      },
+      "unresolved": {},
+      "ending_cash": 991.8979566582218,
+      "without_best_trade": -9.215507620578713,
+      "funding_ambiguous": 0,
+      "signals": 55,
+      "busy": 0,
+      "net_without_best_day": -9.215507620578713,
+      "sides": {
+        "LONG": {
+          "count": 17,
+          "net": -3.123330751552763
+        },
+        "SHORT": {
+          "count": 18,
+          "net": -4.978712590225941
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 12,
+        "gross": -0.5090830420000425,
+        "fees": 1.057679113020521,
+        "impact": 2.115357716957864,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -3.6821198719784274,
+        "mean_net": -0.30684332266486897,
+        "break_even_bps": -4.8178628380404325,
+        "max_drawdown": null,
+        "mean_hold_min": 223.25,
+        "exit_reasons": {
+          "stop": 1,
+          "time": 11
+        },
+        "rejections": {
+          "min_qty_or_cap": 20
+        },
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -4.639941940828443,
+        "funding_ambiguous": 0,
+        "signals": 32,
+        "busy": 0,
+        "net_without_best_day": -4.639941940828443,
+        "sides": {
+          "LONG": {
+            "count": 8,
+            "net": -1.334293933978473
+          },
+          "SHORT": {
+            "count": 4,
+            "net": -2.3478259379999544
+          }
+        }
+      },
+      "2026": {
+        "closed": 23,
+        "gross": 0.7409291100000117,
+        "fees": 1.720283946290445,
+        "impact": 3.4405686335098435,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -4.419923469800277,
+        "mean_net": -0.1921705856434903,
+        "break_even_bps": 4.306810934417512,
+        "max_drawdown": null,
+        "mean_hold_min": 236.8695652173913,
+        "exit_reasons": {
+          "time": 21,
+          "stop": 2
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -5.533387748600285,
+        "funding_ambiguous": 0,
+        "signals": 23,
+        "busy": 0,
+        "net_without_best_day": -5.533387748600285,
+        "sides": {
+          "LONG": {
+            "count": 9,
+            "net": -1.7890368175742901
+          },
+          "SHORT": {
+            "count": 14,
+            "net": -2.6308866522259864
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": true,
+      "2025_count": false,
+      "2025_sides": false,
+      "2025_net": false,
+      "2025_without_best_day": false,
+      "2026_count": false,
+      "2026_sides": false,
+      "2026_net": false,
+      "2026_without_best_day": false
+    }
+  },
+  "F-BTCUSDT-base": {
+    "all": {
+      "closed": 1486,
+      "gross": 1.966000000000051,
+      "fees": 117.98315180850001,
+      "impact": 117.9831522999865,
+      "liquidation_fee": 0.0,
+      "funding": -0.009425949037683118,
+      "net": -234.00973005752414,
+      "mean_net": -0.1574762651800297,
+      "break_even_bps": 0.16583108585871104,
+      "max_drawdown": 0.2341666369106605,
+      "mean_hold_min": 30.0,
+      "exit_reasons": {
+        "time": 1486
+      },
+      "rejections": {
+        "min_qty_or_cap": 904
+      },
+      "unresolved": {},
+      "ending_cash": 765.9902699424753,
+      "without_best_trade": -235.93347397807415,
+      "funding_ambiguous": 0,
+      "signals": 2532,
+      "busy": 142,
+      "net_without_best_day": -235.10714496427414,
+      "sides": {
+        "LONG": {
+          "count": 708,
+          "net": -113.40770942675726
+        },
+        "SHORT": {
+          "count": 778,
+          "net": -120.60202063076687
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 454,
+        "gross": -0.4670999999998604,
+        "fees": 40.843588466775,
+        "impact": 40.84358834999517,
+        "liquidation_fee": 0.0,
+        "funding": 0.0032087058852267097,
+        "net": -82.15106811088481,
+        "mean_net": -0.1809494892310238,
+        "break_even_bps": -0.11357204841519992,
+        "max_drawdown": null,
+        "mean_hold_min": 30.0,
+        "exit_reasons": {
+          "time": 454
+        },
+        "rejections": {
+          "min_qty_or_cap": 904
+        },
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -83.26274422475592,
+        "funding_ambiguous": 0,
+        "signals": 1399,
+        "busy": 41,
+        "net_without_best_day": -83.16518620873482,
+        "sides": {
+          "LONG": {
+            "count": 201,
+            "net": -38.26711715362735
+          },
+          "SHORT": {
+            "count": 253,
+            "net": -43.883950957257454
+          }
+        }
+      },
+      "2026": {
+        "closed": 1032,
+        "gross": 2.4330999999999117,
+        "fees": 77.13956334172501,
+        "impact": 77.13956394999133,
+        "liquidation_fee": 0.0,
+        "funding": -0.012634654922909827,
+        "net": -151.85866194663933,
+        "mean_net": -0.1471498662273637,
+        "break_even_bps": 0.3137739696526774,
+        "max_drawdown": null,
+        "mean_hold_min": 30.0,
+        "exit_reasons": {
+          "time": 1032
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -153.78240586718934,
+        "funding_ambiguous": 0,
+        "signals": 1133,
+        "busy": 101,
+        "net_without_best_day": -152.95607685338933,
+        "sides": {
+          "LONG": {
+            "count": 507,
+            "net": -75.14059227312991
+          },
+          "SHORT": {
+            "count": 525,
+            "net": -76.71806967350942
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": false,
+      "2025_count": true,
+      "2025_sides": true,
+      "2025_net": false,
+      "2026_count": true,
+      "2026_sides": true,
+      "2026_net": false
+    }
+  },
+  "F-BTCUSDT-stress": {
+    "all": {
+      "closed": 1485,
+      "gross": 2.1721871440000244,
+      "fees": 117.88358439183843,
+      "impact": 235.76717095585107,
+      "liquidation_fee": 0.0,
+      "funding": -0.009425949037683118,
+      "net": -351.48799415272714,
+      "mean_net": -0.23669225195469842,
+      "break_even_bps": 0.1834726617751539,
+      "max_drawdown": 0.35154883185329794,
+      "mean_hold_min": 29.996632996632997,
+      "exit_reasons": {
+        "time": 1481,
+        "stop": 4
+      },
+      "rejections": {
+        "min_qty_or_cap": 905
+      },
+      "unresolved": {},
+      "ending_cash": 648.5120058472747,
+      "without_best_trade": -353.4035127795771,
+      "funding_ambiguous": 0,
+      "signals": 2532,
+      "busy": 142,
+      "net_without_best_day": -352.85812893532716,
+      "sides": {
+        "LONG": {
+          "count": 708,
+          "net": -161.84744569077804
+        },
+        "SHORT": {
+          "count": 777,
+          "net": -189.6405484619491
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 453,
+        "gross": -0.16321570600006124,
+        "fees": 40.74416078946085,
+        "impact": 81.48832141570132,
+        "liquidation_fee": 0.0,
+        "funding": 0.0032087058852267097,
+        "net": -122.392489205277,
+        "mean_net": -0.27018209537588744,
+        "break_even_bps": -0.03927273708296652,
+        "max_drawdown": null,
+        "mean_hold_min": 29.991169977924944,
+        "exit_reasons": {
+          "time": 451,
+          "stop": 2
+        },
+        "rejections": {
+          "min_qty_or_cap": 905
+        },
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -123.31170680477702,
+        "funding_ambiguous": 0,
+        "signals": 1399,
+        "busy": 41,
+        "net_without_best_day": -122.95259322812703,
+        "sides": {
+          "LONG": {
+            "count": 201,
+            "net": -52.52558457142743
+          },
+          "SHORT": {
+            "count": 252,
+            "net": -69.86690463384957
+          }
+        }
+      },
+      "2026": {
+        "closed": 1032,
+        "gross": 2.3354028500000856,
+        "fees": 77.13942360237758,
+        "impact": 154.27884954014976,
+        "liquidation_fee": 0.0,
+        "funding": -0.012634654922909827,
+        "net": -229.09550494745014,
+        "mean_net": -0.2219917683599323,
+        "break_even_bps": 0.301123636829993,
+        "max_drawdown": null,
+        "mean_hold_min": 29.999031007751938,
+        "exit_reasons": {
+          "time": 1030,
+          "stop": 2
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -231.01102357430014,
+        "funding_ambiguous": 0,
+        "signals": 1133,
+        "busy": 101,
+        "net_without_best_day": -230.46563973005016,
+        "sides": {
+          "LONG": {
+            "count": 507,
+            "net": -109.32186111935063
+          },
+          "SHORT": {
+            "count": 525,
+            "net": -119.77364382809952
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": false,
+      "2025_count": true,
+      "2025_sides": true,
+      "2025_net": false,
+      "2025_without_best_day": false,
+      "2026_count": true,
+      "2026_sides": true,
+      "2026_net": false,
+      "2026_without_best_day": false
+    }
+  },
+  "W-ETHUSDT-base": {
+    "all": {
+      "closed": 64,
+      "gross": -9.938348393800121,
+      "fees": 6.307687839576099,
+      "impact": 6.30768535498827,
+      "liquidation_fee": 0.0,
+      "funding": 0.0,
+      "net": -22.553721588364493,
+      "mean_net": -0.3524018998181952,
+      "break_even_bps": -15.758723084258234,
+      "max_drawdown": 0.030474282011321477,
+      "mean_hold_min": 206.921875,
+      "exit_reasons": {
+        "time": 49,
+        "stop": 15
+      },
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 977.4462784116358,
+      "without_best_trade": -26.622432153239505,
+      "funding_ambiguous": 0,
+      "signals": 64,
+      "busy": 0,
+      "net_without_best_day": -26.622432153239505,
+      "sides": {
+        "LONG": {
+          "count": 27,
+          "net": -9.169717392046673
+        },
+        "SHORT": {
+          "count": 37,
+          "net": -13.384004196317818
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 34,
+        "gross": -6.931677946300058,
+        "fees": 3.338875984930737,
+        "impact": 3.3388742520109167,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -13.609428183241713,
+        "mean_net": -0.4002772995071092,
+        "break_even_bps": -20.74903586152273,
+        "max_drawdown": null,
+        "mean_hold_min": 189.08823529411765,
+        "exit_reasons": {
+          "time": 23,
+          "stop": 11
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -17.678138748116723,
+        "funding_ambiguous": 0,
+        "signals": 34,
+        "busy": 0,
+        "net_without_best_day": -17.678138748116723,
+        "sides": {
+          "LONG": {
+            "count": 15,
+            "net": -8.26156583356226
+          },
+          "SHORT": {
+            "count": 19,
+            "net": -5.3478623496794535
+          }
+        }
+      },
+      "2026": {
+        "closed": 30,
+        "gross": -3.006670447500063,
+        "fees": 2.968811854645362,
+        "impact": 2.9688111029773534,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -8.944293405122778,
+        "mean_net": -0.2981431135040926,
+        "break_even_bps": -10.137646216298736,
+        "max_drawdown": null,
+        "mean_hold_min": 227.13333333333333,
+        "exit_reasons": {
+          "time": 26,
+          "stop": 4
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -10.743366334795297,
+        "funding_ambiguous": 0,
+        "signals": 30,
+        "busy": 0,
+        "net_without_best_day": -10.743366334795297,
+        "sides": {
+          "LONG": {
+            "count": 12,
+            "net": -0.9081515584844126
+          },
+          "SHORT": {
+            "count": 18,
+            "net": -8.036141846638365
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": false,
+      "2025_count": true,
+      "2025_sides": true,
+      "2025_net": false,
+      "2026_count": true,
+      "2026_sides": true,
+      "2026_net": false
+    }
+  },
+  "W-ETHUSDT-stress": {
+    "all": {
+      "closed": 64,
+      "gross": -14.952277308600198,
+      "fees": 6.311491611964354,
+      "impact": 12.622968271650636,
+      "liquidation_fee": 0.0,
+      "funding": 0.0,
+      "net": -33.886737192215186,
+      "mean_net": -0.5294802686283623,
+      "break_even_bps": -23.690514400794804,
+      "max_drawdown": 0.03660411111178726,
+      "mean_hold_min": 199.109375,
+      "exit_reasons": {
+        "stop": 18,
+        "time": 46
+      },
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 966.1132628077843,
+      "without_best_trade": -38.1345634592152,
+      "funding_ambiguous": 0,
+      "signals": 64,
+      "busy": 0,
+      "net_without_best_day": -38.1345634592152,
+      "sides": {
+        "LONG": {
+          "count": 27,
+          "net": -15.465389222288362
+        },
+        "SHORT": {
+          "count": 37,
+          "net": -18.421347969926828
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 34,
+        "gross": -12.645321383600127,
+        "fees": 3.339973020175092,
+        "impact": 6.679933395028391,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -22.66522779880361,
+        "mean_net": -0.6666243470236356,
+        "break_even_bps": -37.834132561489554,
+        "max_drawdown": null,
+        "mean_hold_min": 175.55882352941177,
+        "exit_reasons": {
+          "stop": 13,
+          "time": 21
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -26.913054065803628,
+        "funding_ambiguous": 0,
+        "signals": 34,
+        "busy": 0,
+        "net_without_best_day": -26.913054065803628,
+        "sides": {
+          "LONG": {
+            "count": 15,
+            "net": -13.069934558160396
+          },
+          "SHORT": {
+            "count": 19,
+            "net": -9.595293240643214
+          }
+        }
+      },
+      "2026": {
+        "closed": 30,
+        "gross": -2.3069559250000715,
+        "fees": 2.971518591789262,
+        "impact": 5.943034876622245,
+        "liquidation_fee": 0.0,
+        "funding": 0.0,
+        "net": -11.22150939341158,
+        "mean_net": -0.37405031311371933,
+        "break_even_bps": -7.769624412851523,
+        "max_drawdown": null,
+        "mean_hold_min": 225.8,
+        "exit_reasons": {
+          "stop": 5,
+          "time": 25
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -12.665435613441591,
+        "funding_ambiguous": 0,
+        "signals": 30,
+        "busy": 0,
+        "net_without_best_day": -12.665435613441591,
+        "sides": {
+          "LONG": {
+            "count": 12,
+            "net": -2.395454664127965
+          },
+          "SHORT": {
+            "count": 18,
+            "net": -8.826054729283614
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": false,
+      "2025_count": true,
+      "2025_sides": true,
+      "2025_net": false,
+      "2025_without_best_day": false,
+      "2026_count": true,
+      "2026_sides": true,
+      "2026_net": false,
+      "2026_without_best_day": false
+    }
+  },
+  "F-ETHUSDT-base": {
+    "all": {
+      "closed": 1399,
+      "gross": -4.550866172699954,
+      "fees": 138.0781059710077,
+      "impact": 138.07810483327626,
+      "liquidation_fee": 0.0,
+      "funding": 0.04564010640882542,
+      "net": -280.6614368705751,
+      "mean_net": -0.20061575187317732,
+      "break_even_bps": -0.3262467116510168,
+      "max_drawdown": 0.28092811008528445,
+      "mean_hold_min": 29.99857040743388,
+      "exit_reasons": {
+        "time": 1397,
+        "stop": 2
+      },
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 719.3385631294216,
+      "without_best_trade": -285.0631436991251,
+      "funding_ambiguous": 0,
+      "signals": 1487,
+      "busy": 88,
+      "net_without_best_day": -284.48485745406265,
+      "sides": {
+        "LONG": {
+          "count": 617,
+          "net": -138.6871422857938
+        },
+        "SHORT": {
+          "count": 782,
+          "net": -141.97429458478126
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 695,
+        "gross": -6.409510000000089,
+        "fees": 68.4525000573775,
+        "impact": 68.45249845499241,
+        "liquidation_fee": 0.0,
+        "funding": 0.0564678482402996,
+        "net": -143.2580406641297,
+        "mean_net": -0.20612667721457512,
+        "break_even_bps": -0.9279434939287367,
+        "max_drawdown": null,
+        "mean_hold_min": 30.0,
+        "exit_reasons": {
+          "time": 695
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -147.65974749267974,
+        "funding_ambiguous": 0,
+        "signals": 738,
+        "busy": 43,
+        "net_without_best_day": -147.08146124761726,
+        "sides": {
+          "LONG": {
+            "count": 291,
+            "net": -71.7620162978896
+          },
+          "SHORT": {
+            "count": 404,
+            "net": -71.4960243662401
+          }
+        }
+      },
+      "2026": {
+        "closed": 704,
+        "gross": 1.8586438273001349,
+        "fees": 69.6256059136302,
+        "impact": 69.62560637828383,
+        "liquidation_fee": 0.0,
+        "funding": -0.010827741831474183,
+        "net": -137.40339620644536,
+        "mean_net": -0.19517527870233717,
+        "break_even_bps": 0.2653804796813993,
+        "max_drawdown": null,
+        "mean_hold_min": 29.99715909090909,
+        "exit_reasons": {
+          "time": 702,
+          "stop": 2
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -140.26357927274626,
+        "funding_ambiguous": 0,
+        "signals": 749,
+        "busy": 45,
+        "net_without_best_day": -139.8134126795213,
+        "sides": {
+          "LONG": {
+            "count": 326,
+            "net": -66.92512598790421
+          },
+          "SHORT": {
+            "count": 378,
+            "net": -70.47827021854117
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": false,
+      "2025_count": true,
+      "2025_sides": true,
+      "2025_net": false,
+      "2026_count": true,
+      "2026_sides": true,
+      "2026_net": false
+    }
+  },
+  "F-ETHUSDT-stress": {
+    "all": {
+      "closed": 1399,
+      "gross": 12.026047048199981,
+      "fees": 138.06300246449558,
+      "impact": 276.12601695502303,
+      "liquidation_fee": 0.0,
+      "funding": 0.045770866999378004,
+      "net": -402.1172015043192,
+      "mean_net": -0.2874318809895062,
+      "break_even_bps": 0.8743327957255943,
+      "max_drawdown": 0.40215249423698285,
+      "mean_hold_min": 29.98713366690493,
+      "exit_reasons": {
+        "time": 1395,
+        "stop": 4
+      },
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 597.8827984956819,
+      "without_best_trade": -405.55187046979006,
+      "funding_ambiguous": 0,
+      "signals": 1487,
+      "busy": 88,
+      "net_without_best_day": -404.8074487152701,
+      "sides": {
+        "LONG": {
+          "count": 617,
+          "net": -182.61222192403562
+        },
+        "SHORT": {
+          "count": 782,
+          "net": -219.50497958028362
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 695,
+        "gross": 1.608373980400056,
+        "fees": 68.4456953484548,
+        "impact": 136.8913923052762,
+        "liquidation_fee": 0.0,
+        "funding": 0.05683113988130219,
+        "net": -203.67188253344966,
+        "mean_net": -0.29305306839345274,
+        "break_even_bps": 0.2432707667755533,
+        "max_drawdown": null,
+        "mean_hold_min": 29.99136690647482,
+        "exit_reasons": {
+          "time": 693,
+          "stop": 2
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -206.42481039458968,
+        "funding_ambiguous": 0,
+        "signals": 738,
+        "busy": 43,
+        "net_without_best_day": -205.7997825803997,
+        "sides": {
+          "LONG": {
+            "count": 291,
+            "net": -90.18020692860034
+          },
+          "SHORT": {
+            "count": 404,
+            "net": -113.49167560484932
+          }
+        }
+      },
+      "2026": {
+        "closed": 704,
+        "gross": 10.417673067799925,
+        "fees": 69.61730711604076,
+        "impact": 139.2346246497468,
+        "liquidation_fee": 0.0,
+        "funding": -0.011060272881924184,
+        "net": -198.44531897086955,
+        "mean_net": -0.2818825553563488,
+        "break_even_bps": 1.4948115417348669,
+        "max_drawdown": null,
+        "mean_hold_min": 29.982954545454547,
+        "exit_reasons": {
+          "time": 702,
+          "stop": 2
+        },
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": -201.87998793634043,
+        "funding_ambiguous": 0,
+        "signals": 749,
+        "busy": 45,
+        "net_without_best_day": -201.13556618182045,
+        "sides": {
+          "LONG": {
+            "count": 326,
+            "net": -92.43201499543527
+          },
+          "SHORT": {
+            "count": 378,
+            "net": -106.0133039754343
+          }
+        }
+      }
+    },
+    "gates": {
+      "resolved": true,
+      "drawdown": false,
+      "2025_count": true,
+      "2025_sides": true,
+      "2025_net": false,
+      "2025_without_best_day": false,
+      "2026_count": true,
+      "2026_sides": true,
+      "2026_net": false,
+      "2026_without_best_day": false
+    }
+  }
+}

@@ -35,7 +35,7 @@ def crossings(trade_close, mark_close, start, begin, end):
     return signals, int((in_period & observed).sum()), int((in_period & ~observed).sum())
 
 
-def simulate(signals, trade, mark, funding, symbol, stress):
+def simulate(signals, trade, mark, funding, symbol, stress, *, hold_minutes=HOLD):
     delay = (6 if stress else 1) * engine.M
     busy_through = -1
     halted = False
@@ -48,16 +48,16 @@ def simulate(signals, trade, mark, funding, symbol, stress):
             record["rejection"] = "prior_position_unresolved"
         elif t <= busy_through:
             record["ignored"] = "position_or_pending"
-        elif t + delay + HOLD * engine.M >= engine.END:
+        elif t + delay + hold_minutes * engine.M >= engine.END:
             record["rejection"] = "incomplete_final_horizon"
         else:
             i = engine.ix(t + delay)
             ref, mp = trade[i, 0], mark[i, 0]
-            if np.isfinite(ref) and np.isfinite(mp) and mp > 0:
+            if "gap_bps" in signal and np.isfinite(ref) and np.isfinite(mp) and mp > 0:
                 side = 1 if signal["direction"] == "LONG" else -1
                 record["remaining_gap_bps"] = float(side * (mp - ref) / mp * 1e4)
             record.update(engine.execute(signal, trade, mark, funding, account, symbol, stress,
-                                         hold_minutes=HOLD))
+                                         hold_minutes=hold_minutes))
             busy_through = record.get("exit_ms", t + delay)
             halted = "unresolved" in record
         records.append(record)
