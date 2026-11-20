@@ -1,0 +1,375 @@
+{
+  "accepted": false,
+  "criteria": {
+    "base/drawdown": true,
+    "base/resolved": true,
+    "base/2025/count": false,
+    "base/2025/sides": false,
+    "base/2025/net": true,
+    "base/2026-01_10/count": false,
+    "base/2026-01_10/sides": false,
+    "base/2026-01_10/net": true,
+    "stress/drawdown": true,
+    "stress/resolved": true,
+    "stress/2025/count": false,
+    "stress/2025/sides": false,
+    "stress/2025/net": true,
+    "stress/2025/without_best": false,
+    "stress/2026-01_10/count": false,
+    "stress/2026-01_10/sides": false,
+    "stress/2026-01_10/net": false,
+    "stress/2026-01_10/without_best": false
+  },
+  "valid_hours": 16056,
+  "invalid_hours": 0,
+  "signals": 23,
+  "scenarios": {
+    "base": {
+      "all": {
+        "closed": 22,
+        "gross": 5.747786609699962,
+        "fees": 2.1651955979724975,
+        "impact": 2.165197034918914,
+        "liquidation_fee": 0.0,
+        "funding": -0.044422617055277794,
+        "net": 1.3729713597532733,
+        "mean_net": 0.06240778907969424,
+        "break_even_bps": 26.320696823848365,
+        "max_drawdown": 0.005711352594200394,
+        "mean_hold_min": 57.36363636363637,
+        "exit_reasons": {
+          "time": 20,
+          "stop": 2
+        },
+        "rejections": {},
+        "ignored_open": 1,
+        "unresolved": {},
+        "ending_cash": 1001.3729713597533,
+        "without_best_trade": -2.5667810832892313,
+        "funding_ambiguous": 0
+      },
+      "periods": {
+        "2025": {
+          "both": {
+            "closed": 15,
+            "gross": 4.284688223999962,
+            "fees": 1.473097752939944,
+            "impact": 1.4730988241118321,
+            "liquidation_fee": 0.0,
+            "funding": -0.0139796286925,
+            "net": 1.3245120182556853,
+            "mean_net": 0.08830080121704569,
+            "break_even_bps": 28.952667154148653,
+            "max_drawdown": null,
+            "mean_hold_min": 57.8,
+            "exit_reasons": {
+              "time": 14,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 1,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -2.6152404247868195,
+            "funding_ambiguous": 0,
+            "signals": 16
+          },
+          "LONG": {
+            "closed": 8,
+            "gross": 0.17547822399998583,
+            "fees": 0.787141635242444,
+            "impact": 0.7871416791118879,
+            "liquidation_fee": 0.0,
+            "funding": -0.00977553,
+            "net": -1.4085806203543465,
+            "mean_net": -0.1760725775442933,
+            "break_even_bps": 2.1053537194666205,
+            "max_drawdown": null,
+            "mean_hold_min": 55.875,
+            "exit_reasons": {
+              "time": 7,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -3.920488498354352,
+            "funding_ambiguous": 0,
+            "signals": 8
+          },
+          "SHORT": {
+            "closed": 7,
+            "gross": 4.109209999999976,
+            "fees": 0.6859561176975,
+            "impact": 0.6859571449999442,
+            "liquidation_fee": 0.0,
+            "funding": -0.0042040986925,
+            "net": 2.7330926386100316,
+            "mean_net": 0.3904418055157188,
+            "break_even_bps": 59.66476446525042,
+            "max_drawdown": null,
+            "mean_hold_min": 60.0,
+            "exit_reasons": {
+              "time": 7
+            },
+            "rejections": {},
+            "ignored_open": 1,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -1.2066598044324732,
+            "funding_ambiguous": 0,
+            "signals": 8
+          }
+        },
+        "2026-01_10": {
+          "both": {
+            "closed": 7,
+            "gross": 1.4630983857000004,
+            "fees": 0.6920978450325536,
+            "impact": 0.6920982108070819,
+            "liquidation_fee": 0.0,
+            "funding": -0.03044298836277779,
+            "net": 0.048459341497588015,
+            "mean_net": 0.006922763071084003,
+            "break_even_bps": 20.708842024823525,
+            "max_drawdown": null,
+            "mean_hold_min": 56.42857142857143,
+            "exit_reasons": {
+              "time": 6,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -2.0812946010424245,
+            "funding_ambiguous": 0,
+            "signals": 7
+          },
+          "LONG": {
+            "closed": 4,
+            "gross": 1.0212100000000066,
+            "fees": 0.39480130969750005,
+            "impact": 0.3948015649999725,
+            "liquidation_fee": 0.0,
+            "funding": -0.008180898550263275,
+            "net": 0.2234262267522713,
+            "mean_net": 0.05585655668806783,
+            "break_even_bps": 25.692425244792407,
+            "max_drawdown": null,
+            "mean_hold_min": 60.0,
+            "exit_reasons": {
+              "time": 4
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -1.9063277157877414,
+            "funding_ambiguous": 0,
+            "signals": 4
+          },
+          "SHORT": {
+            "closed": 3,
+            "gross": 0.44188838569999395,
+            "fees": 0.29729653533505357,
+            "impact": 0.29729664580710935,
+            "liquidation_fee": 0.0,
+            "funding": -0.022262089812514516,
+            "net": -0.1749668852546833,
+            "mean_net": -0.05832229508489443,
+            "break_even_bps": 14.104251647355689,
+            "max_drawdown": null,
+            "mean_hold_min": 51.666666666666664,
+            "exit_reasons": {
+              "time": 2,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -2.2079938923672042,
+            "funding_ambiguous": 0,
+            "signals": 3
+          }
+        }
+      }
+    },
+    "stress": {
+      "all": {
+        "closed": 22,
+        "gross": 6.300343382999971,
+        "fees": 2.1687005161576085,
+        "impact": 4.337407332658337,
+        "liquidation_fee": 0.0,
+        "funding": -0.044422617055277794,
+        "net": -0.25018708287125235,
+        "mean_net": -0.01137214013051147,
+        "break_even_bps": 28.83065611129625,
+        "max_drawdown": 0.006421499755822128,
+        "mean_hold_min": 56.18181818181818,
+        "exit_reasons": {
+          "time": 19,
+          "stop": 3
+        },
+        "rejections": {},
+        "ignored_open": 1,
+        "unresolved": {},
+        "ending_cash": 999.7498129171288,
+        "without_best_trade": -4.408441890166251,
+        "funding_ambiguous": 0
+      },
+      "periods": {
+        "2025": {
+          "both": {
+            "closed": 15,
+            "gross": 6.114866989999949,
+            "fees": 1.477887677092305,
+            "impact": 2.955781469051413,
+            "liquidation_fee": 0.0,
+            "funding": -0.0139796286925,
+            "net": 1.6672182151637311,
+            "mean_net": 0.11114788101091541,
+            "break_even_bps": 41.259275554002386,
+            "max_drawdown": null,
+            "mean_hold_min": 56.666666666666664,
+            "exit_reasons": {
+              "time": 13,
+              "stop": 2
+            },
+            "rejections": {},
+            "ignored_open": 1,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -2.491036592131267,
+            "funding_ambiguous": 0,
+            "signals": 16
+          },
+          "LONG": {
+            "closed": 8,
+            "gross": 2.2776680207999926,
+            "fees": 0.7919826251763896,
+            "impact": 1.5839675280207057,
+            "liquidation_fee": 0.0,
+            "funding": -0.00977553,
+            "net": -0.10805766239710313,
+            "mean_net": -0.01350720779963789,
+            "break_even_bps": 28.67682910731934,
+            "max_drawdown": null,
+            "mean_hold_min": 54.0,
+            "exit_reasons": {
+              "time": 7,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -4.266312469692101,
+            "funding_ambiguous": 0,
+            "signals": 8
+          },
+          "SHORT": {
+            "closed": 7,
+            "gross": 3.8371989691999566,
+            "fees": 0.6859050519159154,
+            "impact": 1.371813941030707,
+            "liquidation_fee": 0.0,
+            "funding": -0.0042040986925,
+            "net": 1.7752758775608344,
+            "mean_net": 0.2536108396515478,
+            "break_even_bps": 55.726263135397204,
+            "max_drawdown": null,
+            "mean_hold_min": 59.714285714285715,
+            "exit_reasons": {
+              "time": 6,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 1,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -0.05053245741415657,
+            "funding_ambiguous": 0,
+            "signals": 8
+          }
+        },
+        "2026-01_10": {
+          "both": {
+            "closed": 7,
+            "gross": 0.18547639300002222,
+            "fees": 0.6908128390653034,
+            "impact": 1.3816258636069247,
+            "liquidation_fee": 0.0,
+            "funding": -0.03044298836277779,
+            "net": -1.9174052980349836,
+            "mean_net": -0.27391504257642624,
+            "break_even_bps": 2.2429131495804957,
+            "max_drawdown": null,
+            "mean_hold_min": 55.142857142857146,
+            "exit_reasons": {
+              "time": 6,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -3.7727621477100124,
+            "funding_ambiguous": 0,
+            "signals": 7
+          },
+          "LONG": {
+            "closed": 4,
+            "gross": -0.3088099999999936,
+            "fees": 0.393698279405,
+            "impact": 0.7873962499999532,
+            "liquidation_fee": 0.0,
+            "funding": -0.008180898550263275,
+            "net": -1.49808542795521,
+            "mean_net": -0.3745213569888025,
+            "break_even_bps": -8.04846673322771,
+            "max_drawdown": null,
+            "mean_hold_min": 60.0,
+            "exit_reasons": {
+              "time": 4
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -2.5056349302552277,
+            "funding_ambiguous": 0,
+            "signals": 4
+          },
+          "SHORT": {
+            "closed": 3,
+            "gross": 0.4942863930000158,
+            "fees": 0.2971145596603035,
+            "impact": 0.5942296136069715,
+            "liquidation_fee": 0.0,
+            "funding": -0.022262089812514516,
+            "net": -0.4193198700797736,
+            "mean_net": -0.1397732900265912,
+            "break_even_bps": 15.873729076215074,
+            "max_drawdown": null,
+            "mean_hold_min": 48.666666666666664,
+            "exit_reasons": {
+              "time": 2,
+              "stop": 1
+            },
+            "rejections": {},
+            "ignored_open": 0,
+            "unresolved": {},
+            "ending_cash": null,
+            "without_best_trade": -2.2746767197548023,
+            "funding_ambiguous": 0,
+            "signals": 3
+          }
+        }
+      }
+    }
+  }
+}
