@@ -7,7 +7,7 @@ import urllib.parse
 import urllib.request
 from decimal import Decimal
 
-from .ai_limit_plan import SYMBOLS,positive,dec,text,integer,fresh,digest,quote as check_quote,context
+from .ai_limit_plan import CANDIDATE_POLICY,SYMBOLS,positive,dec,text,integer,fresh,digest,quote as check_quote,context
 
 HOST='https://fapi.binance.com'
 from .derivatives_context import PATHS as DERIVATIVE_PATHS
@@ -15,7 +15,8 @@ PATHS={'/fapi/v1/time','/fapi/v1/ticker/bookTicker','/fapi/v1/premiumIndex','/fa
 
 
 class Feed:
-    def __init__(self,*,fetch=None,clock=lambda:int(time.time()*1000)):
+    def __init__(self,*,fetch=None,clock=lambda:int(time.time()*1000),candidate_policy=CANDIDATE_POLICY):
+        self.candidate_policy = candidate_policy
         self.clock=clock;self.fetch=fetch or self.get;self.denied=None;self.cached_filters=None
         self.quote_report={};self.trade_report={};self.http_timings=deque(maxlen=64);self.weight_recent=None
     def get(self,path,params):
@@ -165,5 +166,5 @@ class Feed:
         from .derivatives_context import collect
         signal=capture['candles'][-1][0]+900000
         capture['derivatives']=collect(self.fetch,symbol=symbol,signal_ms=signal,now_ms=self.clock(),clock=self.clock)
-        book,_=self.book(symbol);value=context(capture,book,f,news,self.clock())
+        book,_=self.book(symbol);value=context(capture,book,f,news,self.clock(),candidate_policy=self.candidate_policy)
         return value,capture

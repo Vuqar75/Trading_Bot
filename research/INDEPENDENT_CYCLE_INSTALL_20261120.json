@@ -1,0 +1,100 @@
+{
+  "before": {
+    "stamp": 1795182475454,
+    "analyst": "/opt/tradingbot-ai-brackets-74f77d0-analyst",
+    "executor_sha": "82a0e8dad20d68c54aab1cae9503e741088c984da6b66b055be11befe342a30b",
+    "code_mode": "0o644",
+    "paper_pid": "592049",
+    "backup": "/var/lib/tradingbot-ai-executor/protected-backups/budget-49zucxc5",
+    "backup_manifest": {
+      "created_utc_ms": 1795182475195,
+      "sha256": {
+        "experiment-budget.db": "827e5e3c800e41ac68f6fdc916e3e8a41cd0370eda3a82a06063d168d635db21",
+        "interactive-once.lock": "6e49d5f781aa4a4f24ee97e44cdabc19d8f4886efbbd6bdd9c1b983d2a8e87ff",
+        "approved-followup-once.lock": "07c60bd74b653fbb5ee67639d6b76d069c1ad39d1b15ded067b95ddcc358a8c4",
+        "adaptive-next-once.lock": "d5d7f929e541df312097aab8c9ffbc653dad6997a42cab88462ca1f40ed3a9c7"
+      },
+      "attempts": 43,
+      "reserved_micro_usd": 114080,
+      "usage": "ARCHIVE_ONLY_NOT_ACTIVE"
+    },
+    "pending": [
+      2775,
+      0,
+      0,
+      0
+    ],
+    "external_receipt": "2a3a020b7ba3e05abf8d0760c6eb6306def114f1c69f877b729c7b0e13d8c6e2",
+    "external_stamp": 1795181594494,
+    "external_summary": {
+      "free": "999.7172348990153898110",
+      "funding_buffer": "0E-8",
+      "margin": "0.0000",
+      "reserved": "0E-8"
+    },
+    "balances": {
+      "free": "999.717234899015389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "timer": "Fri 2026-11-20 16:02:00 UTC"
+  },
+  "installation": {
+    "commit": "8253c7d66852656b22696e2b139b01c3d053d486",
+    "hash": "ff65fa713a11ccea2916a149388a1d65eafbeb9efcbb92f72bc20579bc3b9cd8",
+    "analyst": "/opt/tradingbot-ai-brackets-8253c7d-analyst",
+    "next_utc": "Fri 2026-11-20 16:02:00 UTC",
+    "verified_ms": 1795182606360,
+    "paper_pid": "592049",
+    "backup": "1795182584855.sqlite",
+    "external": "2a3a020b7ba3e05abf8d0760c6eb6306def114f1c69f877b729c7b0e13d8c6e2",
+    "ledger": "3b037edce941ee6c959bbe2ac7efa1964f515ca59423ef8b83e88620cf7ff0cc",
+    "counts": {
+      "ledger_events": 50,
+      "ledger_postings": 120,
+      "bracket_plans": 19,
+      "bracket_fills": 10,
+      "bracket_funding": 1
+    },
+    "rollback": "/var/lib/tradingbot-ai-budget-backup/resume-8253c7d/previous.conf",
+    "dropin": "/etc/systemd/system/ai-bracket-analyst.service.d/90-cancel-c96ad52.conf"
+  },
+  "after": {
+    "actual_analyst": "/opt/tradingbot-ai-brackets-8253c7d-analyst",
+    "sha256": "ff65fa713a11ccea2916a149388a1d65eafbeb9efcbb92f72bc20579bc3b9cd8",
+    "timer": "active",
+    "next": "Fri 2026-11-20 16:02:00 UTC",
+    "paper_pid": "592049",
+    "attempts_and_reserves": [
+      43,
+      114080
+    ],
+    "old_claim": [
+      2775,
+      0,
+      0
+    ],
+    "as_of_ms": 1795182792730,
+    "balances": {
+      "free": "999.717234899015389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "ledger_balanced": true,
+    "market_errors": {
+      "BTCUSDT": null,
+      "ETHUSDT": null,
+      "SOLUSDT": null
+    },
+    "funding_error": null,
+    "checked_ms": 1795182794721
+  },
+  "follow_up": {
+    "id": "trading-bot-20-20-47",
+    "run": "2026-11-20T20:47:00+04:00",
+    "registered": "2026-11-20T17:51:05.857+04:00",
+    "count": 1
+  }
+}

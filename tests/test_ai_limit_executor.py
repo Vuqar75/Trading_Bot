@@ -74,6 +74,25 @@ class LimitExecutorTests(unittest.TestCase):
             self.assertEqual(result['total_reserved_micro_usd'],3630+amount+result['reserved_micro_usd'])
         self.assertEqual(self.calls,1)
 
+    def test_late_saved_response_recovers_after_independent_cycle(self):
+        original='bracket:'+self.s['snapshot_id']
+        times=iter((T,T+901000))
+        def fault(stage):
+            if stage=='after_response_saved':
+                raise RuntimeError('interrupt')
+        with self.assertRaisesRegex(RuntimeError,'interrupt'):
+            e.once(self.state,self.s,authorized=True,transport=self.reply,clock=lambda:next(times),fault=fault)
+        later=T+4*3600000
+        self.move_snapshot(later)
+        current=e.once(self.state,self.s,authorized=True,transport=self.reply,clock=lambda:later)
+        self.assertTrue(current['admission']['allowed'])
+        recovered=e.recover(self.state,original)
+        self.assertEqual(recovered['admission'],{'allowed':False,'reason':'snapshot_expired'})
+        self.assertEqual(e.recover(self.state,original),recovered)
+        self.assertEqual(self.calls,2)
+        with sqlite3.connect(self.state/'experiment-budget.db') as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM api_usage').fetchone()[0],2)
+
     def test_contending_writer_daily_limit_and_cooldown(self):
         with e.exclusive(self.state), self.assertRaisesRegex(ValueError,'already_running'):
             self.run_one()

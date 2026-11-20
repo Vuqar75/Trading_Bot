@@ -2,6 +2,7 @@
 import hashlib
 import json
 import math
+from . import ai_limit_retest as retest
 from decimal import Decimal, InvalidOperation, ROUND_DOWN, ROUND_UP
 
 SYMBOLS=('BTCUSDT','ETHUSDT','SOLUSDT')
@@ -208,7 +209,10 @@ def context(capture,book,exchange_filters,news,now,*,candidate_policy=CANDIDATE_
                         'net_reward_risk':format(dec(checked['net_reward_risk']),'.4f'),'estimated_risk_usdt':checked['risk_usdt']})
     if candidate_policy == HORIZON_POLICY:
         result['excursion_q75_bps'] = excursion_profile(rows)
-    result['candidate_plans']=select_candidates(candidates,reference,candidate_policy)
+    if candidate_policy == retest.POLICY:
+        result['candidate_plans'] = retest.shortlist(candidates, result, rows)
+    else:
+        result['candidate_plans']=select_candidates(candidates,reference,candidate_policy)
     result['snapshot_id']=digest({k:v for k,v in result.items() if k!='snapshot_id'})
     if len(canonical(result).encode())>16000:raise ValueError('context_size')
     return result
@@ -230,6 +234,12 @@ def request(snapshot):
             'excursion_q75_bps lists [long,short] historical favorable excursions from the open for '
             '15,30,...,240 minutes. Compare target distance in bp at the independently chosen hold '
             'rounded down to completed 15m bars. Choose WAIT if no plan fits; do not extend the hold to qualify.')
+    if snapshot.get('candidate_policy') == retest.POLICY:
+        horizon_instruction = (' For this 15m retest policy use exactly expires_ms for the passive entry deadline '
+            'and 60 minutes after first fill. Consider levels_before_tp and first_obstacle. '
+            'analog_counts = [past disjoint hour blocks, first-bar strict entry touches, later TP penetrations '
+            'before SL]. Entry-bar timing and fills are uncertain. These counts use a full first bar, although '
+            'less entry time remains now. They do not estimate fill probability. Choose WAIT if unsupported.')
     return {'model':'gpt-6-luna','store':False,'service_tier':'default','max_output_tokens':2000,
         'input':[{'role':'system','content':
         'You are a paper futures analyst. Choose WAIT or one of the provided candidate_plans for a passive LIMIT LONG/SHORT, returning its exact three level IDs. If none are provided, choose WAIT. '
@@ -245,7 +255,7 @@ def request(snapshot):
 
 def verify_context(snapshot,now):
     if not isinstance(snapshot,dict) or snapshot.get('version')!=VERSION or snapshot.get('symbol') not in SYMBOLS or snapshot.get('venue')!='binance-usdm':raise ValueError('snapshot_schema')
-    if snapshot.get('candidate_policy',LEGACY_CANDIDATE_POLICY) not in (LEGACY_CANDIDATE_POLICY,CANDIDATE_POLICY,HORIZON_POLICY):raise ValueError('candidate_policy_unknown')
+    if snapshot.get('candidate_policy',LEGACY_CANDIDATE_POLICY) not in (LEGACY_CANDIDATE_POLICY,CANDIDATE_POLICY,HORIZON_POLICY,retest.POLICY):raise ValueError('candidate_policy_unknown')
     if digest({k:v for k,v in snapshot.items() if k!='snapshot_id'})!=snapshot.get('snapshot_id'):raise ValueError('snapshot_hash')
     if not integer(snapshot['as_of_ms'])<=now<integer(snapshot['expires_ms']) or snapshot['expires_ms']-snapshot['as_of_ms']>BAR:raise ValueError('snapshot_expired')
     if not isinstance(snapshot['levels'],list) or len(snapshot['levels'])>36 or len({x['id'] for x in snapshot['levels']})!=len(snapshot['levels']):raise ValueError('level_identity')
@@ -269,6 +279,9 @@ def validate(snapshot,decision,now):
     if decision['decision']=='WAIT':
         if any(decision[k] is not None for k in ('entry_level','stop_level','target_level')):raise ValueError('wait_has_levels')
         return result
+    if snapshot.get('candidate_policy') == retest.POLICY and 'candidate_plans' in snapshot:
+        if decision['max_hold_minutes'] != retest.HOLD_MINUTES or decision['valid_until_ms'] != snapshot['expires_ms']:
+            raise ValueError('candidate_execution_window')
     if snapshot['news']['high_risk_until_ms']>now:raise ValueError('known_fundamental_risk')
     if 'candidate_plans' in snapshot and not any(c['direction']==decision['decision'] and all(c[k]==decision[k] for k in ('entry_level','stop_level','target_level')) for c in snapshot['candidate_plans']):raise ValueError('unknown_candidate_plan')
     mapped={level['id']:level for level in snapshot['levels']}

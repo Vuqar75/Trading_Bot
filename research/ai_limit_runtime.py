@@ -21,7 +21,8 @@ from .ai_limit_book import Book
 from .ai_limit_phase_probe import Probe,TimedConnection
 from .ai_limit_backup_job import BackupJob,prepare_journal
 from .ai_limit_feed import Feed
-from .ai_limit_plan import VERSION,SYMBOLS,canonical,digest,validate,context,integer,dec,quote as validate_quote
+from .ai_limit_retest import POLICY as RETEST_POLICY
+from .ai_limit_plan import CANDIDATE_POLICY,VERSION,SYMBOLS,canonical,digest,validate,context,integer,dec,quote as validate_quote
 from .ai_limit_executor import once,recover
 
 
@@ -523,6 +524,7 @@ def main():
     p.add_argument('--phase-diagnostics',action='store_true',help='Enable detailed CPU/SQL profiling; normal paper execution retains bounded market/error evidence without it')
     p=sub.add_parser('analyst-once');p.add_argument('--budget-state',required=True);p.add_argument('--paper-public',required=True);p.add_argument('--output',required=True)
     p.add_argument('--paper-uid',required=True,type=uid);p.add_argument('--symbol',choices=SYMBOLS,default='BTCUSDT');p.add_argument('--authorized-once',action='store_true')
+    p.add_argument('--candidate-policy', choices=(CANDIDATE_POLICY, RETEST_POLICY), default=CANDIDATE_POLICY)
     p=sub.add_parser('recover-answer');p.add_argument('--budget-state',required=True);p.add_argument('--response-id',required=True);p.add_argument('--capture',required=True);p.add_argument('--output',required=True)
     p=sub.add_parser('status');p.add_argument('--state',required=True)
     p=sub.add_parser('pause');p.add_argument('--state',required=True)
@@ -532,7 +534,8 @@ def main():
     args=parser.parse_args();os.umask(0o077)
     if args.action=='analyst-once':
         if not args.authorized_once:raise ValueError('explicit_paper_plan_attempt_required')
-        result=analyst(args.budget_state,args.paper_public,args.output,symbol=args.symbol,paper_uid=args.paper_uid)
+        result=analyst(args.budget_state,args.paper_public,args.output,symbol=args.symbol,paper_uid=args.paper_uid,
+                       feed=Feed(candidate_policy=args.candidate_policy))
     elif args.action=='recover-answer':
         result=recover(args.budget_state,args.response_id);capture=json.loads(Path(args.capture).read_text())
         atomic(args.output,{'analysis':result,'capture':capture});result={'status':'recovered_without_http'}
