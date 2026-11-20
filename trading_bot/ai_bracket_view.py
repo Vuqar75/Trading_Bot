@@ -33,6 +33,7 @@ def render(path=None,now=None,*,symbol='BTCUSDT'):
         last=value.get('analyst_last')
         if last and last.get('symbol')==symbol:
             label={'WAIT':'ждать','PLAN':'план получен','REJECTED':'план отклонён проверками','UNCONFIRMED':'ответ не подтверждён'}.get(last['status'],last['status'])
+            if last.get('provenance',{}).get('kind')=='program_wait':label='программный WAIT, нет кандидатов; запрос ИИ не отправлялся'
             lines.append('Последний анализ: '+label+'.')
         if value['blocked']:lines.append('Блокировка входов: '+str(value['blocked'])[:100])
         active=[p for p in items if p['status'] not in ('CLOSED','CANCELED')]
@@ -73,7 +74,7 @@ def render(path=None,now=None,*,symbol='BTCUSDT'):
         fixture=(chosen is not None and chosen['provenance']['kind']=='fixture') or (last is not None and last.get('provenance',{}).get('kind')=='fixture')
         if fixture:lines.append('API-расходы в этом примере имитированы; реального вызова не было.')
         if not fixture and api and api.get('symbol')==symbol and api.get('estimated_cost_micro_usd') is not None:
-            lines.append('Последний ИИ-анализ: оценка $'+format(Decimal(api['estimated_cost_micro_usd'])/1000000,'f')+'; счёт провайдера не сверялся.')
+            lines.append('Последний платный вызов ИИ: оценка $'+format(Decimal(api['estimated_cost_micro_usd'])/1000000,'f')+'; счёт провайдера не сверялся.')
         lines.append('Обновление экрана не вызывает ИИ и не создаёт сделки.')
         return '\n'.join(lines)
     except FileNotFoundError:return '[ИИ • paper TP/SL] Исполнитель пока не подключён. Отсутствие снимка не означает отсутствие позиции.'

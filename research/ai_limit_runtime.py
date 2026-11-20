@@ -22,7 +22,7 @@ from .ai_limit_phase_probe import Probe,TimedConnection
 from .ai_limit_backup_job import BackupJob,prepare_journal
 from .ai_limit_feed import Feed
 from .ai_limit_retest import POLICY as RETEST_POLICY
-from .ai_limit_plan import CANDIDATE_POLICY,VERSION,SYMBOLS,canonical,digest,validate,context,integer,dec,quote as validate_quote
+from .ai_limit_plan import CANDIDATE_POLICY,VERSION,SYMBOLS,canonical,digest,validate,verify_context,context,integer,dec,quote as validate_quote
 from .ai_limit_executor import once,recover
 
 
@@ -53,7 +53,32 @@ def trusted(path,uid,limit=1000000):
     finally:os.close(fd)
 
 
+def ingest_program_wait(book,envelope):
+    snapshot=envelope['program_wait']
+    stamp=integer(snapshot['as_of_ms'])
+    verify_context(snapshot,stamp)
+    if snapshot.get('candidate_plans')!=[] or stamp>book.clock():
+        raise ValueError('invalid_program_wait')
+    ident='program_wait:'+snapshot['snapshot_id']
+    fingerprint=digest(envelope)
+    prior=book.db.execute('SELECT fingerprint FROM bracket_inputs WHERE id=?',(ident,)).fetchone()
+    if prior:
+        if prior[0]!=fingerprint:raise ValueError('program_wait_revision')
+        return 'already_ingested'
+    book.register_source(snapshot,envelope['capture'])
+    event={'status':'WAIT','reason':'no_candidates','symbol':snapshot['symbol'],'as_of_ms':stamp,
+           'provenance':{'kind':'program_wait','snapshot_id':snapshot['snapshot_id']},
+           'thesis':'Нет допустимых кандидатов. Платный запрос не отправлялся.'}
+    with book.transaction():
+        book.db.execute('INSERT INTO bracket_inputs VALUES(?,?,?)',(ident,fingerprint,canonical(envelope)))
+        book.message(ident,event)
+        if stamp>(book.get('analyst_last') or {}).get('as_of_ms',-1):book.set('analyst_last',event)
+    return 'WAIT'
+
+
 def ingest(book,envelope,*,allow_fixture=False):
+    if isinstance(envelope,dict) and set(envelope)=={'program_wait','capture'}:
+        return ingest_program_wait(book,envelope)
     if not isinstance(envelope,dict) or set(envelope)!={'analysis','capture'}:raise ValueError('model_envelope_shape')
     result=envelope['analysis'];capture=envelope['capture'];provenance=result['provenance']
     diagnostic=provenance.get('kind')=='executor_diagnostic'
@@ -456,6 +481,15 @@ def analyst(budget_state,paper_public,output,*,symbol,paper_uid,feed=None,clock=
         return {'status':'not_requested_market_or_funding_unconfirmed','blocking_reasons':reasons,
                 'paper_as_of_ms':status['as_of_ms'],'funding_through_ms':status['funding_through_ms']}
     provider=feed or Feed(clock=clock);snapshot,capture=provider.snapshot(symbol)
+    candidates=snapshot.get('candidate_plans')
+    if not isinstance(candidates,list):raise ValueError('candidate_list_missing_or_invalid')
+    if not candidates:
+        at=clock()
+        verify_context(snapshot,at)
+        if snapshot['symbol']!=symbol or at-snapshot['as_of_ms']>120000:raise ValueError('invalid_program_wait_source')
+        atomic(output,{'program_wait':snapshot,'capture':capture})
+        return {'status':'published','decision':'WAIT','reason':'no_candidates','source':'program',
+                'snapshot_id':snapshot['snapshot_id'],'model_requested':False,'network_retry':False}
     kwargs={'authorized':True,'clock':clock}
     if transport is not None:kwargs['transport']=transport
     if secret is not None:kwargs['secret']=secret

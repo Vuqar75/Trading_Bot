@@ -145,7 +145,8 @@ def demo(root):
         reports.append({'direction':side,'plan_id':p['plan_id'],'entry':p['entry'],'tp':p['target'],'sl':p['stop'],
             'gross':done['gross'],'fees':done['fees'],'funding':done['funding'],
             'net':text(dec(done['gross'])-dec(done['fees'])+dec(done['funding'])),'status':done['status'],'exit_reason':exit_reason})
-        now[0]=((now[0]//3600000)+1)*3600000+60000
+        # Synthetic analysts run in distinct four-hour slots like the timer.
+        now[0]=(now[0]//14400000+1)*14400000+120000
     snapshot=book.snapshot();atomic(public,snapshot)
     restored=root/'restore';restored.mkdir(mode=0o700);book.backup(restored/'paper.sqlite')
     clone=Book(restored,clock=lambda:now[0])
