@@ -44,6 +44,50 @@ class LimitExecutorTests(unittest.TestCase):
                 else:
                     with self.assertRaisesRegex(ValueError,'no_retry'):self.run_one()
                 self.assertEqual(self.calls,calls)
+    def move_snapshot(self, stamp):
+        from research.ai_limit_plan import digest
+        self.s.update(as_of_ms=stamp, expires_ms=stamp+900000)
+        self.s['quote'].update(event_ms=stamp, received_ms=stamp)
+        self.s['snapshot_id']=digest({k:v for k,v in self.s.items() if k!='snapshot_id'})
+        self.d.update(snapshot_id=self.s['snapshot_id'], valid_until_ms=stamp+600000)
+
+    def test_unknown_reservation_survives_new_cycle_and_same_slot_rehash(self):
+        def unavailable(request):
+            raise RuntimeError('http503')
+        with self.assertRaisesRegex(RuntimeError,'http503'):
+            e.once(self.state,self.s,authorized=True,transport=unavailable,clock=lambda:T)
+        original='bracket:'+self.s['snapshot_id']
+        with self.assertRaisesRegex(ValueError,'uncertain_no_retry'):
+            self.run_one()
+        self.move_snapshot(T+1)
+        with self.assertRaisesRegex(ValueError,'cycle_already_claimed'):
+            e.once(self.state,self.s,authorized=True,transport=self.reply,clock=lambda:T+1)
+        later=T+4*3600000
+        self.move_snapshot(later)
+        result=e.once(self.state,self.s,authorized=True,transport=self.reply,clock=lambda:later)
+        self.assertTrue(result['admission']['allowed'])
+        with sqlite3.connect(self.state/'experiment-budget.db') as db:
+            amount, raw, saved=db.execute('SELECT reserved_micro_usd,raw_response,result FROM api_attempts '
+                'JOIN bracket_api_requests ON id=request_id WHERE id=?',(original,)).fetchone()
+            self.assertGreater(amount,0)
+            self.assertEqual((raw,saved),(None,None))
+            self.assertEqual(result['total_reserved_micro_usd'],3630+amount+result['reserved_micro_usd'])
+        self.assertEqual(self.calls,1)
+
+    def test_contending_writer_daily_limit_and_cooldown(self):
+        with e.exclusive(self.state), self.assertRaisesRegex(ValueError,'already_running'):
+            self.run_one()
+        with sqlite3.connect(self.state/'experiment-budget.db') as db:
+            db.execute("INSERT INTO api_attempts VALUES('other',100,?,NULL)",(T/1000-10,))
+        with self.assertRaisesRegex(ValueError,'cooldown'):
+            self.run_one()
+        with sqlite3.connect(self.state/'experiment-budget.db') as db:
+            db.executemany('INSERT INTO api_attempts VALUES(?,100,?,NULL)',
+                           [('prior'+str(i),T/1000-20) for i in range(5)])
+        with self.assertRaisesRegex(ValueError,'daily_attempt_cap'):
+            self.run_one()
+        self.assertEqual(self.calls,0)
+
     def test_budget_and_authorization_block_before_transport(self):
         with self.assertRaisesRegex(ValueError,'explicit'):e.once(self.state,self.s,transport=self.reply)
         with sqlite3.connect(self.state/'experiment-budget.db') as db:db.execute('INSERT INTO api_attempts VALUES(?,?,?,NULL)',('prior',246000,2))

@@ -101,7 +101,18 @@ def once(state,snapshot,*,authorized=False,transport=None,secret=credential,cloc
                     if previous[1] is not None:return json.loads(previous[1])
                     if previous[0] is not None:return finish(db,rid,fault=fault)
                     raise ValueError('bracket_attempt_uncertain_no_retry')
-                if db.execute("SELECT 1 FROM bracket_api_requests WHERE result IS NULL").fetchone():raise ValueError('prior_bracket_attempt_unresolved_no_retry')
+                # A distinct snapshot hash can still describe the same scheduled opportunity.
+                # Only a later four-hour slot can claim another send. All past claims,
+                # including unknown costs, continue to count towards every budget limit.
+                slot_seconds = 4 * 60 * 60
+                slot_start = snapshot['as_of_ms'] // (slot_seconds * 1000) * slot_seconds
+                if now // (slot_seconds * 1000) * slot_seconds != slot_start:
+                    raise ValueError('request_snapshot_prior_slot')
+                if db.execute(
+                    'SELECT 1 FROM api_attempts a JOIN bracket_api_requests q ON q.id=a.request_id '
+                    'WHERE a.created_at >= ? LIMIT 1', (slot_start,)
+                ).fetchone():
+                    raise ValueError('bracket_cycle_already_claimed')
                 if db.execute('SELECT COALESCE(SUM(reserved_micro_usd),0) FROM api_attempts').fetchone()[0]+reserve>250000:raise ValueError('global_budget_exhausted')
                 today=now//86400000*86400
                 if db.execute('SELECT count(*) FROM api_attempts WHERE created_at>=?',(today,)).fetchone()[0]>=6:raise ValueError('daily_attempt_cap')
