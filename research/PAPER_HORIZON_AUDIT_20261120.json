@@ -1,0 +1,2007 @@
+{
+  "checked_ms": 1795181704382,
+  "runtime": {
+    "path": "/opt/tradingbot-ai-brackets-6e7ff40-paper",
+    "pid": "592049",
+    "actual_cwd": "/opt/tradingbot-ai-brackets-6e7ff40-paper",
+    "runtime_sha256": "be52d3ccbd291295bd7beaa104a0dda9d3d8e3f38b2939b2276ee5fed16f06e2",
+    "phase_flag": false
+  },
+  "services": {
+    "ai-bracket-paper.service": "MainPID=592049\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-6e7ff40-paper\nActiveState=active\nUnitFileState=enabled",
+    "ai-bracket-analyst.service": "MainPID=0\nNRestarts=0\nWorkingDirectory=/opt/tradingbot-ai-brackets-74f77d0-analyst\nActiveState=failed\nUnitFileState=static",
+    "ai-bracket-analyst.timer": "NextElapseUSecRealtime=Fri 2026-11-20 16:02:00 UTC\nActiveState=active\nUnitFileState=enabled"
+  },
+  "journal": [
+    {
+      "stamp_us": "1795017765147462",
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "decision": "WAIT",
+      "network_retry": false,
+      "status": "published"
+    },
+    {
+      "stamp_us": "1795032155431470",
+      "admission": {
+        "allowed": true,
+        "reason": "validated_paper_plan"
+      },
+      "decision": "SHORT",
+      "network_retry": false,
+      "status": "published"
+    },
+    {
+      "stamp_us": "1795046583859079",
+      "admission": {
+        "allowed": true,
+        "reason": "validated_paper_plan"
+      },
+      "decision": "SHORT",
+      "network_retry": false,
+      "status": "published"
+    },
+    {
+      "stamp_us": "1795060969840424",
+      "admission": {
+        "allowed": true,
+        "reason": "validated_paper_plan"
+      },
+      "decision": "SHORT",
+      "network_retry": false,
+      "status": "published"
+    },
+    {
+      "stamp_us": "1795075365619818",
+      "admission": {
+        "allowed": true,
+        "reason": "validated_paper_plan"
+      },
+      "decision": "SHORT",
+      "network_retry": false,
+      "status": "published"
+    },
+    {
+      "stamp_us": "1795089767807191",
+      "admission": {
+        "allowed": false,
+        "reason": "model_wait"
+      },
+      "decision": "WAIT",
+      "network_retry": false,
+      "status": "published"
+    },
+    {
+      "stamp_us": "1795104159738740",
+      "network_retry": false,
+      "reason": "openai_http_error_http_503",
+      "status": "blocked"
+    },
+    {
+      "stamp_us": "1795118549638589",
+      "network_retry": false,
+      "reason": "prior_bracket_attempt_unresolved_no_retry",
+      "status": "blocked"
+    },
+    {
+      "stamp_us": "1795132934930813",
+      "network_retry": false,
+      "reason": "prior_bracket_attempt_unresolved_no_retry",
+      "status": "blocked"
+    },
+    {
+      "stamp_us": "1795147343537384",
+      "network_retry": false,
+      "reason": "prior_bracket_attempt_unresolved_no_retry",
+      "status": "blocked"
+    },
+    {
+      "stamp_us": "1795161740817406",
+      "network_retry": false,
+      "reason": "prior_bracket_attempt_unresolved_no_retry",
+      "status": "blocked"
+    },
+    {
+      "stamp_us": "1795176139501532",
+      "network_retry": false,
+      "reason": "prior_bracket_attempt_unresolved_no_retry",
+      "status": "blocked"
+    }
+  ],
+  "requests": [
+    {
+      "request_id": "bracket:c8b00521dd510d69b14b3572fa14592248b7c62b06aa334257dcac4726cb2208",
+      "raw_saved": true,
+      "reserved_micro_usd": 2660,
+      "plan": null,
+      "candidate_policy": "entry-stop-nearest-v1",
+      "candidates": 4,
+      "model_input_ms": 1795017740533,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 60,
+        "news_ids": [],
+        "risks": [
+          "Цена уже значительно ниже предложенных уровней входа; короткий лимитный вход на их ретест может не исполниться или оказаться неактуальным.",
+          "Между входами и предложенной целью находится поддержка 4h около 63300.9, что делает достижение дальней цели неопределённым.",
+          "Деривативные данные неоднозначны: соотношения длинных и коротких позиций высоки, а taker buy/sell ratio ниже 1; OI сам по себе не указывает направление.",
+          "Фундаментальное покрытие новостей ограничено; доступные заголовки не дают достаточной оценки влияния на BTC."
+        ],
+        "snapshot_id": "c8b00521dd510d69b14b3572fa14592248b7c62b06aa334257dcac4726cb2208",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Жду: цена и закрытие 15m находятся примерно у 63000, существенно ниже предложенных уровней входа 63871–63912.8. Несмотря на слабость ниже средних 15m/1h/4h, запоздалый ретестовый шорт не выглядит достаточно надёжным; к тому же на пути предложенной цели есть поддержка 4h около 63300.9. Новости оценены лишь по ограниченному набору заголовков, без достаточного фундаментального охвата.",
+        "valid_until_ms": 1795018500000
+      },
+      "usage": {
+        "input_tokens": 3517,
+        "output_tokens": 996,
+        "total_tokens": 4513
+      },
+      "estimate_micro_usd": "849.7"
+    },
+    {
+      "request_id": "bracket:4ac72392cc3c66f57bb891188dbdd269f9eabf99ec765a9b170be73add0fe0cb",
+      "raw_saved": true,
+      "reserved_micro_usd": 2790,
+      "plan": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc",
+      "candidate_policy": "entry-stop-nearest-v1",
+      "candidates": 8,
+      "model_input_ms": 1795032137853,
+      "decision": {
+        "decision": "SHORT",
+        "entry_level": "15m:resistance:1795026600000",
+        "max_hold_minutes": 45,
+        "news_ids": [
+          "0"
+        ],
+        "risks": [
+          "Цена может не вернуться к лимитному входу 63264.2 до истечения заявки.",
+          "Повышенные long/short ratios и слабый taker buy/sell ratio указывают на перекос, но не подтверждают дальнейшее снижение.",
+          "Фундаментальный охват ограничен; новость 0 — только заголовок протокола FOMC, без оценки его содержания."
+        ],
+        "snapshot_id": "4ac72392cc3c66f57bb891188dbdd269f9eabf99ec765a9b170be73add0fe0cb",
+        "stop_level": "15m:resistance:1795023000000",
+        "target_level": "4h:support:1794700800000",
+        "thesis": "SHORT по плану от сопротивления 15m: лимитный вход 63264.2, стоп 63533.6 за выбранным уровнем, цель 61985.2 перед поддержкой 4h. Цена ниже SMA20/SMA40 на 15m, 1h и 4h; вместе с низким taker buy/sell ratio это поддерживает осторожный медвежий сценарий. Вход предполагает откат вверх к сопротивлению; подтверждения разворота нет.",
+        "valid_until_ms": 1795032900000
+      },
+      "usage": {
+        "input_tokens": 3916,
+        "output_tokens": 775,
+        "total_tokens": 4691
+      },
+      "estimate_micro_usd": "779.1"
+    },
+    {
+      "request_id": "bracket:0b270d5847adfb765673681ca09898acc130cd2350aed0725737622b3bdf6c8d",
+      "raw_saved": true,
+      "reserved_micro_usd": 2790,
+      "plan": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d",
+      "candidate_policy": "entry-stop-nearest-v1",
+      "candidates": 8,
+      "model_input_ms": 1795046553558,
+      "decision": {
+        "decision": "SHORT",
+        "entry_level": "15m:support:1795012200000",
+        "max_hold_minutes": 60,
+        "news_ids": [
+          "0"
+        ],
+        "risks": [
+          "На 15m цена закрылась выше SMA20 и SMA40, поэтому возможен дальнейший отскок.",
+          "Соотношения лонг/шорт высоки, но это не гарантирует разворота; OI и taker-поток также не дают однозначного сигнала.",
+          "Фундаментальное покрытие ограничено; новость 0 — заголовок о протоколе заседания FOMC, без оценки полного текста."
+        ],
+        "snapshot_id": "0b270d5847adfb765673681ca09898acc130cd2350aed0725737622b3bdf6c8d",
+        "stop_level": "15m:resistance:1795026600000",
+        "target_level": "15m:support:1795041900000",
+        "thesis": "Пассивный SHORT на возврате к уровню 63038.9, ранее поддержке, которая может выступить сопротивлением. Контекст 1h/4h остаётся слабым: цена ниже SMA20 и SMA40; умеренно в пользу снижения также перевес taker-продаж и высокий перекос аккаунтов в лонг. Сигналы противоречивы, поэтому сценарий ограничен по времени.",
+        "valid_until_ms": 1795047300000
+      },
+      "usage": {
+        "input_tokens": 3902,
+        "output_tokens": 1209,
+        "total_tokens": 5111
+      },
+      "estimate_micro_usd": "994.7"
+    },
+    {
+      "request_id": "bracket:8c9e15bebffbf54bf4d4f591d21f2ad7e5010ad154dc935eade3254bf8b1b33b",
+      "raw_saved": true,
+      "reserved_micro_usd": 2788,
+      "plan": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051",
+      "candidate_policy": "entry-stop-nearest-v1",
+      "candidates": 8,
+      "model_input_ms": 1795060940272,
+      "decision": {
+        "decision": "SHORT",
+        "entry_level": "1h:support:1794895200000",
+        "max_hold_minutes": 60,
+        "news_ids": [
+          "0"
+        ],
+        "risks": [
+          "Цена может не вернуться к лимитному уровню; прежняя поддержка не гарантирует сопротивление.",
+          "Открытый интерес растёт, а показатели длинных позиций высоки, но они не доказывают направление будущего движения.",
+          "Фундаментальное покрытие новостей ограничено; по ID 0 доступно только название публикации, не её содержание."
+        ],
+        "snapshot_id": "8c9e15bebffbf54bf4d4f591d21f2ad7e5010ad154dc935eade3254bf8b1b33b",
+        "stop_level": "1h:resistance:1794985200000",
+        "target_level": "15m:support:1795051800000",
+        "thesis": "Шорт от ретеста прежней часовой поддержки выглядит предпочтительнее: закрытие 15m ниже SMA20/40 на 1h и цена ниже SMA20/40 на 4h согласуются со слабым фоном; отношение taker buy/sell ниже 1 поддерживает осторожный медвежий уклон. Цель выбрана перед ближайшей указанной поддержкой. Публикация по ID 0 может иметь макрозначение, но доступные данные не позволяют оценить её содержание.",
+        "valid_until_ms": 1795061700000
+      },
+      "usage": {
+        "input_tokens": 3912,
+        "output_tokens": 1060,
+        "total_tokens": 4972
+      },
+      "estimate_micro_usd": "921.2"
+    },
+    {
+      "request_id": "bracket:fac6878d2cc8dc7874071e74dc404ebec2d904c9998b3392bb99a453d5cf7fe6",
+      "raw_saved": true,
+      "reserved_micro_usd": 2788,
+      "plan": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02",
+      "candidate_policy": "entry-stop-nearest-v1",
+      "candidates": 8,
+      "model_input_ms": 1795075338851,
+      "decision": {
+        "decision": "SHORT",
+        "entry_level": "15m:resistance:1795063500000",
+        "max_hold_minutes": 15,
+        "news_ids": [
+          "0"
+        ],
+        "risks": [
+          "Положительное соотношение taker buy/sell и закрытие 15m выше SMA20 могут поддержать продолжение роста; лимитный шорт у сопротивления может не исполниться.",
+          "Соотношения long/short повышены, но описывают разные группы участников; снижение OI за 1ч и 4ч неоднозначно и не подтверждает направление.",
+          "Цена находится выше SMA20 на 4ч-таймфрейме; контекст не однозначно медвежий.",
+          "Фундаментальное покрытие ограничено: доступен лишь заголовок новости ID 0, без достаточных данных для вывода о её влиянии."
+        ],
+        "snapshot_id": "fac6878d2cc8dc7874071e74dc404ebec2d904c9998b3392bb99a453d5cf7fe6",
+        "stop_level": "15m:resistance:1795071600000",
+        "target_level": "15m:support:1795047300000",
+        "thesis": "Пассивный SHORT у сопротивления 15m 63731.1: цена ниже этого уровня, а 1ч close близок к SMA40 и 4ч close ниже SMA20, что оставляет пространство для отката к поддержке 62621.7. Стоп за ближайшим верхним сопротивлением 63851.3; цель — перед поддержкой. Новость ID 0 — заголовок о протоколе заседания FOMC; ограниченное покрытие не позволяет оценить фундаментальное направление.",
+        "valid_until_ms": 1795076100000
+      },
+      "usage": {
+        "input_tokens": 3910,
+        "output_tokens": 1323,
+        "total_tokens": 5233
+      },
+      "estimate_micro_usd": "1052.5"
+    },
+    {
+      "request_id": "bracket:d7c939d20069cc044bdefec5ef6580fd9a4cbada4e9036eb950ace1a556095bc",
+      "raw_saved": true,
+      "reserved_micro_usd": 2789,
+      "plan": null,
+      "candidate_policy": "entry-stop-nearest-v1",
+      "candidates": 8,
+      "model_input_ms": 1795089736998,
+      "decision": {
+        "decision": "WAIT",
+        "entry_level": null,
+        "max_hold_minutes": 15,
+        "news_ids": [
+          "0"
+        ],
+        "risks": [
+          "Краткосрочный контекст противоречив: цена выше SMA20 на 15m и 1h, но ниже SMA20 и SMA40 на 4h.",
+          "Данные по новостям покрыты ограниченно; в доступном списке есть только заголовок публикации с ID 0, без оценки её содержания."
+        ],
+        "snapshot_id": "d7c939d20069cc044bdefec5ef6580fd9a4cbada4e9036eb950ace1a556095bc",
+        "stop_level": null,
+        "target_level": null,
+        "thesis": "Ждать: 15m/1h дают более сильный краткосрочный фон, тогда как 4h остаётся слабее; доступные данные не дают уверенного направления для пассивного входа. Фундаментальное покрытие ограничено; ID 0 указывает на публикацию протокола FOMC, но её влияние по одному заголовку определить нельзя.",
+        "valid_until_ms": 1795090500000
+      },
+      "usage": {
+        "input_tokens": 3907,
+        "output_tokens": 970,
+        "total_tokens": 4877
+      },
+      "estimate_micro_usd": "875.7"
+    },
+    {
+      "request_id": "bracket:8158af673a84f82a83261104a76dcc48a712f0b099d421d2e75579c1e63190f7",
+      "raw_saved": false,
+      "reserved_micro_usd": 2775,
+      "plan": null,
+      "candidate_policy": "entry-stop-nearest-v1",
+      "candidates": 8,
+      "model_input_ms": 1795104142948
+    }
+  ],
+  "balances": {
+    "free": "999.7172348990153898110",
+    "reserved": "0E-8",
+    "margin": "0.0000",
+    "funding_buffer": "0E-8",
+    "fees": "0.327521713850"
+  },
+  "reconcile": {
+    "balanced": true,
+    "invalid_events": [],
+    "negative_accounts": [],
+    "foreign_key_error": false,
+    "totals": {
+      "USDT": "0.0000000000000000000",
+      "BTC": "0"
+    }
+  },
+  "net": "-0.06239653305",
+  "events": [
+    {
+      "rowid": 41,
+      "id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc:reserve",
+      "kind": "LIMIT_RESERVE",
+      "created": 1795032156.729,
+      "fingerprint": "cbc1708a13e3492b89bee3f1083d63a98909f0dd9c0a466b4eddb897e969aa9a",
+      "details": {
+        "plan_id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc"
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc:reserve",
+          "ordinal": 0,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "-63.42868692"
+        },
+        {
+          "event_id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc:reserve",
+          "ordinal": 1,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "63.42868692"
+        }
+      ]
+    },
+    {
+      "rowid": 42,
+      "id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc:cancel-entry",
+      "kind": "CANCEL_REMAINDER",
+      "created": 1795032900.547,
+      "fingerprint": "800186c3b7148574729ce311f6699ec26d2c5f63cc6f55782ed7ff02125af0f6",
+      "details": {
+        "reason": "EXPIRED_OR_PAUSED"
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc:cancel-entry",
+          "ordinal": 0,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "-63.42868692"
+        },
+        {
+          "event_id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc:cancel-entry",
+          "ordinal": 1,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "63.42868692"
+        }
+      ]
+    },
+    {
+      "rowid": 43,
+      "id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d:reserve",
+      "kind": "LIMIT_RESERVE",
+      "created": 1795046585.346,
+      "fingerprint": "c2e93a984b7d3e9c6309afc6fce10a56c7558469741d098e61d697814337c89c",
+      "details": {
+        "plan_id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d"
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d:reserve",
+          "ordinal": 0,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "-63.20280114"
+        },
+        {
+          "event_id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d:reserve",
+          "ordinal": 1,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "63.20280114"
+        }
+      ]
+    },
+    {
+      "rowid": 44,
+      "id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d:cancel-entry",
+      "kind": "CANCEL_REMAINDER",
+      "created": 1795047300.032,
+      "fingerprint": "fea66453f6cd6ca9b85db6df16337367a2ab27ed83694bfa98b37f22024371e0",
+      "details": {
+        "reason": "EXPIRED_OR_PAUSED"
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d:cancel-entry",
+          "ordinal": 0,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "-63.20280114"
+        },
+        {
+          "event_id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d:cancel-entry",
+          "ordinal": 1,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "63.20280114"
+        }
+      ]
+    },
+    {
+      "rowid": 45,
+      "id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051:reserve",
+      "kind": "LIMIT_RESERVE",
+      "created": 1795060972.36,
+      "fingerprint": "3c245429b6d70986c848557015ac84043fdba1fd51090e08205e7e76c2b963b0",
+      "details": {
+        "plan_id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051"
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051:reserve",
+          "ordinal": 0,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "-64.42466976"
+        },
+        {
+          "event_id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051:reserve",
+          "ordinal": 1,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "64.42466976"
+        }
+      ]
+    },
+    {
+      "rowid": 46,
+      "id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051:cancel-entry",
+      "kind": "CANCEL_REMAINDER",
+      "created": 1795061700.062,
+      "fingerprint": "e05b12c850df03cbdd0bf982e685441a4130f4d096fa3924dc7caba328fa4e34",
+      "details": {
+        "reason": "EXPIRED_OR_PAUSED"
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051:cancel-entry",
+          "ordinal": 0,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "-64.42466976"
+        },
+        {
+          "event_id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051:cancel-entry",
+          "ordinal": 1,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "64.42466976"
+        }
+      ]
+    },
+    {
+      "rowid": 47,
+      "id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:reserve",
+      "kind": "LIMIT_RESERVE",
+      "created": 1795075368.18,
+      "fingerprint": "dd06598da786bbf3bc3430c37729acd4fcf68a33df6709a1a70712a3fc750210",
+      "details": {
+        "plan_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02"
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:reserve",
+          "ordinal": 0,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "-63.89680086"
+        },
+        {
+          "event_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:reserve",
+          "ordinal": 1,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "63.89680086"
+        }
+      ]
+    },
+    {
+      "rowid": 48,
+      "id": "trade:BTCUSDT:3532516803:entry",
+      "kind": "PAPER_ENTRY",
+      "created": 1795076017.621,
+      "fingerprint": "03ba9f0616e81ee468e69b5b588f6f8c502fda4eccf94986f31c0fbee45de476",
+      "details": {
+        "plan_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02",
+        "price": "63731.1",
+        "qty": "0.001",
+        "reason": "LIMIT_TRADE_THROUGH",
+        "stamp": 1795076017621
+      },
+      "posting_count": 4,
+      "postings": [
+        {
+          "event_id": "trade:BTCUSDT:3532516803:entry",
+          "ordinal": 0,
+          "account": "ai_bracket:reserved",
+          "asset": "USDT",
+          "amount": "-63.89680086"
+        },
+        {
+          "event_id": "trade:BTCUSDT:3532516803:entry",
+          "ordinal": 1,
+          "account": "ai_bracket:margin",
+          "asset": "USDT",
+          "amount": "63.7311"
+        },
+        {
+          "event_id": "trade:BTCUSDT:3532516803:entry",
+          "ordinal": 2,
+          "account": "ai_bracket:fees",
+          "asset": "USDT",
+          "amount": "0.03186555"
+        },
+        {
+          "event_id": "trade:BTCUSDT:3532516803:entry",
+          "ordinal": 3,
+          "account": "ai_bracket:funding_buffer",
+          "asset": "USDT",
+          "amount": "0.13383531"
+        }
+      ]
+    },
+    {
+      "rowid": 49,
+      "id": "market:c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2:0.001",
+      "kind": "PAPER_EXIT",
+      "created": 1795076918.124,
+      "fingerprint": "d78faf07cda5986663846a7381fc6c01b138238f836c3a7ba8ccdb71778ffd48",
+      "details": {
+        "plan_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02",
+        "price": "63729.7661",
+        "qty": "0.001",
+        "reason": "TIME",
+        "stamp": 1795076918124
+      },
+      "posting_count": 4,
+      "postings": [
+        {
+          "event_id": "market:c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2:0.001",
+          "ordinal": 0,
+          "account": "ai_bracket:margin",
+          "asset": "USDT",
+          "amount": "-63.7311"
+        },
+        {
+          "event_id": "market:c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2:0.001",
+          "ordinal": 1,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "63.700569016950"
+        },
+        {
+          "event_id": "market:c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2:0.001",
+          "ordinal": 2,
+          "account": "ai_bracket:fees",
+          "asset": "USDT",
+          "amount": "0.031864883050"
+        },
+        {
+          "event_id": "market:c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2:0.001",
+          "ordinal": 3,
+          "account": "external:price_pnl",
+          "asset": "USDT",
+          "amount": "-0.00133390"
+        }
+      ]
+    },
+    {
+      "rowid": 50,
+      "id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:release-buffer",
+      "kind": "FUNDING_FINALIZED",
+      "created": 1795076944.773,
+      "fingerprint": "47431cb1577cbccb6a3fd127d4a39ee20b5f599b87523dac05119819eb6c9c00",
+      "details": {
+        "through_ms": 1795076943494
+      },
+      "posting_count": 2,
+      "postings": [
+        {
+          "event_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:release-buffer",
+          "ordinal": 0,
+          "account": "ai_bracket:funding_buffer",
+          "asset": "USDT",
+          "amount": "-0.13383531"
+        },
+        {
+          "event_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:release-buffer",
+          "ordinal": 1,
+          "account": "ai_bracket:free",
+          "asset": "USDT",
+          "amount": "0.13383531"
+        }
+      ]
+    }
+  ],
+  "fills": [
+    {
+      "id": "trade:BTCUSDT:3532516803:entry",
+      "plan_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02",
+      "kind": "ENTRY",
+      "stamp": 1795076017621,
+      "qty": "0.001",
+      "price": "63731.1",
+      "fee": "0.03186555",
+      "reason": "LIMIT_TRADE_THROUGH"
+    },
+    {
+      "id": "market:c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02:0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2:0.001",
+      "plan_id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02",
+      "kind": "EXIT",
+      "stamp": 1795076918124,
+      "qty": "0.001",
+      "price": "63729.7661",
+      "fee": "0.03186488305",
+      "reason": "TIME"
+    }
+  ],
+  "plans": [
+    {
+      "id": "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc",
+      "state": {
+        "armed_ms": 1795032156729,
+        "buffer": "0",
+        "close_reason": null,
+        "entry_cancellation": {
+          "at_ms": 1795032900547,
+          "causes": [
+            "EXPIRED"
+          ],
+          "evidence": "recorded_at_cancellation",
+          "guards": {
+            "blocked": null,
+            "expires_ms": 1795032900000,
+            "paused": false
+          },
+          "precise": true,
+          "quantity": "0.001",
+          "reason": "EXPIRED_OR_PAUSED",
+          "reserve_released_usdt": "63.42868692"
+        },
+        "fees": "0",
+        "funding": "0",
+        "gross": "0",
+        "last_fill_ms": null,
+        "open_qty": "0",
+        "opened_ms": null,
+        "remaining": "0",
+        "reserved": "0",
+        "status": "CANCELED"
+      },
+      "side": "SHORT"
+    },
+    {
+      "id": "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d",
+      "state": {
+        "armed_ms": 1795046585346,
+        "buffer": "0",
+        "close_reason": null,
+        "entry_cancellation": {
+          "at_ms": 1795047300032,
+          "causes": [
+            "EXPIRED"
+          ],
+          "evidence": "recorded_at_cancellation",
+          "guards": {
+            "blocked": null,
+            "expires_ms": 1795047300000,
+            "paused": false
+          },
+          "precise": true,
+          "quantity": "0.001",
+          "reason": "EXPIRED_OR_PAUSED",
+          "reserve_released_usdt": "63.20280114"
+        },
+        "fees": "0",
+        "funding": "0",
+        "gross": "0",
+        "last_fill_ms": null,
+        "open_qty": "0",
+        "opened_ms": null,
+        "remaining": "0",
+        "reserved": "0",
+        "status": "CANCELED"
+      },
+      "side": "SHORT"
+    },
+    {
+      "id": "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051",
+      "state": {
+        "armed_ms": 1795060972360,
+        "buffer": "0",
+        "close_reason": null,
+        "entry_cancellation": {
+          "at_ms": 1795061700062,
+          "causes": [
+            "EXPIRED"
+          ],
+          "evidence": "recorded_at_cancellation",
+          "guards": {
+            "blocked": null,
+            "expires_ms": 1795061700000,
+            "paused": false
+          },
+          "precise": true,
+          "quantity": "0.001",
+          "reason": "EXPIRED_OR_PAUSED",
+          "reserve_released_usdt": "64.42466976"
+        },
+        "fees": "0",
+        "funding": "0",
+        "gross": "0",
+        "last_fill_ms": null,
+        "open_qty": "0",
+        "opened_ms": null,
+        "remaining": "0",
+        "reserved": "0",
+        "status": "CANCELED"
+      },
+      "side": "SHORT"
+    },
+    {
+      "id": "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02",
+      "state": {
+        "armed_ms": 1795075368180,
+        "buffer": "0",
+        "close_reason": "TIME",
+        "closed_ms": 1795076944773,
+        "fees": "0.06373043305",
+        "funding": "0",
+        "gross": "0.0013339",
+        "last_fill_ms": 1795076918124,
+        "last_protective_execution": {
+          "observed_mono_ns": 1353896346472071,
+          "observed_ms": 1795076918124,
+          "price": "63729.7661",
+          "quantity": "0.001",
+          "quote": {
+            "ask": "63666.10",
+            "ask_qty": "2.855",
+            "bid": "63666.00",
+            "bid_qty": "7.793",
+            "event_ms": 1795076917000,
+            "id": "0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2",
+            "mark": "63666.00000000",
+            "received_ms": 1795076918078
+          },
+          "quote_age_ms": 1124,
+          "quote_confirmed": true,
+          "reason": "TIME",
+          "time_due_ms": 1795076917621
+        },
+        "open_qty": "0",
+        "opened_ms": 1795076017621,
+        "protection_trigger": {
+          "observed_mono_ns": 1353896267097765,
+          "observed_ms": 1795076918124,
+          "quote": {
+            "ask": "63666.10",
+            "ask_qty": "2.855",
+            "bid": "63666.00",
+            "bid_qty": "7.793",
+            "event_ms": 1795076917000,
+            "id": "0e0458f255cd954093f66b425602c1d697bb667f3f8ca9cca823abda4f2accb2",
+            "mark": "63666.00000000",
+            "received_ms": 1795076918078
+          },
+          "quote_age_ms": 1124,
+          "quote_confirmed": true,
+          "reason": "TIME",
+          "time_due_ms": 1795076917621
+        },
+        "remaining": "0",
+        "reserved": "0",
+        "status": "CLOSED"
+      },
+      "side": "SHORT"
+    }
+  ],
+  "comparison": [
+    {
+      "snapshot_id": "73ea21c536fa4addf33fb9edb3d151154774705f8d3775937662476bf1bf30fa",
+      "direction": "WAIT",
+      "thesis": "Пропускаю сделку: контекст 15м/1ч и 4ч не согласован, а доступные планы требуют прохода через промежуточные уровни. Жду более чистого подтверждения направления и уровня для входа.",
+      "hold_min": 30,
+      "prompt_bytes": 14339,
+      "model_input_ms": 1794916930063,
+      "expiry_ms": 1794917700000,
+      "candidates": 8,
+      "comparison": "WAIT"
+    },
+    {
+      "snapshot_id": "bb50fec031485fab15ec59304a10dac303ad9af7a0a4944830e090a13f368859",
+      "direction": "SHORT",
+      "thesis": "Шорт лимитным ордером на откате к пробитой области 1h-поддержки 64260.3. Цена ниже SMA20/SMA40 на 15m, 1h и 4h; низкий taker buy/sell ratio и преобладание лонгов в account ratios поддерживают осторожный медвежий сценарий. Цель — перед 4h-поддержкой 61956.3, стоп — за ближайшим указанным сопротивлением 15m. Новостные материалы 0–2 просмотрены, но покрытие ограничено и явного BTC-катализатора в них нет.",
+      "hold_min": 90,
+      "prompt_bytes": 14331,
+      "model_input_ms": 1794931330621,
+      "expiry_ms": 1794932100000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "64260.3",
+      "stop": "64525.9",
+      "target": "61995.5",
+      "market": "64196.30",
+      "atr15": "391.52857143",
+      "entry_pct": "0.09969421913723999669762899108",
+      "entry_atr": "0.1634618892977580111311060750",
+      "target_bp": "352.4415541166163245425247003",
+      "cap_bp": 74,
+      "basis_levels": [
+        "1h:support:1794808800000",
+        "15m:resistance:1794907800000",
+        "4h:support:1794700800000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1794899700000,
+          "id": "15m:support:1794897000000",
+          "kind": "support",
+          "pivot_ms": 1794897000000,
+          "price": "64257.6",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794908700000,
+          "id": "15m:support:1794906000000",
+          "kind": "support",
+          "pivot_ms": 1794906000000,
+          "price": "64146",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794915000000,
+          "id": "15m:support:1794912300000",
+          "kind": "support",
+          "pivot_ms": 1794912300000,
+          "price": "64039.7",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794830400000,
+          "id": "1h:support:1794819600000",
+          "kind": "support",
+          "pivot_ms": 1794819600000,
+          "price": "64073.7",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794841200000,
+          "id": "1h:support:1794830400000",
+          "kind": "support",
+          "pivot_ms": 1794830400000,
+          "price": "63871",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794906000000,
+          "id": "1h:support:1794895200000",
+          "kind": "support",
+          "pivot_ms": 1794895200000,
+          "price": "64257.6",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794920400000,
+          "id": "1h:support:1794909600000",
+          "kind": "support",
+          "pivot_ms": 1794909600000,
+          "price": "64039.7",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794873600000,
+          "id": "4h:support:1794830400000",
+          "kind": "support",
+          "pivot_ms": 1794830400000,
+          "price": "63871",
+          "timeframe": "4h"
+        }
+      ],
+      "source_hash": "03fa70e951d9b5849c4cb5f6727e3ca2db59751330acab901cf9ddfb69a25d70"
+    },
+    {
+      "snapshot_id": "de9cf6a7eb127d39e6674b2d83bafae8945a2b073256fa7b681aecab3a7b70c8",
+      "direction": "SHORT",
+      "thesis": "Предпочитаю пассивный шорт на возврате к уровню 1h 63871: цена закрытия 15m/1h/4h ниже SMA20 и SMA40, что поддерживает медвежий контекст; цель расположена перед поддержкой 4h. Сильный taker-покупательский поток и повышенные long/short ratios создают риск резкого отскока, поэтому сценарий не безусловный. Фундаментальное покрытие ограничено; новости указаны только по ID.",
+      "hold_min": 120,
+      "prompt_bytes": 14346,
+      "model_input_ms": 1794945726144,
+      "expiry_ms": 1794946500000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "63871",
+      "stop": "64099.1",
+      "target": "61984.7",
+      "market": "63688.30",
+      "atr15": "283.27142857",
+      "entry_pct": "0.2868658764639659089660110256",
+      "entry_atr": "0.6449644460166673278834871518",
+      "target_bp": "295.3296488234096851466236633",
+      "cap_bp": 86,
+      "basis_levels": [
+        "1h:support:1794830400000",
+        "15m:resistance:1794939300000",
+        "4h:support:1794700800000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1794933000000,
+          "id": "15m:support:1794930300000",
+          "kind": "support",
+          "pivot_ms": 1794930300000,
+          "price": "63300.9",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794936600000,
+          "id": "15m:support:1794933900000",
+          "kind": "support",
+          "pivot_ms": 1794933900000,
+          "price": "63408.4",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794938400000,
+          "id": "1h:support:1794927600000",
+          "kind": "support",
+          "pivot_ms": 1794927600000,
+          "price": "63300.9",
+          "timeframe": "1h"
+        }
+      ],
+      "source_hash": "9eab75b60b833a73f878d3884c14fe785a0b619c1def0437af954bf419150245"
+    },
+    {
+      "snapshot_id": "5d50c47d309917fdeb1947d0d154cbeef64ba2bb779d597877ebc6616f8d960d",
+      "direction": "SHORT",
+      "thesis": "Пассивный SHORT от отмеченного сопротивления 15m; стоп за следующим сопротивлением 15m, цель перед поддержкой 1h. Слабый taker buy/sell и небольшое снижение OI поддерживают осторожный сценарий отката, но контекст 15m/1h остаётся неоднозначным. Фундаментальное покрытие ограничено; новости учитываются только по ID [0], [1], [2].",
+      "hold_min": 60,
+      "prompt_bytes": 14360,
+      "model_input_ms": 1794960130479,
+      "expiry_ms": 1794960900000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "65136.4",
+      "stop": "65272.9",
+      "target": "64283.5",
+      "market": "64862.90",
+      "atr15": "258.26428571",
+      "entry_pct": "0.4216586060752756968929850500",
+      "entry_atr": "1.058992726184014039762989419",
+      "target_bp": "130.9406107798404578699467579",
+      "cap_bp": 56,
+      "basis_levels": [
+        "15m:resistance:1794923100000",
+        "15m:resistance:1794956400000",
+        "1h:support:1794895200000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1794925800000,
+          "id": "15m:support:1794923100000",
+          "kind": "support",
+          "pivot_ms": 1794923100000,
+          "price": "64846.5",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794891600000,
+          "id": "1h:support:1794880800000",
+          "kind": "support",
+          "pivot_ms": 1794880800000,
+          "price": "64351",
+          "timeframe": "1h"
+        }
+      ],
+      "source_hash": "518a16eac455ca669e6d30ea0e98951f5a3ef2c21af68f1f9d97da26a93b18d2"
+    },
+    {
+      "snapshot_id": "fa7e6c6d5fbdec6dd803aaed3ee6b19df8b5841cd03d768ae30220378f9d6d17",
+      "direction": "SHORT",
+      "thesis": "Пассивный шорт у сопротивления 15m 64636: цена ниже уровня, а цель расположена перед поддержкой 15m 63637. Контекст смешанный: BTC выше 1h SMA20, но ниже SMA40 и 4h SMA20. Кандидат имеет указанный net R/R 1.8668; фундаментальный обзор ограничен.",
+      "hold_min": 60,
+      "prompt_bytes": 14334,
+      "model_input_ms": 1794974528862,
+      "expiry_ms": 1794975300000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "64636",
+      "stop": "64787.5",
+      "target": "63658.1",
+      "market": "64414.40",
+      "atr15": "210.52142857",
+      "entry_pct": "0.3440224546064234084304130753",
+      "entry_atr": "1.052624435931548362473664360",
+      "target_bp": "151.2933968686181075561606535",
+      "cap_bp": 57,
+      "basis_levels": [
+        "15m:resistance:1794951000000",
+        "1h:resistance:1794826800000",
+        "15m:support:1794943800000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1794955500000,
+          "id": "15m:support:1794952800000",
+          "kind": "support",
+          "pivot_ms": 1794952800000,
+          "price": "64149.2",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794969900000,
+          "id": "15m:support:1794967200000",
+          "kind": "support",
+          "pivot_ms": 1794967200000,
+          "price": "64100",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794972600000,
+          "id": "15m:support:1794969900000",
+          "kind": "support",
+          "pivot_ms": 1794969900000,
+          "price": "64150.1",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794830400000,
+          "id": "1h:support:1794819600000",
+          "kind": "support",
+          "pivot_ms": 1794819600000,
+          "price": "64073.7",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794841200000,
+          "id": "1h:support:1794830400000",
+          "kind": "support",
+          "pivot_ms": 1794830400000,
+          "price": "63871",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794891600000,
+          "id": "1h:support:1794880800000",
+          "kind": "support",
+          "pivot_ms": 1794880800000,
+          "price": "64351",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794906000000,
+          "id": "1h:support:1794895200000",
+          "kind": "support",
+          "pivot_ms": 1794895200000,
+          "price": "64257.6",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794920400000,
+          "id": "1h:support:1794909600000",
+          "kind": "support",
+          "pivot_ms": 1794909600000,
+          "price": "64039.7",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794873600000,
+          "id": "4h:support:1794830400000",
+          "kind": "support",
+          "pivot_ms": 1794830400000,
+          "price": "63871",
+          "timeframe": "4h"
+        }
+      ],
+      "source_hash": "ba7e850b98716e0831bad59ec62e6e0f2e907eb5917f0881dd6ce097cc1cb844"
+    },
+    {
+      "snapshot_id": "df77a4ff5e821cd9f76e3555219401c975b066e8dd29944b73a7fdd0d1597a18",
+      "direction": "LONG",
+      "thesis": "Лимитный лонг на возможном откате к бывшему часовому сопротивлению: последний 15m close выше него, а 15m и 1h закрытия выше SMA20 и SMA40; цена также немного выше 4h SMA20. Цель расположена перед ближайшим выбранным сопротивлением 4h, стоп — за ближайшей поддержкой 15m. Это сценарий продолжения пробоя, а не подтверждение устойчивого тренда.",
+      "hold_min": 90,
+      "prompt_bytes": 14346,
+      "model_input_ms": 1794988936382,
+      "expiry_ms": 1794989700000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "64766.4",
+      "stop": "64478.8",
+      "target": "66074.2",
+      "market": "64801.60",
+      "atr15": "189.20714286",
+      "entry_pct": "0.05431964642848324732722648823",
+      "entry_atr": "0.1860394880865862888280178748",
+      "target_bp": "201.9256898638800365621680377",
+      "cap_bp": 54,
+      "basis_levels": [
+        "1h:resistance:1794826800000",
+        "15m:support:1794984300000",
+        "4h:resistance:1794729600000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1794959100000,
+          "id": "15m:resistance:1794956400000",
+          "kind": "resistance",
+          "pivot_ms": 1794956400000,
+          "price": "65247",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794982500000,
+          "id": "15m:resistance:1794979800000",
+          "kind": "resistance",
+          "pivot_ms": 1794979800000,
+          "price": "64833.6",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794848400000,
+          "id": "1h:resistance:1794837600000",
+          "kind": "resistance",
+          "pivot_ms": 1794837600000,
+          "price": "65679.2",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794877200000,
+          "id": "1h:resistance:1794866400000",
+          "kind": "resistance",
+          "pivot_ms": 1794866400000,
+          "price": "65500.2",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794895200000,
+          "id": "1h:resistance:1794884400000",
+          "kind": "resistance",
+          "pivot_ms": 1794884400000,
+          "price": "65181.1",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794934800000,
+          "id": "1h:resistance:1794924000000",
+          "kind": "resistance",
+          "pivot_ms": 1794924000000,
+          "price": "65425.5",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794967200000,
+          "id": "1h:resistance:1794956400000",
+          "kind": "resistance",
+          "pivot_ms": 1794956400000,
+          "price": "65247",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794873600000,
+          "id": "4h:resistance:1794830400000",
+          "kind": "resistance",
+          "pivot_ms": 1794830400000,
+          "price": "65679.2",
+          "timeframe": "4h"
+        },
+        {
+          "confirmed_ms": 1794960000000,
+          "id": "4h:resistance:1794916800000",
+          "kind": "resistance",
+          "pivot_ms": 1794916800000,
+          "price": "65425.5",
+          "timeframe": "4h"
+        }
+      ],
+      "source_hash": "22280a0f29ae338936848edd8fd77fdb6cf418a93195999b4acca0733395b9b4"
+    },
+    {
+      "snapshot_id": "193948929d069838841367f67f7e819bfee692cdff2813560d102894f4e21c8a",
+      "direction": "SHORT",
+      "thesis": "Условный шорт на откате к уровню 64257.6: цена ниже SMA20/SMA40 на 15m, 1h и 4h, а taker buy/sell ниже 1 — фон склоняется к слабости. Стоп за ближайшим 15m-сопротивлением, цель перед 4h-поддержкой. Это контртрендовый риск для входа относительно ближайших локальных поддержек; подтверждения пробоя вниз нет. Новости учтены только по ID 0, 1 и 2; покрытие ограничено.",
+      "hold_min": 60,
+      "prompt_bytes": 14324,
+      "model_input_ms": 1795003338314,
+      "expiry_ms": 1795004100000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "64257.6",
+      "stop": "64592.9",
+      "target": "61971.3",
+      "market": "64166.30",
+      "atr15": "149.50714286",
+      "entry_pct": "0.1422865273515848661992354242",
+      "entry_atr": "0.6106731641945311133879025156",
+      "target_bp": "355.8022708597893478748039142",
+      "cap_bp": 57,
+      "basis_levels": [
+        "1h:support:1794895200000",
+        "15m:resistance:1794968100000",
+        "4h:support:1794700800000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1794955500000,
+          "id": "15m:support:1794952800000",
+          "kind": "support",
+          "pivot_ms": 1794952800000,
+          "price": "64149.2",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794969900000,
+          "id": "15m:support:1794967200000",
+          "kind": "support",
+          "pivot_ms": 1794967200000,
+          "price": "64100",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794972600000,
+          "id": "15m:support:1794969900000",
+          "kind": "support",
+          "pivot_ms": 1794969900000,
+          "price": "64150.1",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794841200000,
+          "id": "1h:support:1794830400000",
+          "kind": "support",
+          "pivot_ms": 1794830400000,
+          "price": "63871",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794920400000,
+          "id": "1h:support:1794909600000",
+          "kind": "support",
+          "pivot_ms": 1794909600000,
+          "price": "64039.7",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794938400000,
+          "id": "1h:support:1794927600000",
+          "kind": "support",
+          "pivot_ms": 1794927600000,
+          "price": "63300.9",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794978000000,
+          "id": "1h:support:1794967200000",
+          "kind": "support",
+          "pivot_ms": 1794967200000,
+          "price": "64100",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794873600000,
+          "id": "4h:support:1794830400000",
+          "kind": "support",
+          "pivot_ms": 1794830400000,
+          "price": "63871",
+          "timeframe": "4h"
+        },
+        {
+          "confirmed_ms": 1794960000000,
+          "id": "4h:support:1794916800000",
+          "kind": "support",
+          "pivot_ms": 1794916800000,
+          "price": "63300.9",
+          "timeframe": "4h"
+        }
+      ],
+      "source_hash": "470e5276f608ba37162f147edd7567e667c0bf6e9f11e71ace27d466599b5e81"
+    },
+    {
+      "snapshot_id": "c8b00521dd510d69b14b3572fa14592248b7c62b06aa334257dcac4726cb2208",
+      "direction": "WAIT",
+      "thesis": "Жду: цена и закрытие 15m находятся примерно у 63000, существенно ниже предложенных уровней входа 63871–63912.8. Несмотря на слабость ниже средних 15m/1h/4h, запоздалый ретестовый шорт не выглядит достаточно надёжным; к тому же на пути предложенной цели есть поддержка 4h около 63300.9. Новости оценены лишь по ограниченному набору заголовков, без достаточного фундаментального охвата.",
+      "hold_min": 60,
+      "prompt_bytes": 13023,
+      "model_input_ms": 1795017740533,
+      "expiry_ms": 1795018500000,
+      "candidates": 4,
+      "comparison": "WAIT"
+    },
+    {
+      "snapshot_id": "4ac72392cc3c66f57bb891188dbdd269f9eabf99ec765a9b170be73add0fe0cb",
+      "direction": "SHORT",
+      "thesis": "SHORT по плану от сопротивления 15m: лимитный вход 63264.2, стоп 63533.6 за выбранным уровнем, цель 61985.2 перед поддержкой 4h. Цена ниже SMA20/SMA40 на 15m, 1h и 4h; вместе с низким taker buy/sell ratio это поддерживает осторожный медвежий сценарий. Вход предполагает откат вверх к сопротивлению; подтверждения разворота нет.",
+      "hold_min": 45,
+      "prompt_bytes": 14330,
+      "model_input_ms": 1795032137853,
+      "expiry_ms": 1795032900000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "63264.2",
+      "stop": "63533.6",
+      "target": "61985.2",
+      "market": "62697.40",
+      "atr15": "288.61428571",
+      "entry_pct": "0.9040247282981431446918054018",
+      "entry_atr": "1.963866752491667575397094504",
+      "target_bp": "202.1680508091464050758564876",
+      "cap_bp": 50,
+      "basis_levels": [
+        "15m:resistance:1795026600000",
+        "15m:resistance:1795023000000",
+        "4h:support:1794700800000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1795014900000,
+          "id": "15m:support:1795012200000",
+          "kind": "support",
+          "pivot_ms": 1795012200000,
+          "price": "63038.9",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1795022100000,
+          "id": "15m:support:1795019400000",
+          "kind": "support",
+          "pivot_ms": 1795019400000,
+          "price": "62250.2",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1795028400000,
+          "id": "1h:support:1795017600000",
+          "kind": "support",
+          "pivot_ms": 1795017600000,
+          "price": "62250.2",
+          "timeframe": "1h"
+        }
+      ],
+      "source_hash": "4d2980b67fdaf8bb352e87aaf91d6267b1ef9e4cd5af395866ce3568ed333ac5"
+    },
+    {
+      "snapshot_id": "0b270d5847adfb765673681ca09898acc130cd2350aed0725737622b3bdf6c8d",
+      "direction": "SHORT",
+      "thesis": "Пассивный SHORT на возврате к уровню 63038.9, ранее поддержке, которая может выступить сопротивлением. Контекст 1h/4h остаётся слабым: цена ниже SMA20 и SMA40; умеренно в пользу снижения также перевес taker-продаж и высокий перекос аккаунтов в лонг. Сигналы противоречивы, поэтому сценарий ограничен по времени.",
+      "hold_min": 60,
+      "prompt_bytes": 14327,
+      "model_input_ms": 1795046553558,
+      "expiry_ms": 1795047300000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "63038.9",
+      "stop": "63288.8",
+      "target": "62055.4",
+      "market": "62900.50",
+      "atr15": "245.5",
+      "entry_pct": "0.2200300474559025762911264616",
+      "entry_atr": "0.5637474541751527494908350305",
+      "target_bp": "156.0147781766496560060534051",
+      "cap_bp": 62,
+      "basis_levels": [
+        "15m:support:1795012200000",
+        "15m:resistance:1795026600000",
+        "15m:support:1795041900000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1795022100000,
+          "id": "15m:support:1795019400000",
+          "kind": "support",
+          "pivot_ms": 1795019400000,
+          "price": "62250.2",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1795041000000,
+          "id": "15m:support:1795038300000",
+          "kind": "support",
+          "pivot_ms": 1795038300000,
+          "price": "62286",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1795028400000,
+          "id": "1h:support:1795017600000",
+          "kind": "support",
+          "pivot_ms": 1795017600000,
+          "price": "62250.2",
+          "timeframe": "1h"
+        }
+      ],
+      "source_hash": "7bf33d932fc7934306739be4308bc139e25d761e8e8c6214fe091ac229417408"
+    },
+    {
+      "snapshot_id": "8c9e15bebffbf54bf4d4f591d21f2ad7e5010ad154dc935eade3254bf8b1b33b",
+      "direction": "SHORT",
+      "thesis": "Шорт от ретеста прежней часовой поддержки выглядит предпочтительнее: закрытие 15m ниже SMA20/40 на 1h и цена ниже SMA20/40 на 4h согласуются со слабым фоном; отношение taker buy/sell ниже 1 поддерживает осторожный медвежий уклон. Цель выбрана перед ближайшей указанной поддержкой. Публикация по ID 0 может иметь макрозначение, но доступные данные не позволяют оценить её содержание.",
+      "hold_min": 60,
+      "prompt_bytes": 14300,
+      "model_input_ms": 1795060940272,
+      "expiry_ms": 1795061700000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "64257.6",
+      "stop": "64963.6",
+      "target": "62414",
+      "market": "63405.00",
+      "atr15": "288.41428571",
+      "entry_pct": "1.344688904660515732197776201",
+      "entry_atr": "2.956164247901671666470379984",
+      "target_bp": "286.9076965215009586414680909",
+      "cap_bp": 63,
+      "basis_levels": [
+        "1h:support:1794895200000",
+        "1h:resistance:1794985200000",
+        "15m:support:1795051800000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1795050000000,
+          "id": "15m:support:1795047300000",
+          "kind": "support",
+          "pivot_ms": 1795047300000,
+          "price": "62621.7",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794920400000,
+          "id": "1h:support:1794909600000",
+          "kind": "support",
+          "pivot_ms": 1794909600000,
+          "price": "64039.7",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794938400000,
+          "id": "1h:support:1794927600000",
+          "kind": "support",
+          "pivot_ms": 1794927600000,
+          "price": "63300.9",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794978000000,
+          "id": "1h:support:1794967200000",
+          "kind": "support",
+          "pivot_ms": 1794967200000,
+          "price": "64100",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794873600000,
+          "id": "4h:support:1794830400000",
+          "kind": "support",
+          "pivot_ms": 1794830400000,
+          "price": "63871",
+          "timeframe": "4h"
+        },
+        {
+          "confirmed_ms": 1794960000000,
+          "id": "4h:support:1794916800000",
+          "kind": "support",
+          "pivot_ms": 1794916800000,
+          "price": "63300.9",
+          "timeframe": "4h"
+        }
+      ],
+      "source_hash": "18a56c7fec1fdf59daca8770bca6ece771f1b1a8edf60ae250f722b920d4376d"
+    },
+    {
+      "snapshot_id": "fac6878d2cc8dc7874071e74dc404ebec2d904c9998b3392bb99a453d5cf7fe6",
+      "direction": "SHORT",
+      "thesis": "Пассивный SHORT у сопротивления 15m 63731.1: цена ниже этого уровня, а 1ч close близок к SMA40 и 4ч close ниже SMA20, что оставляет пространство для отката к поддержке 62621.7. Стоп за ближайшим верхним сопротивлением 63851.3; цель — перед поддержкой. Новость ID 0 — заголовок о протоколе заседания FOMC; ограниченное покрытие не позволяет оценить фундаментальное направление.",
+      "hold_min": 15,
+      "prompt_bytes": 14304,
+      "model_input_ms": 1795075338851,
+      "expiry_ms": 1795076100000,
+      "candidates": 8,
+      "same_side_choices": 4,
+      "same_side_passing": 0,
+      "comparison": "target_outside_hold_envelope",
+      "entry": "63731.1",
+      "stop": "63868.3",
+      "target": "62638.7",
+      "market": "63669.60",
+      "atr15": "169.39285714",
+      "entry_pct": "0.09659240830788947943759659241",
+      "entry_atr": "0.3630613535798112815278062202",
+      "target_bp": "171.4076800808396528539441497",
+      "cap_bp": 28,
+      "basis_levels": [
+        "15m:resistance:1795063500000",
+        "15m:resistance:1795071600000",
+        "15m:support:1795047300000"
+      ],
+      "obstacles": [
+        {
+          "confirmed_ms": 1795069800000,
+          "id": "15m:support:1795067100000",
+          "kind": "support",
+          "pivot_ms": 1795067100000,
+          "price": "63269.7",
+          "timeframe": "15m"
+        },
+        {
+          "confirmed_ms": 1794938400000,
+          "id": "1h:support:1794927600000",
+          "kind": "support",
+          "pivot_ms": 1794927600000,
+          "price": "63300.9",
+          "timeframe": "1h"
+        },
+        {
+          "confirmed_ms": 1794960000000,
+          "id": "4h:support:1794916800000",
+          "kind": "support",
+          "pivot_ms": 1794916800000,
+          "price": "63300.9",
+          "timeframe": "4h"
+        }
+      ],
+      "source_hash": "7d89c440a0b7898a62abc6d46f57874eab99f45ef1a8c74251cae8237e100b3e"
+    },
+    {
+      "snapshot_id": "d7c939d20069cc044bdefec5ef6580fd9a4cbada4e9036eb950ace1a556095bc",
+      "direction": "WAIT",
+      "thesis": "Ждать: 15m/1h дают более сильный краткосрочный фон, тогда как 4h остаётся слабее; доступные данные не дают уверенного направления для пассивного входа. Фундаментальное покрытие ограничено; ID 0 указывает на публикацию протокола FOMC, но её влияние по одному заголовку определить нельзя.",
+      "hold_min": 15,
+      "prompt_bytes": 14313,
+      "model_input_ms": 1795089736998,
+      "expiry_ms": 1795090500000,
+      "candidates": 8,
+      "comparison": "WAIT"
+    }
+  ],
+  "quote_ranges": {
+    "6f1e7c0ead96ac5d20be75b8b099850139735f9102dc5b82a0a3644e919004bc": {
+      "from_ms": 1795032156729,
+      "through_ms": 1795032900547,
+      "quotes": 3300,
+      "min_bid": "62660.50",
+      "max_bid": "62780.80",
+      "min_ask": "62660.60",
+      "max_ask": "62780.90",
+      "min_mark": "62663.26462319",
+      "max_mark": "62780.90000000",
+      "max_interval_ms": 3486,
+      "last_at": 1795032900479
+    },
+    "0085cc571722293b107c6cbcfb87f541ff5dca42fef958d9e87d0795f8061c8d": {
+      "from_ms": 1795046585346,
+      "through_ms": 1795047300032,
+      "quotes": 3457,
+      "min_bid": "62673.70",
+      "max_bid": "62899.90",
+      "min_ask": "62673.80",
+      "max_ask": "62900.00",
+      "min_mark": "62679.49529985",
+      "max_mark": "62900.00000000",
+      "max_interval_ms": 4055,
+      "last_at": 1795047299912
+    },
+    "cf4023cf8e3023fcdf8b5f54c0370dbf403ad6005fe60b679224bf9dc8e29051": {
+      "from_ms": 1795060972360,
+      "through_ms": 1795061700062,
+      "quotes": 3094,
+      "min_bid": "63291.60",
+      "max_bid": "63546.00",
+      "min_ask": "63291.70",
+      "max_ask": "63546.10",
+      "min_mark": "63298.26697151",
+      "max_mark": "63537.88484058",
+      "max_interval_ms": 2927,
+      "last_at": 1795061700051
+    },
+    "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02": {
+      "from_ms": 1795076017621,
+      "through_ms": 1795076918124,
+      "quotes": 2323,
+      "min_bid": "63655.90",
+      "max_bid": "63819.80",
+      "min_ask": "63656.00",
+      "max_ask": "63819.90",
+      "min_mark": "63664.16397826",
+      "max_mark": "63819.90000000",
+      "max_interval_ms": 7734,
+      "last_at": 1795076918078
+    }
+  },
+  "telegram": "[ИИ • BTCUSDT • отдельный paper-счёт TP/SL]\nВиртуальные деньги. Лимитные исполнения моделируются, это не биржевые ордера.\nНовые входы: разрешены только этому paper-контуру\nПоследний анализ: ответ не подтверждён.\nПлан: SHORT — позиция закрыта, расчёт завершён.\nЛимит входа 63731.1; TP 62638.7; SL 63868.3 USDT.\nОткрыто: 0 BTC. Остаток входа: 0.\nИтог net: -0.06239653305 USDT.\nАналитик: gpt-6-luna.\nИдея: Пассивный SHORT у сопротивления 15m 63731.1: цена ниже этого уровня, а 1ч close близок к SMA40 и 4ч close ниже SMA20, что оставляет пространство для отката к поддержке 62621.7. Стоп за ближайшим верхним сопротивлением 63851.3; цель — перед поддержкой. Новость ID 0 — заголовок о п\nСвободно: 999.717234899015389811 USDT; в резерве входа: 0.\nSL работает без ИИ по mark/bid–ask; гэп и недостаток ликвидности могут увеличить убыток.\nПоследний ИИ-анализ: оценка $0.0008757; счёт провайдера не сверялся.\nОбновление экрана не вызывает ИИ и не создаёт сделки.\n",
+  "current": {
+    "as_of_ms": 1795181739933,
+    "market_errors": {
+      "BTCUSDT": null,
+      "ETHUSDT": null,
+      "SOLUSDT": null
+    },
+    "funding_error": null,
+    "ledger_balanced": true
+  },
+  "backup_verified_ms": 1795181594494,
+  "pauses": {
+    "reserve": 1,
+    "spot": 1,
+    "futures_isolated": 1,
+    "futures_cross": 1,
+    "margin_cross": 1
+  },
+  "writer_count": 1,
+  "poller_count": 1,
+  "budget_lifetime": {
+    "count": 43,
+    "reserved_micro_usd": 114080
+  },
+  "gaps": [
+    {
+      "at_ms": 1795013200923,
+      "affected": []
+    },
+    {
+      "at_ms": 1795014031663,
+      "affected": []
+    },
+    {
+      "at_ms": 1795014041899,
+      "affected": []
+    },
+    {
+      "at_ms": 1795014052407,
+      "affected": []
+    },
+    {
+      "at_ms": 1795015028544,
+      "affected": []
+    },
+    {
+      "at_ms": 1795016867122,
+      "affected": []
+    },
+    {
+      "at_ms": 1795020043891,
+      "affected": []
+    },
+    {
+      "at_ms": 1795021247597,
+      "affected": []
+    },
+    {
+      "at_ms": 1795028458793,
+      "affected": []
+    },
+    {
+      "at_ms": 1795030288867,
+      "affected": []
+    },
+    {
+      "at_ms": 1795030898129,
+      "affected": []
+    },
+    {
+      "at_ms": 1795033949423,
+      "affected": []
+    },
+    {
+      "at_ms": 1795038220554,
+      "affected": []
+    },
+    {
+      "at_ms": 1795041270255,
+      "affected": []
+    },
+    {
+      "at_ms": 1795042121551,
+      "affected": []
+    },
+    {
+      "at_ms": 1795049808640,
+      "affected": []
+    },
+    {
+      "at_ms": 1795051029665,
+      "affected": []
+    },
+    {
+      "at_ms": 1795056521578,
+      "affected": []
+    },
+    {
+      "at_ms": 1795056732824,
+      "affected": []
+    },
+    {
+      "at_ms": 1795060182964,
+      "affected": []
+    },
+    {
+      "at_ms": 1795060792075,
+      "affected": []
+    },
+    {
+      "at_ms": 1795064451995,
+      "affected": []
+    },
+    {
+      "at_ms": 1795068490775,
+      "affected": []
+    },
+    {
+      "at_ms": 1795068612902,
+      "affected": []
+    },
+    {
+      "at_ms": 1795070548007,
+      "affected": []
+    },
+    {
+      "at_ms": 1795071675138,
+      "affected": []
+    },
+    {
+      "at_ms": 1795071691637,
+      "affected": []
+    },
+    {
+      "at_ms": 1795074210487,
+      "affected": []
+    },
+    {
+      "at_ms": 1795076648119,
+      "affected": [
+        "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02"
+      ]
+    },
+    {
+      "at_ms": 1795076652387,
+      "affected": [
+        "c2599263b9ee92b9bc1a134e6ab599cf40c29c14c29a93d0a1593e5d7c9a4c02"
+      ]
+    },
+    {
+      "at_ms": 1795081534036,
+      "affected": []
+    },
+    {
+      "at_ms": 1795085804850,
+      "affected": []
+    },
+    {
+      "at_ms": 1795088243319,
+      "affected": []
+    },
+    {
+      "at_ms": 1795089626976,
+      "affected": []
+    },
+    {
+      "at_ms": 1795098586868,
+      "affected": []
+    },
+    {
+      "at_ms": 1795099835352,
+      "affected": []
+    },
+    {
+      "at_ms": 1795100448173,
+      "affected": []
+    },
+    {
+      "at_ms": 1795104716835,
+      "affected": []
+    },
+    {
+      "at_ms": 1795104860290,
+      "affected": []
+    },
+    {
+      "at_ms": 1795105323633,
+      "affected": []
+    },
+    {
+      "at_ms": 1795106429656,
+      "affected": []
+    },
+    {
+      "at_ms": 1795107155544,
+      "affected": []
+    },
+    {
+      "at_ms": 1795107654018,
+      "affected": []
+    },
+    {
+      "at_ms": 1795107686236,
+      "affected": []
+    },
+    {
+      "at_ms": 1795110208173,
+      "affected": []
+    },
+    {
+      "at_ms": 1795110813984,
+      "affected": []
+    },
+    {
+      "at_ms": 1795118454128,
+      "affected": []
+    },
+    {
+      "at_ms": 1795118487607,
+      "affected": []
+    },
+    {
+      "at_ms": 1795120197420,
+      "affected": []
+    },
+    {
+      "at_ms": 1795120201870,
+      "affected": []
+    },
+    {
+      "at_ms": 1795121182868,
+      "affected": []
+    },
+    {
+      "at_ms": 1795121795227,
+      "affected": []
+    },
+    {
+      "at_ms": 1795122098823,
+      "affected": []
+    },
+    {
+      "at_ms": 1795122983123,
+      "affected": []
+    },
+    {
+      "at_ms": 1795123013824,
+      "affected": []
+    },
+    {
+      "at_ms": 1795127285430,
+      "affected": []
+    },
+    {
+      "at_ms": 1795127335850,
+      "affected": []
+    },
+    {
+      "at_ms": 1795132778364,
+      "affected": []
+    },
+    {
+      "at_ms": 1795132895189,
+      "affected": []
+    },
+    {
+      "at_ms": 1795136435856,
+      "affected": []
+    },
+    {
+      "at_ms": 1795136865158,
+      "affected": []
+    },
+    {
+      "at_ms": 1795140094644,
+      "affected": []
+    },
+    {
+      "at_ms": 1795140703949,
+      "affected": []
+    },
+    {
+      "at_ms": 1795143689982,
+      "affected": []
+    },
+    {
+      "at_ms": 1795143752441,
+      "affected": []
+    },
+    {
+      "at_ms": 1795144974308,
+      "affected": []
+    },
+    {
+      "at_ms": 1795157187400,
+      "affected": []
+    },
+    {
+      "at_ms": 1795164506665,
+      "affected": []
+    },
+    {
+      "at_ms": 1795165117615,
+      "affected": []
+    },
+    {
+      "at_ms": 1795172437536,
+      "affected": []
+    },
+    {
+      "at_ms": 1795173537286,
+      "affected": []
+    },
+    {
+      "at_ms": 1795173654009,
+      "affected": []
+    },
+    {
+      "at_ms": 1795174873325,
+      "affected": []
+    },
+    {
+      "at_ms": 1795176093215,
+      "affected": []
+    },
+    {
+      "at_ms": 1795177313376,
+      "affected": []
+    },
+    {
+      "at_ms": 1795178535119,
+      "affected": []
+    },
+    {
+      "at_ms": 1795180362930,
+      "affected": []
+    },
+    {
+      "at_ms": 1795181584405,
+      "affected": []
+    }
+  ],
+  "hashes": {
+    "nov20-ranges.json": "4fe9e031a2aed72ba7273e76ed7a1595ef9045eb65cfacde3d02d90a0bb8375e",
+    "nov20-raw.json": "520f3391320047bc84bd6d872b463af4e0b4dc20dd86276ebf9f89e39aaef051",
+    "nov20-sources.json": "acd3c93ad01218c31beb51b7c346d20cb1a6b0a7c20e34109480d8c9313a1f2e"
+  }
+}

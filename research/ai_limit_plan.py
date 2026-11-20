@@ -71,11 +71,40 @@ def filters(value,now):
 LEGACY_CANDIDATE_POLICY='distance-rr-v1'
 CANDIDATE_POLICY='entry-stop-nearest-v1'
 
+HORIZON_POLICY = 'entry-stop-nearest-horizon-q75-v1'
+
+
+def excursion_profile(rows):
+    """Nearest-rank 75th percentile in bp for past, disjoint 15m windows."""
+    profile = []
+    for bars in range(1, 17):
+        moves = [[], []]
+        for end in range(len(rows), bars - 1, -bars):
+            window = rows[end - bars:end]
+            opening = positive(window[0][1])
+            high = max(positive(row[2]) for row in window)
+            low = min(positive(row[3]) for row in window)
+            for values, distance in zip(moves, (high - opening, opening - low)):
+                values.append(distance * 10000 / opening)
+        rank = (3 * len(moves[0]) + 3) // 4 - 1
+        profile.append([int(sorted(values)[rank]) for values in moves])
+    return profile
+
+
+def check_target_horizon(snapshot, direction, entry, target, hold_minutes):
+    bars = hold_minutes // 15
+    if bars == 0:
+        raise ValueError('hold_below_candle_resolution')
+    limit = snapshot['excursion_q75_bps'][bars - 1][0 if direction == 'LONG' else 1]
+    if abs(target - entry) * 10000 > entry * limit:
+        raise ValueError('target_outside_hold_envelope')
+
+
 def select_candidates(candidates,reference,policy=CANDIDATE_POLICY):
     if policy==LEGACY_CANDIDATE_POLICY:
         ordered=sorted(candidates,key=lambda x:(abs(dec(x['entry'])-reference),-dec(x['net_reward_risk']),x['direction'],x['entry_level'],x['stop_level'],x['target_level']))
         return [c for direction in ('LONG','SHORT') for c in [x for x in ordered if x['direction']==direction][:4]]
-    if policy!=CANDIDATE_POLICY:raise ValueError('candidate_policy_unknown')
+    if policy not in (CANDIDATE_POLICY,HORIZON_POLICY):raise ValueError('candidate_policy_unknown')
     result=[]
     ids=lambda c:(c['entry_level'],c['stop_level'],c['target_level'])
     pair=lambda c:(dec(c['entry']),dec(c['stop']))
@@ -177,6 +206,8 @@ def context(capture,book,exchange_filters,news,now,*,candidate_policy=CANDIDATE_
                     candidates.append({'direction':direction,'entry_level':e['id'],'stop_level':stop_level['id'],'target_level':target_level['id'],
                         'entry':checked['entry'],'stop':checked['stop'],'target':checked['target'],'quantity_cap':checked['quantity'],
                         'net_reward_risk':format(dec(checked['net_reward_risk']),'.4f'),'estimated_risk_usdt':checked['risk_usdt']})
+    if candidate_policy == HORIZON_POLICY:
+        result['excursion_q75_bps'] = excursion_profile(rows)
     result['candidate_plans']=select_candidates(candidates,reference,candidate_policy)
     result['snapshot_id']=digest({k:v for k,v in result.items() if k!='snapshot_id'})
     if len(canonical(result).encode())>16000:raise ValueError('context_size')
@@ -193,6 +224,12 @@ SCHEMA={'type':'object','additionalProperties':False,'required':list(FIELDS),'pr
 
 def request(snapshot):
     verify_context(snapshot,snapshot['as_of_ms'])
+    horizon_instruction = ''
+    if snapshot.get('candidate_policy') == HORIZON_POLICY:
+        horizon_instruction = (' Independently justify holding time from the setup and state why the target fits. '
+            'excursion_q75_bps lists [long,short] historical favorable excursions from the open for '
+            '15,30,...,240 minutes. Compare target distance in bp at the independently chosen hold '
+            'rounded down to completed 15m bars. Choose WAIT if no plan fits; do not extend the hold to qualify.')
     return {'model':'gpt-6-luna','store':False,'service_tier':'default','max_output_tokens':2000,
         'input':[{'role':'system','content':
         'You are a paper futures analyst. Choose WAIT or one of the provided candidate_plans for a passive LIMIT LONG/SHORT, returning its exact three level IDs. If none are provided, choose WAIT. '
@@ -201,14 +238,14 @@ def request(snapshot):
         'No quantity, leverage, order execution, code, or instructions to tools. Prefer WAIT when evidence conflicts. '
         'Copy snapshot_id, expiry no later than expires_ms, holding 5..240minutes. Explain thesis/risks in Russian, '
         'identify news only by supplied IDs and acknowledge limited fundamental coverage. '
-        'WAIT requires three null level IDs. Program checks net R/R>=1.5 including costs independently.'},
+        'WAIT requires three null level IDs. Program checks net R/R>=1.5 including costs independently.' + horizon_instruction},
         {'role':'user','content':canonical(snapshot)}],
         'text':{'format':{'type':'json_schema','name':'paper_limit_bracket','strict':True,'schema':SCHEMA}}}
 
 
 def verify_context(snapshot,now):
     if not isinstance(snapshot,dict) or snapshot.get('version')!=VERSION or snapshot.get('symbol') not in SYMBOLS or snapshot.get('venue')!='binance-usdm':raise ValueError('snapshot_schema')
-    if snapshot.get('candidate_policy',LEGACY_CANDIDATE_POLICY) not in (LEGACY_CANDIDATE_POLICY,CANDIDATE_POLICY):raise ValueError('candidate_policy_unknown')
+    if snapshot.get('candidate_policy',LEGACY_CANDIDATE_POLICY) not in (LEGACY_CANDIDATE_POLICY,CANDIDATE_POLICY,HORIZON_POLICY):raise ValueError('candidate_policy_unknown')
     if digest({k:v for k,v in snapshot.items() if k!='snapshot_id'})!=snapshot.get('snapshot_id'):raise ValueError('snapshot_hash')
     if not integer(snapshot['as_of_ms'])<=now<integer(snapshot['expires_ms']) or snapshot['expires_ms']-snapshot['as_of_ms']>BAR:raise ValueError('snapshot_expired')
     if not isinstance(snapshot['levels'],list) or len(snapshot['levels'])>36 or len({x['id'] for x in snapshot['levels']})!=len(snapshot['levels']):raise ValueError('level_identity')
@@ -257,6 +294,8 @@ def validate(snapshot,decision,now):
     step=positive(f['step_size'])
     quantity=(min(dec(100)/entry,dec(5)/loss)/step).to_integral_value(rounding=ROUND_DOWN)*step
     if quantity<positive(f['min_qty']) or quantity*entry<positive(f['min_notional']):raise ValueError('minimum_size_vs_caps')
+    if snapshot.get('candidate_policy') == HORIZON_POLICY and 'candidate_plans' in snapshot:
+        check_target_horizon(snapshot, decision['decision'], entry, target, decision['max_hold_minutes'])
     result.update(entry=text(entry),stop=text(stop),target=text(target),quantity=text(quantity),
         reserve=text(quantity*(entry+entry*fee+buffer)),risk_usdt=text(quantity*loss),net_reward_risk=text((reward/loss).quantize(Decimal('0.00000001'))),
         fee=text(fee),funding_buffer_rate='0.0021',stop_slippage='0.001',expires_ms=decision['valid_until_ms'],hold_ms=decision['max_hold_minutes']*60000)

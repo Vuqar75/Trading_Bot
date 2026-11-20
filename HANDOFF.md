@@ -1,5 +1,9 @@
 # Trading_Bot — контекст передачи работы
 
+## 2026-11-20 — новые циклы, неопределённый HTTP 503 и согласование горизонта
+
+[Результаты и точка продолжения](PAPER_PLAN_HORIZON_20261120.md). Сверка в 17:35 Баку. 12 запусков, 6 ответов (2 WAIT, 4 SHORT), 1 HTTP 503, затем 5 штатных блокировок до отправки. Три истечения, один SHORT закрыт по TIME, net −0,06239653305 USDT. Свободно 999,7172348990153898110, открытого риска и резервов сделки нет. У попытки 8158af67… отсутствуют ответ/usage, сохранён бюджетный резерв 0,002775 USD. Нужна сверка исхода у провайдера, не повторять отправку и не снимать блок автоматически. Runtime 6e7ff40, расписание и защита сохранены. Новая политика только в checkout, 13 причинных срезов, 10/10 прежних выбранных целей выше Q75 при заданном сроке. Новая отложка не нужна.
+
 ## 2026-11-18 — first-day b36103c audit complete; confirmed quote race fixed and external restore recovered
 
 [Finite trading report](PAPER_DAY1_REPORT_20261118.md), [7-cycle table](research/PAPER_DAY1_CYCLES_20261118.csv), [immutable audit evidence](research/PAPER_DAY1_20261118.json), [maintenance receipts/source hashes](research/PAPER_DAY1_MAINTENANCE_20261118.json). Primary first24h17Nov14:44:44.868–18Nov14:44:44.868Baku: all6scheduled opportunities ran once,1WAIT/4SHORT/1LONG;4L+4S in each saved causal snapshot. One SHORT rejected `limit_would_take_now` after response/noorder;3SHORT orders EXPIRED/no fill;1LONG filled/closed TIME. Supplemental18Nov16:02SHORT also EXPIRED. Across7calls:zero pre-model skips, technical order cancellations, partial fills, retries or uncertain model outcomes.4expiry records retained; quote samples support non-reach but are not complete trade tape or fill proof. WAIT reasons are attributed only as saved. All exact request/plan/fill IDs and times in evidence.
