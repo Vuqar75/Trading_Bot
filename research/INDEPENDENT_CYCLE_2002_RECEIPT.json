@@ -1,0 +1,132 @@
+{
+  "candidate_check": {"snapshot_id": "af284f9250c3eab295c8acca816c3c18bfb121e328c0f965e805ba1df25a278f", "count": 0, "sides": {}},
+  "checked_ms": 1795193511913,
+  "analyst": "/opt/tradingbot-ai-brackets-8253c7d-analyst",
+  "executor_sha256": "ff65fa713a11ccea2916a149388a1d65eafbeb9efcbb92f72bc20579bc3b9cd8",
+  "paper": "/opt/tradingbot-ai-brackets-6e7ff40-paper",
+  "paper_pid": "592049",
+  "paper_state": "active",
+  "analyst_result": "success",
+  "start": "Fri 2026-11-20 16:02:01 UTC",
+  "end": "Fri 2026-11-20 16:02:32 UTC",
+  "timer": "active",
+  "next": "Fri 2026-11-20 20:02:00 UTC",
+  "requests": [
+    {
+      "request_id": "bracket:8158af673a84f82a83261104a76dcc48a712f0b099d421d2e75579c1e63190f7",
+      "created_at": 1795104146.678,
+      "reserved_micro_usd": 2775,
+      "received_ms": null,
+      "usage_count": 0,
+      "snapshot": {
+        "snapshot_id": "8158af673a84f82a83261104a76dcc48a712f0b099d421d2e75579c1e63190f7",
+        "as_of_ms": 1795104142948,
+        "symbol": "BTCUSDT",
+        "version": "ai-limit-brackets-v1",
+        "candidate_policy": "entry-stop-nearest-v1"
+      },
+      "saved_raw": false,
+      "saved_result": false,
+      "result": {}
+    },
+    {
+      "request_id": "bracket:af284f9250c3eab295c8acca816c3c18bfb121e328c0f965e805ba1df25a278f",
+      "created_at": 1795190538.027,
+      "reserved_micro_usd": 2518,
+      "received_ms": 1795190550490,
+      "usage_count": 1,
+      "snapshot": {
+        "snapshot_id": "af284f9250c3eab295c8acca816c3c18bfb121e328c0f965e805ba1df25a278f",
+        "as_of_ms": 1795190534776,
+        "symbol": "BTCUSDT",
+        "version": "ai-limit-brackets-v1",
+        "candidate_policy": "entry-stop-nearest-v1"
+      },
+      "saved_raw": true,
+      "saved_result": true,
+      "result": {
+        "usage": {
+          "input_tokens": 3091,
+          "output_tokens": 409,
+          "total_tokens": 3500
+        },
+        "estimated_cost_micro_usd": "513.6",
+        "admission": {
+          "allowed": false,
+          "reason": "model_wait"
+        },
+        "decision": {
+          "decision": "WAIT",
+          "snapshot_id": "af284f9250c3eab295c8acca816c3c18bfb121e328c0f965e805ba1df25a278f",
+          "thesis": "Ожидание: планы-кандидаты отсутствуют. Цена и закрытия таймфреймов заметно ниже приведённых скользящих средних; без плана и подтверждённого сетапа выбирать LONG или SHORT нецелесообразно."
+        },
+        "plan_id": "b0ba9eac256c68e3438016294f8a989bdde64592d270b561ca2504764bc39b81",
+        "remaining_micro_usd": 133402,
+        "total_reserved_micro_usd": 116598
+      }
+    }
+  ],
+  "budget": {
+    "claims": 44,
+    "cumulative_reserved_micro_usd": 116598,
+    "utc_day_claims": 1,
+    "slot_claims": 1
+  },
+  "public": {
+    "as_of_ms": 1795193513086,
+    "balances": {
+      "free": "999.717234899015389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "ledger_balanced": true,
+    "market_errors": {
+      "BTCUSDT": null,
+      "ETHUSDT": null,
+      "SOLUSDT": null
+    },
+    "funding_error": null,
+    "analyst_last": {
+      "as_of_ms": 1795190552879,
+      "provenance": {
+        "kind": "budget_response",
+        "model": "gpt-6-luna",
+        "response_id": "bracket:af284f9250c3eab295c8acca816c3c18bfb121e328c0f965e805ba1df25a278f"
+      },
+      "status": "WAIT",
+      "symbol": "BTCUSDT",
+      "thesis": "Ожидание: планы-кандидаты отсутствуют. Цена и закрытия таймфреймов заметно ниже приведённых скользящих средних; без плана и подтверждённого сетапа выбирать LONG или SHORT нецелесообразно."
+    },
+    "paused": false,
+    "blocked": null
+  },
+  "active_or_cycle": [],
+  "ledger": {
+    "balanced": true,
+    "invalid_events": [],
+    "negative_accounts": [],
+    "foreign_key_error": false,
+    "totals": {
+      "USDT": "0.0000000000000000000",
+      "BTC": "0"
+    }
+  },
+  "counts": {
+    "ledger_events": 50,
+    "ledger_postings": 120,
+    "bracket_plans": 19,
+    "bracket_fills": 10,
+    "bracket_funding": 1
+  },
+  "orders_render": {
+    "chars": 939,
+    "stale": false,
+    "valid": true
+  },
+  "pollers": 1,
+  "journal": [
+    "{\"admission\":{\"allowed\":false,\"reason\":\"model_wait\"},\"decision\":\"WAIT\",\"network_retry\":false,\"status\":\"published\"}"
+  ],
+  "method": "Read-only VM SQLite transactions, systemd journal, local Telegram renderer against public snapshot; no Telegram message or model call from verifier."
+}
