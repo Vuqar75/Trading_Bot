@@ -1,0 +1,650 @@
+{
+  "BTCUSDT-base": {
+    "total": {
+      "closed": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "liquidation_fee": 0,
+      "funding": 0,
+      "net": 0,
+      "mean_net": null,
+      "break_even_bps": null,
+      "max_drawdown": 0.0,
+      "mean_hold_min": null,
+      "exit_reasons": {},
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 1000.0,
+      "without_best_trade": 0,
+      "funding_ambiguous": 0,
+      "signals": 0,
+      "busy": 0,
+      "net_without_best_day": 0,
+      "sides": {
+        "LONG": {
+          "count": 0,
+          "net": 0
+        },
+        "SHORT": {
+          "count": 0,
+          "net": 0
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 1095,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 1095,
+            "maximum": 22.05203778007707,
+            "reaching": {
+              "10": 546,
+              "20": 49,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 1095,
+            "maximum": 22.05203778007707,
+            "reaching": {
+              "10": 586,
+              "20": 49,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      },
+      "2026": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 891,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 891,
+            "maximum": 22.431776131161705,
+            "reaching": {
+              "10": 358,
+              "20": 6,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 891,
+            "maximum": 22.431776131161705,
+            "reaching": {
+              "10": 393,
+              "20": 6,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "BTCUSDT-stress": {
+    "total": {
+      "closed": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "liquidation_fee": 0,
+      "funding": 0,
+      "net": 0,
+      "mean_net": null,
+      "break_even_bps": null,
+      "max_drawdown": 0.0,
+      "mean_hold_min": null,
+      "exit_reasons": {},
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 1000.0,
+      "without_best_trade": 0,
+      "funding_ambiguous": 0,
+      "signals": 0,
+      "busy": 0,
+      "net_without_best_day": 0,
+      "sides": {
+        "LONG": {
+          "count": 0,
+          "net": 0
+        },
+        "SHORT": {
+          "count": 0,
+          "net": 0
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 1095,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 1095,
+            "maximum": 22.003629404646603,
+            "reaching": {
+              "10": 547,
+              "20": 49,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 1095,
+            "maximum": 22.003629404646603,
+            "reaching": {
+              "10": 587,
+              "20": 49,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      },
+      "2026": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 891,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 891,
+            "maximum": 22.4208152749916,
+            "reaching": {
+              "10": 360,
+              "20": 6,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 891,
+            "maximum": 22.4208152749916,
+            "reaching": {
+              "10": 390,
+              "20": 6,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "ETHUSDT-base": {
+    "total": {
+      "closed": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "liquidation_fee": 0,
+      "funding": 0,
+      "net": 0,
+      "mean_net": null,
+      "break_even_bps": null,
+      "max_drawdown": 0.0,
+      "mean_hold_min": null,
+      "exit_reasons": {},
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 1000.0,
+      "without_best_trade": 0,
+      "funding_ambiguous": 0,
+      "signals": 0,
+      "busy": 0,
+      "net_without_best_day": 0,
+      "sides": {
+        "LONG": {
+          "count": 0,
+          "net": 0
+        },
+        "SHORT": {
+          "count": 0,
+          "net": 0
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 1095,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 1095,
+            "maximum": 24.91037809743966,
+            "reaching": {
+              "10": 468,
+              "20": 69,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 1095,
+            "maximum": 24.91037809743966,
+            "reaching": {
+              "10": 597,
+              "20": 70,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      },
+      "2026": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 891,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 891,
+            "maximum": 24.458223070279246,
+            "reaching": {
+              "10": 209,
+              "20": 11,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 891,
+            "maximum": 24.458223070279246,
+            "reaching": {
+              "10": 398,
+              "20": 11,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      }
+    }
+  },
+  "ETHUSDT-stress": {
+    "total": {
+      "closed": 0,
+      "gross": 0,
+      "fees": 0,
+      "impact": 0,
+      "liquidation_fee": 0,
+      "funding": 0,
+      "net": 0,
+      "mean_net": null,
+      "break_even_bps": null,
+      "max_drawdown": 0.0,
+      "mean_hold_min": null,
+      "exit_reasons": {},
+      "rejections": {},
+      "unresolved": {},
+      "ending_cash": 1000.0,
+      "without_best_trade": 0,
+      "funding_ambiguous": 0,
+      "signals": 0,
+      "busy": 0,
+      "net_without_best_day": 0,
+      "sides": {
+        "LONG": {
+          "count": 0,
+          "net": 0
+        },
+        "SHORT": {
+          "count": 0,
+          "net": 0
+        }
+      }
+    },
+    "periods": {
+      "2025": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 1095,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 1095,
+            "maximum": 24.976572284357424,
+            "reaching": {
+              "10": 469,
+              "20": 69,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 1095,
+            "maximum": 24.976572284357424,
+            "reaching": {
+              "10": 597,
+              "20": 70,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      },
+      "2026": {
+        "closed": 0,
+        "gross": 0,
+        "fees": 0,
+        "impact": 0,
+        "liquidation_fee": 0,
+        "funding": 0,
+        "net": 0,
+        "mean_net": null,
+        "break_even_bps": null,
+        "max_drawdown": null,
+        "mean_hold_min": null,
+        "exit_reasons": {},
+        "rejections": {},
+        "unresolved": {},
+        "ending_cash": null,
+        "without_best_trade": 0,
+        "funding_ambiguous": 0,
+        "signals": 0,
+        "busy": 0,
+        "net_without_best_day": 0,
+        "sides": {
+          "LONG": {
+            "count": 0,
+            "net": 0
+          },
+          "SHORT": {
+            "count": 0,
+            "net": 0
+          }
+        },
+        "windows": {
+          "complete": 891,
+          "incomplete": 0,
+          "best_fixed_side_bps": {
+            "count": 891,
+            "maximum": 24.441500677273957,
+            "reaching": {
+              "10": 210,
+              "20": 11,
+              "30": 0
+            }
+          },
+          "switching_upper_bps": {
+            "count": 891,
+            "maximum": 24.441500677273957,
+            "reaching": {
+              "10": 398,
+              "20": 11,
+              "30": 0
+            }
+          },
+          "forecast_side_bps": {
+            "count": 0,
+            "maximum": null,
+            "reaching": {
+              "10": 0,
+              "20": 0,
+              "30": 0
+            }
+          }
+        }
+      }
+    }
+  }
+}
