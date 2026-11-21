@@ -34,7 +34,7 @@ def store(path,value):
     tmp.write_text(json.dumps(value,indent=2,allow_nan=False))
     tmp.replace(path)
 
-def replay(start,p,m,rates,stress,begin,name):
+def replay(start,p,m,rates,stress,begin,name,*,entry_gate=None):
     delay=6 if stress else 1
     impact=.001 if stress else .0005
     events=defaultdict(list)
@@ -58,7 +58,11 @@ def replay(start,p,m,rates,stress,begin,name):
             if bar and position and position['side'] in bar['exits']:
                 pending=dict(i=i+delay,kind='channel')
             elif bar and not position and bar['side'] and i+delay<len(p):
-                pending=dict(i=i+delay,kind='entry',**bar,signal_ms=ts)
+                reason=entry_gate(i) if entry_gate is not None else None
+                if reason is None:
+                    pending=dict(i=i+delay,kind='entry',**bar,signal_ms=ts)
+                else:
+                    attempts.append(dict(bar,signal_ms=ts,status=reason))
         if position is None and pending is None:
             i=min(len(p),(i//BAR+1)*BAR)
             continue

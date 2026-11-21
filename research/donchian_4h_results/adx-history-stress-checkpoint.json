@@ -1,0 +1,310 @@
+{
+  "2025-01-01": {
+    "cash": 1000.0,
+    "account": {
+      "cash": 1000.0,
+      "peak": 1000.0,
+      "max_dd": 0.0
+    },
+    "trade_count": 0,
+    "position": null,
+    "pending": null
+  },
+  "2025-02-01": {
+    "cash": 996.8351478024147,
+    "account": {
+      "cash": 996.8351478024147,
+      "peak": 1003.9458411072543,
+      "max_dd": 0.00803377520613486
+    },
+    "trade_count": 2,
+    "position": null,
+    "pending": null
+  },
+  "2025-03-01": {
+    "cash": 993.2006592690869,
+    "account": {
+      "cash": 993.2006592690869,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.01170565186101693
+    },
+    "trade_count": 3,
+    "position": {
+      "signal_ms": 1740441600000,
+      "entry_ms": 1740441960000,
+      "entry": 91677.93029999999,
+      "stop": 93693.5,
+      "reference": 91769.7,
+      "q": 0.001,
+      "side": -1,
+      "regime": "down",
+      "funding": 0.05367842179079124,
+      "funding_n": 11
+    },
+    "pending": null
+  },
+  "2025-04-01": {
+    "cash": 989.8433192737474,
+    "account": {
+      "cash": 989.8433192737474,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.01762923494684506
+    },
+    "trade_count": 6,
+    "position": {
+      "signal_ms": 1743192000000,
+      "entry_ms": 1743192360000,
+      "entry": 83665.9503,
+      "stop": 85749.2,
+      "reference": 83749.7,
+      "q": 0.001,
+      "side": -1,
+      "regime": "down",
+      "funding": 0.026560533600412904,
+      "funding_n": 9
+    },
+    "pending": null
+  },
+  "2025-05-01": {
+    "cash": 982.5388530159939,
+    "account": {
+      "cash": 982.5388530159939,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 9,
+    "position": {
+      "signal_ms": 1745337600000,
+      "entry_ms": 1745337960000,
+      "entry": 90913.82299999999,
+      "stop": 88487.7,
+      "reference": 90823.0,
+      "q": 0.001,
+      "side": 1,
+      "regime": "up",
+      "funding": 0.01838486433162774,
+      "funding_n": 24
+    },
+    "pending": null
+  },
+  "2025-06-01": {
+    "cash": 990.0307515415402,
+    "account": {
+      "cash": 990.0307515415402,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 11,
+    "position": null,
+    "pending": null
+  },
+  "2025-07-01": {
+    "cash": 987.1764123852187,
+    "account": {
+      "cash": 987.1764123852187,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 12,
+    "position": null,
+    "pending": null
+  },
+  "2025-08-01": {
+    "cash": 987.1764123852187,
+    "account": {
+      "cash": 987.1764123852187,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 12,
+    "position": null,
+    "pending": null
+  },
+  "2025-09-01": {
+    "cash": 987.1764123852187,
+    "account": {
+      "cash": 987.1764123852187,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 12,
+    "position": null,
+    "pending": null
+  },
+  "2025-10-01": {
+    "cash": 987.1764123852187,
+    "account": {
+      "cash": 987.1764123852187,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 12,
+    "position": null,
+    "pending": null
+  },
+  "2025-11-01": {
+    "cash": 987.1764123852187,
+    "account": {
+      "cash": 987.1764123852187,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 12,
+    "position": null,
+    "pending": null
+  },
+  "2025-12-01": {
+    "cash": 992.5330839038363,
+    "account": {
+      "cash": 992.5330839038363,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 13,
+    "position": {
+      "signal_ms": 1764014400000,
+      "entry_ms": 1764014760000,
+      "entry": 88523.43499999998,
+      "stop": 85819.2,
+      "reference": 88435.0,
+      "q": 0.001,
+      "side": 1,
+      "regime": "up",
+      "funding": -0.02641333119117328,
+      "funding_n": 18
+    },
+    "pending": null
+  },
+  "2026-01-01": {
+    "cash": 989.9868010396053,
+    "account": {
+      "cash": 989.9868010396053,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 14,
+    "position": null,
+    "pending": null
+  },
+  "2026-02-01": {
+    "cash": 986.699917438723,
+    "account": {
+      "cash": 986.699917438723,
+      "peak": 1006.5035726361878,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 18,
+    "position": {
+      "signal_ms": 1769745600000,
+      "entry_ms": 1769745960000,
+      "entry": 82711.206,
+      "stop": 85773.1,
+      "reference": 82794.0,
+      "q": 0.001,
+      "side": -1,
+      "regime": "down",
+      "funding": 0.018153629199557528,
+      "funding_n": 5
+    },
+    "pending": null
+  },
+  "2026-03-01": {
+    "cash": 995.2817817696956,
+    "account": {
+      "cash": 995.2817817696956,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 21,
+    "position": null,
+    "pending": null
+  },
+  "2026-04-01": {
+    "cash": 989.5064753567519,
+    "account": {
+      "cash": 989.5064753567519,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 24,
+    "position": null,
+    "pending": null
+  },
+  "2026-05-01": {
+    "cash": 988.8228266687845,
+    "account": {
+      "cash": 988.8228266687845,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.024330060835255084
+    },
+    "trade_count": 26,
+    "position": null,
+    "pending": null
+  },
+  "2026-06-01": {
+    "cash": 981.9669011110049,
+    "account": {
+      "cash": 981.9669011110049,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.027125716137422724
+    },
+    "trade_count": 31,
+    "position": null,
+    "pending": null
+  },
+  "2026-07-01": {
+    "cash": 988.839470287299,
+    "account": {
+      "cash": 988.839470287299,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.027964913896367172
+    },
+    "trade_count": 33,
+    "position": {
+      "signal_ms": 1782835200000,
+      "entry_ms": 1782835560000,
+      "entry": 58400.9406,
+      "stop": 60064.9,
+      "reference": 58459.4,
+      "q": 0.001,
+      "side": -1,
+      "regime": "down",
+      "funding": 0.0,
+      "funding_n": 0
+    },
+    "pending": null
+  },
+  "2026-08-01": {
+    "cash": 985.6068674652981,
+    "account": {
+      "cash": 985.6068674652981,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.027964913896367172
+    },
+    "trade_count": 37,
+    "position": null,
+    "pending": null
+  },
+  "2026-09-01": {
+    "cash": 988.3874920856148,
+    "account": {
+      "cash": 988.3874920856148,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.027964913896367172
+    },
+    "trade_count": 40,
+    "position": null,
+    "pending": null
+  },
+  "2026-10-01": {
+    "cash": 988.8855843575203,
+    "account": {
+      "cash": 988.8855843575203,
+      "peak": 1009.3075423249768,
+      "max_dd": 0.027964913896367172
+    },
+    "trade_count": 42,
+    "position": null,
+    "pending": null
+  }
+}
