@@ -54,7 +54,7 @@ def meets_threshold(base, stress):
                 for case in (base, stress)) and stress["without_best_trade"] > 0)
 
 
-def evaluate(root, output, stage, selected=None, *, max_notional=100):
+def evaluate(root, output, stage, selected=None, *, max_notional=100, direction=None):
     summary = {}
     begin, end = (core.BEGIN, SPLIT) if stage == "development" else (SPLIT, core.END)
     symbols = SYMBOLS if selected is None else (selected["symbol"],)
@@ -68,7 +68,11 @@ def evaluate(root, output, stage, selected=None, *, max_notional=100):
         for rule in rules:
             cases = {}
             for name, delay in (("base", 1), ("stress", 6)):
-                qualifying = [r for r in signals[rule] if r["signal_ms"] + (HOLD + delay) * core.M < end]
+                qualifying = [
+                    r for r in signals[rule]
+                    if (direction is None or r["direction"] == direction)
+                    and r["signal_ms"] + (HOLD + delay) * core.M < end
+                ]
                 records, account = simulate(qualifying, trade, mark, funding, symbol, name == "stress",
                                             hold_minutes=HOLD, max_notional=max_notional)
                 case = metrics(records, account)
