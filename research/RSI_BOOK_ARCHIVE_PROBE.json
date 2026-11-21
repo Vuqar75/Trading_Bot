@@ -1,0 +1,39 @@
+[
+  {
+    "url": "https://data.binance.vision/data/futures/um/daily/bookTicker/BTCUSDT/BTCUSDT-bookTicker-2023-03-01.zip.CHECKSUM",
+    "status": 404
+  },
+  {
+    "url": "https://data.binance.vision/data/futures/um/daily/bookTicker/BTCUSDT/BTCUSDT-bookTicker-2025-02-12.zip.CHECKSUM",
+    "status": 404
+  },
+  {
+    "url": "https://data.binance.vision/data/futures/um/daily/bookTicker/BTCUSDT/BTCUSDT-bookTicker-2026-10-26.zip.CHECKSUM",
+    "status": 404
+  },
+  {
+    "url": "https://data.binance.vision/data/futures/um/monthly/bookTicker/BTCUSDT/BTCUSDT-bookTicker-2025-02.zip.CHECKSUM",
+    "status": 404
+  },
+  {
+    "url": "https://data.binance.vision/data/futures/um/monthly/bookTicker/BTCUSDT/BTCUSDT-bookTicker-2026-10.zip.CHECKSUM",
+    "status": 404
+  },
+  {
+    "url": "https://data.binance.vision/data/futures/um/daily/bookDepth/BTCUSDT/BTCUSDT-bookDepth-2026-10-26.zip.CHECKSUM",
+    "status": 200,
+    "sha256": "e7e19b77a1eab029ff6ef0ebbc27521e29270c35d9dcd1ea662c239f835ab04a",
+    "columns": [
+      "timestamp",
+      "percentage",
+      "depth",
+      "notional"
+    ],
+    "archive_verified": true
+  },
+  {
+    "url": "https://data.binance.vision/data/futures/um/daily/aggTrades/BTCUSDT/BTCUSDT-aggTrades-2026-10-26.zip.CHECKSUM",
+    "status": 200,
+    "sha256": "1da75e72bd4852c223dcf123b146d6af016f2a29e9cf59d769d74d94b42c8b88"
+  }
+]

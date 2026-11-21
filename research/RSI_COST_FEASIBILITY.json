@@ -1,0 +1,54 @@
+{
+  "2025": {
+    "source": "size_feasibility_results/rsi/trades.json.gz",
+    "sha256": "6e3c4c0942ae30d5836398abe8cc838fc9fc485ba711160a8b8643e62d52fa7d",
+    "cases": {
+      "base": {
+        "n": 70,
+        "turnover": 13656.244384753054,
+        "archived_net": 28.041635750802794,
+        "zero_impact_net": 34.86974759451158,
+        "zero_impact_without_best": 32.30307333385843,
+        "break_even_per_leg_bp": 25.533921781191182,
+        "fraction_closed_24h": 0.7428571428571429,
+        "entries_over_100": 31
+      },
+      "stress": {
+        "n": 67,
+        "turnover": 13078.745568053106,
+        "archived_net": 8.58120915529117,
+        "zero_impact_net": 21.659940811206884,
+        "zero_impact_without_best": 19.036308784466158,
+        "break_even_per_leg_bp": 16.56117606883851,
+        "fraction_closed_24h": 0.7164179104477612,
+        "entries_over_100": 28
+      }
+    }
+  },
+  "2026": {
+    "source": "rsi_size_2026_results/trades.json.gz",
+    "sha256": "ebd5493778d194b3af4ddc3fc6f6c029d443cfbdd755bcb0c2e2a5210fe7fc73",
+    "cases": {
+      "base": {
+        "n": 63,
+        "turnover": 9104.585520243201,
+        "archived_net": -2.060254983780813,
+        "zero_impact_net": 2.4920360633650342,
+        "zero_impact_without_best": 0.659148698659771,
+        "break_even_per_leg_bp": 2.737121923699023,
+        "fraction_closed_24h": 0.6825396825396826,
+        "entries_over_100": 0
+      },
+      "stress": {
+        "n": 62,
+        "turnover": 8962.521653954047,
+        "archived_net": -8.162073586546331,
+        "zero_impact_net": 0.8004454910078527,
+        "zero_impact_without_best": -1.0714145049094101,
+        "break_even_per_leg_bp": 0.8931029925653966,
+        "fraction_closed_24h": 0.6612903225806451,
+        "entries_over_100": 0
+      }
+    }
+  }
+}
