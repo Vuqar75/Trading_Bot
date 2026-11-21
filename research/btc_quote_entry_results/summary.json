@@ -1,0 +1,342 @@
+{
+  "baseline_entries": 5749,
+  "source_sha256": "70e6915ec0360348bfee9757ab02c21ea7d30f7897e6609b3010d17c608b0dc0",
+  "days": {
+    "2026-01-01": {
+      "source": {
+        "day": "2026-01-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/01/01/BTCUSDT.csv.gz",
+        "file": "2026-01-01.csv.gz",
+        "size": 10352785,
+        "sha256": "90cbc80ce2657f15b289f19aca84c70866154bb6c36ef3999508f23a58dc29d6"
+      },
+      "requested": 25,
+      "matched": 25,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 25,
+        "median": 0.0,
+        "p95": 0.011398892685976492
+      },
+      "mid_vs_reference_bp": {
+        "n": 25,
+        "median": -0.005662950262053101,
+        "p95": 0.0056994463428772235
+      },
+      "quote_vs_modeled_bp": {
+        "n": 25,
+        "median": -9.978643290887712,
+        "p95": -4.986167586067181
+      },
+      "savings_usdt": 1.6709080999998842,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-02-01": {
+      "source": {
+        "day": "2026-02-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/02/01/BTCUSDT.csv.gz",
+        "file": "2026-02-01.csv.gz",
+        "size": 17429087,
+        "sha256": "d8e10873138fbe3ab810e45d909b3da051384bbe32f2f7dafbb09b86ff9b4d93"
+      },
+      "requested": 20,
+      "matched": 20,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 20,
+        "median": 0.012672006651781587,
+        "p95": 0.04034072033587431
+      },
+      "mid_vs_reference_bp": {
+        "n": 20,
+        "median": 0.006336003326445905,
+        "p95": 0.03388195975800888
+      },
+      "quote_vs_modeled_bp": {
+        "n": 20,
+        "median": -5.26930478794041,
+        "p95": -4.969318365061037
+      },
+      "savings_usdt": 1.1310849999999046,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-03-01": {
+      "source": {
+        "day": "2026-03-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/03/01/BTCUSDT.csv.gz",
+        "file": "2026-03-01.csv.gz",
+        "size": 16427682,
+        "sha256": "0985a435f87efce077607bf9da1f41108f70ec2c1a933a1748665fd9dc658ef6"
+      },
+      "requested": 18,
+      "matched": 18,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 18,
+        "median": 0.0,
+        "p95": 0.0822504220612246
+      },
+      "mid_vs_reference_bp": {
+        "n": 18,
+        "median": -0.007454058804645669,
+        "p95": 0.07464471416629362
+      },
+      "quote_vs_modeled_bp": {
+        "n": 18,
+        "median": -7.265574169048605,
+        "p95": -4.9865516423188705
+      },
+      "savings_usdt": 0.896209849999992,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-04-01": {
+      "source": {
+        "day": "2026-04-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/04/01/BTCUSDT.csv.gz",
+        "file": "2026-04-01.csv.gz",
+        "size": 16656428,
+        "sha256": "b3d6784551e2608c1a6abe5ab030ea8c284149272bcf847d91c6b95aa8a9c259"
+      },
+      "requested": 15,
+      "matched": 15,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 15,
+        "median": 0.014655171151067847,
+        "p95": 0.01469154731337241
+      },
+      "mid_vs_reference_bp": {
+        "n": 15,
+        "median": 0.007327585576089035,
+        "p95": 0.007345773655909049
+      },
+      "quote_vs_modeled_bp": {
+        "n": 15,
+        "median": -9.975333475361614,
+        "p95": -4.982835677161734
+      },
+      "savings_usdt": 0.7850091499999108,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-05-01": {
+      "source": {
+        "day": "2026-05-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/05/01/BTCUSDT.csv.gz",
+        "file": "2026-05-01.csv.gz",
+        "size": 15256829,
+        "sha256": "bb600e81f2065649a4c7b7bdfabe1758e59310525aa332e31203835034acab34"
+      },
+      "requested": 22,
+      "matched": 22,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 22,
+        "median": 0.0,
+        "p95": 0.013067570215630209
+      },
+      "mid_vs_reference_bp": {
+        "n": 22,
+        "median": -0.006389366736248014,
+        "p95": 0.006533785108842061
+      },
+      "quote_vs_modeled_bp": {
+        "n": 22,
+        "median": -7.493575815366582,
+        "p95": -4.984916724304456
+      },
+      "savings_usdt": 1.2800793999998714,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-06-01": {
+      "source": {
+        "day": "2026-06-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/06/01/BTCUSDT.csv.gz",
+        "file": "2026-06-01.csv.gz",
+        "size": 24494899,
+        "sha256": "9e54a9d422d0861b383d525fe97c84267f1eec5fc8ad1320e95761582ae16891"
+      },
+      "requested": 19,
+      "matched": 19,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 19,
+        "median": 0.0,
+        "p95": 0.013786806247861882
+      },
+      "mid_vs_reference_bp": {
+        "n": 19,
+        "median": -0.006803609724492787,
+        "p95": 0.00689340312387543
+      },
+      "quote_vs_modeled_bp": {
+        "n": 19,
+        "median": -9.990009990008542,
+        "p95": -4.988830838787983
+      },
+      "savings_usdt": 1.0489253999999055,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-07-01": {
+      "source": {
+        "day": "2026-07-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/07/01/BTCUSDT.csv.gz",
+        "file": "2026-07-01.csv.gz",
+        "size": 25766346,
+        "sha256": "ff66c4ced54ac9c0a3bfcf79ca941717323bcc0f7c50a452bf9c3b45e8e36ed2"
+      },
+      "requested": 22,
+      "matched": 22,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 22,
+        "median": 0.01658197447351739,
+        "p95": 0.017087489409095546
+      },
+      "mid_vs_reference_bp": {
+        "n": 22,
+        "median": 0.008290987237868919,
+        "p95": 0.008543744704492262
+      },
+      "quote_vs_modeled_bp": {
+        "n": 22,
+        "median": -9.9734153610348,
+        "p95": -4.980677885944973
+      },
+      "savings_usdt": 1.0366133999999148,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-08-01": {
+      "source": {
+        "day": "2026-08-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/08/01/BTCUSDT.csv.gz",
+        "file": "2026-08-01.csv.gz",
+        "size": 12937638,
+        "sha256": "8cf82a51568270dfaf303d8df725596b1748a8dfc79fbc1bc2a0f687dcd2e3b1"
+      },
+      "requested": 19,
+      "matched": 19,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 19,
+        "median": 0.0,
+        "p95": 0.016013469923636947
+      },
+      "mid_vs_reference_bp": {
+        "n": 19,
+        "median": -0.007925487732762804,
+        "p95": 0.008006734962373585
+      },
+      "quote_vs_modeled_bp": {
+        "n": 19,
+        "median": -5.0025012506238475,
+        "p95": -4.985989404903912
+      },
+      "savings_usdt": 0.8791848499999687,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-09-01": {
+      "source": {
+        "day": "2026-09-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/09/01/BTCUSDT.csv.gz",
+        "file": "2026-09-01.csv.gz",
+        "size": 24635179,
+        "sha256": "9ba4b4763cf5ad96f501815764eefdfb840ae97bbed6f2c7d019e303da4cd4c8"
+      },
+      "requested": 22,
+      "matched": 22,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 22,
+        "median": 0.0,
+        "p95": 0.012943027587308809
+      },
+      "mid_vs_reference_bp": {
+        "n": 22,
+        "median": -0.00637040067419381,
+        "p95": 0.00647151379368216
+      },
+      "quote_vs_modeled_bp": {
+        "n": 22,
+        "median": -9.977183428540037,
+        "p95": -4.985291407212767
+      },
+      "savings_usdt": 1.323777499999924,
+      "quote_worse_than_modeled": 0
+    },
+    "2026-10-01": {
+      "source": {
+        "day": "2026-10-01",
+        "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/10/01/BTCUSDT.csv.gz",
+        "file": "2026-10-01.csv.gz",
+        "size": 24034504,
+        "sha256": "b7b1cabb3899db6d1a91ba87920a6a4a5dd5786a3fe2eb133ea781ec84c94d34"
+      },
+      "requested": 18,
+      "matched": 18,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 18,
+        "median": 0.005911073805986433,
+        "p95": 0.011984234717932196
+      },
+      "mid_vs_reference_bp": {
+        "n": 18,
+        "median": 1.4093972100504004e-05,
+        "p95": 0.005992117359909788
+      },
+      "quote_vs_modeled_bp": {
+        "n": 18,
+        "median": -9.978082039666102,
+        "p95": -4.98556278391088
+      },
+      "savings_usdt": 1.174523299999899,
+      "quote_worse_than_modeled": 0
+    }
+  },
+  "totals": {
+    "base": {
+      "requested": 96,
+      "matched": 96,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 96,
+        "median": 0.0,
+        "p95": 0.01664624260766523
+      },
+      "mid_vs_reference_bp": {
+        "n": 96,
+        "median": -0.005683873619544144,
+        "p95": 0.008323121304942838
+      },
+      "quote_vs_modeled_bp": {
+        "n": 96,
+        "median": -4.997501249374148,
+        "p95": -4.981409530135094
+      },
+      "savings_usdt": 3.5503388499995565,
+      "quote_worse_than_modeled": 0
+    },
+    "stress": {
+      "requested": 104,
+      "matched": 104,
+      "rejects": {},
+      "basis_vs_reference_bp": {
+        "n": 104,
+        "median": 0.005653735818400563,
+        "p95": 0.016948293718788143
+      },
+      "mid_vs_reference_bp": {
+        "n": 104,
+        "median": -4.607222381380893e-06,
+        "p95": 0.008474146859560605
+      },
+      "quote_vs_modeled_bp": {
+        "n": 104,
+        "median": -9.99292801674323,
+        "p95": -9.974334483606851
+      },
+      "savings_usdt": 7.675977099999618,
+      "quote_worse_than_modeled": 0
+    }
+  }
+}
