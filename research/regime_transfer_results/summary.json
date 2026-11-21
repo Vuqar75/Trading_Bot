@@ -1,0 +1,2430 @@
+{
+  "periods": {
+    "ETH-2021": {
+      "cases": {
+        "both_base": {
+          "closed": 24,
+          "gross": 2.5133049959999108,
+          "fees": 1.166377120025551,
+          "impact": 1.1663777483516868,
+          "liquidation_fee": 0.0,
+          "funding": -1.5677887380377833,
+          "net": -1.3872386104151107,
+          "mean_net": -0.05780160876729628,
+          "break_even_bps": 8.148704640340135,
+          "max_drawdown": 0.011587527296095102,
+          "mean_hold_min": 1371.3333333333333,
+          "exit_reasons": {
+            "time": 5,
+            "stop": 19
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 998.6127613895851,
+          "without_best_trade": -8.365804881578946,
+          "funding_ambiguous": 0,
+          "signals": 34,
+          "busy": 10,
+          "net_without_best_day": -8.365804881578946,
+          "sides": {
+            "LONG": {
+              "count": 19,
+              "net": 3.9257338272097875
+            },
+            "SHORT": {
+              "count": 5,
+              "net": -5.312972437624898
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 18,
+              "gross": -1.2769260132000675,
+              "fees": 0.8693893996109032,
+              "impact": 0.8693890803793172,
+              "liquidation_fee": 0.0,
+              "funding": -1.4068615318539694,
+              "net": -4.422566025044257,
+              "mean_net": -0.24569811250245874,
+              "break_even_bps": -30.983815817135174,
+              "max_drawdown": null,
+              "mean_hold_min": 1211.5555555555557,
+              "exit_reasons": {
+                "time": 3,
+                "stop": 15
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -11.401132296208091,
+              "funding_ambiguous": 0,
+              "signals": 24,
+              "busy": 6,
+              "net_without_best_day": -11.401132296208091,
+              "sides": {
+                "LONG": {
+                  "count": 14,
+                  "net": -0.18753146630491369
+                },
+                "SHORT": {
+                  "count": 4,
+                  "net": -4.235034558739343
+                }
+              }
+            },
+            "down": {
+              "closed": 6,
+              "gross": 3.790231009199978,
+              "fees": 0.2969877204146477,
+              "impact": 0.2969886679723697,
+              "liquidation_fee": 0.0,
+              "funding": -0.16092720618381395,
+              "net": 3.0353274146291467,
+              "mean_net": 0.5058879024381912,
+              "break_even_bps": 123.38823552785189,
+              "max_drawdown": null,
+              "mean_hold_min": 1850.6666666666667,
+              "exit_reasons": {
+                "stop": 4,
+                "time": 2
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -1.4056559450831827,
+              "funding_ambiguous": 0,
+              "signals": 10,
+              "busy": 4,
+              "net_without_best_day": -1.4056559450831827,
+              "sides": {
+                "LONG": {
+                  "count": 5,
+                  "net": 4.113265293514701
+                },
+                "SHORT": {
+                  "count": 1,
+                  "net": -1.0779378788855547
+                }
+              }
+            },
+            "range": {
+              "closed": 0,
+              "gross": 0,
+              "fees": 0,
+              "impact": 0,
+              "liquidation_fee": 0,
+              "funding": 0,
+              "net": 0,
+              "mean_net": null,
+              "break_even_bps": null,
+              "max_drawdown": null,
+              "mean_hold_min": null,
+              "exit_reasons": {},
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0,
+              "funding_ambiguous": 0,
+              "signals": 0,
+              "busy": 0,
+              "net_without_best_day": 0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            }
+          }
+        },
+        "both_stress": {
+          "closed": 26,
+          "gross": -6.01088665900012,
+          "fees": 1.2575108574758294,
+          "impact": 2.515015704064857,
+          "liquidation_fee": 0.0,
+          "funding": -1.5534093384884862,
+          "net": -11.336822559029294,
+          "mean_net": -0.4360316368857421,
+          "break_even_bps": -60.23028773216055,
+          "max_drawdown": 0.01827013767807137,
+          "mean_hold_min": 1244.076923076923,
+          "exit_reasons": {
+            "time": 4,
+            "stop": 22
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 988.6631774409711,
+          "without_best_trade": -16.268664836061625,
+          "funding_ambiguous": 0,
+          "signals": 34,
+          "busy": 8,
+          "net_without_best_day": -16.268664836061625,
+          "sides": {
+            "LONG": {
+              "count": 21,
+              "net": -5.960243690728997
+            },
+            "SHORT": {
+              "count": 5,
+              "net": -5.376578868300296
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 20,
+              "gross": -10.4519465828001,
+              "fees": 0.9605824330672913,
+              "impact": 1.921154414187894,
+              "liquidation_fee": 0.0,
+              "funding": -1.392482132304672,
+              "net": -14.726165562359956,
+              "mean_net": -0.7363082781179978,
+              "break_even_bps": -123.10807275358033,
+              "max_drawdown": null,
+              "mean_hold_min": 1064.45,
+              "exit_reasons": {
+                "time": 2,
+                "stop": 18
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -17.197315034127335,
+              "funding_ambiguous": 0,
+              "signals": 24,
+              "busy": 4,
+              "net_without_best_day": -17.197315034127335,
+              "sides": {
+                "LONG": {
+                  "count": 16,
+                  "net": -10.451035367956681
+                },
+                "SHORT": {
+                  "count": 4,
+                  "net": -4.275130194403275
+                }
+              }
+            },
+            "down": {
+              "closed": 6,
+              "gross": 4.441059923799978,
+              "fees": 0.29692842440853806,
+              "impact": 0.5938612898769632,
+              "liquidation_fee": 0.0,
+              "funding": -0.16092720618381395,
+              "net": 3.3893430033306635,
+              "mean_net": 0.5648905005551106,
+              "break_even_bps": 145.69207401881522,
+              "max_drawdown": null,
+              "mean_hold_min": 1842.8333333333333,
+              "exit_reasons": {
+                "stop": 4,
+                "time": 2
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -1.5424992737016692,
+              "funding_ambiguous": 0,
+              "signals": 10,
+              "busy": 4,
+              "net_without_best_day": -1.5424992737016692,
+              "sides": {
+                "LONG": {
+                  "count": 5,
+                  "net": 4.490791677227684
+                },
+                "SHORT": {
+                  "count": 1,
+                  "net": -1.1014486738970208
+                }
+              }
+            },
+            "range": {
+              "closed": 0,
+              "gross": 0,
+              "fees": 0,
+              "impact": 0,
+              "liquidation_fee": 0,
+              "funding": 0,
+              "net": 0,
+              "mean_net": null,
+              "break_even_bps": null,
+              "max_drawdown": null,
+              "mean_hold_min": null,
+              "exit_reasons": {},
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0,
+              "funding_ambiguous": 0,
+              "signals": 0,
+              "busy": 0,
+              "net_without_best_day": 0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            }
+          }
+        },
+        "combined_base": {
+          "closed": 16,
+          "gross": 6.0945749049999325,
+          "fees": 0.7676774762765737,
+          "impact": 0.7676789999202165,
+          "liquidation_fee": 0.0,
+          "funding": -1.386832167072204,
+          "net": 3.1723862617309377,
+          "mean_net": 0.1982741413581836,
+          "break_even_bps": 61.285502920433686,
+          "max_drawdown": 0.009168176675834637,
+          "mean_hold_min": 1731.6875,
+          "exit_reasons": {
+            "time": 4,
+            "stop": 12
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 1003.1723862617309,
+          "without_best_trade": -3.8061800094328966,
+          "funding_ambiguous": 0,
+          "signals": 23,
+          "busy": 7,
+          "net_without_best_day": -3.8061800094328966,
+          "sides": {
+            "LONG": {
+              "count": 14,
+              "net": -0.18753146630491369
+            },
+            "SHORT": {
+              "count": 2,
+              "net": 3.3599177280358514
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 14,
+              "gross": 2.5604873727999444,
+              "fees": 0.6705783335645568,
+              "impact": 0.6705789736863319,
+              "liquidation_fee": 0.0,
+              "funding": -1.4068615318539694,
+              "net": -0.18753146630491369,
+              "mean_net": -0.013395104736065264,
+              "break_even_bps": 17.236336918583053,
+              "max_drawdown": null,
+              "mean_hold_min": 1548.4285714285713,
+              "exit_reasons": {
+                "time": 3,
+                "stop": 11
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -7.166097737468748,
+              "funding_ambiguous": 0,
+              "signals": 20,
+              "busy": 6,
+              "net_without_best_day": -7.166097737468748,
+              "sides": {
+                "LONG": {
+                  "count": 14,
+                  "net": -0.18753146630491369
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 1,
+              "gross": -0.9566124678000072,
+              "fees": 0.04956076538701695,
+              "impact": 0.049560526233891095,
+              "liquidation_fee": 0.0,
+              "funding": -0.02220411946463949,
+              "net": -1.0779378788855547,
+              "mean_net": -1.0779378788855547,
+              "break_even_bps": -199.423862096019,
+              "max_drawdown": null,
+              "mean_hold_min": 1709.0,
+              "exit_reasons": {
+                "stop": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0.0,
+              "funding_ambiguous": 0,
+              "signals": 2,
+              "busy": 1,
+              "net_without_best_day": 0.0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 1,
+                  "net": -1.0779378788855547
+                }
+              }
+            },
+            "range": {
+              "closed": 1,
+              "gross": 4.490699999999995,
+              "fees": 0.04753837732499999,
+              "impact": 0.0475394999999935,
+              "liquidation_fee": 0.0,
+              "funding": 0.042233484246404995,
+              "net": 4.437855606921406,
+              "mean_net": 4.437855606921406,
+              "break_even_bps": 910.5045981350553,
+              "max_drawdown": null,
+              "mean_hold_min": 4320.0,
+              "exit_reasons": {
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0.0,
+              "funding_ambiguous": 0,
+              "signals": 1,
+              "busy": 0,
+              "net_without_best_day": 0.0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 1,
+                  "net": 4.437855606921406
+                }
+              }
+            }
+          }
+        },
+        "combined_stress": {
+          "closed": 18,
+          "gross": -3.319131174000092,
+          "fees": 0.8616646489551869,
+          "impact": 1.7233259787791047,
+          "liquidation_fee": 0.0,
+          "funding": -1.3724527675229066,
+          "net": -7.27657456925729,
+          "mean_net": -0.4042541427365161,
+          "break_even_bps": -54.12729965692569,
+          "max_drawdown": 0.01419451959511488,
+          "mean_hold_min": 1508.2777777777778,
+          "exit_reasons": {
+            "time": 3,
+            "stop": 15
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 992.7234254307432,
+          "without_best_trade": -11.552484041853702,
+          "funding_ambiguous": 0,
+          "signals": 23,
+          "busy": 5,
+          "net_without_best_day": -11.552484041853702,
+          "sides": {
+            "LONG": {
+              "count": 16,
+              "net": -10.451035367956681
+            },
+            "SHORT": {
+              "count": 2,
+              "net": 3.1744607986993905
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 16,
+              "gross": -6.765096197400096,
+              "fees": 0.7644879344493987,
+              "impact": 1.5289691038025144,
+              "liquidation_fee": 0.0,
+              "funding": -1.392482132304672,
+              "net": -10.451035367956681,
+              "mean_net": -0.6531897104972926,
+              "break_even_bps": -106.23685178990957,
+              "max_drawdown": null,
+              "mean_hold_min": 1320.3125,
+              "exit_reasons": {
+                "time": 2,
+                "stop": 14
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -12.92218483972406,
+              "funding_ambiguous": 0,
+              "signals": 20,
+              "busy": 4,
+              "net_without_best_day": -12.92218483972406,
+              "sides": {
+                "LONG": {
+                  "count": 16,
+                  "net": -10.451035367956681
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 1,
+              "gross": -0.9307349765999995,
+              "fees": 0.0495035028557883,
+              "impact": 0.09900607497659371,
+              "liquidation_fee": 0.0,
+              "funding": -0.02220411946463949,
+              "net": -1.1014486738970208,
+              "mean_net": -1.1014486738970208,
+              "break_even_bps": -194.32797195801493,
+              "max_drawdown": null,
+              "mean_hold_min": 1704.0,
+              "exit_reasons": {
+                "stop": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0.0,
+              "funding_ambiguous": 0,
+              "signals": 2,
+              "busy": 1,
+              "net_without_best_day": 0.0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 1,
+                  "net": -1.1014486738970208
+                }
+              }
+            },
+            "range": {
+              "closed": 1,
+              "gross": 4.376700000000003,
+              "fees": 0.04767321164999999,
+              "impact": 0.09535079999999652,
+              "liquidation_fee": 0.0,
+              "funding": 0.042233484246404995,
+              "net": 4.275909472596411,
+              "mean_net": 4.275909472596411,
+              "break_even_bps": 886.2015961989239,
+              "max_drawdown": null,
+              "mean_hold_min": 4320.0,
+              "exit_reasons": {
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0.0,
+              "funding_ambiguous": 0,
+              "signals": 1,
+              "busy": 0,
+              "net_without_best_day": 0.0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 1,
+                  "net": 4.275909472596411
+                }
+              }
+            }
+          }
+        }
+      },
+      "sources": [
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2020-12.zip",
+          "sha256": "f99267a3fef35dd201e76c8338be877fb52883376b4cd0acb890a1387de0b0d4"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-01.zip",
+          "sha256": "4c18c1df8904dea9770aeba5326d26b3fa9a3ffac4891f5f7125d4be2da847c0"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-02.zip",
+          "sha256": "15e9a939f253a11fc1af2858bb3844f3d39019ccf7efa66a9456f0f60afba3dd"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-03.zip",
+          "sha256": "2bcaadc8206cb8d76a26f0f3cbf97020b747545b0e75c3dd8a3b195b435478a5"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-04.zip",
+          "sha256": "2fee34e8b9b6e828d01bab0df1c67104f7a98f3c063668c8db627b802ffa5a95"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-05.zip",
+          "sha256": "21809ef6691a1441bd55ba4af4494a038d1a399ae0ae432e80cb41b47d71f3bd"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-06.zip",
+          "sha256": "8e58ccf8f52c69c55754492daafadab92d4ca8c8bd027f4532582d06e9f36063"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-07.zip",
+          "sha256": "f8f538bedf642052e428cd25f3134784de6e62a136e76f6a07ea6e79dfc9c39d"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-08.zip",
+          "sha256": "0120b284bde23d077e1e26e5e4b56fd3e2d1d82a3a7fe0e9de26825b9fc9c0db"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-09.zip",
+          "sha256": "4b4a94cdafbb8fea7762c266aa79b183700b7c9dcf7e981f7fdbe9372f2eec66"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-10.zip",
+          "sha256": "4dfb8698f6951b2c66229e1c687977eae0778bb703d6268232da2ceb3e9b5e6d"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-11.zip",
+          "sha256": "d9a7e22a237717f23d4b0505f14613359b7ea7831b23a78653a891cbbe3d521c"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2021-12.zip",
+          "sha256": "788d5c57e7cbc8e6b94ed4d7672618a85311edf1d7f0888083410d0d3389d811"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2020-12.zip",
+          "sha256": "6a331abd5e2cbc53c3730ceb15545294a450209e0da4d4baa2cc241c872b59b1"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-01.zip",
+          "sha256": "eec71d7526f3736012c0961fe9893d7f00947fe722709e45bbcd14d8b47b216f"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-02.zip",
+          "sha256": "f0ad622d0add8de4d62974a79cbc4010216011bc7c2ae2c0ea5ce1a190564a38"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-03.zip",
+          "sha256": "5f452486b3ba9fbc7ee98ede470501b7202d12744048f75088943590a0edc6ff"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-04.zip",
+          "sha256": "b6ff07c1674a645b75578d7bf06c2fc616e0443b1c2fc5efb50f7fead2bee0f6"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-05.zip",
+          "sha256": "3b8c11f3f8a87320b4a948b60257157b2920ef5363929a26f184bfe205f40446"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-06.zip",
+          "sha256": "b06233d329610c0f38b65a8b10255393367172119fbbec9a135923329f396166"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-07.zip",
+          "sha256": "13057ee33037fd9fb0cc063c6f28247e09fcf903023f7eac6ef59a6d6ada55d7"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-08.zip",
+          "sha256": "c13383864ddebabe6f5e19e399a858fbc868b567e67e298b64703697a5419629"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-09.zip",
+          "sha256": "33ea7e86283b55400613a6af94f0dcdf4c309bc7a8550011e931236f5bf1adc2"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-10.zip",
+          "sha256": "244d0e66583023a557b8b5486a476a770d03dad315e2363ea426db62e404cf53"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-11.zip",
+          "sha256": "b083257f558380a01d3eadd84c8d821ea4930c3eaa0a53d3317139e8d89b4b41"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2021-12.zip",
+          "sha256": "c00acbd9a587da4ef3f8e1aea30b4e0746cbc33539280247fbcec301a030885a"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2020-12.zip",
+          "sha256": "44ef5ba42f231c5c4821f593baf238d9d204aa425b69fc33dd69dfe46f537da3"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-01.zip",
+          "sha256": "1bb9c0f9ad18f6ad962a3c6f36cc12e9cc4c8d4ef6e0a177fe0a02bb3210923f"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-02.zip",
+          "sha256": "39ec73bf2c1611b61c5a22c2fca503e0c9e61084522e3c9f95580d3a6b36c425"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-03.zip",
+          "sha256": "eb9b04e9ffcae343e24043eca6650cfb9a45ac4e7a70a24ee76d94d5cdd06162"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-04.zip",
+          "sha256": "7bb320458c02ab16f590b578f796a33c4e61fe4519d9d321f2ebf0cc21373fd6"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-05.zip",
+          "sha256": "d0d9ee5d5a672b5cbf27c53ccfab27b756c78ea047ac32316a3aeed742fa8b1d"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-06.zip",
+          "sha256": "e59164181f057a18f6bac1fda28b4c83070b0864cd7e74187e03598f17abdf97"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-07.zip",
+          "sha256": "6f82cd0c81072cbbd1a83edcbebacfb7b373ed8ff7a5af71e7e360e3d189fa40"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-08.zip",
+          "sha256": "005d25d431977fec427a0c72d3695361805445448e8b5a4074296769b18471d3"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-09.zip",
+          "sha256": "247cceadaf94f4084961f0209bbe84e6be903b78a29e67dd423284b76a83557e"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-10.zip",
+          "sha256": "418272c487fec526d7c000c48b765ac20b69c53cd956e845ffcb08ebc20ad723"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-11.zip",
+          "sha256": "193428f977b7e728ba0b89a838f1364c46f5f9e05466579fc05bddb553120df8"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2021-12.zip",
+          "sha256": "b9ebe1d8656a66dd6d24f4c46e0d651f876f849933fd910bf39ca7e2db7acdb6"
+        }
+      ],
+      "overlaps": []
+    },
+    "SOL-2025": {
+      "cases": {
+        "both_base": {
+          "closed": 23,
+          "gross": -4.8439592473000905,
+          "fees": 1.1494725610580618,
+          "impact": 1.1494713500681164,
+          "liquidation_fee": 0.0,
+          "funding": -0.09242052350721275,
+          "net": -7.235323681933481,
+          "mean_net": -0.31457929051884703,
+          "break_even_bps": -43.00330937805806,
+          "max_drawdown": 0.014705174511717848,
+          "mean_hold_min": 1606.695652173913,
+          "exit_reasons": {
+            "stop": 18,
+            "time": 5
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 992.7646763180663,
+          "without_best_trade": -11.240690434342568,
+          "funding_ambiguous": 0,
+          "signals": 32,
+          "busy": 9,
+          "net_without_best_day": -11.240690434342568,
+          "sides": {
+            "LONG": {
+              "count": 10,
+              "net": -1.950516900590211
+            },
+            "SHORT": {
+              "count": 13,
+              "net": -5.284806781343271
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 10,
+              "gross": -3.6635592610000276,
+              "fees": 0.5000884496192153,
+              "impact": 0.5000875337293359,
+              "liquidation_fee": 0.0,
+              "funding": -0.057789699541204324,
+              "net": -4.721524943889783,
+              "mean_net": -0.47215249438897827,
+              "break_even_bps": -74.57605375924722,
+              "max_drawdown": null,
+              "mean_hold_min": 1783.3,
+              "exit_reasons": {
+                "time": 2,
+                "stop": 8
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -8.726891696298871,
+              "funding_ambiguous": 0,
+              "signals": 13,
+              "busy": 3,
+              "net_without_best_day": -8.726891696298871,
+              "sides": {
+                "LONG": {
+                  "count": 6,
+                  "net": -1.3949796198788422
+                },
+                "SHORT": {
+                  "count": 4,
+                  "net": -3.3265453240109406
+                }
+              }
+            },
+            "down": {
+              "closed": 11,
+              "gross": -3.403927164300061,
+              "fees": 0.550698950909641,
+              "impact": 0.5506980999277812,
+              "liquidation_fee": 0.0,
+              "funding": -0.022892842046272316,
+              "net": -4.528217057183756,
+              "mean_net": -0.41165609610761417,
+              "break_even_bps": -62.40692318612424,
+              "max_drawdown": null,
+              "mean_hold_min": 1322.3636363636363,
+              "exit_reasons": {
+                "stop": 9,
+                "time": 2
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -7.190539538603252,
+              "funding_ambiguous": 0,
+              "signals": 16,
+              "busy": 5,
+              "net_without_best_day": -7.190539538603252,
+              "sides": {
+                "LONG": {
+                  "count": 4,
+                  "net": -0.5555372807113688
+                },
+                "SHORT": {
+                  "count": 7,
+                  "net": -3.972679776472387
+                }
+              }
+            },
+            "range": {
+              "closed": 2,
+              "gross": 2.2235271779999985,
+              "fees": 0.0986851605292055,
+              "impact": 0.09868571641099935,
+              "liquidation_fee": 0.0,
+              "funding": -0.011737981919736112,
+              "net": 2.0144183191400575,
+              "mean_net": 1.0072091595700288,
+              "break_even_bps": 221.6277601478777,
+              "max_drawdown": null,
+              "mean_hold_min": 2287.5,
+              "exit_reasons": {
+                "stop": 1,
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -1.0739217580952074,
+              "funding_ambiguous": 0,
+              "signals": 3,
+              "busy": 1,
+              "net_without_best_day": -1.0739217580952074,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 2,
+                  "net": 2.0144183191400575
+                }
+              }
+            }
+          }
+        },
+        "both_stress": {
+          "closed": 24,
+          "gross": -5.5320127570000635,
+          "fees": 1.1998191692204785,
+          "impact": 2.399632806428084,
+          "liquidation_fee": 0.0,
+          "funding": -0.4156546218785501,
+          "net": -9.547119354527176,
+          "mean_net": -0.39779663977196567,
+          "break_even_bps": -49.668477598227234,
+          "max_drawdown": 0.016440270653035084,
+          "mean_hold_min": 1560.7916666666667,
+          "exit_reasons": {
+            "stop": 19,
+            "time": 5
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 990.4528806454726,
+          "without_best_trade": -13.47586123336102,
+          "funding_ambiguous": 0,
+          "signals": 32,
+          "busy": 8,
+          "net_without_best_day": -13.47586123336102,
+          "sides": {
+            "LONG": {
+              "count": 10,
+              "net": -2.0140657818368517
+            },
+            "SHORT": {
+              "count": 14,
+              "net": -7.533053572690324
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 10,
+              "gross": -3.606760751800052,
+              "fees": 0.49982082004427586,
+              "impact": 0.9996380333277392,
+              "liquidation_fee": 0.0,
+              "funding": -0.3848029129132716,
+              "net": -5.491022518085339,
+              "mean_net": -0.5491022518085339,
+              "break_even_bps": -80.04536743673481,
+              "max_drawdown": null,
+              "mean_hold_min": 1664.4,
+              "exit_reasons": {
+                "time": 2,
+                "stop": 8
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -9.419764396919183,
+              "funding_ambiguous": 0,
+              "signals": 13,
+              "busy": 3,
+              "net_without_best_day": -9.419764396919183,
+              "sides": {
+                "LONG": {
+                  "count": 6,
+                  "net": -1.5956739752607871
+                },
+                "SHORT": {
+                  "count": 4,
+                  "net": -3.895348542824552
+                }
+              }
+            },
+            "down": {
+              "closed": 11,
+              "gross": -2.8703971888000157,
+              "fees": 0.5506296743405944,
+              "impact": 1.1012564782839689,
+              "liquidation_fee": 0.0,
+              "funding": -0.02482754671207553,
+              "net": -4.547110888136654,
+              "mean_net": -0.4133737171033322,
+              "break_even_bps": -52.73932446319025,
+              "max_drawdown": null,
+              "mean_hold_min": 1248.0,
+              "exit_reasons": {
+                "stop": 9,
+                "time": 2
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -7.420001189660162,
+              "funding_ambiguous": 0,
+              "signals": 16,
+              "busy": 5,
+              "net_without_best_day": -7.420001189660162,
+              "sides": {
+                "LONG": {
+                  "count": 4,
+                  "net": -0.41839180657606456
+                },
+                "SHORT": {
+                  "count": 7,
+                  "net": -4.12871908156059
+                }
+              }
+            },
+            "range": {
+              "closed": 3,
+              "gross": 0.9451451836000037,
+              "fees": 0.1493686748356082,
+              "impact": 0.2987382948163757,
+              "liquidation_fee": 0.0,
+              "funding": -0.006024162253202981,
+              "net": 0.49101405169481627,
+              "mean_net": 0.16367135056493876,
+              "break_even_bps": 62.67420190763965,
+              "max_drawdown": null,
+              "mean_hold_min": 2362.3333333333335,
+              "exit_reasons": {
+                "stop": 2,
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -2.193558500677778,
+              "funding_ambiguous": 0,
+              "signals": 3,
+              "busy": 0,
+              "net_without_best_day": -2.193558500677778,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 3,
+                  "net": 0.49101405169481627
+                }
+              }
+            }
+          }
+        },
+        "combined_base": {
+          "closed": 14,
+          "gross": -5.007495670700051,
+          "fees": 0.7005913738081677,
+          "impact": 0.7005901219341607,
+          "liquidation_fee": 0.0,
+          "funding": -0.03127442867251762,
+          "net": -6.439951595114897,
+          "mean_net": -0.45999654250820693,
+          "break_even_bps": -72.10282729204894,
+          "max_drawdown": 0.011903078918805815,
+          "mean_hold_min": 1208.642857142857,
+          "exit_reasons": {
+            "stop": 12,
+            "time": 2
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 993.560048404885,
+          "without_best_trade": -10.445318347523983,
+          "funding_ambiguous": 0,
+          "signals": 18,
+          "busy": 4,
+          "net_without_best_day": -10.445318347523983,
+          "sides": {
+            "LONG": {
+              "count": 6,
+              "net": -1.3949796198788422
+            },
+            "SHORT": {
+              "count": 8,
+              "net": -5.044971975236054
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 6,
+              "gross": -0.7447659011000103,
+              "fees": 0.29895588324092526,
+              "impact": 0.29895569704941743,
+              "liquidation_fee": 0.0,
+              "funding": -0.05230213848848952,
+              "net": -1.3949796198788422,
+              "mean_net": -0.23249660331314037,
+              "break_even_bps": -26.62857556125372,
+              "max_drawdown": null,
+              "mean_hold_min": 1530.8333333333333,
+              "exit_reasons": {
+                "stop": 5,
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -5.400346372287929,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 3,
+              "net_without_best_day": -5.400346372287929,
+              "sides": {
+                "LONG": {
+                  "count": 6,
+                  "net": -1.3949796198788422
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 8,
+              "gross": -4.262729769600041,
+              "fees": 0.4016354905672424,
+              "impact": 0.40163442488474327,
+              "liquidation_fee": 0.0,
+              "funding": 0.021027709815971896,
+              "net": -5.044971975236054,
+              "mean_net": -0.6306214969045068,
+              "break_even_bps": -106.17445733166774,
+              "max_drawdown": null,
+              "mean_hold_min": 967.0,
+              "exit_reasons": {
+                "stop": 7,
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -7.51909064619081,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 1,
+              "net_without_best_day": -7.51909064619081,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 8,
+                  "net": -5.044971975236054
+                }
+              }
+            },
+            "range": {
+              "closed": 0,
+              "gross": 0,
+              "fees": 0,
+              "impact": 0,
+              "liquidation_fee": 0,
+              "funding": 0,
+              "net": 0,
+              "mean_net": null,
+              "break_even_bps": null,
+              "max_drawdown": null,
+              "mean_hold_min": null,
+              "exit_reasons": {},
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0,
+              "funding_ambiguous": 0,
+              "signals": 0,
+              "busy": 0,
+              "net_without_best_day": 0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            }
+          }
+        },
+        "combined_stress": {
+          "closed": 14,
+          "gross": -4.687670936400043,
+          "fees": 0.7002713055916682,
+          "impact": 1.400537923512334,
+          "liquidation_fee": 0.0,
+          "funding": -0.03293875658406864,
+          "net": -6.821418922088114,
+          "mean_net": -0.48724420872057955,
+          "break_even_bps": -67.57511912561921,
+          "max_drawdown": 0.01245864136769913,
+          "mean_hold_min": 1148.2142857142858,
+          "exit_reasons": {
+            "stop": 12,
+            "time": 2
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 993.1785810779115,
+          "without_best_trade": -10.750160800921957,
+          "funding_ambiguous": 0,
+          "signals": 18,
+          "busy": 4,
+          "net_without_best_day": -10.750160800921957,
+          "sides": {
+            "LONG": {
+              "count": 6,
+              "net": -1.5956739752607871
+            },
+            "SHORT": {
+              "count": 8,
+              "net": -5.2257449468273265
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 6,
+              "gross": -0.6470337120000386,
+              "fees": 0.298832566660856,
+              "impact": 0.5976644862879678,
+              "liquidation_fee": 0.0,
+              "funding": -0.052143210311924613,
+              "net": -1.5956739752607871,
+              "mean_net": -0.2659456625434645,
+              "break_even_bps": -23.371668401503054,
+              "max_drawdown": null,
+              "mean_hold_min": 1525.8333333333333,
+              "exit_reasons": {
+                "stop": 5,
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -5.524415854094631,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 3,
+              "net_without_best_day": -5.524415854094631,
+              "sides": {
+                "LONG": {
+                  "count": 6,
+                  "net": -1.5956739752607871
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 8,
+              "gross": -4.040637224400005,
+              "fees": 0.40143873893081217,
+              "impact": 0.8028734372243664,
+              "liquidation_fee": 0.0,
+              "funding": 0.01920445372785597,
+              "net": -5.2257449468273265,
+              "mean_net": -0.6532181183534158,
+              "break_even_bps": -100.68271534849715,
+              "max_drawdown": null,
+              "mean_hold_min": 865.0,
+              "exit_reasons": {
+                "stop": 7,
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -7.692665746047078,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 1,
+              "net_without_best_day": -7.692665746047078,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 8,
+                  "net": -5.2257449468273265
+                }
+              }
+            },
+            "range": {
+              "closed": 0,
+              "gross": 0,
+              "fees": 0,
+              "impact": 0,
+              "liquidation_fee": 0,
+              "funding": 0,
+              "net": 0,
+              "mean_net": null,
+              "break_even_bps": null,
+              "max_drawdown": null,
+              "mean_hold_min": null,
+              "exit_reasons": {},
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 0,
+              "funding_ambiguous": 0,
+              "signals": 0,
+              "busy": 0,
+              "net_without_best_day": 0,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            }
+          }
+        }
+      },
+      "sources": [
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2024-12.zip",
+          "sha256": "bae83020ac2ccfa6dd8d1362d373a92b4d5a7e396cef52e78dc2e7d81e63f621"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-01.zip",
+          "sha256": "314888152c16bc2d846f9aaa9ea3ebeec7c67d235ef2671f1a5e6fe0a8b4dbf2"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-02.zip",
+          "sha256": "eeade74c1ca2a6dc9d78ba0d7a1ff145c323be72cfa2c09fcef9edab88baef9f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-03.zip",
+          "sha256": "3f77a33779c946da6f3082d14fb9a5497e7e4a4e3fff4d68967e6ddf96cf99ea"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-04.zip",
+          "sha256": "6cd3fb27bae9313e15734d7214f4a83dc37a7a199cfc12c23f7777a5e27f7fd7"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-05.zip",
+          "sha256": "eb03fd0d0b31eef9ee05544ea8dcce097a807d3475f67d0a5f0859c487c5f5c3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-06.zip",
+          "sha256": "4ccee0a6fd67cb775be49d124b9eb038f26acd09426fcb9aaf9d3de74cf3a24e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-07.zip",
+          "sha256": "66ce38d1a8bc4bdd53af29d8ea5c72493ed48fe9894ee5e9ff4600ccec864c4f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-08.zip",
+          "sha256": "fe9efc3abe1e4be2a2fa9a4008e6957856387f6783a06b97cac3ee271746915f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-09.zip",
+          "sha256": "f953315124d20dab98ba710d108103fb4cf054d1535787fd76d35d6b9c18e534"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-10.zip",
+          "sha256": "d80c5be7660a950ad673a0e82488877c6ca0eb81f084d4c844320f892ad2c020"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-11.zip",
+          "sha256": "5134fdf4319d629473f8cff1e66dc74180844ae2846ab41a8128466ab3682c2f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-12.zip",
+          "sha256": "01db13c460b0190736e1da019c7fcd7ea0abbf3b047e16d3aa8a9e9acec3101f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-01.zip",
+          "sha256": "c53be79aae38a1f35e94880f106df4eceab57bfa74a0b5fc5852fdfabf57ab8e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-02.zip",
+          "sha256": "84cb9bcf44ba1364b37db876e7c852aa1b831371556b610e2387115addec9d5f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-03.zip",
+          "sha256": "75cfaea075d97779a577c3744ea63e3d83704f281806fb5f76f2d3e0f089fd2c"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-04.zip",
+          "sha256": "951a280e98b6d20fe4be25bf2b71f3cda1c07c7583a88cb874151e2b1fe941f1"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-05.zip",
+          "sha256": "c13066e5f7c5d161dbebd488cbeaab1205688c6dc7f9fafcc8f94296f2c1e47b"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-06.zip",
+          "sha256": "8d32fa3153d54c58667650e8b2c65e489b3a433b775052a93208bf60541a40d3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-07.zip",
+          "sha256": "13f655eaa29865b16acc7bd97be74e212bc4c2139fc2f9ead4d150852c2a9ebb"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-08.zip",
+          "sha256": "593e99bb628c0b178a5a2c8f415e1ed489dfd7dea497366f1fee91b8768c704d"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-09.zip",
+          "sha256": "8503ce0767496c63929bedc4f43307efcea8216d181a873b32a695f6d85092ef"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-10.zip",
+          "sha256": "9365b502587edc4b4683babf2aaf9c002c8473be61d38a202153f47d0cdee0da"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "631fd8d38ebc10376e985bc232f64a388a8ae50ffeb588098c4bcf39de45e05e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "b56b792f9fc9cd63dc0fef4841741692dc2e2cab3282faab66e9d0dc01ce58a1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "d513752226f0aef88958add63769a449ca835c5767a2f20c019eb1f8348da445"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "185a2ae8698968f90512a392eda65fdcc04163d7385eae0348387aedcb0763cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "e946bbf26b8faf4b0be15d2f7763515d358a04062ddd662ff4a3c286740612b3"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "9e2baa8d15fed5768c72f1b97ad19b3119f87c90c8d9847ff3c628c2afb4d37c"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "32c17d28dbcfd8ccd5dce996f610f588ff6ec9e969c6eac9c9b43232a543f7aa"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "6a11ec2b081657fd4850b61cb1f28e2217913ac1a309c484169f080733320ee7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "9916be68e1e354b1d2ad30e09ca2f0552ddbf9a3ad64d2854bd54016463b56a6"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "389290c0c468d168ea3b327d926e273aa9de639249e5101f443360eda4456b4e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "66542f68d37e6b8b071997ea07fa495abc01d3762acbf6476398c63f79128016"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "dbadf06d740261c21299abc82f3adeae1b41e4dbbcee8a5adca3e761f1896ce7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "c9375b066069aaa4dbf33fbf7c79ca9db4a534b99d4ebd9f558ba2381e610636"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "ac9cc536ec056e7c4fc4f391da5edbe778f59fb2a059670875d05285ebca3fcf"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "ad93c921265eb4a473ba91d21f8d02346d77330475740977cc7541a0ac1ec05a"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "d705ca5ec2de775733be12c6e3f29bcf3204be15d7b0b273ec87a013fcaa612f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "8ce6bb0ea598eecdfa2078cc1429c7fc4fc39a32d306d74184f137fa6ae8d3cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "588bdc611885c6de2bd55df7f8fbc597147ca0eef33f6824e340d2bff1a04066"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "dcd12574ab820047a10c3e6977b69251b7285fe7998fa7aff6d73470c6637ecd"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "10b4d10f286b8cc658af3e441dbd0369b7b5e727626049cab59545f0c00062c0"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "0d895f66c4c07969845decf7d8e8752b0d8cb5409ca737b7b48c8751d4fd6f1f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "58bcf27df2447043d9e955674de7c73bc42b848a7b8beb08d7800c9dd04813d1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "76ac841e8d854299b8329eca08b530ac10d1135a25206e38deffcb2a2180cd08"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "81313e892e9beb4ce64be6f94de624e85afdc95a3d5d9148a2b707ba9239894a"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "f6a67428d6146b6f730f3e9576291fe61e00903023461b698d967039f3ef7707"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "e060d89405e5c7b6e77ecad7bdab05a6c10391e69ae298dc39ce3c52c52df233"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "b75bbe6e01f774a6f13e3790ac83ed220dfc38c09af4312cc86614ff45a0c102"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "78669ea6bcf2f887a0a0993340d7945b0e0fa5b1e07d7b5e05b78207a55d9138"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "6fd7a6232b81f197f5e4596fabaf3f1965c905022c2921a7aa8f0a897364f770"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "ce12c7c9f36e51e93d88e0d88ef08e11343d71d633fb788a6e581301f2648f12"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "d1355bacf2e54ab238db856234e90af5a9e27ecd539b6e81cc45d3098acb7fe8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "6029c8af82d5b12bd40246301cb8392b543e1ee6a1fea6bdf8e4844433d51fa3"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "de0ef7ce07660a7052a2c4b602839822f3d01cfb0fb5fbb62dcf38358244fc35"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "ce1aed79b603b21c63a92c9da2c8f8b022a6edc8de6d02d6a511c06b28a57bc0"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "949970c49a787b626f75d6a6bc2eba47aaa82c0a44e58dc878af532154fa3696"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "94bd1c7ee954135d63b4f16712838c9a0bbd1d65aa0f181a915d8a3288be43e8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "aecdf0f538afc6ca26deb833b843205b6e6429706e6bd5f9c54324df633877a7"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "4a8fb94b8959bc41d0a61ab2d4075dd93b770cd27c252a4d531534728b1adb64"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "bf46cf5227298d5932cfc72c2d89b27b5c56f545acc1ce3d6cd113039edb8865"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "80962d61c81e08ac11aa7a185aad922aaf0680059706ee10473157da1f84fc69"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "6dfb8152839989edab623be24f32c4bd3d4f346b9e8ca7f0ba7af771ec102515"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06-29.zip",
+          "sha256": "98911fdf3ed80b200270f730004739f10034c8f1902227452cc87ad521df229d"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "3ffa4946a92f141849689c8d1a0a904ed9cef3731a19193c21e804c98a38873b"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "a2edbe971087a995a10f78eb805f38c64d46bcd5691b38574587bc91021a0a21"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "77bf9fa1ec5f8c95f313c1197b276f29eb61183abbfa31dc1843ff3bf6791746"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "f6a8295c918adb69a937cecbd35827d484f2019453818e81a43003a9d017c96e"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "19bd4e65ea4db4904b4083cd7b4ba8dad7298238447cc40079df195f989add6b"
+        }
+      ],
+      "overlaps": []
+    },
+    "SOL-2026": {
+      "cases": {
+        "both_base": {
+          "closed": 17,
+          "gross": 13.079092006499936,
+          "fees": 0.8451706705493484,
+          "impact": 0.8451739403222571,
+          "liquidation_fee": 0.0,
+          "funding": -0.3222465294283071,
+          "net": 11.066500866200023,
+          "mean_net": 0.6509706391882366,
+          "break_even_bps": 150.28112142518447,
+          "max_drawdown": 0.014101024604745029,
+          "mean_hold_min": 2134.294117647059,
+          "exit_reasons": {
+            "stop": 11,
+            "time": 6
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 1011.0665008661996,
+          "without_best_trade": 4.167832609265738,
+          "funding_ambiguous": 0,
+          "signals": 28,
+          "busy": 11,
+          "net_without_best_day": 4.167832609265738,
+          "sides": {
+            "LONG": {
+              "count": 11,
+              "net": 1.631666360684913
+            },
+            "SHORT": {
+              "count": 6,
+              "net": 9.434834505515111
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 5,
+              "gross": -1.0796445197000257,
+              "fees": 0.2491856276512799,
+              "impact": 0.24918535774013112,
+              "liquidation_fee": 0.0,
+              "funding": -0.025795421260387294,
+              "net": -1.603810926351824,
+              "mean_net": -0.3207621852703648,
+              "break_even_bps": -44.26625865122664,
+              "max_drawdown": null,
+              "mean_hold_min": 1800.2,
+              "exit_reasons": {
+                "time": 1,
+                "stop": 4
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -4.3067457240658396,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 4,
+              "net_without_best_day": -4.3067457240658396,
+              "sides": {
+                "LONG": {
+                  "count": 5,
+                  "net": -1.603810926351824
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 10,
+              "gross": 6.335436526199966,
+              "fees": 0.49224842872306845,
+              "impact": 0.4922500125821426,
+              "liquidation_fee": 0.0,
+              "funding": -0.23450647502425964,
+              "net": 5.116431609870496,
+              "mean_net": 0.5116431609870495,
+              "break_even_bps": 122.18639471191621,
+              "max_drawdown": null,
+              "mean_hold_min": 1864.2,
+              "exit_reasons": {
+                "stop": 7,
+                "time": 3
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -1.7822366470637894,
+              "funding_ambiguous": 0,
+              "signals": 15,
+              "busy": 5,
+              "net_without_best_day": -1.7822366470637894,
+              "sides": {
+                "LONG": {
+                  "count": 4,
+                  "net": -4.318402895644615
+                },
+                "SHORT": {
+                  "count": 6,
+                  "net": 9.434834505515111
+                }
+              }
+            },
+            "range": {
+              "closed": 2,
+              "gross": 7.823299999999996,
+              "fees": 0.103736614175,
+              "impact": 0.10373856999998332,
+              "liquidation_fee": 0.0,
+              "funding": -0.06194463314366015,
+              "net": 7.553880182681352,
+              "mean_net": 3.776940091340676,
+              "break_even_bps": 777.4812011485817,
+              "max_drawdown": null,
+              "mean_hold_min": 4320.0,
+              "exit_reasons": {
+                "time": 2
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 2.7190583255823846,
+              "funding_ambiguous": 0,
+              "signals": 4,
+              "busy": 2,
+              "net_without_best_day": 2.7190583255823846,
+              "sides": {
+                "LONG": {
+                  "count": 2,
+                  "net": 7.553880182681352
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            }
+          }
+        },
+        "both_stress": {
+          "closed": 18,
+          "gross": 12.156544437799933,
+          "fees": 0.8954188687712811,
+          "impact": 1.7908498940868776,
+          "liquidation_fee": 0.0,
+          "funding": -0.33503120276164505,
+          "net": 9.135244472180132,
+          "mean_net": 0.507513581787785,
+          "break_even_bps": 131.55560328855242,
+          "max_drawdown": 0.014254675043052247,
+          "mean_hold_min": 2062.777777777778,
+          "exit_reasons": {
+            "stop": 12,
+            "time": 6
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 1009.1352444721801,
+          "without_best_trade": 2.5703246458610156,
+          "funding_ambiguous": 0,
+          "signals": 28,
+          "busy": 10,
+          "net_without_best_day": 2.5703246458610156,
+          "sides": {
+            "LONG": {
+              "count": 11,
+              "net": 1.1412249654103257
+            },
+            "SHORT": {
+              "count": 7,
+              "net": 7.994019506769805
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 5,
+              "gross": -0.9164813958000342,
+              "fees": 0.24892191754279788,
+              "impact": 0.4978429186041624,
+              "liquidation_fee": 0.0,
+              "funding": -0.025795421260387294,
+              "net": -1.6890416532073815,
+              "mean_net": -0.3378083306414763,
+              "break_even_bps": -37.784824388690076,
+              "max_drawdown": null,
+              "mean_hold_min": 1798.8,
+              "exit_reasons": {
+                "time": 1,
+                "stop": 4
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -4.400431695328903,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 4,
+              "net_without_best_day": -4.400431695328903,
+              "sides": {
+                "LONG": {
+                  "count": 5,
+                  "net": -1.6890416532073815
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 11,
+              "gross": 5.449335833599971,
+              "fees": 0.5428798480734831,
+              "impact": 1.0857651454827213,
+              "liquidation_fee": 0.0,
+              "funding": -0.24739488842481802,
+              "net": 3.573295951618949,
+              "mean_net": 0.3248450865108135,
+              "break_even_bps": 94.68306069462686,
+              "max_drawdown": null,
+              "mean_hold_min": 1772.3636363636363,
+              "exit_reasons": {
+                "stop": 8,
+                "time": 3
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -2.991623874700167,
+              "funding_ambiguous": 0,
+              "signals": 15,
+              "busy": 4,
+              "net_without_best_day": -2.991623874700167,
+              "sides": {
+                "LONG": {
+                  "count": 4,
+                  "net": -4.420723555150857
+                },
+                "SHORT": {
+                  "count": 7,
+                  "net": 7.994019506769805
+                }
+              }
+            },
+            "range": {
+              "closed": 2,
+              "gross": 7.623689999999998,
+              "fees": 0.103617103155,
+              "impact": 0.2072418299999938,
+              "liquidation_fee": 0.0,
+              "funding": -0.061840893076439744,
+              "net": 7.250990173768564,
+              "mean_net": 3.625495086884282,
+              "break_even_bps": 757.6314564321218,
+              "max_drawdown": null,
+              "mean_hold_min": 4320.0,
+              "exit_reasons": {
+                "time": 2
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 2.541054653579425,
+              "funding_ambiguous": 0,
+              "signals": 4,
+              "busy": 2,
+              "net_without_best_day": 2.541054653579425,
+              "sides": {
+                "LONG": {
+                  "count": 2,
+                  "net": 7.250990173768564
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            }
+          }
+        },
+        "combined_base": {
+          "closed": 17,
+          "gross": 3.306586449599939,
+          "fees": 0.8424189570206876,
+          "impact": 0.8424197836672268,
+          "liquidation_fee": 0.0,
+          "funding": -0.22144512725653326,
+          "net": 1.4003025816554908,
+          "mean_net": 0.08237074009738181,
+          "break_even_bps": 36.336431752758855,
+          "max_drawdown": 0.013951020612133096,
+          "mean_hold_min": 1597.0588235294117,
+          "exit_reasons": {
+            "stop": 13,
+            "time": 4
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 1001.4003025816551,
+          "without_best_trade": -5.498365675278794,
+          "funding_ambiguous": 0,
+          "signals": 24,
+          "busy": 7,
+          "net_without_best_day": -5.498365675278794,
+          "sides": {
+            "LONG": {
+              "count": 9,
+              "net": -5.896921175048268
+            },
+            "SHORT": {
+              "count": 8,
+              "net": 7.297223756703759
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 6,
+              "gross": -2.05448859350003,
+              "fees": 0.2986648293253984,
+              "impact": 0.29866431570322965,
+              "liquidation_fee": 0.0,
+              "funding": -0.025795421260387294,
+              "net": -2.677613159789045,
+              "mean_net": -0.44626885996484084,
+              "break_even_bps": -69.41416751143802,
+              "max_drawdown": null,
+              "mean_hold_min": 1551.8333333333333,
+              "exit_reasons": {
+                "time": 1,
+                "stop": 5
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -5.38054795750306,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 3,
+              "net_without_best_day": -5.38054795750306,
+              "sides": {
+                "LONG": {
+                  "count": 6,
+                  "net": -2.677613159789045
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 6,
+              "gross": 10.231075680899986,
+              "fees": 0.2945213043906298,
+              "impact": 0.29452386215952175,
+              "liquidation_fee": 0.0,
+              "funding": -0.20719600883472364,
+              "net": 9.434834505515111,
+              "mean_net": 1.5724724175858518,
+              "break_even_bps": 334.5314291800498,
+              "max_drawdown": null,
+              "mean_hold_min": 2219.8333333333335,
+              "exit_reasons": {
+                "stop": 3,
+                "time": 3
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 2.536166248580826,
+              "funding_ambiguous": 0,
+              "signals": 10,
+              "busy": 4,
+              "net_without_best_day": 2.536166248580826,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 6,
+                  "net": 9.434834505515111
+                }
+              }
+            },
+            "range": {
+              "closed": 5,
+              "gross": -4.870000637800017,
+              "fees": 0.24923282330465946,
+              "impact": 0.24923160580447534,
+              "liquidation_fee": 0.0,
+              "funding": 0.011546302838577677,
+              "net": -5.356918764070574,
+              "mean_net": -1.0713837528141148,
+              "break_even_bps": -194.55755649916608,
+              "max_drawdown": null,
+              "mean_hold_min": 904.0,
+              "exit_reasons": {
+                "stop": 5
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -4.294360742594819,
+              "funding_ambiguous": 0,
+              "signals": 5,
+              "busy": 0,
+              "net_without_best_day": -4.294360742594819,
+              "sides": {
+                "LONG": {
+                  "count": 3,
+                  "net": -3.219308015259223
+                },
+                "SHORT": {
+                  "count": 2,
+                  "net": -2.1376107488113516
+                }
+              }
+            }
+          }
+        },
+        "combined_stress": {
+          "closed": 17,
+          "gross": 4.862834078599944,
+          "fees": 0.8414721304468606,
+          "impact": 1.6829491237276852,
+          "liquidation_fee": 0.0,
+          "funding": -0.22203334008511907,
+          "net": 2.11637948434028,
+          "mean_net": 0.12449291084354588,
+          "break_even_bps": 54.68656065394531,
+          "max_drawdown": 0.013841829525451457,
+          "mean_hold_min": 1708.3529411764705,
+          "exit_reasons": {
+            "stop": 12,
+            "time": 5
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 1002.1163794843402,
+          "without_best_trade": -4.448540341978836,
+          "funding_ambiguous": 0,
+          "signals": 24,
+          "busy": 7,
+          "net_without_best_day": -4.448540341978836,
+          "sides": {
+            "LONG": {
+              "count": 9,
+              "net": -6.078964767495727
+            },
+            "SHORT": {
+              "count": 8,
+              "net": 8.195344251836007
+            }
+          },
+          "regimes": {
+            "up": {
+              "closed": 6,
+              "gross": -1.8647581122000365,
+              "fees": 0.2983050733229561,
+              "impact": 0.596608281887758,
+              "liquidation_fee": 0.0,
+              "funding": -0.025795421260387294,
+              "net": -2.785466888671138,
+              "mean_net": -0.46424448144518965,
+              "break_even_bps": -63.17923806427182,
+              "max_drawdown": null,
+              "mean_hold_min": 1549.8333333333333,
+              "exit_reasons": {
+                "time": 1,
+                "stop": 5
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -5.496856930792659,
+              "funding_ambiguous": 0,
+              "signals": 9,
+              "busy": 3,
+              "net_without_best_day": -5.496856930792659,
+              "sides": {
+                "LONG": {
+                  "count": 6,
+                  "net": -2.785466888671138
+                },
+                "SHORT": {
+                  "count": 0,
+                  "net": 0
+                }
+              }
+            },
+            "down": {
+              "closed": 7,
+              "gross": 9.247755175399995,
+              "fees": 0.3450705685347123,
+              "impact": 0.690150384824548,
+              "liquidation_fee": 0.0,
+              "funding": -0.21851471527093,
+              "net": 7.994019506769805,
+              "mean_net": 1.1420027866814009,
+              "break_even_bps": 258.2002994783219,
+              "max_drawdown": null,
+              "mean_hold_min": 1986.857142857143,
+              "exit_reasons": {
+                "stop": 4,
+                "time": 3
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": 1.4290996804506895,
+              "funding_ambiguous": 0,
+              "signals": 10,
+              "busy": 3,
+              "net_without_best_day": 1.4290996804506895,
+              "sides": {
+                "LONG": {
+                  "count": 0,
+                  "net": 0
+                },
+                "SHORT": {
+                  "count": 7,
+                  "net": 7.994019506769805
+                }
+              }
+            },
+            "range": {
+              "closed": 4,
+              "gross": -2.5201629846000144,
+              "fees": 0.19809648858919227,
+              "impact": 0.396190457015379,
+              "liquidation_fee": 0.0,
+              "funding": 0.022276796446198222,
+              "net": -3.0921731337583873,
+              "mean_net": -0.7730432834395968,
+              "break_even_bps": -125.0928630545742,
+              "max_drawdown": null,
+              "mean_hold_min": 1458.75,
+              "exit_reasons": {
+                "stop": 3,
+                "time": 1
+              },
+              "rejections": {},
+              "unresolved": {},
+              "ending_cash": null,
+              "without_best_trade": -3.293497878824589,
+              "funding_ambiguous": 0,
+              "signals": 5,
+              "busy": 1,
+              "net_without_best_day": -3.293497878824589,
+              "sides": {
+                "LONG": {
+                  "count": 3,
+                  "net": -3.2934978788245894
+                },
+                "SHORT": {
+                  "count": 1,
+                  "net": 0.20132474506620168
+                }
+              }
+            }
+          }
+        }
+      },
+      "sources": [
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2024-12.zip",
+          "sha256": "bae83020ac2ccfa6dd8d1362d373a92b4d5a7e396cef52e78dc2e7d81e63f621"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-01.zip",
+          "sha256": "314888152c16bc2d846f9aaa9ea3ebeec7c67d235ef2671f1a5e6fe0a8b4dbf2"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-02.zip",
+          "sha256": "eeade74c1ca2a6dc9d78ba0d7a1ff145c323be72cfa2c09fcef9edab88baef9f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-03.zip",
+          "sha256": "3f77a33779c946da6f3082d14fb9a5497e7e4a4e3fff4d68967e6ddf96cf99ea"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-04.zip",
+          "sha256": "6cd3fb27bae9313e15734d7214f4a83dc37a7a199cfc12c23f7777a5e27f7fd7"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-05.zip",
+          "sha256": "eb03fd0d0b31eef9ee05544ea8dcce097a807d3475f67d0a5f0859c487c5f5c3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-06.zip",
+          "sha256": "4ccee0a6fd67cb775be49d124b9eb038f26acd09426fcb9aaf9d3de74cf3a24e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-07.zip",
+          "sha256": "66ce38d1a8bc4bdd53af29d8ea5c72493ed48fe9894ee5e9ff4600ccec864c4f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-08.zip",
+          "sha256": "fe9efc3abe1e4be2a2fa9a4008e6957856387f6783a06b97cac3ee271746915f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-09.zip",
+          "sha256": "f953315124d20dab98ba710d108103fb4cf054d1535787fd76d35d6b9c18e534"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-10.zip",
+          "sha256": "d80c5be7660a950ad673a0e82488877c6ca0eb81f084d4c844320f892ad2c020"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-11.zip",
+          "sha256": "5134fdf4319d629473f8cff1e66dc74180844ae2846ab41a8128466ab3682c2f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-12.zip",
+          "sha256": "01db13c460b0190736e1da019c7fcd7ea0abbf3b047e16d3aa8a9e9acec3101f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-01.zip",
+          "sha256": "c53be79aae38a1f35e94880f106df4eceab57bfa74a0b5fc5852fdfabf57ab8e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-02.zip",
+          "sha256": "84cb9bcf44ba1364b37db876e7c852aa1b831371556b610e2387115addec9d5f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-03.zip",
+          "sha256": "75cfaea075d97779a577c3744ea63e3d83704f281806fb5f76f2d3e0f089fd2c"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-04.zip",
+          "sha256": "951a280e98b6d20fe4be25bf2b71f3cda1c07c7583a88cb874151e2b1fe941f1"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-05.zip",
+          "sha256": "c13066e5f7c5d161dbebd488cbeaab1205688c6dc7f9fafcc8f94296f2c1e47b"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-06.zip",
+          "sha256": "8d32fa3153d54c58667650e8b2c65e489b3a433b775052a93208bf60541a40d3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-07.zip",
+          "sha256": "13f655eaa29865b16acc7bd97be74e212bc4c2139fc2f9ead4d150852c2a9ebb"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-08.zip",
+          "sha256": "593e99bb628c0b178a5a2c8f415e1ed489dfd7dea497366f1fee91b8768c704d"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-09.zip",
+          "sha256": "8503ce0767496c63929bedc4f43307efcea8216d181a873b32a695f6d85092ef"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-10.zip",
+          "sha256": "9365b502587edc4b4683babf2aaf9c002c8473be61d38a202153f47d0cdee0da"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "631fd8d38ebc10376e985bc232f64a388a8ae50ffeb588098c4bcf39de45e05e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "b56b792f9fc9cd63dc0fef4841741692dc2e2cab3282faab66e9d0dc01ce58a1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "d513752226f0aef88958add63769a449ca835c5767a2f20c019eb1f8348da445"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "185a2ae8698968f90512a392eda65fdcc04163d7385eae0348387aedcb0763cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "e946bbf26b8faf4b0be15d2f7763515d358a04062ddd662ff4a3c286740612b3"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "9e2baa8d15fed5768c72f1b97ad19b3119f87c90c8d9847ff3c628c2afb4d37c"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "32c17d28dbcfd8ccd5dce996f610f588ff6ec9e969c6eac9c9b43232a543f7aa"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "6a11ec2b081657fd4850b61cb1f28e2217913ac1a309c484169f080733320ee7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "9916be68e1e354b1d2ad30e09ca2f0552ddbf9a3ad64d2854bd54016463b56a6"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "389290c0c468d168ea3b327d926e273aa9de639249e5101f443360eda4456b4e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "66542f68d37e6b8b071997ea07fa495abc01d3762acbf6476398c63f79128016"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "dbadf06d740261c21299abc82f3adeae1b41e4dbbcee8a5adca3e761f1896ce7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "c9375b066069aaa4dbf33fbf7c79ca9db4a534b99d4ebd9f558ba2381e610636"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "ac9cc536ec056e7c4fc4f391da5edbe778f59fb2a059670875d05285ebca3fcf"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "ad93c921265eb4a473ba91d21f8d02346d77330475740977cc7541a0ac1ec05a"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "d705ca5ec2de775733be12c6e3f29bcf3204be15d7b0b273ec87a013fcaa612f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "8ce6bb0ea598eecdfa2078cc1429c7fc4fc39a32d306d74184f137fa6ae8d3cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "588bdc611885c6de2bd55df7f8fbc597147ca0eef33f6824e340d2bff1a04066"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "dcd12574ab820047a10c3e6977b69251b7285fe7998fa7aff6d73470c6637ecd"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "10b4d10f286b8cc658af3e441dbd0369b7b5e727626049cab59545f0c00062c0"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "0d895f66c4c07969845decf7d8e8752b0d8cb5409ca737b7b48c8751d4fd6f1f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "58bcf27df2447043d9e955674de7c73bc42b848a7b8beb08d7800c9dd04813d1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "76ac841e8d854299b8329eca08b530ac10d1135a25206e38deffcb2a2180cd08"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "81313e892e9beb4ce64be6f94de624e85afdc95a3d5d9148a2b707ba9239894a"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "f6a67428d6146b6f730f3e9576291fe61e00903023461b698d967039f3ef7707"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "e060d89405e5c7b6e77ecad7bdab05a6c10391e69ae298dc39ce3c52c52df233"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "b75bbe6e01f774a6f13e3790ac83ed220dfc38c09af4312cc86614ff45a0c102"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "78669ea6bcf2f887a0a0993340d7945b0e0fa5b1e07d7b5e05b78207a55d9138"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "6fd7a6232b81f197f5e4596fabaf3f1965c905022c2921a7aa8f0a897364f770"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "ce12c7c9f36e51e93d88e0d88ef08e11343d71d633fb788a6e581301f2648f12"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "d1355bacf2e54ab238db856234e90af5a9e27ecd539b6e81cc45d3098acb7fe8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "6029c8af82d5b12bd40246301cb8392b543e1ee6a1fea6bdf8e4844433d51fa3"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "de0ef7ce07660a7052a2c4b602839822f3d01cfb0fb5fbb62dcf38358244fc35"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "ce1aed79b603b21c63a92c9da2c8f8b022a6edc8de6d02d6a511c06b28a57bc0"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "949970c49a787b626f75d6a6bc2eba47aaa82c0a44e58dc878af532154fa3696"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "94bd1c7ee954135d63b4f16712838c9a0bbd1d65aa0f181a915d8a3288be43e8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "aecdf0f538afc6ca26deb833b843205b6e6429706e6bd5f9c54324df633877a7"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "4a8fb94b8959bc41d0a61ab2d4075dd93b770cd27c252a4d531534728b1adb64"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "bf46cf5227298d5932cfc72c2d89b27b5c56f545acc1ce3d6cd113039edb8865"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "80962d61c81e08ac11aa7a185aad922aaf0680059706ee10473157da1f84fc69"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "6dfb8152839989edab623be24f32c4bd3d4f346b9e8ca7f0ba7af771ec102515"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06-29.zip",
+          "sha256": "98911fdf3ed80b200270f730004739f10034c8f1902227452cc87ad521df229d"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "3ffa4946a92f141849689c8d1a0a904ed9cef3731a19193c21e804c98a38873b"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "a2edbe971087a995a10f78eb805f38c64d46bcd5691b38574587bc91021a0a21"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "77bf9fa1ec5f8c95f313c1197b276f29eb61183abbfa31dc1843ff3bf6791746"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "f6a8295c918adb69a937cecbd35827d484f2019453818e81a43003a9d017c96e"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "19bd4e65ea4db4904b4083cd7b4ba8dad7298238447cc40079df195f989add6b"
+        }
+      ],
+      "overlaps": []
+    }
+  },
+  "passes": {
+    "ETH": false,
+    "SOL": false
+  }
+}

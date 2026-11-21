@@ -47,17 +47,18 @@ def signals(trade, begin, end):
     return choices
 
 
-def compare(root, year, begin, end, out):
-    trade, mark, rates, files, overlaps = core.load_data(root, "ETHUSDT")
+def compare(root, year, begin, end, out, *, symbol="ETHUSDT", policies=POLICIES):
+    trade, mark, rates, files, overlaps = core.load_data(root, symbol)
     funding = defaultdict(list)
     for t, rate in rates:
         funding[core.ix(t - t % core.M)].append((t, rate))
     choices = signals(trade, begin, end)
     cases = {}
-    for policy, raw in choices.items():
+    for policy in policies:
+        raw = choices[policy]
         for scenario, delay in (("base", 1), ("stress", 6)):
             allowed = [row for row in raw if row["signal_ms"] + (daily.HOLD + delay) * core.M < end]
-            rows, account = daily.simulate(allowed, trade, mark, funding, "ETHUSDT",
+            rows, account = daily.simulate(allowed, trade, mark, funding, symbol,
                                            scenario == "stress", hold_minutes=daily.HOLD, max_notional=50)
             total = daily.metrics(rows, account)
             if not total["unresolved"] and abs(total["net"] + 1000 - account["cash"]) > 1e-8:
