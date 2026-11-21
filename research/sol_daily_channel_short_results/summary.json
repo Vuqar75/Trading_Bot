@@ -1,0 +1,719 @@
+{
+  "periods": {
+    "2025": {
+      "cases": {
+        "base": {
+          "closed": 15,
+          "gross": -5.932543702000064,
+          "fees": 0.7519431849869256,
+          "impact": 0.7519417018509024,
+          "liquidation_fee": 0.0,
+          "funding": 0.002951464349724753,
+          "net": -7.433477124488167,
+          "mean_net": -0.4955651416325445,
+          "break_even_bps": -79.16938260111337,
+          "max_drawdown": 0.013279236098482717,
+          "mean_hold_min": 1503.8666666666666,
+          "exit_reasons": {
+            "stop": 12,
+            "time": 3
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 992.5665228755114,
+          "without_best_trade": -10.521817201723433,
+          "funding_ambiguous": 0,
+          "signals": 18,
+          "busy": 3,
+          "net_without_best_day": -10.521817201723433,
+          "sides": {
+            "LONG": {
+              "count": 0,
+              "net": 0
+            },
+            "SHORT": {
+              "count": 15,
+              "net": -7.433477124488167
+            }
+          }
+        },
+        "stress": {
+          "closed": 16,
+          "gross": -7.004861553600012,
+          "fees": 0.8023048132075767,
+          "impact": 1.6046026215535099,
+          "liquidation_fee": 0.0,
+          "funding": -0.32033599639902777,
+          "net": -9.732104984760127,
+          "mean_net": -0.608256561547508,
+          "break_even_bps": -91.70265173630487,
+          "max_drawdown": 0.014951426892978709,
+          "mean_hold_min": 1429.4375,
+          "exit_reasons": {
+            "stop": 13,
+            "time": 3
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 990.2678950152398,
+          "without_best_trade": -12.41667753713272,
+          "funding_ambiguous": 0,
+          "signals": 18,
+          "busy": 2,
+          "net_without_best_day": -12.41667753713272,
+          "sides": {
+            "LONG": {
+              "count": 0,
+              "net": 0
+            },
+            "SHORT": {
+              "count": 16,
+              "net": -9.732104984760127
+            }
+          }
+        }
+      },
+      "sources": [
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2024-12.zip",
+          "sha256": "bae83020ac2ccfa6dd8d1362d373a92b4d5a7e396cef52e78dc2e7d81e63f621"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-01.zip",
+          "sha256": "314888152c16bc2d846f9aaa9ea3ebeec7c67d235ef2671f1a5e6fe0a8b4dbf2"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-02.zip",
+          "sha256": "eeade74c1ca2a6dc9d78ba0d7a1ff145c323be72cfa2c09fcef9edab88baef9f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-03.zip",
+          "sha256": "3f77a33779c946da6f3082d14fb9a5497e7e4a4e3fff4d68967e6ddf96cf99ea"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-04.zip",
+          "sha256": "6cd3fb27bae9313e15734d7214f4a83dc37a7a199cfc12c23f7777a5e27f7fd7"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-05.zip",
+          "sha256": "eb03fd0d0b31eef9ee05544ea8dcce097a807d3475f67d0a5f0859c487c5f5c3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-06.zip",
+          "sha256": "4ccee0a6fd67cb775be49d124b9eb038f26acd09426fcb9aaf9d3de74cf3a24e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-07.zip",
+          "sha256": "66ce38d1a8bc4bdd53af29d8ea5c72493ed48fe9894ee5e9ff4600ccec864c4f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-08.zip",
+          "sha256": "fe9efc3abe1e4be2a2fa9a4008e6957856387f6783a06b97cac3ee271746915f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-09.zip",
+          "sha256": "f953315124d20dab98ba710d108103fb4cf054d1535787fd76d35d6b9c18e534"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-10.zip",
+          "sha256": "d80c5be7660a950ad673a0e82488877c6ca0eb81f084d4c844320f892ad2c020"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-11.zip",
+          "sha256": "5134fdf4319d629473f8cff1e66dc74180844ae2846ab41a8128466ab3682c2f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-12.zip",
+          "sha256": "01db13c460b0190736e1da019c7fcd7ea0abbf3b047e16d3aa8a9e9acec3101f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-01.zip",
+          "sha256": "c53be79aae38a1f35e94880f106df4eceab57bfa74a0b5fc5852fdfabf57ab8e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-02.zip",
+          "sha256": "84cb9bcf44ba1364b37db876e7c852aa1b831371556b610e2387115addec9d5f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-03.zip",
+          "sha256": "75cfaea075d97779a577c3744ea63e3d83704f281806fb5f76f2d3e0f089fd2c"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-04.zip",
+          "sha256": "951a280e98b6d20fe4be25bf2b71f3cda1c07c7583a88cb874151e2b1fe941f1"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-05.zip",
+          "sha256": "c13066e5f7c5d161dbebd488cbeaab1205688c6dc7f9fafcc8f94296f2c1e47b"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-06.zip",
+          "sha256": "8d32fa3153d54c58667650e8b2c65e489b3a433b775052a93208bf60541a40d3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-07.zip",
+          "sha256": "13f655eaa29865b16acc7bd97be74e212bc4c2139fc2f9ead4d150852c2a9ebb"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-08.zip",
+          "sha256": "593e99bb628c0b178a5a2c8f415e1ed489dfd7dea497366f1fee91b8768c704d"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-09.zip",
+          "sha256": "8503ce0767496c63929bedc4f43307efcea8216d181a873b32a695f6d85092ef"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-10.zip",
+          "sha256": "9365b502587edc4b4683babf2aaf9c002c8473be61d38a202153f47d0cdee0da"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "631fd8d38ebc10376e985bc232f64a388a8ae50ffeb588098c4bcf39de45e05e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "b56b792f9fc9cd63dc0fef4841741692dc2e2cab3282faab66e9d0dc01ce58a1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "d513752226f0aef88958add63769a449ca835c5767a2f20c019eb1f8348da445"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "185a2ae8698968f90512a392eda65fdcc04163d7385eae0348387aedcb0763cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "e946bbf26b8faf4b0be15d2f7763515d358a04062ddd662ff4a3c286740612b3"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "9e2baa8d15fed5768c72f1b97ad19b3119f87c90c8d9847ff3c628c2afb4d37c"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "32c17d28dbcfd8ccd5dce996f610f588ff6ec9e969c6eac9c9b43232a543f7aa"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "6a11ec2b081657fd4850b61cb1f28e2217913ac1a309c484169f080733320ee7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "9916be68e1e354b1d2ad30e09ca2f0552ddbf9a3ad64d2854bd54016463b56a6"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "389290c0c468d168ea3b327d926e273aa9de639249e5101f443360eda4456b4e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "66542f68d37e6b8b071997ea07fa495abc01d3762acbf6476398c63f79128016"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "dbadf06d740261c21299abc82f3adeae1b41e4dbbcee8a5adca3e761f1896ce7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "c9375b066069aaa4dbf33fbf7c79ca9db4a534b99d4ebd9f558ba2381e610636"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "ac9cc536ec056e7c4fc4f391da5edbe778f59fb2a059670875d05285ebca3fcf"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "ad93c921265eb4a473ba91d21f8d02346d77330475740977cc7541a0ac1ec05a"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "d705ca5ec2de775733be12c6e3f29bcf3204be15d7b0b273ec87a013fcaa612f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "8ce6bb0ea598eecdfa2078cc1429c7fc4fc39a32d306d74184f137fa6ae8d3cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "588bdc611885c6de2bd55df7f8fbc597147ca0eef33f6824e340d2bff1a04066"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "dcd12574ab820047a10c3e6977b69251b7285fe7998fa7aff6d73470c6637ecd"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "10b4d10f286b8cc658af3e441dbd0369b7b5e727626049cab59545f0c00062c0"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "0d895f66c4c07969845decf7d8e8752b0d8cb5409ca737b7b48c8751d4fd6f1f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "58bcf27df2447043d9e955674de7c73bc42b848a7b8beb08d7800c9dd04813d1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "76ac841e8d854299b8329eca08b530ac10d1135a25206e38deffcb2a2180cd08"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "81313e892e9beb4ce64be6f94de624e85afdc95a3d5d9148a2b707ba9239894a"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "f6a67428d6146b6f730f3e9576291fe61e00903023461b698d967039f3ef7707"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "e060d89405e5c7b6e77ecad7bdab05a6c10391e69ae298dc39ce3c52c52df233"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "b75bbe6e01f774a6f13e3790ac83ed220dfc38c09af4312cc86614ff45a0c102"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "78669ea6bcf2f887a0a0993340d7945b0e0fa5b1e07d7b5e05b78207a55d9138"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "6fd7a6232b81f197f5e4596fabaf3f1965c905022c2921a7aa8f0a897364f770"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "ce12c7c9f36e51e93d88e0d88ef08e11343d71d633fb788a6e581301f2648f12"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "d1355bacf2e54ab238db856234e90af5a9e27ecd539b6e81cc45d3098acb7fe8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "6029c8af82d5b12bd40246301cb8392b543e1ee6a1fea6bdf8e4844433d51fa3"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "de0ef7ce07660a7052a2c4b602839822f3d01cfb0fb5fbb62dcf38358244fc35"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "ce1aed79b603b21c63a92c9da2c8f8b022a6edc8de6d02d6a511c06b28a57bc0"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "949970c49a787b626f75d6a6bc2eba47aaa82c0a44e58dc878af532154fa3696"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "94bd1c7ee954135d63b4f16712838c9a0bbd1d65aa0f181a915d8a3288be43e8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "aecdf0f538afc6ca26deb833b843205b6e6429706e6bd5f9c54324df633877a7"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "4a8fb94b8959bc41d0a61ab2d4075dd93b770cd27c252a4d531534728b1adb64"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "bf46cf5227298d5932cfc72c2d89b27b5c56f545acc1ce3d6cd113039edb8865"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "80962d61c81e08ac11aa7a185aad922aaf0680059706ee10473157da1f84fc69"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "6dfb8152839989edab623be24f32c4bd3d4f346b9e8ca7f0ba7af771ec102515"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06-29.zip",
+          "sha256": "98911fdf3ed80b200270f730004739f10034c8f1902227452cc87ad521df229d"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "3ffa4946a92f141849689c8d1a0a904ed9cef3731a19193c21e804c98a38873b"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "a2edbe971087a995a10f78eb805f38c64d46bcd5691b38574587bc91021a0a21"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "77bf9fa1ec5f8c95f313c1197b276f29eb61183abbfa31dc1843ff3bf6791746"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "f6a8295c918adb69a937cecbd35827d484f2019453818e81a43003a9d017c96e"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "19bd4e65ea4db4904b4083cd7b4ba8dad7298238447cc40079df195f989add6b"
+        }
+      ],
+      "overlaps": []
+    },
+    "2026": {
+      "cases": {
+        "base": {
+          "closed": 6,
+          "gross": 10.231075680899986,
+          "fees": 0.2945213043906298,
+          "impact": 0.29452386215952175,
+          "liquidation_fee": 0.0,
+          "funding": -0.20719600883472364,
+          "net": 9.434834505515111,
+          "mean_net": 1.5724724175858518,
+          "break_even_bps": 334.5314291800498,
+          "max_drawdown": 0.012771960520642351,
+          "mean_hold_min": 2219.8333333333335,
+          "exit_reasons": {
+            "stop": 3,
+            "time": 3
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 1009.434834505515,
+          "without_best_trade": 2.536166248580826,
+          "funding_ambiguous": 0,
+          "signals": 10,
+          "busy": 4,
+          "net_without_best_day": 2.536166248580826,
+          "sides": {
+            "LONG": {
+              "count": 0,
+              "net": 0
+            },
+            "SHORT": {
+              "count": 6,
+              "net": 9.434834505515111
+            }
+          }
+        },
+        "stress": {
+          "closed": 7,
+          "gross": 9.247755175399995,
+          "fees": 0.3450705685347123,
+          "impact": 0.690150384824548,
+          "liquidation_fee": 0.0,
+          "funding": -0.21851471527093,
+          "net": 7.994019506769805,
+          "mean_net": 1.1420027866814009,
+          "break_even_bps": 258.2002994783219,
+          "max_drawdown": 0.013268717162611743,
+          "mean_hold_min": 1986.857142857143,
+          "exit_reasons": {
+            "stop": 4,
+            "time": 3
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 1007.9940195067701,
+          "without_best_trade": 1.4290996804506895,
+          "funding_ambiguous": 0,
+          "signals": 10,
+          "busy": 3,
+          "net_without_best_day": 1.4290996804506895,
+          "sides": {
+            "LONG": {
+              "count": 0,
+              "net": 0
+            },
+            "SHORT": {
+              "count": 7,
+              "net": 7.994019506769805
+            }
+          }
+        }
+      },
+      "sources": [
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2024-12.zip",
+          "sha256": "bae83020ac2ccfa6dd8d1362d373a92b4d5a7e396cef52e78dc2e7d81e63f621"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-01.zip",
+          "sha256": "314888152c16bc2d846f9aaa9ea3ebeec7c67d235ef2671f1a5e6fe0a8b4dbf2"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-02.zip",
+          "sha256": "eeade74c1ca2a6dc9d78ba0d7a1ff145c323be72cfa2c09fcef9edab88baef9f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-03.zip",
+          "sha256": "3f77a33779c946da6f3082d14fb9a5497e7e4a4e3fff4d68967e6ddf96cf99ea"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-04.zip",
+          "sha256": "6cd3fb27bae9313e15734d7214f4a83dc37a7a199cfc12c23f7777a5e27f7fd7"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-05.zip",
+          "sha256": "eb03fd0d0b31eef9ee05544ea8dcce097a807d3475f67d0a5f0859c487c5f5c3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-06.zip",
+          "sha256": "4ccee0a6fd67cb775be49d124b9eb038f26acd09426fcb9aaf9d3de74cf3a24e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-07.zip",
+          "sha256": "66ce38d1a8bc4bdd53af29d8ea5c72493ed48fe9894ee5e9ff4600ccec864c4f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-08.zip",
+          "sha256": "fe9efc3abe1e4be2a2fa9a4008e6957856387f6783a06b97cac3ee271746915f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-09.zip",
+          "sha256": "f953315124d20dab98ba710d108103fb4cf054d1535787fd76d35d6b9c18e534"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-10.zip",
+          "sha256": "d80c5be7660a950ad673a0e82488877c6ca0eb81f084d4c844320f892ad2c020"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-11.zip",
+          "sha256": "5134fdf4319d629473f8cff1e66dc74180844ae2846ab41a8128466ab3682c2f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2025-12.zip",
+          "sha256": "01db13c460b0190736e1da019c7fcd7ea0abbf3b047e16d3aa8a9e9acec3101f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-01.zip",
+          "sha256": "c53be79aae38a1f35e94880f106df4eceab57bfa74a0b5fc5852fdfabf57ab8e"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-02.zip",
+          "sha256": "84cb9bcf44ba1364b37db876e7c852aa1b831371556b610e2387115addec9d5f"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-03.zip",
+          "sha256": "75cfaea075d97779a577c3744ea63e3d83704f281806fb5f76f2d3e0f089fd2c"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-04.zip",
+          "sha256": "951a280e98b6d20fe4be25bf2b71f3cda1c07c7583a88cb874151e2b1fe941f1"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-05.zip",
+          "sha256": "c13066e5f7c5d161dbebd488cbeaab1205688c6dc7f9fafcc8f94296f2c1e47b"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-06.zip",
+          "sha256": "8d32fa3153d54c58667650e8b2c65e489b3a433b775052a93208bf60541a40d3"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-07.zip",
+          "sha256": "13f655eaa29865b16acc7bd97be74e212bc4c2139fc2f9ead4d150852c2a9ebb"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-08.zip",
+          "sha256": "593e99bb628c0b178a5a2c8f415e1ed489dfd7dea497366f1fee91b8768c704d"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-09.zip",
+          "sha256": "8503ce0767496c63929bedc4f43307efcea8216d181a873b32a695f6d85092ef"
+        },
+        {
+          "file": "fundingRate/SOLUSDT-fundingRate-2026-10.zip",
+          "sha256": "9365b502587edc4b4683babf2aaf9c002c8473be61d38a202153f47d0cdee0da"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "631fd8d38ebc10376e985bc232f64a388a8ae50ffeb588098c4bcf39de45e05e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "b56b792f9fc9cd63dc0fef4841741692dc2e2cab3282faab66e9d0dc01ce58a1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "d513752226f0aef88958add63769a449ca835c5767a2f20c019eb1f8348da445"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "185a2ae8698968f90512a392eda65fdcc04163d7385eae0348387aedcb0763cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "e946bbf26b8faf4b0be15d2f7763515d358a04062ddd662ff4a3c286740612b3"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "9e2baa8d15fed5768c72f1b97ad19b3119f87c90c8d9847ff3c628c2afb4d37c"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "32c17d28dbcfd8ccd5dce996f610f588ff6ec9e969c6eac9c9b43232a543f7aa"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "6a11ec2b081657fd4850b61cb1f28e2217913ac1a309c484169f080733320ee7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "9916be68e1e354b1d2ad30e09ca2f0552ddbf9a3ad64d2854bd54016463b56a6"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "389290c0c468d168ea3b327d926e273aa9de639249e5101f443360eda4456b4e"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "66542f68d37e6b8b071997ea07fa495abc01d3762acbf6476398c63f79128016"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "dbadf06d740261c21299abc82f3adeae1b41e4dbbcee8a5adca3e761f1896ce7"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "c9375b066069aaa4dbf33fbf7c79ca9db4a534b99d4ebd9f558ba2381e610636"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "ac9cc536ec056e7c4fc4f391da5edbe778f59fb2a059670875d05285ebca3fcf"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "ad93c921265eb4a473ba91d21f8d02346d77330475740977cc7541a0ac1ec05a"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "d705ca5ec2de775733be12c6e3f29bcf3204be15d7b0b273ec87a013fcaa612f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "8ce6bb0ea598eecdfa2078cc1429c7fc4fc39a32d306d74184f137fa6ae8d3cb"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "588bdc611885c6de2bd55df7f8fbc597147ca0eef33f6824e340d2bff1a04066"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "dcd12574ab820047a10c3e6977b69251b7285fe7998fa7aff6d73470c6637ecd"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "10b4d10f286b8cc658af3e441dbd0369b7b5e727626049cab59545f0c00062c0"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "0d895f66c4c07969845decf7d8e8752b0d8cb5409ca737b7b48c8751d4fd6f1f"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "58bcf27df2447043d9e955674de7c73bc42b848a7b8beb08d7800c9dd04813d1"
+        },
+        {
+          "file": "minute/klines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "76ac841e8d854299b8329eca08b530ac10d1135a25206e38deffcb2a2180cd08"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2024-12.zip",
+          "sha256": "81313e892e9beb4ce64be6f94de624e85afdc95a3d5d9148a2b707ba9239894a"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-01.zip",
+          "sha256": "f6a67428d6146b6f730f3e9576291fe61e00903023461b698d967039f3ef7707"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-02.zip",
+          "sha256": "e060d89405e5c7b6e77ecad7bdab05a6c10391e69ae298dc39ce3c52c52df233"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-03.zip",
+          "sha256": "b75bbe6e01f774a6f13e3790ac83ed220dfc38c09af4312cc86614ff45a0c102"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-04.zip",
+          "sha256": "78669ea6bcf2f887a0a0993340d7945b0e0fa5b1e07d7b5e05b78207a55d9138"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-05.zip",
+          "sha256": "6fd7a6232b81f197f5e4596fabaf3f1965c905022c2921a7aa8f0a897364f770"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-06.zip",
+          "sha256": "ce12c7c9f36e51e93d88e0d88ef08e11343d71d633fb788a6e581301f2648f12"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-07.zip",
+          "sha256": "d1355bacf2e54ab238db856234e90af5a9e27ecd539b6e81cc45d3098acb7fe8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-08.zip",
+          "sha256": "6029c8af82d5b12bd40246301cb8392b543e1ee6a1fea6bdf8e4844433d51fa3"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-09.zip",
+          "sha256": "de0ef7ce07660a7052a2c4b602839822f3d01cfb0fb5fbb62dcf38358244fc35"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-10.zip",
+          "sha256": "ce1aed79b603b21c63a92c9da2c8f8b022a6edc8de6d02d6a511c06b28a57bc0"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-11.zip",
+          "sha256": "949970c49a787b626f75d6a6bc2eba47aaa82c0a44e58dc878af532154fa3696"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2025-12.zip",
+          "sha256": "94bd1c7ee954135d63b4f16712838c9a0bbd1d65aa0f181a915d8a3288be43e8"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-01.zip",
+          "sha256": "aecdf0f538afc6ca26deb833b843205b6e6429706e6bd5f9c54324df633877a7"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-02.zip",
+          "sha256": "4a8fb94b8959bc41d0a61ab2d4075dd93b770cd27c252a4d531534728b1adb64"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-03.zip",
+          "sha256": "bf46cf5227298d5932cfc72c2d89b27b5c56f545acc1ce3d6cd113039edb8865"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-04.zip",
+          "sha256": "80962d61c81e08ac11aa7a185aad922aaf0680059706ee10473157da1f84fc69"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-05.zip",
+          "sha256": "6dfb8152839989edab623be24f32c4bd3d4f346b9e8ca7f0ba7af771ec102515"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06-29.zip",
+          "sha256": "98911fdf3ed80b200270f730004739f10034c8f1902227452cc87ad521df229d"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-06.zip",
+          "sha256": "3ffa4946a92f141849689c8d1a0a904ed9cef3731a19193c21e804c98a38873b"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-07.zip",
+          "sha256": "a2edbe971087a995a10f78eb805f38c64d46bcd5691b38574587bc91021a0a21"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-08.zip",
+          "sha256": "77bf9fa1ec5f8c95f313c1197b276f29eb61183abbfa31dc1843ff3bf6791746"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-09.zip",
+          "sha256": "f6a8295c918adb69a937cecbd35827d484f2019453818e81a43003a9d017c96e"
+        },
+        {
+          "file": "minute/markPriceKlines/SOLUSDT-1m-2026-10.zip",
+          "sha256": "19bd4e65ea4db4904b4083cd7b4ba8dad7298238447cc40079df195f989add6b"
+        }
+      ],
+      "overlaps": []
+    }
+  },
+  "passes": false
+}
