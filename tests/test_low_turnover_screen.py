@@ -24,3 +24,10 @@ class LowTurnoverScreenTests(TestCase):
                       net=1, max_drawdown=.01, unresolved={}, without_best_trade=.1)
         self.assertTrue(study.meets_threshold(result, result))
         self.assertFalse(study.meets_threshold(result, dict(result, without_best_trade=0)))
+
+    def test_half_size_rounds_down_to_exchange_step(self):
+        qty, reason = study.core.size_for(3050, 3049, "ETHUSDT", .001, max_notional=50)
+        self.assertIsNone(reason)
+        self.assertEqual(qty, .016)
+        self.assertLessEqual(qty * 3050, 50)
+        self.assertEqual(study.core.size_for(3050, 3049, "ETHUSDT", .001), (.032, None))

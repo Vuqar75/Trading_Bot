@@ -72,20 +72,20 @@ def build_signals(trade):
   if direction:out.append({'signal_ms':boundary,'available_ms':boundary+1000,'direction':direction,'r':float(r),'sigma':sigma,'close':float(closes[i]),'previous_close':float(closes[i-1]),'sigma_first_return_close_ms':START+(i-360+1)*BAR*M,'sigma_last_return_close_ms':boundary-BAR*M})
  return out,invalid
 
-def size_for(price,mark,symbol,impact):
+def size_for(price,mark,symbol,impact,*,max_notional=100):
  step=Decimal('.001');p=Decimal(str(max(price,mark)))
- qty=(Decimal('100')/p/step).to_integral_value(rounding=ROUND_DOWN)*step
+ qty=(Decimal(str(max_notional))/p/step).to_integral_value(rounding=ROUND_DOWN)*step
  q=float(qty)
  if q<.001:return None,'min_qty_or_cap'
  if q*mark<(50 if symbol=='BTCUSDT' else 20)-1e-9:return None,'min_notional'
- if q*max(price,mark)>100+1e-9:return None,'notional_cap'
+ if q*max(price,mark)>max_notional+1e-9:return None,'notional_cap'
  return q,None
 
 def equity_update(account,equity):
  account['peak']=max(account['peak'],equity)
  account['max_dd']=max(account['max_dd'],(account['peak']-equity)/account['peak'])
 
-def execute(signal,trade,mark,funding_by_min,account,symbol,stress,hold_minutes=120):
+def execute(signal,trade,mark,funding_by_min,account,symbol,stress,hold_minutes=120,*,max_notional=100):
  if type(hold_minutes) is not int or hold_minutes<=0:raise ValueError('invalid holding time')
  sign=1 if signal['direction']=='LONG' else -1;impact=.001 if stress else .0005;fee=.0005
  entry_t=signal['signal_ms']+(6 if stress else 1)*M;ei=ix(entry_t)
@@ -93,7 +93,7 @@ def execute(signal,trade,mark,funding_by_min,account,symbol,stress,hold_minutes=
  if ei<0 or ei>=N or not np.isfinite(trade[ei]).all() or not np.isfinite(mark[ei]).all():return {'rejection':'entry_data_missing'}
  reference=float(trade[ei,0]);markin=float(mark[ei,0]);fill=reference*(1+sign*impact)
  if not .97<=fill/markin<=1.03:return {'rejection':'price_mark_bound'}
- q,error=size_for(fill,markin,symbol,impact)
+ q,error=size_for(fill,markin,symbol,impact,max_notional=max_notional)
  if error:return {'rejection':error}
  entryfee=q*fill*fee
  if q*fill+entryfee>account['cash']:return {'rejection':'insufficient_cash'}

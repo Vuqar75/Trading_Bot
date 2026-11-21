@@ -1,0 +1,11 @@
+{
+  "selected": {
+    "symbol": "ETHUSDT",
+    "rule": "channel_20"
+  },
+  "candidates": [
+    "ETHUSDT:channel_20"
+  ],
+  "max_notional": 50,
+  "development_sha256": "c10edff9735e9524ae6ddf2952b1e1315097621a06e2d72fcfddff332464c570"
+}

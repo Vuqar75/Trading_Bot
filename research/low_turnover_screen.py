@@ -54,23 +54,23 @@ def meets_threshold(base, stress):
                 for case in (base, stress)) and stress["without_best_trade"] > 0)
 
 
-def evaluate(root, output, stage, selected=None):
+def evaluate(root, output, stage, selected=None, *, max_notional=100):
     summary = {}
     begin, end = (core.BEGIN, SPLIT) if stage == "development" else (SPLIT, core.END)
-    symbols = SYMBOLS if stage == "development" else (selected["symbol"],)
+    symbols = SYMBOLS if selected is None else (selected["symbol"],)
     for symbol in symbols:
         trade, mark, rates, sources, overlaps = core.load_data(root, symbol)
         funding = defaultdict(list)
         for time, rate in rates:
             funding[core.ix(time - time % core.M)].append((time, rate))
         signals = daily_signals(trade, begin, end)
-        rules = RULES if stage == "development" else (selected["rule"],)
+        rules = RULES if selected is None else (selected["rule"],)
         for rule in rules:
             cases = {}
             for name, delay in (("base", 1), ("stress", 6)):
                 qualifying = [r for r in signals[rule] if r["signal_ms"] + (HOLD + delay) * core.M < end]
                 records, account = simulate(qualifying, trade, mark, funding, symbol, name == "stress",
-                                            hold_minutes=HOLD)
+                                            hold_minutes=HOLD, max_notional=max_notional)
                 case = metrics(records, account)
                 if not case["unresolved"] and abs(account["cash"] - 1000 - case["net"]) > 1e-8:
                     raise ValueError("Balance mismatch")
@@ -83,27 +83,32 @@ def evaluate(root, output, stage, selected=None):
     return summary
 
 
-def run(archive, output, stage):
+def run(archive, output, stage, eth_half_size=False):
     output.mkdir(parents=True, exist_ok=True)
     receipt = output / "selection.json"
     previous = output / "development.json"
-    selection = None
+    fixed = dict(symbol="ETHUSDT", rule="channel_20") if eth_half_size else None
+    max_notional = 50 if eth_half_size else 100
+    selection = fixed
     if stage == "validation":
         saved = json.loads(receipt.read_text())
         if hashlib.sha256(previous.read_bytes()).hexdigest() != saved["development_sha256"]:
             raise ValueError("Development result changed after selection")
+        if saved.get("max_notional", 100) != max_notional:
+            raise ValueError("Sizing differs from the frozen development selection")
         selection = saved["selected"]
         if selection is None:
             raise ValueError("No frozen candidate")
-    summary = evaluate(archive, output, stage, selection)
+    summary = evaluate(archive, output, stage, selection, max_notional=max_notional)
     (output / f"{stage}.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")
     if stage == "development":
+        selection = None
         ready = [key for key in summary if summary[key]["passes"]]
         if ready:
             chosen = min(ready, key=lambda key: (-summary[key]["cases"]["stress"]["net"], key))
             symbol, rule = chosen.split(":")
             selection = dict(symbol=symbol, rule=rule)
-        receipt.write_text(json.dumps(dict(selected=selection, candidates=ready,
+        receipt.write_text(json.dumps(dict(selected=selection, candidates=ready, max_notional=max_notional,
                            development_sha256=hashlib.sha256(previous.read_bytes()).hexdigest()),
                            indent=2) + "\n")
 
@@ -113,5 +118,6 @@ if __name__ == "__main__":
     parser.add_argument("archive", type=Path)
     parser.add_argument("output", type=Path)
     parser.add_argument("stage", choices=("development", "validation"))
+    parser.add_argument("--eth-half-size", action="store_true")
     args = parser.parse_args()
-    run(args.archive, args.output, args.stage)
+    run(args.archive, args.output, args.stage, args.eth_half_size)
