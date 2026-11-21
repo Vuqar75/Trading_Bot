@@ -1,0 +1,171 @@
+{
+  "replayed_snapshot": {
+    "analyst": {
+      "snapshot_id": "af284f9250c3eab295c8acca816c3c18bfb121e328c0f965e805ba1df25a278f",
+      "status": "WAIT",
+      "budget_opens": 0,
+      "paid_attempts": 0
+    },
+    "reader": "restore_replay_render_ok",
+    "checked_ms": 1795198085191
+  },
+  "backup_before_switch": {
+    "ts": 1795233309953,
+    "budget_folder": "/var/lib/tradingbot-ai-executor/protected-backups/budget-o16l06d2",
+    "budget_hash": "fe7f55816cbde739dfe1e0a4e390a97e77a68c84895032c230d337e37232863a",
+    "attempts": 46,
+    "budget_reserve": 122032,
+    "paper_file": "/var/lib/ai-bracket-study/backups/1795233295205.sqlite",
+    "paper_sha256": "125adba2dd8d61de8f7bebed5ae05773e9229ef042f24b4213ea4ffc7c497263",
+    "restored_finance": {
+      "hash": "3b037edce941ee6c959bbe2ac7efa1964f515ca59423ef8b83e88620cf7ff0cc",
+      "counts": {
+        "ledger_events": 50,
+        "ledger_postings": 120,
+        "bracket_plans": 19,
+        "bracket_fills": 10,
+        "bracket_funding": 1
+      },
+      "free": "999.7172348990153898110"
+    },
+    "coordinated_backup": "/var/lib/tradingbot-ai-budget-backup/wait-a9ca357/legacy-resume-1795233307",
+    "coordinated_restore": "verified"
+  },
+  "staged_components": {
+    "paper": {
+      "old": "/opt/tradingbot-ai-brackets-6e7ff40-paper",
+      "new": "/opt/tradingbot-ai-brackets-a9ca357-paper",
+      "old_hash": "be52d3ccbd291295bd7beaa104a0dda9d3d8e3f38b2939b2276ee5fed16f06e2",
+      "patched": "0aaea71359a9129c561cf1f0258a1137c0771ae65910501b9b09fdc04be01e38"
+    },
+    "analyst": {
+      "old": "/opt/tradingbot-ai-brackets-8253c7d-analyst",
+      "new": "/opt/tradingbot-ai-brackets-a9ca357-analyst",
+      "old_hash": "223c7cdc3f6ff94c5933e4dd01f596e73213f3d967e4de09513d7cd5a725845d",
+      "patched": "780c9f46fab7550abcc062cb242c6a1093f699d781ee23d431f70616c2c7a1de"
+    },
+    "ui": {
+      "old": "/opt/tradingbot-ai-brackets-ui-c96ad52/trading_bot/ai_bracket_view.py",
+      "new": "/opt/tradingbot-ai-brackets-a9ca357-view.py",
+      "patched": "1deb2df0a1d5d7a7e7d78c6a2e83e97646cd826dcbb41175b9bc7ee7cac79507"
+    }
+  },
+  "installation": {
+    "commit": "a9ca35722aeac5d0c09425865ef0d170f6c390ed",
+    "switched_ms": 1795233363708,
+    "verified_ms": 1795233399566,
+    "paper_pid": "699596",
+    "ui_pid": "699573",
+    "next": "Sat 2026-11-21 04:02:00 UTC",
+    "ledger_sha256": "3b037edce941ee6c959bbe2ac7efa1964f515ca59423ef8b83e88620cf7ff0cc",
+    "budget": [
+      46,
+      122032
+    ],
+    "bindings": {
+      "ai-bracket-paper.service": {
+        "file": "/opt/tradingbot-ai-brackets-6e7ff40-paper/research/ai_limit_runtime.py",
+        "mounted_from": "/opt/tradingbot-ai-brackets-a9ca357-paper/research/ai_limit_runtime.py",
+        "sha256": "0aaea71359a9129c561cf1f0258a1137c0771ae65910501b9b09fdc04be01e38",
+        "dropin": "/etc/systemd/system/ai-bracket-paper.service.d/98-program-wait-bind.conf"
+      },
+      "ai-bracket-analyst.service": {
+        "file": "/opt/tradingbot-ai-brackets-8253c7d-analyst/research/ai_limit_runtime.py",
+        "mounted_from": "/opt/tradingbot-ai-brackets-a9ca357-analyst/research/ai_limit_runtime.py",
+        "sha256": "780c9f46fab7550abcc062cb242c6a1093f699d781ee23d431f70616c2c7a1de",
+        "dropin": "/etc/systemd/system/ai-bracket-analyst.service.d/98-program-wait-bind.conf"
+      },
+      "tradingbot-spot.service": {
+        "file": "/opt/tradingbot-ai-brackets-ui-c96ad52/trading_bot/ai_bracket_view.py",
+        "mounted_from": "/opt/tradingbot-ai-brackets-a9ca357-view.py",
+        "sha256": "1deb2df0a1d5d7a7e7d78c6a2e83e97646cd826dcbb41175b9bc7ee7cac79507",
+        "dropin": "/etc/systemd/system/tradingbot-spot.service.d/98-program-wait-bind.conf"
+      }
+    }
+  },
+  "natural_cycle": {
+    "stamp": 1795233789643,
+    "snapshot_id": "9d09c6759fcad23bd97cb43ea4002340a0be0a11a0fc135860c8fff48c759e9d",
+    "snapshot_ms": 1795233740620,
+    "candidate_sides": {
+      "SHORT": 4
+    },
+    "source": "budget_response",
+    "public_origin": "budget_response",
+    "status": "WAIT",
+    "public_asof": 1795233767127,
+    "claims_for_snapshot": 1,
+    "budget": [
+      47,
+      124684
+    ],
+    "risk": [],
+    "balances": {
+      "free": "999.717234899015389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "ledger": true
+  },
+  "service_check": {
+    "checked_ms": 1795233969254,
+    "sample_count": 12,
+    "distinct_publications": 10,
+    "max_age_ms": 5065,
+    "samples_with_market_or_funding_error": 0,
+    "latest_balances": {
+      "free": "999.717234899015389811",
+      "funding_buffer": "0",
+      "margin": "0",
+      "reserved": "0"
+    },
+    "ledger": true,
+    "writers": 1,
+    "pollers": 1,
+    "ui_render_chars": 946,
+    "latest_published_status": "WAIT",
+    "latest_published_origin": "budget_response",
+    "budget": [
+      47,
+      124684
+    ],
+    "next": "Sat 2026-11-21 08:02:00 UTC",
+    "legacy_backup_result": "exit-code",
+    "previous_external": {
+      "receipt_ms": 1795228391723,
+      "manifest_sha256": "ab9e13cb73959bab7a2452fbf9ec370aeb1907e991f1791fd5d45a432254273b"
+    }
+  },
+  "verified_external_budget": {
+    "captured_ms": 1795233432823,
+    "sha256": "71e7853b4862066fdc46840fed192261a5c4d915181f36a081de667b81b1c83f",
+    "attempts": 46,
+    "reserved_micro_usd": 122032,
+    "host_bound": true,
+    "object": "paper-backups/daily/adaptive-ai-budget/regular/1795233432823-71e7853b4862066fdc46840fed192261a5c4d915181f36a081de667b81b1c83f.cred"
+  },
+  "verified_external_archive": {
+    "captured_ms": 1795234431025,
+    "chunks": 12,
+    "host_bound": true,
+    "object": "paper-backups/daily/ai-bracket-study/1795234312061-b0027fdee8eae0f72fcf7a7142d75303747f645ec5b8762e9fd3a4a8deab44d2.cred",
+    "sha256": "b0027fdee8eae0f72fcf7a7142d75303747f645ec5b8762e9fd3a4a8deab44d2",
+    "sqlite_sha256": "dea60d4a2144ac0629a526fec489f35a528bb187083af8e5798b9d3675483297",
+    "summary": {
+      "events": 50,
+      "funding_events": 1,
+      "fills": 10,
+      "balances": {
+        "free": "999.7172348990153898110",
+        "funding_buffer": "0E-8",
+        "margin": "0.0000",
+        "reserved": "0E-8"
+      },
+      "plans_count": 19
+    },
+    "verification": "official paper archive, encrypted chunks and manifest downloaded, isolated SQLite hash + ledger checks",
+    "legacy_hourly_backup": "exit-code",
+    "timer_active": "active"
+  }
+}
