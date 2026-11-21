@@ -66,9 +66,14 @@ def observations(p,v):
             out.append([at,atr,'up' if ret>.01 else 'down' if ret<-.01 else 'range',*x])
     return pd.DataFrame(out,columns=['at','atr','regime',*FEATURES])
 
-def path(at,atr,s,stress,p,m,ft,fr,start):
+def path(at,atr,s,stress,p,m,ft,fr,start,*,scheduled=None):
     friction=.001 if stress else .0005
     i=at+(6 if stress else 1);end=i+240
+    scheduled_reason='TIME'
+    if scheduled is not None:
+        end,scheduled_reason=scheduled
+    if end>=len(p):
+        return None
     bars=p[i:end]
     if not np.isfinite(p[i:end+1]).all() or not np.isfinite(m[i:end+1]).all():return None
     ref=p[i,0];entry=ref*(1+s*friction)
@@ -80,8 +85,8 @@ def path(at,atr,s,stress,p,m,ft,fr,start):
     o,h,l,_=p[j]
     gap=o<=lower or o>=upper
     ambiguous=False
-    if j==end:
-        why='TIME';out=o
+    if j==end and (scheduled is None or not gap):
+        why=scheduled_reason;out=o
     else:
         ambiguous=bool(not gap and l<=lower and h>=upper)
         stopped=(s*(o-stop)<=0 if gap else (l<=stop if s==1 else h>=stop))
