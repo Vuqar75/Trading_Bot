@@ -1,0 +1,144 @@
+{
+  "2025-02-01": {
+    "data": {
+      "rows": 1182651,
+      "valid_rows": 1182651,
+      "event_outside_utc_day": 0,
+      "negative_receive_lag": 0,
+      "event_backward_steps": 0,
+      "receive_ordered": true,
+      "first_event_us": 1738368000041000,
+      "last_event_us": 1738454399938000,
+      "receive_lag_ms": {
+        "n": 1182651,
+        "median": 2.497,
+        "p95": 3.344
+      },
+      "delays": {
+        "0": {
+          "n": 95,
+          "spread_bp": {
+            "n": 95,
+            "median": 0.009798585182855882,
+            "p95": 0.009918388450920254
+          },
+          "midpoint_drift_abs_bp": {
+            "n": 95,
+            "median": 0.0,
+            "p95": 0.0
+          },
+          "eligible_long": 0,
+          "eligible_short": 0
+        },
+        "1": {
+          "n": 96,
+          "spread_bp": {
+            "n": 96,
+            "median": 0.00979736130914878,
+            "p95": 0.009936611212054924
+          },
+          "midpoint_drift_abs_bp": {
+            "n": 95,
+            "median": 3.3050637597797916,
+            "p95": 13.261630101629837
+          },
+          "eligible_long": 0,
+          "eligible_short": 0
+        },
+        "6": {
+          "n": 96,
+          "spread_bp": {
+            "n": 96,
+            "median": 0.009798335720506236,
+            "p95": 0.009925154701613216
+          },
+          "midpoint_drift_abs_bp": {
+            "n": 95,
+            "median": 5.7640807734626875,
+            "p95": 20.634589760124776
+          },
+          "eligible_long": 0,
+          "eligible_short": 0
+        }
+      }
+    },
+    "source": {
+      "day": "2025-02-01",
+      "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2025/02/01/BTCUSDT.csv.gz",
+      "file": "2025-02-01.csv.gz",
+      "size": 15989153,
+      "sha256": "215c0a25afabe5b7215c4a720342a8a4f0128b2c9dec44515381c0e5f11b5697"
+    }
+  },
+  "2026-10-01": {
+    "data": {
+      "rows": 1848343,
+      "valid_rows": 1848343,
+      "event_outside_utc_day": 0,
+      "negative_receive_lag": 0,
+      "event_backward_steps": 0,
+      "receive_ordered": true,
+      "first_event_us": 1790812800215000,
+      "last_event_us": 1790899199930000,
+      "receive_lag_ms": {
+        "n": 1848343,
+        "median": 1.826,
+        "p95": 2.853
+      },
+      "delays": {
+        "0": {
+          "n": 95,
+          "spread_bp": {
+            "n": 95,
+            "median": 0.011910057625773943,
+            "p95": 0.011987231632633965
+          },
+          "midpoint_drift_abs_bp": {
+            "n": 95,
+            "median": 0.0,
+            "p95": 0.0
+          },
+          "eligible_long": 95,
+          "eligible_short": 95
+        },
+        "1": {
+          "n": 96,
+          "spread_bp": {
+            "n": 96,
+            "median": 0.011912945273622565,
+            "p95": 0.011986792951771167
+          },
+          "midpoint_drift_abs_bp": {
+            "n": 95,
+            "median": 3.3435392012248766,
+            "p95": 9.978231123544234
+          },
+          "eligible_long": 96,
+          "eligible_short": 96
+        },
+        "6": {
+          "n": 96,
+          "spread_bp": {
+            "n": 96,
+            "median": 0.011915847913890387,
+            "p95": 0.01198891270236995
+          },
+          "midpoint_drift_abs_bp": {
+            "n": 95,
+            "median": 7.08532508700066,
+            "p95": 34.30489975210982
+          },
+          "eligible_long": 96,
+          "eligible_short": 96
+        }
+      }
+    },
+    "source": {
+      "day": "2026-10-01",
+      "url": "https://datasets.tardis.dev/v1/binance-futures/quotes/2026/10/01/BTCUSDT.csv.gz",
+      "file": "2026-10-01.csv.gz",
+      "size": 24034504,
+      "sha256": "b7b1cabb3899db6d1a91ba87920a6a4a5dd5786a3fe2eb133ea781ec84c94d34"
+    }
+  }
+}
