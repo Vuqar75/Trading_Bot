@@ -1,0 +1,241 @@
+{
+  "period": "2024",
+  "frozen_commit": "650b460",
+  "max_notional": 50,
+  "results": {
+    "ETHUSDT:channel_20": {
+      "cases": {
+        "base": {
+          "closed": 25,
+          "gross": 1.0013402606999215,
+          "fees": 1.2063223398132847,
+          "impact": 1.2063225901482224,
+          "liquidation_fee": 0.0,
+          "funding": -0.7170231242554713,
+          "net": -2.128327793517056,
+          "mean_net": -0.08513311174068225,
+          "break_even_bps": 2.343513074440039,
+          "max_drawdown": 0.010516684476883224,
+          "mean_hold_min": 1891.68,
+          "exit_reasons": {
+            "stop": 20,
+            "time": 5
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 997.871672206483,
+          "without_best_trade": -11.149960160590354,
+          "funding_ambiguous": 1,
+          "signals": 38,
+          "busy": 13,
+          "net_without_best_day": -11.149960160590354,
+          "sides": {
+            "LONG": {
+              "count": 19,
+              "net": -8.99156897367285
+            },
+            "SHORT": {
+              "count": 6,
+              "net": 6.863241180155793
+            }
+          }
+        },
+        "stress": {
+          "closed": 26,
+          "gross": -2.560846517800111,
+          "fees": 1.2534083120067587,
+          "impact": 2.5068140631668605,
+          "liquidation_fee": 0.0,
+          "funding": -0.7053220329411899,
+          "net": -7.02639092591492,
+          "mean_net": -0.2702458048428815,
+          "break_even_bps": -25.9615605019462,
+          "max_drawdown": 0.012499491694477198,
+          "mean_hold_min": 1636.9615384615386,
+          "exit_reasons": {
+            "stop": 22,
+            "time": 4
+          },
+          "rejections": {},
+          "unresolved": {},
+          "ending_cash": 992.9736090740856,
+          "without_best_trade": -15.805442029228217,
+          "funding_ambiguous": 1,
+          "signals": 38,
+          "busy": 12,
+          "net_without_best_day": -15.805442029228217,
+          "sides": {
+            "LONG": {
+              "count": 19,
+              "net": -9.430790135593147
+            },
+            "SHORT": {
+              "count": 7,
+              "net": 2.404399209678227
+            }
+          }
+        }
+      },
+      "sources": [
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2023-12.zip",
+          "sha256": "91bdf41566cebb86c6f0e3646b0037de9c22e14ee2f592c5722c7e4a19c91119"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-01.zip",
+          "sha256": "5a71469b0b363886df904e784dddefc484dd943334b1fb7454713ce4ed715a4b"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-02.zip",
+          "sha256": "915fad950c48935f3875d88992b8d78290bc8a6fada44408e3ed14aef9a56670"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-03.zip",
+          "sha256": "e9c1d0f3e7e3b493277c7f826afb223482d56bdc7611144d398ac10e47307907"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-04.zip",
+          "sha256": "b54c9f05af116ccd921b32b25960ae26954c4983992d44f2390bf1de08b2c724"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-05.zip",
+          "sha256": "8350ab4d61b12ec61539611e30809039f54814213bc4c937609360b1ff28b5e0"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-06.zip",
+          "sha256": "def13f4a478c28b0111fb24c57f95fcee80e71982ed74f12e465d20d328e2275"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-07.zip",
+          "sha256": "9d236281ab6430250ad2b472cbbf03812a40aed42e73c8339fc6be55a2417a82"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-08.zip",
+          "sha256": "e17684bc761924eb5e1912c52cfa997eddeb99da303e68e28f6f37369f672b9d"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-09.zip",
+          "sha256": "ffb6e7441053137cb7ca81cc83bcdd996612f7dbb15aa2e168a7ee521f8cbbca"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-10.zip",
+          "sha256": "2124978c335473a5d9c0f0e9f238193d56c21ac7e250e065a36e9d1201beb049"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-11.zip",
+          "sha256": "636a4c7c86445c2774b4eae8598c480fcbc57de7dde5d40f6937c7fac510797c"
+        },
+        {
+          "file": "fundingRate/ETHUSDT-fundingRate-2024-12.zip",
+          "sha256": "11a0847e8aacb32eeb725611fda4fe6a8419c03eb0c16e14dfc3b9287e78ecc9"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2023-12.zip",
+          "sha256": "6ebf84e9b991619d772af5d9835175c5e456688c33c72affa35b3aecbac30d09"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-01.zip",
+          "sha256": "7fa68ec5fedc6eef175ed0af6e9f252062f6ceaca016106c265e6e4b724b5ef2"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-02.zip",
+          "sha256": "de3f91fcd929d207b4382afd7a728c0f44527d6bdbcb0a585b01b0fe001e24ab"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-03.zip",
+          "sha256": "dd10515a9b010920bac628f2ec600405ff8e41de7d0f81694fbf391ca54b86b2"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-04.zip",
+          "sha256": "1856da8b501dbb831b9a5490e99be8564433c4a4d46de89200f0258c74dd4790"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-05.zip",
+          "sha256": "d512aa43b5b6a5168fa1b6242fe4cf01c88e51c78bb9f4d202f0ca2e42338f96"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-06.zip",
+          "sha256": "57e4b010904bbd754ee951ada7d9edd34bc4242379ae49fb66352e2c5f5cb525"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-07.zip",
+          "sha256": "34a3729eb2f6dd1563715e085eb936a4034357d95cba2605b96cf1cb5c533b65"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-08.zip",
+          "sha256": "2ccc1d0c491c63a6bfbabda39e8bd41e555a87052d77120199133e9e81bbf36c"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-09.zip",
+          "sha256": "317e18ce04f6312b4a3de3b5504bef2001a92bf72cb8e4988e160ee327c9c737"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-10.zip",
+          "sha256": "d1f340994285a075a97d7d0ed5e9aca3d82dadbba8f817b2f886188420a009f1"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-11.zip",
+          "sha256": "4170f68dd576e8af35ecc9b19808dcb673c0423838bd560c7c4c1fabefdad5ad"
+        },
+        {
+          "file": "minute/klines/ETHUSDT-1m-2024-12.zip",
+          "sha256": "82018947075e35e5ac0a771bb97a22118008db2c6fb6a94f8c1a2c4ebb34d12b"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2023-12.zip",
+          "sha256": "ad6969fa1a1f4b379aae0a43989b2a2955bd7d0080e7955e36a7a813cf4908ec"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-01.zip",
+          "sha256": "47882cfba70a9114ba54bbe1ef5a5aa06fab6d694f941c3cf5c7c869c2e893a0"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-02.zip",
+          "sha256": "0844809286a019f391ed2892d7f7638eb05b1df7c6198bdf2ff495152078e544"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-03.zip",
+          "sha256": "b29ad80733ad05eac61c523f603d6025b0ad21b4ae7c8bd8634450e54ad1f1e4"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-04.zip",
+          "sha256": "87cf83b12f183d8828499212cc1a1e984681da4ed7a64ad7373da95ef1c141ef"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-05.zip",
+          "sha256": "8f9675703ba750e869bf452ae69a1195e95debcca0838c8168e1fce7ba542bff"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-06.zip",
+          "sha256": "383080041e974276e4f862ed8ef3d2383aeed77c07f4b35b9b7cc035faddc1d1"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-07.zip",
+          "sha256": "38235e045bb474f8fb9e552e9879a0c7db4e064763b28cc60801ea1201f2bec8"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-08.zip",
+          "sha256": "ae8244cc4ad2033b815ef3f488aa060eab3ebec917e74f9500a01715f0e9a647"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-09.zip",
+          "sha256": "16d21b326cd882f387a27db363d390420bc006c6f0cc63492e291232fb098cb4"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-10.zip",
+          "sha256": "1f05c0c899a9117fd4b2ce2522484c0e2106b8da1227318f224de44f21000fa7"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-11.zip",
+          "sha256": "e60f9df9063cdb54387d700bf1bfb2322d30b9510615bc462951f1c98f8c72d5"
+        },
+        {
+          "file": "minute/markPriceKlines/ETHUSDT-1m-2024-12.zip",
+          "sha256": "19b9ceda7d035adf49e05736ef09b2c68ede9a30f69d1ef57d31d853788c6174"
+        }
+      ],
+      "overlaps": [],
+      "passes": false
+    }
+  }
+}
