@@ -1,0 +1,14 @@
+{
+  "base": {
+    "commission_only_profitable": 0,
+    "commission_only_best_bp": -3.8006497318549157,
+    "best_signal_ms": 1752826500000,
+    "full_window_best_under_100_per_leg_bp": -26.227929223474053
+  },
+  "stress": {
+    "commission_only_profitable": 0,
+    "commission_only_best_bp": -1.734728007995541,
+    "best_signal_ms": 1752797700000,
+    "full_window_best_under_100_per_leg_bp": -44.67331003483685
+  }
+}
