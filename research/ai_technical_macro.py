@@ -8,12 +8,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from sklearn.linear_model import Ridge
+from sklearn.multioutput import MultiOutputRegressor
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
 from research import action_values
 from research.derivative_metrics_data import load as load_metrics
 from research.oi_response import asof
+from research.panel_net_ml import factory as panel_model
+from threadpoolctl import threadpool_limits
 
 core = action_values.core
 M = core.M
@@ -77,7 +80,7 @@ def simulated_path(row, side, stress, market):
     return action_values.path(int(row.at), row.atr, side, stress, *market, core.START)
 
 
-def fit_forecasts(data, market):
+def fit_forecasts(data, market, estimator="ridge"):
     train = data.loc[data.time + 246 * M < TEST].copy()
     labels = []
     ready = []
@@ -91,7 +94,8 @@ def fit_forecasts(data, market):
     train = train.loc[ready]
     test = data.loc[(data.time >= TEST) & (data["at"] + 246 < len(market[0]))].copy()
     for name, columns in MODELS.items():
-        model = make_pipeline(StandardScaler(), Ridge(alpha=100))
+        model = (make_pipeline(StandardScaler(), Ridge(alpha=100)) if estimator == "ridge"
+                 else MultiOutputRegressor(panel_model("HGBR")))
         model.fit(train[columns], labels)
         long, short = model.predict(test[columns]).T
         test[f"{name}_long"] = long
@@ -175,7 +179,7 @@ def ranking_diagnostics(test, market):
     return report
 
 
-def run(archives, metrics_root, out):
+def run(archives, metrics_root, out, estimator="ridge"):
     out.mkdir(parents=True, exist_ok=True)
     p, m, funding, sources, overlap = core.load_data(archives, "BTCUSDT")
     derivatives, quality = load_metrics(metrics_root)
@@ -186,11 +190,12 @@ def run(archives, metrics_root, out):
         raise ValueError("Source latency mismatch")
     ft, fr = map(np.asarray, zip(*funding))
     market = p, m, ft, fr
-    test, n, last_label = fit_forecasts(data, market)
+    with threadpool_limits(limits=1):
+        test, n, last_label = fit_forecasts(data, market, estimator)
     if last_label >= TEST:
         raise ValueError("Training crosses the test boundary")
     test.to_csv(out / "predictions.csv.gz", index=False, compression={"method": "gzip", "mtime": 0})
-    summary = dict(train_count=n, latest_label_deadline=last_label, decision_count=len(test),
+    summary = dict(estimator=estimator, train_count=n, latest_label_deadline=last_label, decision_count=len(test),
                    price_sources=sources, price_overlaps=overlap, metrics_quality=quality["BTCUSDT"],
                    metrics_manifest_sha256=hashlib.sha256((metrics_root / "manifest.json").read_bytes()).hexdigest(),
                    macro_sha256=hashlib.sha256(FED.read_bytes()).hexdigest(),
@@ -217,5 +222,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("archive", "metrics", "output"):
         parser.add_argument(name, type=Path)
+    parser.add_argument("--estimator", choices=("ridge", "hgb"), default="ridge")
     args = parser.parse_args()
-    run(args.archive, args.metrics, args.output)
+    run(args.archive, args.metrics, args.output, args.estimator)
