@@ -125,6 +125,10 @@ class Feed:
             'stale_first_ms':min(stale_times) if stale_times else None,'stale_last_ms':max(stale_times) if stale_times else None,
             'discontinuities':discontinuities,'batch_hash':digest(raw),'gap':gap,
             'trade_validation_ms':(time.monotonic_ns()-parse_started)//1000000}
+        if (stale==1 and not future and not discontinuities and len(raw)>1
+            and all(first>=second for first,second in zip(ages,ages[1:]))):
+            prices=[dec(row['p']) for row in raw]
+            self.trade_report[symbol]['gap_price_bounds']={'min':text(min(prices)),'max':text(max(prices))}
         return events,prior,gap
     def funding(self,start,end,*,symbols=SYMBOLS):
         # One continuous global coverage window is confirmed for ALL supported

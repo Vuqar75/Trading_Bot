@@ -26,6 +26,36 @@ from .ai_limit_plan import CANDIDATE_POLICY,VERSION,SYMBOLS,canonical,digest,val
 from .ai_limit_executor import once,recover
 
 
+def noncrossing_stale_batch(book, symbol, active, report, cursor):
+    """Prove that discarding this WS batch cannot miss a paper entry."""
+    bounds=report.get('gap_price_bounds')
+    expected=book.get('trade_cursor:'+symbol)
+    confirmed=book.get('trade_confirmed_ms:'+symbol)
+    if (not active or active[0]['symbol']!=symbol or not bounds
+        or report.get('transport')!='websocket' or report.get('stream_fault') is not False
+        or report.get('stream',{}).get('queued')!=0
+        or report.get('stale_rows')!=1 or report.get('future_rows')
+        or report.get('discontinuities') or type(expected) is not int
+        or report.get('requested_after_id')!=expected or confirmed is None):
+        return None
+    rows=report.get('rows',0)
+    if (not 1<rows<1000 or report.get('first_id')!=expected+1
+        or report.get('last_id')!=cursor or cursor!=expected+rows
+        or report['first_event_ms']<confirmed
+        or not 0<=book.clock()-report['last_event_ms']<=5000):
+        return None
+    plan,state=active
+    if (state['opened_ms'] is not None or dec(state['open_qty'])
+        or not dec(state['remaining']) or book.clock()>=plan['expires_ms']):
+        return None
+    entry=dec(plan['entry'])
+    if plan['direction']=='LONG' and dec(bounds['min'])>=entry:
+        return plan['plan_id']
+    if plan['direction']=='SHORT' and dec(bounds['max'])<=entry:
+        return plan['plan_id']
+    return None
+
+
 def atomic(path,value,mode=0o644):
     path=Path(path)
     if not path.parent.is_dir() or path.is_symlink():raise ValueError('existing_public_directory_required')
@@ -374,12 +404,23 @@ class Poller:
                 prearm=bool(gap and armed is not None and report.get('stale_rows',0)>0
                     and report.get('stale_last_ms') is not None and report['stale_last_ms']<=armed
                     and type(report.get('requested_after_id')) is int
-                    and not report.get('discontinuities') and not report.get('future_rows',0))
+                    and not report.get('discontinuities') and not report.get('future_rows',0)
+                    and report.get('stream_fault') is not True)
                 if prearm:gap=False;report['ignored_prearm_stale_rows']=report['stale_rows']
                 report['history_contiguous']=type(report.get('requested_after_id')) is int and not bool(report.get('discontinuities'))
                 report['execution_gap']=bool(gap)
                 stage='gap_handling'
-                if gap:
+                held_key='trade_held_through:'+symbol
+                held_through=b.get(held_key)
+                if held_through is not None and any(event['event_ms']<held_through for event in events):
+                    gap=True;events=[];report['execution_gap']=True
+                    report['timestamp_before_retained_entry_cursor']=True
+                held_plan=None
+                if gap and not events and filters_ready:
+                    held_plan=noncrossing_stale_batch(b,symbol,active_before,report,cursor)
+                    if held_plan is not None:
+                        report['entry_held_for_fresh_batch']=held_plan
+                if gap and held_plan is None:
                     gap_evidence={k:v for k,v in report.items() if k!='phase_diagnostics'}
                     b.trade_gap(symbol,'noncontiguous_or_stale_public_trades_no_backfills',evidence=gap_evidence,
                                 phase_evidence=report['phase_diagnostics'])
@@ -396,6 +437,11 @@ class Poller:
                 probe=getattr(b.db,'probe',None)
                 with b.transaction(), (probe.phase('trade_batch_finance') if probe else nullcontext()):
                     locked=time.monotonic_ns();active=b.active();skipped=0
+                    if held_plan is not None:
+                        gap_evidence={k:v for k,v in report.items() if k!='phase_diagnostics'}
+                        b.trade_gap(symbol,'contiguous_stale_batch_without_entry_cross',evidence=gap_evidence,
+                                    phase_evidence=report['phase_diagnostics'],held_plan_id=held_plan)
+                        active=b.active()
                     if prearm and (active is None or active_before[0]['plan_id']!=active[0]['plan_id']
                                    or active[1]['armed_ms']!=armed):raise ValueError('active_plan_changed_during_batch')
                     if active is None:
@@ -431,6 +477,10 @@ class Poller:
                                      'batch_processing_ms':report['batch_processing_ms'],'batch_lock_wait_ms':report['batch_lock_wait_ms']})
                         history[-1]=page;b.set('full_page_history:'+symbol,history)
                         report['full_page_history']=history
+                    if held_plan is not None:
+                        b.set(held_key,report['last_event_ms'])
+                    elif held_through is not None and (gap or healthy or active is None):
+                        b.set(held_key,None)
                     b.set('trade_cursor:'+symbol,cursor);b.set('trade_feed:'+symbol,report)
                     b.set('trade_confirmed_ms:'+symbol,last_event if healthy else None)
                     b.set('market_error:'+symbol,('public_filters_unconfirmed' if not filters_ready else ('public_trade_backlog_unconfirmed' if full_page else (None if healthy else 'public_trade_stream_unconfirmed'))))

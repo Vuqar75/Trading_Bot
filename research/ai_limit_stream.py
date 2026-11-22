@@ -233,7 +233,7 @@ class StreamFeed(Feed):
             diag['oldest_dequeued_wait_ms']=(time.monotonic_ns()-rows[0]['_received_ns'])//1000000 if rows else None
         parser=Feed(fetch=lambda *_:rows,clock=self.clock)
         events,cursor,gap=parser.trades(symbol,last_id)
-        self.trade_report[symbol]={**parser.trade_report[symbol],'transport':'websocket','stream':diag,'gap':bool(gap or fault)}
+        self.trade_report[symbol]={**parser.trade_report[symbol],'transport':'websocket','stream':diag,'stream_fault':bool(fault),'gap':bool(gap or fault)}
         return ([] if gap or fault else events),cursor,bool(gap or fault)
     def pending(self):
         # BBO updates are frequent even without actionable trade backlog.

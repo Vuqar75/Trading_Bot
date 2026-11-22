@@ -305,7 +305,7 @@ class Book:
         self.fill(p,s,'EXIT',qty,price,now,key,s['close_reason'])
         self.set('used-quote:'+p['symbol']+':'+liquidity+':'+sidekey,text(dec(consumed)+qty))
 
-    def trade_gap(self,symbol,detail,*,evidence=None,phase_evidence=None):
+    def trade_gap(self,symbol,detail,*,evidence=None,phase_evidence=None,held_plan_id=None):
         with self.transaction():
             now=self.clock();record={'kind':'DATA_GAP','symbol':symbol,'detail':str(detail)[:160],'at_ms':now}
             if evidence is not None:record['source']=evidence
@@ -314,7 +314,13 @@ class Book:
             self.set('last_trade_gap',record)
             active=self.active()
             if active and active[0]['symbol']==symbol:
-                p,s=active;self.cancel_entry(p,s,'TRADE_GAP',now);self.protect(p,s,now);self.finalize(p,s,now);self.save(p,s)
+                p,s=active
+                if (held_plan_id==p['plan_id'] and s['opened_ms'] is None
+                    and not dec(s['open_qty']) and now<p['expires_ms']
+                    and not self.get('paused') and not self.get('blocked')):
+                    return
+                self.cancel_entry(p,s,'TRADE_GAP',now);self.protect(p,s,now)
+                self.finalize(p,s,now);self.save(p,s)
 
     def hold_unconfirmed_backlog(self,symbol,*,detail='trade_backlog_unconfirmed'):
         # A full page cannot prove the cursor has reached the live stream.
