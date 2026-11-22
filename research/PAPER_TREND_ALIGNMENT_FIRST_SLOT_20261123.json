@@ -1,0 +1,52 @@
+{
+  "checked": "2026-11-23T00:07:05.950+04:00",
+  "instances": [
+    {
+      "slot": "2026-11-23T00:02:16.477+04:00",
+      "snapshot": "a7cf861572de0b2ba768fcfa89201be4f6aba963628d076f5666190ff41a70bd",
+      "policy": "aligned-1h-4h-v1",
+      "alignment": {
+        "1h": "UP",
+        "4h": "MIXED",
+        "allowed": null
+      },
+      "frames": {
+        "1h": {
+          "close": "60709.1",
+          "sma20": "60253.67",
+          "sma40": "59656.85",
+          "closed_through_ms": 1795377600000
+        },
+        "4h": {
+          "close": "60709.1",
+          "sma20": "60218.04",
+          "sma40": "62216.0675",
+          "closed_through_ms": 1795377600000
+        }
+      },
+      "sides": [],
+      "source": "program_wait",
+      "decision": "WAIT",
+      "admission": null,
+      "claim_count": 0,
+      "plan": null
+    }
+  ],
+  "ledger": true,
+  "balances": {
+    "free": "999.328294888415389811",
+    "funding_buffer": "0",
+    "margin": "0",
+    "reserved": "0"
+  },
+  "active": [],
+  "schedule": "Mon 2026-11-23 00:02:00 UTC",
+  "analyst_journal": [
+    "2026-11-22T20:02:00+00:00 tradingbot-paper-test systemd[1]: Starting ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential...",
+    "2026-11-22T20:02:16+00:00 tradingbot-paper-test python3[770920]: {\"decision\":\"WAIT\",\"model_requested\":false,\"network_retry\":false,\"reason\":\"trend_alignment_unconfirmed\",\"snapshot_id\":\"a7cf861572de0b2ba768fcfa89201be4f6aba963628d076f5666190ff41a70bd\",\"source\":\"program\",\"status\":\"published\"}",
+    "2026-11-22T20:02:18+00:00 tradingbot-paper-test systemd[1]: ai-bracket-analyst.service: Deactivated successfully.",
+    "2026-11-22T20:02:18+00:00 tradingbot-paper-test systemd[1]: Finished ai-bracket-analyst.service - Budget-limited AI bracket analyst using original server credential.",
+    "2026-11-22T20:02:18+00:00 tradingbot-paper-test systemd[1]: ai-bracket-analyst.service: Consumed 2.246s CPU time.",
+    ""
+  ]
+}
