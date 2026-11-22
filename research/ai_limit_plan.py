@@ -74,6 +74,29 @@ CANDIDATE_POLICY='entry-stop-nearest-v1'
 
 HORIZON_POLICY = 'entry-stop-nearest-horizon-q75-v1'
 
+TREND_ALIGNMENT_POLICY = 'aligned-1h-4h-v1'
+
+
+def trend_alignment(frames, as_of_ms):
+    states = {}
+    for name, duration in (('1h', 4 * BAR), ('4h', 16 * BAR)):
+        frame = frames[name]
+        if integer(frame['closed_through_ms']) != as_of_ms // duration * duration:
+            raise ValueError('trend_frames_unconfirmed')
+        close, sma20, sma40 = (positive(frame[key]) for key in ('close', 'sma20', 'sma40'))
+        states[name] = 'UP' if close > sma20 > sma40 else 'DOWN' if close < sma20 < sma40 else 'MIXED'
+    states['allowed'] = {('UP', 'UP'): 'LONG', ('DOWN', 'DOWN'): 'SHORT'}.get(
+        (states['1h'], states['4h'])
+    )
+    return states
+
+
+def program_wait_reason(snapshot):
+    if (snapshot.get('candidate_policy') == TREND_ALIGNMENT_POLICY
+            and snapshot['trend_alignment']['allowed'] is None):
+        return 'trend_alignment_unconfirmed'
+    return 'no_candidates'
+
 
 def excursion_profile(rows):
     """Nearest-rank 75th percentile in bp for past, disjoint 15m windows."""
@@ -105,7 +128,7 @@ def select_candidates(candidates,reference,policy=CANDIDATE_POLICY):
     if policy==LEGACY_CANDIDATE_POLICY:
         ordered=sorted(candidates,key=lambda x:(abs(dec(x['entry'])-reference),-dec(x['net_reward_risk']),x['direction'],x['entry_level'],x['stop_level'],x['target_level']))
         return [c for direction in ('LONG','SHORT') for c in [x for x in ordered if x['direction']==direction][:4]]
-    if policy not in (CANDIDATE_POLICY,HORIZON_POLICY):raise ValueError('candidate_policy_unknown')
+    if policy not in (CANDIDATE_POLICY,HORIZON_POLICY,TREND_ALIGNMENT_POLICY):raise ValueError('candidate_policy_unknown')
     result=[]
     ids=lambda c:(c['entry_level'],c['stop_level'],c['target_level'])
     pair=lambda c:(dec(c['entry']),dec(c['stop']))
@@ -179,6 +202,8 @@ def context(capture,book,exchange_filters,news,now,*,candidate_policy=CANDIDATE_
         from .derivatives_context import validate as validate_derivatives
         result['derivatives']=validate_derivatives(capture['derivatives'],symbol=symbol,signal_ms=signal,as_of_ms=now)
     if candidate_policy!=LEGACY_CANDIDATE_POLICY:result['candidate_policy']=candidate_policy
+    if candidate_policy == TREND_ALIGNMENT_POLICY:
+        result['trend_alignment'] = trend_alignment(frames, now)
     result['snapshot_id']=digest(result)
     # Show the analyst mechanically admissible alternatives instead of asking
     # it to invent prices or perform fee/risk arithmetic approximately.
@@ -189,6 +214,8 @@ def context(capture,book,exchange_filters,news,now,*,candidate_policy=CANDIDATE_
         return result
     candidates=[];reference=dec(book['mark'])
     for direction,side in (('LONG',1),('SHORT',-1)):
+        if candidate_policy == TREND_ALIGNMENT_POLICY and result['trend_alignment']['allowed'] != direction:
+            continue
         entries=unique_prices(sorted([z for z in levels if dec(z['price'])<dec(book['ask'])] if side==1 else [z for z in levels if dec(z['price'])>dec(book['bid'])],key=lambda z:(abs(dec(z['price'])-reference),z['id'])))[:6]
         for e in entries:
             ep=dec(e['price'])
@@ -234,6 +261,9 @@ def request(snapshot):
             'excursion_q75_bps lists [long,short] historical favorable excursions from the open for '
             '15,30,...,240 minutes. Compare target distance in bp at the independently chosen hold '
             'rounded down to completed 15m bars. Choose WAIT if no plan fits; do not extend the hold to qualify.')
+    if snapshot.get('candidate_policy') == TREND_ALIGNMENT_POLICY:
+        horizon_instruction = (' trend_alignment is the mandatory direction from closed 1h and 4h bars. '
+                               'Select only that direction or WAIT.')
     if snapshot.get('candidate_policy') == retest.POLICY:
         horizon_instruction = (' For this 15m retest policy use exactly expires_ms for the passive entry deadline '
             'and 60 minutes after first fill. Consider levels_before_tp and first_obstacle. '
@@ -255,9 +285,18 @@ def request(snapshot):
 
 def verify_context(snapshot,now):
     if not isinstance(snapshot,dict) or snapshot.get('version')!=VERSION or snapshot.get('symbol') not in SYMBOLS or snapshot.get('venue')!='binance-usdm':raise ValueError('snapshot_schema')
-    if snapshot.get('candidate_policy',LEGACY_CANDIDATE_POLICY) not in (LEGACY_CANDIDATE_POLICY,CANDIDATE_POLICY,HORIZON_POLICY,retest.POLICY):raise ValueError('candidate_policy_unknown')
+    if snapshot.get('candidate_policy',LEGACY_CANDIDATE_POLICY) not in (LEGACY_CANDIDATE_POLICY,CANDIDATE_POLICY,HORIZON_POLICY,TREND_ALIGNMENT_POLICY,retest.POLICY):raise ValueError('candidate_policy_unknown')
     if digest({k:v for k,v in snapshot.items() if k!='snapshot_id'})!=snapshot.get('snapshot_id'):raise ValueError('snapshot_hash')
     if not integer(snapshot['as_of_ms'])<=now<integer(snapshot['expires_ms']) or snapshot['expires_ms']-snapshot['as_of_ms']>BAR:raise ValueError('snapshot_expired')
+    if snapshot.get('candidate_policy') == TREND_ALIGNMENT_POLICY:
+        try:
+            alignment = trend_alignment(snapshot['timeframes'], snapshot['as_of_ms'])
+        except (TypeError, KeyError) as error:
+            raise ValueError('trend_frames_unconfirmed') from error
+        if snapshot.get('trend_alignment') != alignment:
+            raise ValueError('trend_alignment_mismatch')
+        if any(candidate['direction'] != alignment['allowed'] for candidate in snapshot.get('candidate_plans', [])):
+            raise ValueError('trend_candidate_mismatch')
     if not isinstance(snapshot['levels'],list) or len(snapshot['levels'])>36 or len({x['id'] for x in snapshot['levels']})!=len(snapshot['levels']):raise ValueError('level_identity')
     for level in snapshot['levels']:
         positive(level['price'])
@@ -282,6 +321,9 @@ def validate(snapshot,decision,now):
     if snapshot.get('candidate_policy') == retest.POLICY and 'candidate_plans' in snapshot:
         if decision['max_hold_minutes'] != retest.HOLD_MINUTES or decision['valid_until_ms'] != snapshot['expires_ms']:
             raise ValueError('candidate_execution_window')
+    if (snapshot.get('candidate_policy') == TREND_ALIGNMENT_POLICY
+            and decision['decision'] != snapshot['trend_alignment']['allowed']):
+        raise ValueError('entry_against_trend_alignment')
     if snapshot['news']['high_risk_until_ms']>now:raise ValueError('known_fundamental_risk')
     if 'candidate_plans' in snapshot and not any(c['direction']==decision['decision'] and all(c[k]==decision[k] for k in ('entry_level','stop_level','target_level')) for c in snapshot['candidate_plans']):raise ValueError('unknown_candidate_plan')
     mapped={level['id']:level for level in snapshot['levels']}

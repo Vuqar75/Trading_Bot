@@ -33,7 +33,10 @@ def render(path=None,now=None,*,symbol='BTCUSDT'):
         last=value.get('analyst_last')
         if last and last.get('symbol')==symbol:
             label={'WAIT':'ждать','PLAN':'план получен','REJECTED':'план отклонён проверками','UNCONFIRMED':'ответ не подтверждён'}.get(last['status'],last['status'])
-            if last.get('provenance',{}).get('kind')=='program_wait':label='программный WAIT, нет кандидатов; запрос ИИ не отправлялся'
+            if last.get('provenance',{}).get('kind')=='program_wait':
+                reason=('тренд 1H/4H не согласован' if last.get('reason')=='trend_alignment_unconfirmed'
+                        else 'нет кандидатов')
+                label='программный WAIT, '+reason+'; запрос ИИ не отправлялся'
             lines.append('Последний анализ: '+label+'.')
         if value['blocked']:lines.append('Блокировка входов: '+str(value['blocked'])[:100])
         active=[p for p in items if p['status'] not in ('CLOSED','CANCELED')]

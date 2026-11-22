@@ -22,7 +22,7 @@ from .ai_limit_phase_probe import Probe,TimedConnection
 from .ai_limit_backup_job import BackupJob,prepare_journal
 from .ai_limit_feed import Feed
 from .ai_limit_retest import POLICY as RETEST_POLICY
-from .ai_limit_plan import CANDIDATE_POLICY,VERSION,SYMBOLS,canonical,digest,validate,verify_context,context,integer,dec,quote as validate_quote
+from .ai_limit_plan import TREND_ALIGNMENT_POLICY,program_wait_reason,CANDIDATE_POLICY,VERSION,SYMBOLS,canonical,digest,validate,verify_context,context,integer,dec,quote as validate_quote
 from .ai_limit_executor import once,recover
 
 
@@ -96,9 +96,12 @@ def ingest_program_wait(book,envelope):
         if prior[0]!=fingerprint:raise ValueError('program_wait_revision')
         return 'already_ingested'
     book.register_source(snapshot,envelope['capture'])
-    event={'status':'WAIT','reason':'no_candidates','symbol':snapshot['symbol'],'as_of_ms':stamp,
+    reason=program_wait_reason(snapshot)
+    thesis=('Тренд 1H/4H не согласован. Платный запрос не отправлялся.'
+            if reason=='trend_alignment_unconfirmed' else 'Нет допустимых кандидатов. Платный запрос не отправлялся.')
+    event={'status':'WAIT','reason':reason,'symbol':snapshot['symbol'],'as_of_ms':stamp,
            'provenance':{'kind':'program_wait','snapshot_id':snapshot['snapshot_id']},
-           'thesis':'Нет допустимых кандидатов. Платный запрос не отправлялся.'}
+           'thesis':thesis}
     with book.transaction():
         book.db.execute('INSERT INTO bracket_inputs VALUES(?,?,?)',(ident,fingerprint,canonical(envelope)))
         book.message(ident,event)
@@ -106,7 +109,7 @@ def ingest_program_wait(book,envelope):
     return 'WAIT'
 
 
-def ingest(book,envelope,*,allow_fixture=False):
+def ingest(book,envelope,*,allow_fixture=False,require_trend_alignment=False):
     if isinstance(envelope,dict) and set(envelope)=={'program_wait','capture'}:
         return ingest_program_wait(book,envelope)
     if not isinstance(envelope,dict) or set(envelope)!={'analysis','capture'}:raise ValueError('model_envelope_shape')
@@ -127,6 +130,9 @@ def ingest(book,envelope,*,allow_fixture=False):
     if result.get('decision') is not None and not diagnostic:
         book.register_source(result['snapshot'],capture)
         try:
+            if (require_trend_alignment and result['decision'].get('decision') in ('LONG','SHORT')
+                    and result['snapshot'].get('candidate_policy')!=TREND_ALIGNMENT_POLICY):
+                raise ValueError('trend_policy_required')
             if result['decision'].get('decision')!='WAIT' and book.get('market_error:'+result['snapshot']['symbol']):raise ValueError('entry_paused_blocked_or_busy')
             book.accept(result['snapshot'],result['decision'],provenance=provenance)
             status='WAIT' if result['decision']['decision']=='WAIT' else 'ACCEPTED'
@@ -135,7 +141,8 @@ def ingest(book,envelope,*,allow_fixture=False):
             # to replay or send another paid request.
             reason=str(error)
             allowed={'snapshot_expired','model_expiry','stale_or_future_market_data','entry_paused_blocked_or_busy',
-                     'funding_coverage_missing','insufficient_paper_cash','limit_would_take_now','stale_filters'}
+                     'funding_coverage_missing','insufficient_paper_cash','limit_would_take_now','stale_filters',
+                     'entry_against_trend_alignment','trend_policy_required'}
             if reason not in allowed:raise
             admission={'allowed':False,'reason':reason}
     with book.transaction():
@@ -538,7 +545,7 @@ def analyst(budget_state,paper_public,output,*,symbol,paper_uid,feed=None,clock=
         verify_context(snapshot,at)
         if snapshot['symbol']!=symbol or at-snapshot['as_of_ms']>120000:raise ValueError('invalid_program_wait_source')
         atomic(output,{'program_wait':snapshot,'capture':capture})
-        return {'status':'published','decision':'WAIT','reason':'no_candidates','source':'program',
+        return {'status':'published','decision':'WAIT','reason':program_wait_reason(snapshot),'source':'program',
                 'snapshot_id':snapshot['snapshot_id'],'model_requested':False,'network_retry':False}
     kwargs={'authorized':True,'clock':clock}
     if transport is not None:kwargs['transport']=transport
@@ -557,12 +564,14 @@ def analyst(budget_state,paper_public,output,*,symbol,paper_uid,feed=None,clock=
 
 class ResponseReader:
     """Reuse only an already-ingested atomic file identity; never repeat HTTP."""
-    def __init__(self):self.accepted=None
+    def __init__(self, *, require_trend_alignment=False):
+        self.accepted=None
+        self.require_trend_alignment=require_trend_alignment
     def apply(self,book,path,owner):
         info=os.stat(path,follow_symlinks=False)
         identity=(info.st_dev,info.st_ino,info.st_size,info.st_mtime_ns,info.st_ctime_ns,info.st_uid,info.st_mode)
         if identity==self.accepted:return 'unchanged'
-        result=ingest(book,trusted(path,owner))
+        result=ingest(book,trusted(path,owner),require_trend_alignment=self.require_trend_alignment)
         # Do not cache failed ingestion or a file replaced during the read.
         after=os.stat(path,follow_symlinks=False)
         if identity==(after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns,after.st_uid,after.st_mode):self.accepted=identity
@@ -605,10 +614,11 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__);sub=parser.add_subparsers(dest='action',required=True)
     p=sub.add_parser('serve');p.add_argument('--state',required=True);p.add_argument('--public',required=True);p.add_argument('--response',required=True)
     p.add_argument('--analyst-uid',required=True,type=uid);p.add_argument('--symbols',nargs='+',choices=SYMBOLS,default=['BTCUSDT']);p.add_argument('--enable-paper',action='store_true');p.add_argument('--once',action='store_true')
+    p.add_argument('--require-trend-alignment',action='store_true')
     p.add_argument('--phase-diagnostics',action='store_true',help='Enable detailed CPU/SQL profiling; normal paper execution retains bounded market/error evidence without it')
     p=sub.add_parser('analyst-once');p.add_argument('--budget-state',required=True);p.add_argument('--paper-public',required=True);p.add_argument('--output',required=True)
     p.add_argument('--paper-uid',required=True,type=uid);p.add_argument('--symbol',choices=SYMBOLS,default='BTCUSDT');p.add_argument('--authorized-once',action='store_true')
-    p.add_argument('--candidate-policy', choices=(CANDIDATE_POLICY, RETEST_POLICY), default=CANDIDATE_POLICY)
+    p.add_argument('--candidate-policy', choices=(CANDIDATE_POLICY, RETEST_POLICY, TREND_ALIGNMENT_POLICY), default=CANDIDATE_POLICY)
     p=sub.add_parser('recover-answer');p.add_argument('--budget-state',required=True);p.add_argument('--response-id',required=True);p.add_argument('--capture',required=True);p.add_argument('--output',required=True)
     p=sub.add_parser('status');p.add_argument('--state',required=True)
     p=sub.add_parser('pause');p.add_argument('--state',required=True)
@@ -640,7 +650,7 @@ def main():
                 prepare_journal(book)
                 feed=StreamFeed(symbols=args.symbols,quotes=True)
                 probe=configure_diagnostics(book,feed,args.phase_diagnostics)
-                worker=Poller(book,feed.start(),symbols=args.symbols);backup=BackupJob(book.root);next_backup=0;reader=ResponseReader();publisher=Publisher()
+                worker=Poller(book,feed.start(),symbols=args.symbols);backup=BackupJob(book.root);next_backup=0;reader=ResponseReader(require_trend_alignment=args.require_trend_alignment);publisher=Publisher()
                 try:
                     while running[0]:
                         if probe is not None:probe.begin()
