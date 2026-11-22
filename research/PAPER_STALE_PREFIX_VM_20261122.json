@@ -1,0 +1,84 @@
+{
+  "source": "72d0e59dd0e28963914bca261240636bc5aa0187",
+  "old_pid": "753714",
+  "pid": "753851",
+  "installed_ms": 1795342779566,
+  "checked_ms": 1795342796407,
+  "next": "Sun 2026-11-22 12:02:00 UTC",
+  "hashes": {
+    "research/ai_limit_book.py": "46c2812841a46eeadff0ceeb309ff20246d1f525f09dcd5cc296523848d424b7",
+    "research/ai_limit_feed.py": "bf60ab75ccdd38c334894cb90e2c1dc2740db0eceb713370fd7f50aba86a1069",
+    "research/ai_limit_runtime.py": "2eaa927a1bfb018d275ab3e6952b75e3441a73e4f53c218cb3ee0f6ddac77430",
+    "research/ai_limit_stream.py": "a440eb57769aa1c53bd0034922fcfcbabed981ae967e8bde7a3a75017aaadf78"
+  },
+  "prior_hashes": {
+    "research/ai_limit_book.py": "7451efca4458670a876d466ac44e488218b013e29d2b12a986496b7cc2fe1d38",
+    "research/ai_limit_feed.py": "5af27ecc774be6dfcc1134c966488d30cd1c2da3c9814fe2c2d8d78acb8df101",
+    "research/ai_limit_runtime.py": "0aaea71359a9129c561cf1f0258a1137c0771ae65910501b9b09fdc04be01e38",
+    "research/ai_limit_stream.py": "ce108b1f6446b4d6d4dc968d7cbcc360a311963abd2496811fa2569fa503bde3"
+  },
+  "fresh_samples": [
+    {
+      "as_of_ms": 1795342790225,
+      "trade_age_ms": 1290,
+      "book_age_ms": 1330,
+      "mark_age_ms": 2225,
+      "last_id": 3541957646
+    },
+    {
+      "as_of_ms": 1795342790920,
+      "trade_age_ms": 739,
+      "book_age_ms": 793,
+      "mark_age_ms": 919,
+      "last_id": 3541957732
+    },
+    {
+      "as_of_ms": 1795342791594,
+      "trade_age_ms": 481,
+      "book_age_ms": 646,
+      "mark_age_ms": 594,
+      "last_id": 3541957794
+    },
+    {
+      "as_of_ms": 1795342793250,
+      "trade_age_ms": 1675,
+      "book_age_ms": 1575,
+      "mark_age_ms": 2250,
+      "last_id": 3541957800
+    },
+    {
+      "as_of_ms": 1795342795592,
+      "trade_age_ms": 1661,
+      "book_age_ms": 2062,
+      "mark_age_ms": 2591,
+      "last_id": 3541958040
+    }
+  ],
+  "hold_observed_ms": [],
+  "backup": {
+    "path": "/var/lib/tradingbot-ai-budget-backup/stale72-1795342659885/paper.sqlite",
+    "sha256": "841781e7aa9f3fcf03d7d290ca13f60708e3f2674ac41aa0363567d0fb312990",
+    "restored": {
+      "balances": {
+        "free": "999.7172348990153898110",
+        "reserved": "0E-8",
+        "margin": "0.0000",
+        "funding_buffer": "0E-8"
+      },
+      "counts": {
+        "ledger_events": 56,
+        "ledger_postings": 132,
+        "bracket_plans": 22,
+        "bracket_fills": 10,
+        "bracket_funding": 1
+      },
+      "hash": "c3f8766cfe34159de6a215b3256ec4d9219ecbc029ca41f2ac5ecd847f30f6ce"
+    },
+    "backup_ms": 1795342674290,
+    "budget": [
+      54,
+      144168
+    ]
+  },
+  "single_writer": true
+}
