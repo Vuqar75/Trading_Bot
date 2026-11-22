@@ -1,0 +1,178 @@
+{
+  "replay": {
+    "plan": "fd967e3cdabfd39e1f44657301d3b72afa9ad31971c6935658a251ebf3ebfc57",
+    "thesis": "Пассивный SHORT на ретесте 1h уровня 61155, который цена уже оказалась ниже: он может выступить сопротивлением. Ближайшая 15m resistance выше служит уровнем отмены идеи, а цель выбрана перед 15m support. Поток taker-сделок смещён в сторону продаж; при этом контекст SMA смешанный. Фундаментальное покрытие новостей ограничено.",
+    "risks": [
+      "Краткосрочный контекст неоднозначен: цена выше 15m и 1h SMA20/SMA40, возможен отскок.",
+      "Повышенные long/short ratios указывают на перекос в длинные позиции, но это не гарантирует снижения; taker buy/sell ниже 1 также не доказывает продолжение продаж.",
+      "Покрытие новостей ограничено; в предоставленных материалах нет очевидного актуального рыночного катализатора."
+    ],
+    "snapshot": "fe5f06800aa98e9e519c3c4fcb5fa4fd7be55899e641532b3b36ae1cc0e614fe",
+    "as_of_ms": 1795348938008,
+    "received_ms": 1795348959515,
+    "armed_ms": 1795348968533,
+    "quote": {
+      "bid": "61089.30",
+      "ask": "61089.40",
+      "mark": "61090.16806522",
+      "event_ms": 1795348935931
+    },
+    "frames": {
+      "1h": {
+        "close": "61036.1",
+        "sma20": "60001.445",
+        "sma40": "59206.19",
+        "closed_through_ms": 1795348800000
+      },
+      "4h": {
+        "close": "61036.1",
+        "sma20": "60520.745",
+        "sma40": "62436.465",
+        "closed_through_ms": 1795348800000
+      }
+    },
+    "levels": [
+      {
+        "confirmed_ms": 1795308300000,
+        "id": "15m:support:1795305600000",
+        "kind": "support",
+        "pivot_ms": 1795305600000,
+        "price": "60153.2",
+        "timeframe": "15m"
+      },
+      {
+        "confirmed_ms": 1795343400000,
+        "id": "15m:resistance:1795340700000",
+        "kind": "resistance",
+        "pivot_ms": 1795340700000,
+        "price": "61363",
+        "timeframe": "15m"
+      },
+      {
+        "confirmed_ms": 1795186800000,
+        "id": "1h:support:1795176000000",
+        "kind": "support",
+        "pivot_ms": 1795176000000,
+        "price": "61155",
+        "timeframe": "1h"
+      }
+    ],
+    "chosen": {
+      "direction": "SHORT",
+      "entry": "61155",
+      "entry_level": "1h:support:1795176000000",
+      "estimated_risk_usdt": "0.4971352005",
+      "net_reward_risk": "1.5583",
+      "quantity_cap": "0.001",
+      "stop": "61401",
+      "stop_level": "15m:resistance:1795340700000",
+      "target": "60191.2",
+      "target_level": "15m:support:1795305600000"
+    },
+    "hold_minutes": 45,
+    "original_admission": {
+      "allowed": true,
+      "reason": "validated_paper_plan"
+    },
+    "new_alignment": {
+      "1h": "UP",
+      "4h": "MIXED",
+      "allowed": null
+    },
+    "new_candidates": 0,
+    "new_reason": "trend_alignment_unconfirmed"
+  },
+  "installation": {
+    "installed_ms": 1795372620140,
+    "verified_ms": 1795372639891,
+    "source_commit": "c05d0a643b6220bb11ed8b00cc5fc9991fdc239f",
+    "next": "Sun 2026-11-22 20:02:00 UTC",
+    "hashes": {
+      "paper-ai_limit_runtime.py": "06a8de8b932178feda3001afd1c17a08e6186f900a8c07310340e4796a8b94c7",
+      "paper-ai_limit_plan.py": "9d2dd3615720fb95a1d9854cec3fe93daa70d22b2e357a83c8a28934f4b1b528",
+      "paper-ai_limit_feed.py": "211fa1fdd3ae7265a3372e5cf526e749105c3b84089f0e8d0ff349e9be6bb39a",
+      "analyst-ai_limit_runtime.py": "b9f1348d98cab066af73ad4b5e182a02b6fc094622e466bd915133b1130c635c",
+      "analyst-ai_limit_plan.py": "9d2dd3615720fb95a1d9854cec3fe93daa70d22b2e357a83c8a28934f4b1b528",
+      "analyst-ai_limit_feed.py": "ac547ebc26eeb8eca13185f24cffbae35805d14ecdadecc0d7245fe0517d0ddf",
+      "ui-ai_bracket_view.py": "3e0a83a40e8df026912ba5e8e3030b525b4d92aef8d712bdb7c993ec89c79137"
+    },
+    "backup": {
+      "path": "/var/lib/tradingbot-ai-budget-backup/align72-1795372446735/paper.sqlite",
+      "sha256": "5e37336f65f250e506af32a0423be4ca7363a6972cb17fd44dd77e1e7cba84a9",
+      "restored": {
+        "balances": {
+          "free": "999.3282948884153898110",
+          "reserved": "0E-8",
+          "margin": "0.0000",
+          "funding_buffer": "0E-8"
+        },
+        "counts": {
+          "ledger_events": 60,
+          "ledger_postings": 144,
+          "bracket_plans": 23,
+          "bracket_fills": 12,
+          "bracket_funding": 1
+        },
+        "hash": "bd9598fac9157e7536750acf3714502705c392b6548edca3ec149cbb6aba5b31"
+      },
+      "backup_ms": 1795372460968,
+      "budget": [
+        56,
+        149736
+      ]
+    },
+    "ledger": {
+      "balances": {
+        "free": "999.3282948884153898110",
+        "reserved": "0E-8",
+        "margin": "0.0000",
+        "funding_buffer": "0E-8"
+      },
+      "counts": {
+        "ledger_events": 60,
+        "ledger_postings": 144,
+        "bracket_plans": 23,
+        "bracket_fills": 12,
+        "bracket_funding": 1
+      },
+      "hash": "bd9598fac9157e7536750acf3714502705c392b6548edca3ec149cbb6aba5b31"
+    },
+    "one_writer": true,
+    "paper_pid": "768502",
+    "telegram_pid": "768553",
+    "serve_cmd": [
+      "/usr/bin/python3",
+      "-B",
+      "-m",
+      "research.ai_limit_runtime",
+      "serve",
+      "--state",
+      "/var/lib/ai-bracket-study",
+      "--public",
+      "/var/lib/ai-bracket-public/orders.json",
+      "--response",
+      "/var/lib/tradingbot-ai-executor-public/bracket-response.json",
+      "--analyst-uid",
+      "adaptiveai",
+      "--enable-paper",
+      "--require-trend-alignment",
+      ""
+    ],
+    "analyst_cmd": "/usr/bin/python3 -B -m research.ai_limit_runtime analyst-once --budget-state /var/lib/tradingbot-ai-executor --paper-public /var/lib/ai-bracket-public/orders.json --output /var/lib/tradingbot-ai-executor-public/bracket-response.json --paper-uid aibracket --symbol BTCUSDT --authorized-once --candidate-policy aligned-1h-4h-v1",
+    "budget": [
+      56,
+      149736
+    ],
+    "stale_patch_preserved": [
+      "ai_limit_book.py",
+      "ai_limit_stream.py",
+      "ai_limit_runtime.py",
+      "ai_limit_feed.py"
+    ]
+  },
+  "check": {
+    "id": "1h-4h",
+    "time": "2026-11-23T00:06:00+04:00",
+    "status": "ACTIVE"
+  }
+}
