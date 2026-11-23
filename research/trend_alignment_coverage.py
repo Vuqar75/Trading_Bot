@@ -65,7 +65,7 @@ def captures(trade, close_time):
     return dict(symbol="BTCUSDT", venue="binance-usdm", candles=rows)
 
 
-def sample(quote_path, day, trade, mark):
+def sample(quote_path, day, trade, mark, *, include_plans=False):
     frame = pd.read_csv(quote_path)
     if not frame.symbol.eq("BTCUSDT").all() or not frame.exchange.eq("binance-futures").all():
         raise ValueError("Unexpected historical quote")
@@ -105,6 +105,14 @@ def sample(quote_path, day, trade, mark):
                               for side in ("LONG", "SHORT")},
                       after={side: sum(c["direction"] == side for c in after["candidate_plans"])
                              for side in ("LONG", "SHORT")}, alignment=after["trend_alignment"])
+        if include_plans:
+            result["candidates"] = after["candidate_plans"]
+            i = rx.searchsorted((now + 60000)*1000, side="right") - 1
+            arm = frame.iloc[i]
+            if 0 <= (now + 60000)*1000-arm.timestamp <= 5_000_000 and arm.timestamp <= arm.local_timestamp:
+                if 0 < arm.bid_price <= arm.ask_price:
+                    result["arm_quote"] = dict(bid=str(arm.bid_price), ask=str(arm.ask_price),
+                                               event_ms=int(arm.timestamp)//1000)
         yield result
 
 
