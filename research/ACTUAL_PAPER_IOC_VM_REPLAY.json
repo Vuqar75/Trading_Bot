@@ -1,0 +1,215 @@
+{
+  "after_alignment": [],
+  "plans": {
+    "a4879e743bc5d93bf6ff48b1d3c4fa5757f3a961d75ec4fede0e89fdc0c13086": {
+      "p": {
+        "entry": "63871",
+        "stop": "64099.1",
+        "target": "61984.7",
+        "quantity": "0.001",
+        "direction": "SHORT",
+        "symbol": "BTCUSDT",
+        "fee": "0.0005",
+        "stop_slippage": "0.001",
+        "funding_buffer_rate": "0.0021",
+        "hold_ms": 7200000,
+        "expires_ms": 1794946500000,
+        "risk_usdt": "0.49034529955"
+      },
+      "s": {
+        "armed_ms": 1794945746766,
+        "entry_cancellation": {
+          "at_ms": 1794946500005,
+          "causes": [
+            "EXPIRED"
+          ],
+          "evidence": "recorded_at_cancellation",
+          "guards": {
+            "blocked": null,
+            "expires_ms": 1794946500000,
+            "paused": false
+          },
+          "precise": true,
+          "quantity": "0.001",
+          "reason": "EXPIRED_OR_PAUSED",
+          "reserve_released_usdt": "64.0370646"
+        },
+        "status": "CANCELED",
+        "opened_ms": null
+      },
+      "filters": {
+        "as_of_ms": 1794945723811,
+        "min_notional": "50",
+        "min_qty": "0.001",
+        "step_size": "0.001",
+        "tick_size": "0.10"
+      },
+      "coverage": {
+        "count": 6183,
+        "after_expiry": 1,
+        "first": [
+          {
+            "ask": "63686.50",
+            "ask_qty": "3.857",
+            "bid": "63686.40",
+            "bid_qty": "4.063",
+            "event_ms": 1794945746002,
+            "id": "8e2bad80ba79447092be731b609d7e21dd1493479f3ab0077bc2e8a3b3016732",
+            "liquidity_id": "ws-partial-depth:f8fe68f94013c8dfc09751adff9b295926d67fca1081d4df0cac78d7fb7e0b25",
+            "mark": "63691.20000000",
+            "received_ms": 1794945746913,
+            "symbol": "BTCUSDT"
+          },
+          {
+            "ask": "63686.50",
+            "ask_qty": "3.726",
+            "bid": "63686.40",
+            "bid_qty": "4.087",
+            "event_ms": 1794945746002,
+            "id": "29ee146b9facd020b9c234b83fed10a50fbf4317004d6ac8507664b425a017a9",
+            "liquidity_id": "ws-partial-depth:c8f33685f54bd475034d8263033ff080ff6f779df8c626eaeed90fbca3788f25",
+            "mark": "63691.20000000",
+            "received_ms": 1794945747016,
+            "symbol": "BTCUSDT"
+          },
+          {
+            "ask": "63686.50",
+            "ask_qty": "3.247",
+            "bid": "63686.40",
+            "bid_qty": "4.090",
+            "event_ms": 1794945747000,
+            "id": "f7324f7baa49e92f98f151f49102e20085189f654d73559eb2c919dc16c3a19e",
+            "liquidity_id": "ws-partial-depth:ddaa3a11f47cb30bed8cb4ee0102a77162d56103278d5761cf080b84c2558ca6",
+            "mark": "63686.40000000",
+            "received_ms": 1794945747171,
+            "symbol": "BTCUSDT"
+          }
+        ],
+        "last": [
+          {
+            "ask": "63787.00",
+            "ask_qty": "3.240",
+            "bid": "63786.90",
+            "bid_qty": "2.028",
+            "event_ms": 1794946499000,
+            "id": "79deaa1eda0b4ac38e75acab1bc67effce5d8b6473c30bb91003d03bf8bfd192",
+            "liquidity_id": "ws-partial-depth:0b47f5a166b4e5f2624409004b3a795d999e5d30af53fc5e7d9672efcffd91fc",
+            "mark": "63786.90000000",
+            "received_ms": 1794946500001,
+            "symbol": "BTCUSDT"
+          }
+        ],
+        "pre_arm": [],
+        "max_gap_ms": 336,
+        "quote_above_or_below_levels": []
+      },
+      "fills": 0,
+      "snapshot_id": "de9cf6a7eb127d39e6674b2d83bafae8945a2b073256fa7b681aecab3a7b70c8"
+    },
+    "4694d2cee86b9d88faf3c3c2cd4ad40e740a42c4c6fdf96a3e8cec9e852aee44": {
+      "p": {
+        "entry": "64257.6",
+        "stop": "64592.9",
+        "target": "61971.3",
+        "quantity": "0.001",
+        "direction": "SHORT",
+        "symbol": "BTCUSDT",
+        "fee": "0.0005",
+        "stop_slippage": "0.001",
+        "funding_buffer_rate": "0.0021",
+        "hold_ms": 3600000,
+        "expires_ms": 1795004100000,
+        "risk_usdt": "0.59929140645"
+      },
+      "s": {
+        "armed_ms": 1795003378378,
+        "entry_cancellation": {
+          "at_ms": 1795004100226,
+          "causes": [
+            "EXPIRED"
+          ],
+          "evidence": "recorded_at_cancellation",
+          "guards": {
+            "blocked": null,
+            "expires_ms": 1795004100000,
+            "paused": false
+          },
+          "precise": true,
+          "quantity": "0.001",
+          "reason": "EXPIRED_OR_PAUSED",
+          "reserve_released_usdt": "64.42466976"
+        },
+        "status": "CANCELED",
+        "opened_ms": null
+      },
+      "filters": {
+        "as_of_ms": 1795003330803,
+        "min_notional": "50",
+        "min_qty": "0.001",
+        "step_size": "0.001",
+        "tick_size": "0.10"
+      },
+      "coverage": {
+        "count": 3274,
+        "after_expiry": 1,
+        "first": [
+          {
+            "ask": "64154.00",
+            "ask_qty": "0.094",
+            "bid": "64153.90",
+            "bid_qty": "17.854",
+            "event_ms": 1795003378000,
+            "id": "d00555bbe6bdd40fbd7ece68f748ca1efa661e4eb6b1737116970dfed056dd10",
+            "liquidity_id": "ws-partial-depth:d7febc730644de9fa873b15bb6693380f994ae3d8e6b4271ac9051daef65b5c0",
+            "mark": "64159.65869565",
+            "received_ms": 1795003378743,
+            "symbol": "BTCUSDT"
+          },
+          {
+            "ask": "64154.30",
+            "ask_qty": "4.538",
+            "bid": "64154.20",
+            "bid_qty": "3.550",
+            "event_ms": 1795003379000,
+            "id": "ecf8f26ec27533c2c4ff3faf6310e1b675e886569addbe92a3907cdf18443c84",
+            "liquidity_id": "ws-partial-depth:34c091d783b67b9f567dda0aceeb2c1522440436757809b50a2c8cec584646f4",
+            "mark": "64153.70000000",
+            "received_ms": 1795003379253,
+            "symbol": "BTCUSDT"
+          },
+          {
+            "ask": "64154.30",
+            "ask_qty": "4.542",
+            "bid": "64154.20",
+            "bid_qty": "3.557",
+            "event_ms": 1795003379000,
+            "id": "8dc11c107cdd7fb499842010d6f9418530025e775b2b7e2c123d591713b1fc00",
+            "liquidity_id": "ws-partial-depth:4bc966bf4ffe8148c0f8e008bd2334ce3d0511d3d1889b808817bac4d66ce2ce",
+            "mark": "64153.70000000",
+            "received_ms": 1795003379793,
+            "symbol": "BTCUSDT"
+          }
+        ],
+        "last": [
+          {
+            "ask": "64227.60",
+            "ask_qty": "15.136",
+            "bid": "64227.50",
+            "bid_qty": "0.409",
+            "event_ms": 1795004099870,
+            "id": "62af9e237454f79a420c687f6269c96b76c141c39602644dd8769e610859c277",
+            "liquidity_id": "ws-partial-depth:829adf60f2e71b670d34751effa187eead0a28fbf4434093a8a188f25688946b",
+            "mark": "64228.30000000",
+            "received_ms": 1795004100220,
+            "symbol": "BTCUSDT"
+          }
+        ],
+        "pre_arm": [],
+        "max_gap_ms": 4248,
+        "quote_above_or_below_levels": []
+      },
+      "fills": 0,
+      "snapshot_id": "193948929d069838841367f67f7e819bfee692cdff2813560d102894f4e21c8a"
+    }
+  }
+}
