@@ -154,8 +154,9 @@ def ingest(book,envelope,*,allow_fixture=False,require_trend_alignment=False):
 
 
 class Poller:
-    def __init__(self,book,feed,*,symbols=SYMBOLS,trade_executor=None,quote_executor=None):
+    def __init__(self,book,feed,*,symbols=SYMBOLS,trade_executor=None,quote_executor=None,ioc_capture=None):
         self.book=book;self.feed=feed;self.symbols=tuple(symbols);self.pool=ThreadPoolExecutor(max_workers=1)
+        self.ioc_capture=ioc_capture
         self.funding_job=None;self.next_funding_check=0;self.funding_cut=None;self.required_due=None
         self.filter_pool=ThreadPoolExecutor(max_workers=1);self.filter_jobs={};self.filter_failed=set()
         self.trade_pool=trade_executor or ThreadPoolExecutor(max_workers=1);self.trade_jobs={}
@@ -217,15 +218,26 @@ class Poller:
     def cycle(self):
         self.book.protection_phase_context={'cycle_started_ns':time.monotonic_ns(),
                                             'prior_cycles':list(self.phase_history)[-2:]}
+        self.ioc_observation=None
         if getattr(self.feed,'streaming',False):
-            with self.book.grouped_transaction():return self._cycle()
-        return self._cycle()
+            with self.book.grouped_transaction():
+                result=self._cycle()
+        else:
+            result=self._cycle()
+        capture=self.ioc_capture
+        if capture is not None and capture.plan is not None and not capture.complete:
+            if self.ioc_observation is None:
+                capture.observe(self.book.clock(),None,[],False)
+            else:
+                capture.observe(*self.ioc_observation)
+        return result
 
     def _cycle(self):
         b=self.book;self.full_page_pending=False;active=b.active();priority=[active[0]['symbol']] if active else []
         symbols=priority if priority else list(self.symbols)
         for symbol in symbols:
             tick=time.monotonic_ns();wall=b.clock();previous=self.previous_timing.get(symbol);phases={};stage='quote_request'
+            components=()
             try:
                 initial=b.active();quote_job=self.quote_jobs.get(symbol)
                 exposed=initial is not None and initial[0]['symbol']==symbol and dec(initial[1]['open_qty'])>0
@@ -238,7 +250,8 @@ class Poller:
                         b.set('quote_execution_unconfirmed:'+symbol,packet['error'])
                         b.set('quote_stream:'+symbol,report)
                     b.protection_phase_context['quote_components']=report
-                    b.observe_protection_components(symbol,packet['updates'])
+                    components=packet['updates']
+                    b.observe_protection_components(symbol,components)
                     if packet['error']:
                         failure={'at_ms':b.clock(),'kind':'websocket_components_unconfirmed',
                                  'category':packet['error'],'quote_components':report}
@@ -491,6 +504,16 @@ class Poller:
                     b.set('trade_cursor:'+symbol,cursor);b.set('trade_feed:'+symbol,report)
                     b.set('trade_confirmed_ms:'+symbol,last_event if healthy else None)
                     b.set('market_error:'+symbol,('public_filters_unconfirmed' if not filters_ready else ('public_trade_backlog_unconfirmed' if full_page else (None if healthy else 'public_trade_stream_unconfirmed'))))
+                capture=self.ioc_capture
+                if (capture is not None and capture.plan is not None and not capture.complete
+                        and not capture.error and capture.plan['symbol']==symbol):
+                    try:
+                        observed=b.clock()
+                        self.ioc_observation=(observed,q,capture.target_trades(events),
+                                              healthy and not full_page and not prearm,
+                                              capture.stop_observations(components,observed),filters_ready)
+                    except (KeyError,TypeError,ValueError):
+                        capture.error='observation_invalid'
                 self.full_page_pending=full_page and not gap and b.active() is None
                 self.loop_phase['poller_symbol_ms']=(time.monotonic_ns()-tick)//1000000
                 self.previous_timing[symbol]={'poll_started_ms':wall,'total_ms':(time.monotonic_ns()-tick)//1000000,
@@ -615,6 +638,7 @@ def main():
     p=sub.add_parser('serve');p.add_argument('--state',required=True);p.add_argument('--public',required=True);p.add_argument('--response',required=True)
     p.add_argument('--analyst-uid',required=True,type=uid);p.add_argument('--symbols',nargs='+',choices=SYMBOLS,default=['BTCUSDT']);p.add_argument('--enable-paper',action='store_true');p.add_argument('--once',action='store_true')
     p.add_argument('--require-trend-alignment',action='store_true')
+    p.add_argument('--ioc-shadow-journal',help='Private new file for one accepted plan; observation only')
     p.add_argument('--phase-diagnostics',action='store_true',help='Enable detailed CPU/SQL profiling; normal paper execution retains bounded market/error evidence without it')
     p=sub.add_parser('analyst-once');p.add_argument('--budget-state',required=True);p.add_argument('--paper-public',required=True);p.add_argument('--output',required=True)
     p.add_argument('--paper-uid',required=True,type=uid);p.add_argument('--symbol',choices=SYMBOLS,default='BTCUSDT');p.add_argument('--authorized-once',action='store_true')
@@ -650,7 +674,11 @@ def main():
                 prepare_journal(book)
                 feed=StreamFeed(symbols=args.symbols,quotes=True)
                 probe=configure_diagnostics(book,feed,args.phase_diagnostics)
-                worker=Poller(book,feed.start(),symbols=args.symbols);backup=BackupJob(book.root);next_backup=0;reader=ResponseReader(require_trend_alignment=args.require_trend_alignment);publisher=Publisher()
+                capture=None
+                if args.ioc_shadow_journal:
+                    from .ai_limit_ioc_shadow import Capture
+                    capture=Capture(args.ioc_shadow_journal)
+                worker=Poller(book,feed.start(),symbols=args.symbols,ioc_capture=capture);backup=BackupJob(book.root);next_backup=0;reader=ResponseReader(require_trend_alignment=args.require_trend_alignment);publisher=Publisher()
                 try:
                     while running[0]:
                         if probe is not None:probe.begin()
@@ -660,7 +688,12 @@ def main():
                         now=time.monotonic_ns();phase['poller_total_ms']=(now-mark)//1000000;mark=now
                         if Path(args.response).exists():
                             try:
-                                with probe.phase('main_ingest') if probe else nullcontext():reader.apply(book,args.response,args.analyst_uid)
+                                with probe.phase('main_ingest') if probe else nullcontext():
+                                    status=reader.apply(book,args.response,args.analyst_uid)
+                                if status=='ACCEPTED' and capture is not None and not capture.used:
+                                    active=book.active()
+                                    if active is not None:
+                                        capture.start(active[0],active[1]['armed_ms'])
                             except (ValueError,OSError,KeyError,TypeError):
                                 with book.transaction():book.set('analyst_ingest_error','response_unavailable_or_invalid')
                         now=time.monotonic_ns();phase['ingest_ms']=(now-mark)//1000000;mark=now
@@ -684,6 +717,8 @@ def main():
                         worker.phase_history.append(phase)
                         if probe is not None:probe.finish(feed,result.get('last_trade_gap'),result.get('trade_feeds'))
                 finally:
+                    if capture is not None:
+                        capture.close()
                     backup.close()
                     if probe is not None:probe.close()
                     worker.close()
