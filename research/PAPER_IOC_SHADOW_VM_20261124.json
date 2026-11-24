@@ -1,0 +1,109 @@
+{
+  "commit": "32b0fe157bd4c1f78df63e94918bf86627389007",
+  "installed_ms": 1795500444749,
+  "verified_ms": 1795500468989,
+  "pid": "870373",
+  "hashes": {
+    "research/ai_limit_runtime.py": "e8887bbb62f4c63e87a4d00dfe15458cdf65e7e979b5042dbbdf706531c10f4d",
+    "research/ai_limit_ioc_shadow.py": "093461984dae11362e9efe428b5d5192623b51c7a57103bd2c58721db177c3c8"
+  },
+  "preserved_hashes": {
+    "research/ai_limit_plan.py": "9d2dd3615720fb95a1d9854cec3fe93daa70d22b2e357a83c8a28934f4b1b528",
+    "research/ai_limit_book.py": "46c2812841a46eeadff0ceeb309ff20246d1f525f09dcd5cc296523848d424b7",
+    "research/ai_limit_stream.py": "a440eb57769aa1c53bd0034922fcfcbabed981ae967e8bde7a3a75017aaadf78",
+    "research/ai_limit_feed.py": "211fa1fdd3ae7265a3372e5cf526e749105c3b84089f0e8d0ff349e9be6bb39a"
+  },
+  "cmd": [
+    "/usr/bin/python3",
+    "-B",
+    "-m",
+    "research.ai_limit_runtime",
+    "serve",
+    "--state",
+    "/var/lib/ai-bracket-study",
+    "--public",
+    "/var/lib/ai-bracket-public/orders.json",
+    "--response",
+    "/var/lib/tradingbot-ai-executor-public/bracket-response.json",
+    "--analyst-uid",
+    "adaptiveai",
+    "--enable-paper",
+    "--require-trend-alignment",
+    "--ioc-shadow-journal",
+    "/var/lib/ai-bracket-study/ioc-shadow-32b0fe1/first-plan.jsonl",
+    ""
+  ],
+  "ledger": {
+    "balances": {
+      "free": "999.3282948884153898110",
+      "reserved": "0E-8",
+      "margin": "0.0000",
+      "funding_buffer": "0E-8"
+    },
+    "counts": {
+      "ledger_events": 60,
+      "ledger_postings": 144,
+      "bracket_plans": 23,
+      "bracket_fills": 12,
+      "bracket_funding": 1
+    },
+    "hash": "bd9598fac9157e7536750acf3714502705c392b6548edca3ec149cbb6aba5b31"
+  },
+  "backup": {
+    "path": "/var/lib/tradingbot-ai-budget-backup/ioc-shadow-1795500372974/paper.sqlite",
+    "sha256": "9a51c188d06343db94d0d46250d54f469adf5a062306b3668e2ef3c5caebc303",
+    "ledger": {
+      "balances": {
+        "free": "999.3282948884153898110",
+        "reserved": "0E-8",
+        "margin": "0.0000",
+        "funding_buffer": "0E-8"
+      },
+      "counts": {
+        "ledger_events": 60,
+        "ledger_postings": 144,
+        "bracket_plans": 23,
+        "bracket_fills": 12,
+        "bracket_funding": 1
+      },
+      "hash": "bd9598fac9157e7536750acf3714502705c392b6548edca3ec149cbb6aba5b31"
+    },
+    "restored_ms": 1795500430493
+  },
+  "budget": [
+    56,
+    149736
+  ],
+  "one_writer": true,
+  "next": "Tue 2026-11-24 08:02:00 UTC",
+  "journal": "/var/lib/ai-bracket-study/ioc-shadow-32b0fe1/first-plan.jsonl",
+  "journal_exists": false,
+  "fresh_samples": [
+    [
+      1795500463563,
+      995,
+      3546568729
+    ],
+    [
+      1795500463751,
+      334,
+      3546568758
+    ],
+    [
+      1795500466987,
+      1404,
+      3546568824
+    ],
+    [
+      1795500468065,
+      1207,
+      3546568832
+    ]
+  ],
+  "disk_after": 1861464064,
+  "check": {
+    "id": "ioc",
+    "status": "ACTIVE",
+    "at": "2026-11-24T16:19:00+04:00"
+  }
+}
