@@ -1,13 +1,40 @@
 import sqlite3
 import tempfile
 import unittest
+import signal
 from pathlib import Path
 from contextlib import closing
+from types import SimpleNamespace
+from unittest.mock import patch
 
-from deploy.ai_bracket_external_backup import inspect
+from deploy.ai_bracket_external_backup import FREE_SPACE_RESERVE, check_work_space, inspect, terminate
 
 
 class BackupInspectionTest(unittest.TestCase):
+    def test_space_guard_includes_wal(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            work = Path(tmp)
+            source = work / 'paper.sqlite'
+            source.write_bytes(b'abc')
+            source.with_name('paper.sqlite-wal').write_bytes(b'de')
+            needed = FREE_SPACE_RESERVE + 6 * 5
+            with patch('shutil.disk_usage', return_value=SimpleNamespace(free=needed - 1)):
+                with self.assertRaisesRegex(SystemExit, 'INSUFFICIENT_DISK'):
+                    check_work_space(source, work)
+            with patch('shutil.disk_usage', return_value=SimpleNamespace(free=needed)):
+                check_work_space(source, work)
+
+    def test_termination_unwinds_staging_and_preserves_receipt(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            receipt = Path(tmp) / 'bracket-success.json'
+            receipt.write_text('previous verified receipt', encoding='utf-8')
+            with self.assertRaisesRegex(SystemExit, 'TERMINATED'):
+                with tempfile.TemporaryDirectory(prefix='bracket-external-', dir=tmp) as staging:
+                    (Path(staging) / 'snapshot.sqlite').touch()
+                    terminate(signal.SIGTERM, None)
+            self.assertFalse(Path(staging).exists())
+            self.assertEqual(receipt.read_text(encoding='utf-8'), 'previous verified receipt')
+
     def test_balanced_restore_and_corrupted_posting(self):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / 'restored.sqlite'

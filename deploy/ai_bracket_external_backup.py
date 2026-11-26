@@ -9,6 +9,7 @@ import base64
 import json
 import os
 import shutil
+import signal
 import sqlite3
 import subprocess
 import tempfile
@@ -23,6 +24,26 @@ SOURCE = Path('/var/lib/ai-bracket-study/paper.sqlite')
 WORK = Path('/var/lib/tradingbot-ai-budget-backup')
 PREFIX = 'paper-backups/daily/ai-bracket-study/'
 CHUNK_BYTES = 2_000_000
+FREE_SPACE_RESERVE = 512 * 1024 * 1024
+
+
+def check_work_space(source, work):
+    # The copy and restore can coexist with three copies of the compressed
+    # bytes (original, downloaded chunks, restore). Allow for WAL growth
+    # already present at the start of the job and compression overhead.
+    wal = source.with_name(source.name + '-wal')
+    try:
+        wal_bytes = wal.stat().st_size
+    except FileNotFoundError:
+        wal_bytes = 0
+    working_bytes = 6 * (source.stat().st_size + wal_bytes)
+    if shutil.disk_usage(work).free < FREE_SPACE_RESERVE + working_bytes:
+        raise SystemExit('BRACKET_EXTERNAL_BACKUP_INSUFFICIENT_DISK')
+
+
+def terminate(_signum, _frame):
+    # Unwind TemporaryDirectory on systemd's timeout SIGTERM.
+    raise SystemExit('BRACKET_EXTERNAL_BACKUP_TERMINATED')
 
 
 def file_hash(path):
@@ -75,6 +96,7 @@ def main():
     from cryptography.hazmat.primitives.ciphers.aead import AESGCM
     if not SOURCE.is_file() or SOURCE.is_symlink():
         raise ValueError('bracket_source_missing')
+    check_work_space(SOURCE, WORK)
     with tempfile.TemporaryDirectory(prefix='bracket-external-', dir=WORK) as temp:
         temp = Path(temp)
         copied = temp / 'snapshot.sqlite'
@@ -145,6 +167,7 @@ def main():
 
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, terminate)
     try:
         main()
     except Exception:
