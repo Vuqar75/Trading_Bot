@@ -1,0 +1,23 @@
+{
+  "displayName": "TradingBot paper bracket protection unconfirmed",
+  "documentation": {
+    "content": "The bracket heartbeat could not confirm protection. Value 1 means the executor stopped with exposure in the last readable snapshot. Value 2 means snapshot or quote freshness failed with exposure. Value 3 means position or protection could not be read. Recovery requires a fresh healthy sample. VM heartbeat absence is monitored independently.",
+    "mimeType": "text/markdown"
+  },
+  "conditions": [
+    {
+      "displayName": "Bracket protection unavailable",
+      "conditionThreshold": {
+        "filter": "metric.type = \"custom.googleapis.com/tradingbot/paper_bracket_protection\" AND resource.type = \"global\" AND metric.labels.scope = \"production\"",
+        "comparison": "COMPARISON_GT",
+        "thresholdValue": 0,
+        "duration": "0s",
+        "trigger": {"count": 1}
+      }
+    }
+  ],
+  "combiner": "OR",
+  "notificationChannels": ["projects/gen-lang-client-0854183882/notificationChannels/REPLACE_WITH_OWNER_CHANNEL_ID"],
+  "alertStrategy": {"autoClose": "604800s", "notificationPrompts": ["OPENED", "CLOSED"]},
+  "enabled": false
+}

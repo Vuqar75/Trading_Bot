@@ -1,7 +1,9 @@
 import io
 import json
+from pathlib import Path
+from tempfile import TemporaryDirectory
 import unittest
-from trading_bot.paper_heartbeat import send,METRIC,PROJECT
+from trading_bot.paper_heartbeat import bracket_health,send,BRACKET_METRIC,METRIC,PROJECT
 
 
 class Response(io.BytesIO):
@@ -9,6 +11,48 @@ class Response(io.BytesIO):
 
 
 class HeartbeatTests(unittest.TestCase):
+    def test_stopped_stale_unknown_and_recovery_without_writable_state(self):
+        now=10000
+        stamp=now*1000
+        tick=dict(source_ms=stamp,event_ms=stamp,received_ms=stamp)
+        state=dict(paper_only=True,ledger_balanced=True,as_of_ms=stamp,
+                   plans=[dict(open_qty='0.001',symbol='BTCUSDT')],balances=dict(margin='60'),
+                   quote_asof_ms={'BTCUSDT':stamp},
+                   quote_feeds={'BTCUSDT':dict(time_rejections=[],
+                       channels={key:{'connected':True} for key in ('book','market')},
+                       components=dict(book=dict(tick),mark=dict(tick)))})
+        with TemporaryDirectory() as folder:
+            path=Path(folder)/'orders.json'
+            check=lambda active=True:bracket_health(path,clock=lambda:now,active=active)
+            def publish():
+                path.write_text(json.dumps(state))
+            self.assertEqual(check(),3)
+            publish()
+            self.assertEqual(check(),0)
+            self.assertEqual(check(False),1)
+            state['quote_feeds']['BTCUSDT']['components']['book']['source_ms']-=5001
+            publish()
+            self.assertEqual(check(),2)
+            state['quote_feeds']['BTCUSDT']['components']['book']=tick
+            state['as_of_ms']-=15001
+            publish()
+            self.assertEqual(check(),2)
+            state['as_of_ms']=stamp
+            publish()
+            path.chmod(0o444)
+            try:self.assertEqual(check(),0)
+            finally:path.chmod(0o600)
+
+    def test_protection_uses_same_channel_without_mixing_vm_and_probe(self):
+        calls=[]
+        def opener(req,timeout):
+            calls.append(req)
+            return Response(b'{"access_token":"secret"}' if len(calls)==1 else b'{}')
+        send(clock=lambda:10000,opener=opener,protection=3)
+        payload=[json.loads(req.data)['timeSeries'][0] for req in calls[1:]]
+        self.assertEqual([p['metric']['type'] for p in payload],[METRIC,BRACKET_METRIC])
+        self.assertEqual(payload[1]['metric']['labels'],{'scope':'production'})
+        self.assertEqual(payload[1]['points'][0]['value'],{'int64Value':'3'})
     def test_global_liveness_not_trading_health(self):
         calls=[]
         def opener(req,timeout):
