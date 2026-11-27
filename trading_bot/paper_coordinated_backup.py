@@ -14,6 +14,8 @@ import time
 from contextlib import closing
 from pathlib import Path
 
+MAX_BUFFERED_BACKUP = 24*1024*1024
+
 
 def require_workspace(directory, sources, copies):
     needed = 0
@@ -44,11 +46,22 @@ def coordinated_backup(financial,queue,observation,destination,*,timeout=2,fault
     if len(set(sources))!=3 or destination.exists() or not destination.parent.is_dir():
         raise ValueError('Distinct sources and new destination required')
     require_workspace(destination.parent,sources,1)
+    started=time.monotonic()
+    sizes=[p.stat().st_size for p in sources]
+    if sum(sizes)<=MAX_BUFFERED_BACKUP:
+        # Warm file pages before acquiring a write lock. The bytes read here
+        # are discarded; only SQLite's locked snapshot is ever published.
+        for path,left in zip(sources,sizes):
+            with path.open('rb') as source:
+                while left:
+                    chunk=source.read(min(left,1024*1024))
+                    if not chunk:break
+                    left-=len(chunk)
     stage=Path(tempfile.mkdtemp(prefix='.paper-backup-',dir=destination.parent));os.chmod(stage,0o700)
     locks=[]
     buffered=[]
-    started=time.monotonic()
-    deadline=started+timeout
+    lock_started=time.monotonic()
+    deadline=lock_started+timeout
     def release():
         while locks:
             db=locks.pop()
@@ -70,7 +83,7 @@ def coordinated_backup(financial,queue,observation,destination,*,timeout=2,fault
         # Larger sets retain the disk-backed path.
         copied_bytes=sum(db.execute('PRAGMA page_count').fetchone()[0] *
                          db.execute('PRAGMA page_size').fetchone()[0] for db in locks)
-        use_buffer=copied_bytes<=24*1024*1024
+        use_buffer=copied_bytes<=MAX_BUFFERED_BACKUP
         for path,name,required in zip(sources,names,('ledger_events','unified_updates','samples')):
             dest=stage/name
             target=sqlite3.connect(':memory:' if use_buffer else dest)
@@ -86,7 +99,7 @@ def coordinated_backup(financial,queue,observation,destination,*,timeout=2,fault
             if time.monotonic()>deadline:raise TimeoutError('Backup copy exceeded lock time: '+name)
         release()
         print(json.dumps({'backup_phase':'coordinated_locked_copy',
-                          'lock_ms':round((time.monotonic()-started)*1000),
+                          'lock_ms':round((time.monotonic()-lock_started)*1000),
                           'buffered_bytes':copied_bytes if use_buffer else 0}),flush=True)
         fault('after_unlock')
         for target,dest in buffered:
