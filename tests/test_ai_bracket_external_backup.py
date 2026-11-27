@@ -7,7 +7,10 @@ from contextlib import closing
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from deploy.ai_bracket_external_backup import FREE_SPACE_RESERVE, check_work_space, inspect, terminate
+from deploy.ai_bracket_external_backup import (
+    FREE_SPACE_RESERVE, WORKSPACE_OVERHEAD, check_work_space,
+    cleanup_workspace, inspect, terminate, workspace,
+)
 
 
 class BackupInspectionTest(unittest.TestCase):
@@ -17,7 +20,7 @@ class BackupInspectionTest(unittest.TestCase):
             source = work / 'paper.sqlite'
             source.write_bytes(b'abc')
             source.with_name('paper.sqlite-wal').write_bytes(b'de')
-            needed = FREE_SPACE_RESERVE + 6 * 5
+            needed = FREE_SPACE_RESERVE + WORKSPACE_OVERHEAD + 2 * 5
             with patch('shutil.disk_usage', return_value=SimpleNamespace(free=needed - 1)):
                 with self.assertRaisesRegex(SystemExit, 'INSUFFICIENT_DISK'):
                     check_work_space(source, work)
@@ -29,11 +32,25 @@ class BackupInspectionTest(unittest.TestCase):
             receipt = Path(tmp) / 'bracket-success.json'
             receipt.write_text('previous verified receipt', encoding='utf-8')
             with self.assertRaisesRegex(SystemExit, 'TERMINATED'):
-                with tempfile.TemporaryDirectory(prefix='bracket-external-', dir=tmp) as staging:
-                    (Path(staging) / 'snapshot.sqlite').touch()
+                with workspace(Path(tmp)) as staging:
+                    (staging / 'snapshot.sqlite').touch()
                     terminate(signal.SIGTERM, None)
-            self.assertFalse(Path(staging).exists())
+            self.assertFalse(staging.exists())
             self.assertEqual(receipt.read_text(encoding='utf-8'), 'previous verified receipt')
+
+    def test_stop_post_cleans_only_marked_directory(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            old = root / 'bracket-external-12345678'
+            stopped = root / 'bracket-external-abcdefgh'
+            for folder in (old, stopped):
+                folder.mkdir()
+                (folder / 'snapshot.sqlite').touch()
+            (root / '.bracket-active-stage').write_text(stopped.name, encoding='ascii')
+            cleanup_workspace(root)
+            self.assertTrue((old / 'snapshot.sqlite').exists())
+            self.assertFalse(stopped.exists())
+            self.assertFalse((root / '.bracket-active-stage').exists())
 
     def test_balanced_restore_and_corrupted_posting(self):
         with tempfile.TemporaryDirectory() as tmp:

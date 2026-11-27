@@ -1,12 +1,15 @@
 """Hourly same-disk coordinated backups; retains up to 48 validated sets."""
 import fcntl
 import re
+import signal
 import shutil
 import sys
 from datetime import datetime,timezone
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from trading_bot.paper_coordinated_backup import coordinated_backup
+from trading_bot.paper_coordinated_backup import coordinated_backup, terminate_backup
+
+signal.signal(signal.SIGTERM,terminate_backup)
 
 home=Path('/var/lib/tradingbot');root=home/'paper-coordinated-backups'
 root.mkdir(mode=0o700,parents=True,exist_ok=True)

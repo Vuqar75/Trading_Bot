@@ -84,6 +84,16 @@ class CoordinatedBackupTests(unittest.TestCase):
         coordinated_backup(self.financial,self.queue,self.observer,self.dest)
         self.assertTrue(self.dest.exists())
 
+    def test_sources_are_unlocked_before_slow_verification(self):
+        def probe(phase):
+            if phase=='after_unlock':
+                for path in (self.financial,self.queue,self.observer):
+                    with sqlite3.connect(path,timeout=0) as db:
+                        db.execute('BEGIN IMMEDIATE')
+                self.assertFalse(self.dest.exists())
+        coordinated_backup(self.financial,self.queue,self.observer,self.dest,fault=probe)
+        self.assertTrue(self.dest.exists())
+
     def test_systemd_backup_script_imports_package_in_isolated_python(self):
         home=self.root/'home';(home/'paper-financial').mkdir(parents=True)
         (home/'Trading_Bot_paper_state/monitor').mkdir(parents=True)

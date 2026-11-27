@@ -153,6 +153,13 @@ def ingest(book,envelope,*,allow_fixture=False,require_trend_alignment=False):
     return status
 
 
+def funding_due_published(events, symbol, due):
+    # USD-M may publish the settlement a few milliseconds after the scheduled
+    # second. This is coverage matching only. The ledger uses event_ms unchanged.
+    allowed_lag = 9 if due % 1000 == 0 else 1
+    return sum(e['symbol']==symbol and -1<=e['event_ms']-due<=allowed_lag for e in events)==1
+
+
 class Poller:
     def __init__(self,book,feed,*,symbols=SYMBOLS,trade_executor=None,quote_executor=None,ioc_capture=None):
         self.book=book;self.feed=feed;self.symbols=tuple(symbols);self.pool=ThreadPoolExecutor(max_workers=1)
@@ -171,7 +178,7 @@ class Poller:
             try:
                 events=self.funding_job.result()
                 for symbol,due in self.required_due.items():
-                    if due and due<=self.funding_cut and not any(e['symbol']==symbol and abs(e['event_ms']-due)<=1 for e in events):raise ValueError('due_funding_not_published')
+                    if due and due<=self.funding_cut and not funding_due_published(events,symbol,due):raise ValueError('due_funding_not_published')
                 b.funding(b.get('funding_through'),self.funding_cut,events)
                 with b.transaction():b.set('funding_error',None)
             except (ValueError,OSError):

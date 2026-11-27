@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 from research.ai_limit_book import Book
 from research.ai_limit_feed import Feed
-from research.ai_limit_runtime import Poller,analyst
+from research.ai_limit_runtime import Poller,analyst,funding_due_published
 from tests.test_ai_limit_brackets import snapshot,T
 
 
@@ -335,6 +335,28 @@ class TradeRecoveryTests(unittest.TestCase):
         self.assertEqual(count,1)
         rows=self.book.db.execute('SELECT payload FROM bracket_messages').fetchall()
         self.assertFalse(any('phase_evidence' in row[0] or '"cycle"' in row[0] for row in rows))
+        self.assertEqual(len(rows),1)
+        self.assertEqual(self.book.get('last_trade_gap')['detail'],'second')
+        self.now+=60000
+        self.book.trade_gap('BTCUSDT','third')
+        self.assertEqual(self.book.db.execute('SELECT count(*) FROM bracket_messages').fetchone()[0],2)
+
+    def test_existing_idle_gap_limit_never_hides_gap_under_entry_risk(self):
+        self.book.trade_gap('BTCUSDT','idle')
+        self.now+=1
+        self.accept()
+        self.book.trade_gap('BTCUSDT','entry exposed')
+        rows=self.book.db.execute("SELECT id FROM bracket_messages WHERE id LIKE 'trade-gap:%'").fetchall()
+        self.assertEqual(len(rows),2)
+        self.assertIsNone(self.book.active())
+
+    def test_due_funding_requires_unique_record_near_scheduled_boundary(self):
+        due=1795564800000
+        data={'symbol':'BTCUSDT','event_ms':due+3}
+        self.assertTrue(funding_due_published([data],'BTCUSDT',due))
+        self.assertFalse(funding_due_published([data,data],'BTCUSDT',due))
+        self.assertFalse(funding_due_published([data],'ETHUSDT',due))
+        self.assertFalse(funding_due_published([data|{'event_ms':due+1000}],'BTCUSDT',due))
 
     def test_slow_filter_refresh_does_not_block_trade_poll(self):
         import threading,time

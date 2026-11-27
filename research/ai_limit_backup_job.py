@@ -3,7 +3,7 @@ Never share a trading connection/thread. Only WAL permits a pinned read
 snapshot during copy; legacy rollback mode is copied without a long BEGIN.
 """
 from contextlib import closing
-import os,sqlite3,threading,time
+import os,shutil,sqlite3,threading,time
 from pathlib import Path
 from trading_bot.paper_wallet_ledger import PaperWalletLedger
 
@@ -35,6 +35,12 @@ class BackupJob:
     def copy(self,stamp):
         source=self.root/'paper.sqlite';folder=self.root/'backups';folder.mkdir(mode=0o700,exist_ok=True)
         if source.is_symlink() or folder.is_symlink():raise ValueError('private_backup_paths')
+        try:wal_bytes=source.with_name(source.name+'-wal').stat().st_size
+        except FileNotFoundError:wal_bytes=0
+        # Retaining this copy must leave space for the external backup's two
+        # working files as well as the free-space reserve for the live DB.
+        if shutil.disk_usage(folder).free < 512*1024*1024+3*(source.stat().st_size+wal_bytes)+32*1024*1024:
+            raise ValueError('insufficient_backup_disk')
         target=folder/(str(stamp)+'.sqlite');pending=folder/(str(stamp)+'.pending')
         if target.exists() or pending.exists():raise ValueError('backup_target_exists')
         deadline=time.monotonic()+self.timeout

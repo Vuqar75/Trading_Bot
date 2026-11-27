@@ -2,7 +2,6 @@ import hashlib
 import io
 import json
 import sqlite3
-import subprocess
 import tarfile
 import unittest
 from contextlib import closing
@@ -58,18 +57,27 @@ class ExternalBackupTests(unittest.TestCase):
     def test_upload_uncertainty_requires_matching_readback(self):
         p=prepare(self.f.financial,self.f.queue,self.f.observer,self.stage,commit='c'*40)
         data=Path(p['path']).read_bytes();stored={}
-        def transport(args,**kwargs):
-            if '--if-generation-match=0' in args:
-                stored[args[-1]]=Path(args[-2]).read_bytes()
-                raise subprocess.TimeoutExpired('network',1)
-            if args[-2] not in stored:raise subprocess.CalledProcessError(1,'network')
-            Path(args[-1]).write_bytes(stored[args[-2]])
-        result=upload_verified(p['path'],p['sha256'],bucket='private-bucket-example',kind='hourly',captured_at=p['captured_at'],run=transport)
+        from urllib.error import HTTPError
+        def transport(request,**kwargs):
+            if request.full_url.startswith('http://metadata.'):
+                return io.BytesIO(b'{"access_token":"fake"}')
+            if request.get_method()=='POST':
+                self.assertIn('ifGenerationMatch=0',request.full_url)
+                stored['data']=request.data.read()
+                raise TimeoutError('network')
+            return io.BytesIO(stored['data'])
+        result=upload_verified(p['path'],p['sha256'],bucket='private-bucket-example',kind='hourly',
+                               captured_at=p['captured_at'],downloaded=self.stage/'read-back',opener=transport)
         self.assertEqual(result['sha256'],p['sha256']);self.assertEqual(next(iter(stored.values())),data)
         stored.clear()
-        def no_upload(args,**kwargs):raise subprocess.CalledProcessError(1,'network')
-        with self.assertRaisesRegex(ValueError,'unavailable'):
-            upload_verified(p['path'],p['sha256'],bucket='private-bucket-example',kind='hourly',captured_at=p['captured_at'],run=no_upload)
+        def no_upload(request,**kwargs):
+            if request.full_url.startswith('http://metadata.'):
+                return io.BytesIO(b'{"access_token":"fake"}')
+            if request.get_method()=='POST':raise TimeoutError('network')
+            raise HTTPError(request.full_url,404,'missing',None,None)
+        with self.assertRaisesRegex(ValueError,'read-back HTTP 404, upload TimeoutError'):
+            upload_verified(p['path'],p['sha256'],bucket='private-bucket-example',kind='hourly',
+                            captured_at=p['captured_at'],downloaded=self.stage/'missing',opener=no_upload)
 
     def test_collector_identifies_completed_manual_pause(self):
         import shutil

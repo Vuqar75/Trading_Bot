@@ -310,9 +310,15 @@ class Book:
             now=self.clock();record={'kind':'DATA_GAP','symbol':symbol,'detail':str(detail)[:160],'at_ms':now}
             if evidence is not None:record['source']=evidence
             if phase_evidence is not None:self.set('last_gap_phase_diagnostics',{'symbol':symbol,'at_ms':now,'diagnostics':phase_evidence})
-            self.message('trade-gap:'+symbol+':'+str(now),record)
-            self.set('last_trade_gap',record)
             active=self.active()
+            at_risk=active and active[0]['symbol']==symbol and (
+                dec(active[1]['open_qty']) or dec(active[1]['remaining']))
+            idle_key='idle_trade_gap_logged_ms:'+symbol
+            last_idle=self.get(idle_key)
+            if at_risk or last_idle is None or now-last_idle>=60000:
+                self.message('trade-gap:'+symbol+':'+str(now),record)
+                if not at_risk:self.set(idle_key,now)
+            self.set('last_trade_gap',record)
             if active and active[0]['symbol']==symbol:
                 p,s=active
                 if (held_plan_id==p['plan_id'] and s['opened_ms'] is None
