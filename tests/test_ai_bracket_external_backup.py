@@ -58,8 +58,8 @@ class BackupInspectionTest(unittest.TestCase):
             with closing(sqlite3.connect(path)) as db:
                 db.execute('PRAGMA application_id=1095320146')
                 db.executescript('''
-                    CREATE TABLE ledger_events(id TEXT, posting_count INTEGER);
-                    CREATE TABLE ledger_postings(event_id TEXT,account TEXT,asset TEXT,amount TEXT);
+                    CREATE TABLE ledger_events(id TEXT PRIMARY KEY, posting_count INTEGER);
+                    CREATE TABLE ledger_postings(event_id TEXT REFERENCES ledger_events(id),account TEXT,asset TEXT,amount TEXT);
                     CREATE TABLE bracket_plans(id TEXT,payload TEXT,state TEXT);
                     CREATE TABLE bracket_fills(id TEXT);
                     CREATE TABLE bracket_funding(id TEXT);
@@ -68,6 +68,9 @@ class BackupInspectionTest(unittest.TestCase):
                     INSERT INTO ledger_postings VALUES('seed','external:capital','USDT','-1000');
                 ''')
             result = inspect(path)
+            phases = []
+            self.assertEqual(inspect(path, restored=True, report=phases.append), result)
+            self.assertEqual(phases, ['restore_integrity_verified', 'restore_foreign_keys_verified'])
             self.assertEqual(result['balances']['free'], '1000')
             self.assertEqual(result['events'], 1)
             self.assertEqual(result['plans'], [])
@@ -75,7 +78,14 @@ class BackupInspectionTest(unittest.TestCase):
                 db.execute("UPDATE ledger_postings SET amount='-999' WHERE account='external:capital'")
                 db.commit()
             with self.assertRaisesRegex(ValueError, 'archive_unbalanced'):
-                inspect(path)
+                inspect(path, restored=True)
+            with closing(sqlite3.connect(path)) as db:
+                db.execute("UPDATE ledger_postings SET event_id='missing'")
+                db.commit()
+            phases.clear()
+            with self.assertRaisesRegex(ValueError, 'archive_integrity'):
+                inspect(path, restored=True, report=phases.append)
+            self.assertEqual(phases, ['restore_integrity_verified'])
 
 
 if __name__ == '__main__':

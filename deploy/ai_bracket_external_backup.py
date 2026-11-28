@@ -28,6 +28,7 @@ PREFIX = 'paper-backups/daily/ai-bracket-study/'
 CHUNK_BYTES = 4_000_000
 FREE_SPACE_RESERVE = 512 * 1024 * 1024
 WORKSPACE_OVERHEAD = 16 * 1024 * 1024
+RESTORE_CACHE_KIB = 24 * 1024
 
 
 def check_work_space(source, work):
@@ -97,15 +98,25 @@ def file_hash(path):
     return digest.hexdigest()
 
 
-def inspect(path, *, restored=False):
+def inspect(path, *, restored=False, report=None):
     db = sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro&immutable=1', uri=True)
     try:
         if db.execute('PRAGMA application_id').fetchone()[0] != 0x41494252:
             raise ValueError('archive_application_id')
         # Full structural validation runs once, on the downloaded copy, before
         # publishing a receipt. Snapshot and restore also reconcile the ledger.
-        if restored and (db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok' or db.execute('PRAGMA foreign_key_check').fetchall()):
-            raise ValueError('archive_integrity')
+        if restored:
+            # Index pages are revisited during the full check. Keep a bounded
+            # private cache for this read-only connection to avoid disk rereads.
+            db.execute(f'PRAGMA cache_size=-{RESTORE_CACHE_KIB}')
+            if db.execute('PRAGMA integrity_check').fetchone()[0] != 'ok':
+                raise ValueError('archive_integrity')
+            if report is not None:
+                report('restore_integrity_verified')
+            if db.execute('PRAGMA foreign_key_check').fetchone() is not None:
+                raise ValueError('archive_integrity')
+            if report is not None:
+                report('restore_foreign_keys_verified')
         counts = dict(db.execute('SELECT event_id,COUNT(*) FROM ledger_postings GROUP BY event_id'))
         if any(counts.get(i, 0) != n for i, n in db.execute('SELECT id,posting_count FROM ledger_events')):
             raise ValueError('archive_posting_count')
@@ -211,7 +222,8 @@ def main():
         restored_gz.unlink()
         if file_hash(restored) != saved['sqlite_sha256']:
             raise ValueError('bracket_restore_hash')
-        if inspect(restored,restored=True) != summary:
+        phase('restore_hash_verified', temp, started)
+        if inspect(restored, restored=True, report=lambda name: phase(name, temp, started)) != summary:
             raise ValueError('bracket_restore_mismatch')
         phase('download_restored', temp, started)
         receipt = {'object': obj, 'sha256': sha, 'captured_ms': int(time.time() * 1000),
